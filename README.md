@@ -52,6 +52,19 @@ Neutralino server will be compiled in to `/bin`
 $ npm run build
 ```
 
+## Development Milestones
+
+- [x] Solution Design
+- [x] Windows Server 
+- [ ] Linux Server
+- [x] Javascript SDK
+- [x] Documentation
+- [x] Web site
+- [ ] Security improvements
+- [x] Experimental Release
+- [ ] Stable Release
+
+
 
 
 
