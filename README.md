@@ -18,14 +18,39 @@ Help Neutralino!.
 
 - Star the repo
 - Fork and Clone! Awesome
-- Select existing issues or create issue then give us a PR. We love it <3 
+- Select existing [issues](https://github.com/neutralinojs/neutralinojs/issues) or createa [new issue](https://github.com/neutralinojs/neutralinojs/issues/new) thereafter give us a PR with your bugfix or improvement. Indeed! We love it <3 
 
 ## Developer Guide
 
 ### Required tools 
 
-- MinGW Compiler for C++
-- NodeJs
-- Webpack Bundler
+To create Neutralino developer environment in your pc, install these tool kits.
+
+- [MinGW Compiler for C++](http://mingw.org/)
+- [NodeJs](https://nodejs.org/en/download/)
+- [Webpack Bundler](https://webpack.js.org/)
+
+### Build Neutralino server in Windows
+
+```bash
+> build
+```
+
+### Build Neutralino server in Linux
+
+```bash
+$ bash build.sh
+```
+
+Neutralino server will be compiled in to `/bin`
+
+### Build Neutralino.js compressed js library
+
+```bash
+$ npm run build
+```
+
+
+
 
 
