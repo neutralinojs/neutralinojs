@@ -20,7 +20,7 @@ Help Neutralino!.
 
 - Star the repo
 - Fork and Clone! Awesome
-- Select existing [issues](https://github.com/neutralinojs/neutralinojs/issues) or createa [new issue](https://github.com/neutralinojs/neutralinojs/issues/new) thereafter give us a PR with your bugfix or improvement. Indeed! We love it <3 
+- Select existing [issues](https://github.com/neutralinojs/neutralinojs/issues) or create a [new issue](https://github.com/neutralinojs/neutralinojs/issues/new) thereafter give us a PR with your bugfix or improvement. Indeed! We love it <3 
 
 ## Developer Guide
 
