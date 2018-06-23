@@ -9,9 +9,11 @@ In electron and NWjs you have to install NodeJs, hundreds of dependence librarie
 Interested in NeutralinoJs idea? Get started with our [docs](https://neutralinojs.github.io/docs/#/) and build your first [Neutralino App](https://neutralinojs.github.io/docs/#/gettingstarted/firstapp) 
 
 ### Platform Architecture
+
 <div align="center">
   <img src="https://rawgit.com/neutralinojs/neutralinojs.github.io/master/docs/architecture.png">
 </div>
+
 ## Contribution
 
 Help Neutralino!.
