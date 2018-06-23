@@ -1,0 +1,27 @@
+{
+  "name": "neutralino-client-library",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack -p",
+    "watch": "webpack --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shalithasuranga/neutralino-client-library.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/shalithasuranga/neutralino-client-library/issues"
+  },
+  "homepage": "https://github.com/shalithasuranga/neutralino-client-library#readme",
+  "devDependencies": {
+    "webpack": "^4.5.0"
+  },
+  "dependencies": {
+    "webpack-cli": "^2.0.14"
+  }
+}
