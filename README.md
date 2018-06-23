@@ -6,6 +6,8 @@ NeutralinoJs is a portable and lightweight framework to develop apps with native
 
 In electron and NWjs you have to install NodeJs, hundreds of dependence libraries and also the bundled app size is large even we write `hello world` due to embedded chromium and Node runtime. Neutralino is lightweight solution for this issue.
 
+Interested in NeutralinoJs idea? Get started with our [docs](https://neutralinojs.github.io/docs/#/) and build your first [Neutralino App](https://neutralinojs.github.io/docs/#/gettingstarted/firstapp) 
+
 ### Platform Architecture
 
 <img src="https://rawgit.com/neutralinojs/neutralinojs.github.io/master/docs/architecture.png">
