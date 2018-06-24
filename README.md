@@ -6,9 +6,13 @@ NeutralinoJs is a portable and lightweight framework to develop apps with native
 
 In electron and NWjs you have to install NodeJs, hundreds of dependence libraries and also the bundled app size is large even we write `hello world` due to embedded chromium and Node runtime. Neutralino is lightweight solution for this issue.
 
+Interested in NeutralinoJs idea? Get started with our [docs](https://neutralinojs.github.io/docs/#/) and build your first [Neutralino App](https://neutralinojs.github.io/docs/#/gettingstarted/firstapp) 
+
 ### Platform Architecture
 
-<img src="https://rawgit.com/neutralinojs/neutralinojs.github.io/master/docs/architecture.png">
+<div align="center">
+  <img src="https://rawgit.com/neutralinojs/neutralinojs.github.io/master/docs/architecture.png">
+</div>
 
 ## Contribution
 
@@ -16,14 +20,52 @@ Help Neutralino!.
 
 - Star the repo
 - Fork and Clone! Awesome
-- Select existing issues or create issue then give us a PR. We love it <3 
+- Select existing [issues](https://github.com/neutralinojs/neutralinojs/issues) or create a [new issue](https://github.com/neutralinojs/neutralinojs/issues/new) thereafter give us a PR with your bugfix or improvement. Indeed! We love it <3 
 
 ## Developer Guide
 
 ### Required tools 
 
-- MinGW Compiler for C++
-- NodeJs
-- Webpack Bundler
+To create Neutralino developer environment in your pc, install these tool kits.
+
+- [MinGW Compiler for C++](http://mingw.org/)
+- [NodeJs](https://nodejs.org/en/download/)
+- [Webpack Bundler](https://webpack.js.org/)
+
+### Build Neutralino server in Windows
+
+```bash
+> build
+```
+
+### Build Neutralino server in Linux
+
+```bash
+$ bash build.sh
+```
+
+Neutralino server will be compiled in to `/bin`
+
+### Build Neutralino.js compressed js library
+
+```bash
+$ npm run build
+```
+
+## Development Milestones
+
+- [x] Solution Design
+- [x] Windows Server 
+- [ ] Linux Server
+- [x] Javascript SDK
+- [x] Documentation
+- [x] Web site
+- [ ] Security improvements
+- [x] Experimental Release
+- [ ] Stable Release
+
+
+
+
 
 
