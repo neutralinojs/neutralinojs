@@ -35,12 +35,14 @@ To create Neutralino developer environment in your pc, install these tool kits.
 ### Build Neutralino server in Windows
 
 ```bash
+> cd core-windows
 > build
 ```
 
 ### Build Neutralino server in Linux
 
 ```bash
+cd core-linux
 $ bash build.sh
 ```
 
@@ -49,6 +51,7 @@ Neutralino server will be compiled in to `/bin`
 ### Build Neutralino.js compressed js library
 
 ```bash
+$ cd neutralino.js
 $ npm run build
 ```
 
