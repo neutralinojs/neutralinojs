@@ -42,7 +42,7 @@ To create Neutralino developer environment in your pc, install these tool kits.
 ### Build Neutralino server in Linux
 
 ```bash
-cd core-linux
+$ cd core-linux
 $ bash build.sh
 ```
 
