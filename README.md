@@ -1,6 +1,12 @@
+
 <div align="center">
   <img src="https://cdn.rawgit.com/neutralinojs/neutralinojs.github.io/b667f2c2/docs/nllogo.png" style="width:300px;"/>
 </div>
+
+
+![Website](https://img.shields.io/website-up-down-green-red/http/shields.io.svg?label=official-website)
+[![HitCount](http://hits.dwyl.io/neutralinojs/neutralinojs.svg)](http://hits.dwyl.io/neutralinojs/neutralinojs)
+
 
 NeutralinoJs is a portable and lightweight framework to develop apps with native functions and allows you to run inside web browsers. 
 
