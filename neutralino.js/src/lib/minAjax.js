@@ -3,6 +3,8 @@
   |--Author : flouthoc (gunnerar7@gmail.com)(http://github.com/flouthoc)--|
   |--Contributers : Add Your Name Below--|
   */
+ let authbasic = require('../auth/authbasic');
+
  function initXMLhttp() {
     var xmlhttp;
     if (window.XMLHttpRequest) {
@@ -77,12 +79,13 @@ function ajax(config) {
             }
         }
     }
-   
+    
    if(typeof config.data != 'undefined')
         sendString = JSON.stringify(config.data);
 
     if (config.type == "GET") {
         xmlhttp.open("GET", config.url , config.method);
+        xmlhttp.setRequestHeader("Authorization", "Basic " + authbasic.getToken());
         xmlhttp.send();
 
         if (config.debugLog == true)
@@ -91,6 +94,7 @@ function ajax(config) {
     if (config.type == "POST") {
         xmlhttp.open("POST", config.url, config.method);
         xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlhttp.setRequestHeader("Authorization", "Basic " + authbasic.getToken());
         xmlhttp.send(sendString);
 
         if (config.debugLog == true)
