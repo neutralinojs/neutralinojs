@@ -8,6 +8,7 @@
 #include "core/computer.h"
 #include "settings.h"
 #include "../lib/json/json.hpp"
+#include "auth/authbasic.h"
 
 
 using namespace std;
@@ -44,6 +45,8 @@ namespace routes {
 
     pair<string, string> handle(string path, string j) {
         json options = settings::getOptions();
+        bool authStatus = authbasic::verifyToken("4");
+        std::cout << (authStatus ? "yes" : "no") << std::endl;
         string appname = options["appname"];
         if(path == "/" +  appname ){
             return make_pair(routes::getFile("app\\index.html"), "text/html");

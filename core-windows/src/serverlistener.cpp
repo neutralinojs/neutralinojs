@@ -11,6 +11,7 @@
 #include "settings.h"
 #include "requestparser.h"
 #include "router.h"
+#include "auth/authbasic.h"
 
 
 
@@ -30,6 +31,8 @@ ServerListener::ServerListener(int port, size_t buffer_size) {
 void ServerListener::run(std::function<void(ClientAcceptationException)> client_acceptation_error_callback) {
 
     settings::getSettings();
+    authbasic::generateToken();
+    
     json options = settings::getOptions();
     string appname = options["appname"];
     string appport = options["appport"];

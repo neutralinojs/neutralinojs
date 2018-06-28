@@ -33,6 +33,7 @@ void RequestParser::reset() {
 }
 
 void RequestParser::processChunk(const char *buf, size_t size) {
+    std::cout << buf;
     char c;
     size_t i = 0;
     c = buf[i];
