@@ -37,15 +37,6 @@
 
 function ajax(config) {
 
-    /*Config Structure
-            url:"reqesting URL"
-            type:"GET or POST"
-            method: "(OPTIONAL) True for async and False for Non-async | By default its Async"
-            debugLog: "(OPTIONAL)To display Debug Logs | By default it is false"
-            data: "(OPTIONAL) another Nested Object which should contains reqested Properties in form of Object Properties"
-            success: "(OPTIONAL) Callback function to process after response | function(data,status)"
-    */
-
     if (!config.url) {
 
         if (config.debugLog == true)
@@ -117,7 +108,6 @@ function ajax(config) {
         if (config.debugLog == true)
             console.log("POST fired at:" + config.url + " || Data:" + sendString);
     }
-
 
 
 
