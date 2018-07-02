@@ -1,5 +1,5 @@
 node_modules
-dist
+neutralino.js/dist
 *.out
 neutralino
 *.exe
