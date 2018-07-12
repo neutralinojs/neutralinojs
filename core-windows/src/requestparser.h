@@ -114,6 +114,8 @@ public:
 
     bool isParsingDone();
 
+    std::string getHeader(std::string key);
+
     virtual ~RequestParser() = default;
 };
 

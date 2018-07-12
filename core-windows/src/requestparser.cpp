@@ -189,3 +189,7 @@ std::string RequestParser::getBody() {
 bool RequestParser::isParsingDone() {
     return parsingDone;
 }
+
+std::string RequestParser::getHeader(std::string key) {
+    return headers.find(key) == headers.end() ? "" : headers[key];
+}
