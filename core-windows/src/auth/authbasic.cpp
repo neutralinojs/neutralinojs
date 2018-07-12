@@ -21,13 +21,18 @@
 // SOFTWARE.
 
 #include <string>
+#include "../functions.h"
 
 using namespace std;
 string token = "";
 namespace authbasic {
     
     void generateToken() {
-        token = "4";
+        token = functions::generateToken();
+    }
+
+    string getToken() {
+        return token;
     }
 
     bool verifyToken(string resToken) {
