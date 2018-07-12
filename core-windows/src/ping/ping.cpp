@@ -29,6 +29,7 @@
 using namespace std;
 
 bool isActive = true;
+bool firstPing = false;
 
 void setInterval(auto function,int interval) {
     thread th([&]() {
@@ -45,10 +46,13 @@ namespace ping {
     
     void receivePing() {
         isActive = true;
+        if(!firstPing) {
+            firstPing = true;
+        }
     }
 
     void pingTick() {
-        if(!isActive) {
+        if(!isActive && firstPing) {
             std::exit(0);
         }
         isActive = false;
