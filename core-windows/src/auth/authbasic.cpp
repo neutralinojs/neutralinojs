@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 #include <string>
+#include <vector>
 #include "../functions.h"
 
 using namespace std;
@@ -36,6 +37,7 @@ namespace authbasic {
     }
 
     bool verifyToken(string resToken) {
-        return token == resToken;
+        vector<string> tokenparts = functions::split(resToken,  ' '); 
+        return token == tokenparts[1];
     }
 }
