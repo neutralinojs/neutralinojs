@@ -23,6 +23,7 @@
 #include <iostream>
 #include <fstream>
 #include "../lib/json/json.hpp"
+#include "auth/authbasic.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -62,7 +63,8 @@ namespace settings {
         json settings = getOptions();
         string s = "let NL_OS='Windows';";
         s += "let NL_NAME='" + settings["appname"].get<std::string>() + "';"; 
-        s += "let NL_PORT=" + settings["appport"].get<std::string>() + ";"; 
+        s += "let NL_PORT=" + settings["appport"].get<std::string>() + ";";
+        s += "let NL_TOKEN='" + authbasic::getToken() + "';";  
         return s;
     }
 
