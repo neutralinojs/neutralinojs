@@ -20,7 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <iostream>
+#include <winsock2.h>
+#include <windows.h>
 #include "serverlistener.h"
 
 #define APP_NAME "Neutralino"
@@ -28,10 +29,11 @@
 
 using namespace std;
 
-int main() {
-    cout << APP_NAME << " " << APP_VERSION << "" << endl;
+int APIENTRY WinMain(HINSTANCE hInstance,
+                     HINSTANCE hPrevInstance,
+                     LPTSTR    lpCmdLine,
+                     int       nCmdShow) {
     ServerListener().run();
-    
     return 0;
 }
 
