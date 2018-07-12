@@ -27,6 +27,7 @@ Help Neutralino!.
 - Star the repo
 - Fork and Clone! Awesome
 - Select existing [issues](https://github.com/neutralinojs/neutralinojs/issues) or create a [new issue](https://github.com/neutralinojs/neutralinojs/issues/new) thereafter give us a PR with your bugfix or improvement. Indeed! We love it <3 
+- We use Slack for discussions. [get your invite](https://join.slack.com/t/neutralinojs/shared_invite/enQtMzk0MDU5ODMyNzM4LTc1ZjJmMzFjNjEzNjk2ODkyYWJiMTAxY2Q2OTA0MGYxNTNiMWFhMjAxMjc1M2E2NGI2OTM1ZjA1ZWNjZDFmZGU)
 
 ## Developer Guide
 
