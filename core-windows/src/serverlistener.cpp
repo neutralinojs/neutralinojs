@@ -34,7 +34,7 @@
 #include "requestparser.h"
 #include "router.h"
 #include "auth/authbasic.h"
-
+#include "ping/ping.h"
 
 
 
@@ -54,6 +54,7 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
 
     settings::getSettings();
     authbasic::generateToken();
+    ping::startPingReceiver();
     
     json options = settings::getOptions();
     string appname = options["appname"];
