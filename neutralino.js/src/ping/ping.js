@@ -20,20 +20,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-let ping = require('../ping/ping');
+let $ = require('../lib/minAjax.js');
 
-module.exports =  (options) => {
-    let pingSuccessCallback = null;
-    let pingFailCallback = null;
+let ping = {
 
-    if(options.load) {
-        options.load();
+    start : (s, e) => {
+        console.log(s);
+        setInterval(() => {
+            $.ajax({
+                url : '/ping',
+                type : 'GET',
+                success : function(data){
+                    if(s) s();
+                },
+                errorCallback : () => {
+                   if(e) e();
+                   console.log("error");
+                }
+            
+            });
+        }, 5000);
     }
-    if(options.pingSuccessCallback) {
-        pingSuccessCallback = options.pingSuccessCallback;
-    }
-    if(options.pingFailCallback) {
-        pingFailCallback = options.pingFailCallback;
-    }
-    ping.start(pingSuccessCallback, pingFailCallback);
 }
+
+module.exports = ping;
