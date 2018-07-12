@@ -7,6 +7,7 @@
 #include "EventLoop.h"
 #include "EventLoopThread.h"
 #include "EventLoopThreadPool.h"
+#include "auth/authbasic.h"
 #include "ping/ping.h"
 
 
@@ -15,6 +16,7 @@ using namespace std;
 int main(int argc, char **argv)
 {
     json options = settings::getSettings();
+    authbasic::generateToken();
     ping::startPingReceiver();
 
     int port = stoi(options["appport"].get<string>());
