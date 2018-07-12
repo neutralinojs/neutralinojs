@@ -1,3 +1,5 @@
+@echo off
+
 REM MIT License
 
 REM Copyright (c) 2018 Neutralinojs
