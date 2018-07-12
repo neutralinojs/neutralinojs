@@ -3,7 +3,6 @@
   <img src="https://cdn.rawgit.com/neutralinojs/neutralinojs.github.io/b667f2c2/docs/nllogo.png" style="width:300px;"/>
 </div>
 
-[![Slack](https://img.shields.io/badge/slack-chat-green.svg)](https://neutralinojs.slack.com)
 [![HitCount](http://hits.dwyl.io/neutralinojs/neutralinojs.svg)](http://hits.dwyl.io/neutralinojs/neutralinojs)
 
 
