@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 let getToken = () => {
-    return localStorage.getItem('NL_TOKEN');
+    return NL_TOKEN;
 }
 
 
