@@ -31,6 +31,7 @@
 #include "settings.h"
 #include "../lib/json/json.hpp"
 #include "auth/authbasic.h"
+#include "ping/ping.h"
 
 
 using namespace std;
@@ -67,6 +68,7 @@ namespace routes {
 
     pair<string, string> handle(string path, string j, string token) {
         json options = settings::getOptions();
+        ping::receivePing();
         
         string appname = options["appname"];
         if(path == "/" +  appname ){
@@ -109,7 +111,7 @@ namespace routes {
                         output = (*f)(j); 
                     }
                     else {
-                        json o = {{"erorr", module + "." + func + " is not supported"}};
+                        json o = {{"error", module + "." + func + " is not supported"}};
                         output = o.dump();
                     }
 
@@ -124,7 +126,7 @@ namespace routes {
                 
             }
         }
-        return make_pair(path, "application/json");
+        return make_pair("{\"message\":\"Neutralino\"}", "application/json");
     }
 
 
