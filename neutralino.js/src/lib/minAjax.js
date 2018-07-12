@@ -37,29 +37,8 @@
 
 function ajax(config) {
 
-    if (!config.url) {
-
-        if (config.debugLog == true)
-            console.log("No Url!");
-        return;
-
-    }
-
-    if (!config.type) {
-
-        if (config.debugLog == true)
-            console.log("No Default type (GET/POST) given!");
-        return;
-
-    }
-
     if (!config.method) {
         config.method = true;
-    }
-
-
-    if (!config.debugLog) {
-        config.debugLog = false;
     }
 
     var xmlhttp = initXMLhttp();
@@ -72,16 +51,9 @@ function ajax(config) {
                 config.success(JSON.parse(xmlhttp.responseText), xmlhttp.readyState);
             }
 
-            if (config.debugLog == true)
-                console.log("SuccessResponse");
-            if (config.debugLog == true)
-                console.log("Response Data:" + xmlhttp.responseText);
+        } 
+        else if(xmlhttp.readyState == 4) {
 
-        } else if(xmlhttp.readyState == 4) {
-
-            if (config.debugLog == true)
-                console.log("FailureResponse --> State:" + xmlhttp.readyState + "Status:" + xmlhttp.status);
-          
             if(config.errorCallback){
                 config.errorCallback();
             }
@@ -95,18 +67,13 @@ function ajax(config) {
         xmlhttp.open("GET", config.url , config.method);
         xmlhttp.setRequestHeader("Authorization", "Basic " + authbasic.getToken());
         xmlhttp.send();
-
-        if (config.debugLog == true)
-            console.log("GET fired at:" + config.url + "?" + sendString);
     }
+    
     if (config.type == "POST") {
         xmlhttp.open("POST", config.url, config.method);
         xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         xmlhttp.setRequestHeader("Authorization", "Basic " + authbasic.getToken());
         xmlhttp.send(sendString);
-
-        if (config.debugLog == true)
-            console.log("POST fired at:" + config.url + " || Data:" + sendString);
     }
 
 
