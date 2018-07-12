@@ -150,9 +150,8 @@ void ServerListener::clientHandler(SOCKET client_socket, size_t buffer_size) {
                 goto cleanup;
             }
         }
-        
         std::string response_body = "";
-        pair<string, string> responseGen =  routes::handle(parser.getPath(), parser.getBody());
+        pair<string, string> responseGen =  routes::handle(parser.getPath(), parser.getBody(), parser.getHeader("Authorization"));
         response_body = responseGen.first;
 
         std::string response_headers = "HTTP/1.1 200 OK\r\n"
