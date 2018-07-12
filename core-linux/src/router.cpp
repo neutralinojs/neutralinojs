@@ -9,6 +9,8 @@
 #include "core/os.h"
 #include "core/computer.h"
 #include "../lib/json/json.hpp"
+#include "auth/authbasic.h"
+#include "ping/ping.h"
 
 using namespace std;
 using namespace filesystem;
@@ -43,6 +45,8 @@ namespace routes {
 
     pair<string, string> handle(string path, string j) {
         json options = settings::getOptions();
+        ping::receivePing();
+
         string appname = options["appname"];
         if(path == "/" + appname){
             return make_pair(routes::getFile("app/index.html"), "text/html");
