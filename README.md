@@ -38,9 +38,9 @@ Interested in NeutralinoJs idea? Get started with our [docs](https://neutralinoj
 
 Help Neutralino!.
 
-- Give us a star :)
+- Give us a star 😋
 - Fork and Clone! Awesome
-- Select existing [issues](https://github.com/neutralinojs/neutralinojs/issues) or create a [new issue](https://github.com/neutralinojs/neutralinojs/issues/new) thereafter give us a PR with your bugfix or improvement. Indeed! We love it <3 
+- Select existing [issues](https://github.com/neutralinojs/neutralinojs/issues) or create a [new issue](https://github.com/neutralinojs/neutralinojs/issues/new) thereafter give us a PR with your bugfix or improvement. We love it ❤️ 
 - We use Slack for discussions. [get your invite](https://join.slack.com/t/neutralinojs/shared_invite/enQtMzk0MDU5ODMyNzM4LTc1ZjJmMzFjNjEzNjk2ODkyYWJiMTAxY2Q2OTA0MGYxNTNiMWFhMjAxMjc1M2E2NGI2OTM1ZjA1ZWNjZDFmZGU)
 
 ## Developer Guide
@@ -52,6 +52,18 @@ To create Neutralino developer environment in your pc, install these tool kits.
 - [MinGW Compiler for C++](http://mingw.org/)
 - [NodeJs](https://nodejs.org/en/download/)
 - [Webpack Bundler](https://webpack.js.org/)
+
+### Build Neutralino platform in Windows
+
+```bash
+> build
+```
+
+### Build Neutralino platform in Linux
+
+```bash
+$ bash build.sh
+```
 
 ### Build Neutralino server in Windows
 
@@ -69,7 +81,7 @@ $ bash build.sh
 
 Neutralino server will be compiled in to `/bin`
 
-### Build Neutralino.js compressed js library
+### Build Neutralino.js with webpack
 
 ```bash
 $ cd neutralino.js
