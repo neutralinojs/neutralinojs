@@ -12,6 +12,22 @@ In electron and NWjs you have to install NodeJs, hundreds of dependence librarie
 
 Interested in NeutralinoJs idea? Get started with our [docs](https://neutralinojs.github.io/docs/#/) and build your first [Neutralino App](https://neutralinojs.github.io/docs/#/gettingstarted/firstapp) 
 
+### How to Develop Neutralino apps
+
+- Download latest Neutralino lightweight SDK from [releases](https://github.com/neutralinojs/neutralinojs/releases)
+- Write code for your application
+- Double click on neutralino binary, it will run your app on default browser
+- Close the browser tab (Neutralino runtime will be terminated automatically)
+
+### Deploying your app
+
+- zip the content and share your app anywhere. it's fully portable
+
+### Neutralinojs can be used for
+
+- Web apps with native functions
+- Lightweight cross platform apps
+
 ### Platform Architecture
 
 <div align="center">
