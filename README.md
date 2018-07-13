@@ -64,6 +64,7 @@ To create Neutralino developer environment in your pc, install these tool kits.
 ```bash
 $ bash build.sh
 ```
+Neutralino platform components will be assembled in to `/dist`
 
 ### Build Neutralino server in Windows
 
