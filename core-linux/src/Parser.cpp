@@ -111,6 +111,13 @@ void Parser::parseHeaders()
                 ++iter;
             _parseResult.connection = std::string(iter, _lines[i].cend());
         }
+        else if(strncasecmp(_lines[i].c_str(), "Authorization:", 14) == 0) // 处理"Connection"头部字段
+        {
+            auto iter = _lines[i].cbegin() + 14;
+            while(*iter == ' ' || *iter == '\t')
+                ++iter;
+            _parseResult.auth = std::string(iter, _lines[i].cend());
+        }
         else
         {
             // 其他头部字段暂时忽略
