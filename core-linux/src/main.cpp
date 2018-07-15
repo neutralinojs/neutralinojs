@@ -7,7 +7,8 @@
 #include "EventLoop.h"
 #include "EventLoopThread.h"
 #include "EventLoopThreadPool.h"
-//#include "core/filesystem.h"
+#include "auth/authbasic.h"
+#include "ping/ping.h"
 
 
 using namespace std;
@@ -15,6 +16,8 @@ using namespace std;
 int main(int argc, char **argv)
 {
     json options = settings::getSettings();
+    authbasic::generateToken();
+    ping::startPingReceiver();
 
     int port = stoi(options["appport"].get<string>());
     string appname = options["appname"].get<std::string>();
@@ -41,7 +44,6 @@ int main(int argc, char **argv)
         memset(&clientAddr, 0, sizeof(clientAddr));
         int connFd = Socket::Accept(listenFd, &clientAddr);
 
-        // 挑选一个线程，将已连接套接字注册到此线程的EventLoop中
         EventLoopThread *thread = threadPool->getNextThread();
         EventLoop *loop = thread->getLoop();
         loop->addToLoop(connFd);

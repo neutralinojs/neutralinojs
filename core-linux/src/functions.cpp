@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <time.h>
 
 using namespace std;
 namespace functions {
@@ -14,5 +15,23 @@ namespace functions {
         }
         return tokens;
     }
+
+    string generateToken() {
+        srand (time(NULL));
+        
+        string s = "";
+        static const char alphanum[] =
+            "0123456789"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "abcdefghijklmnopqrstuvwxyz";
+
+        for (int i = 0; i < 32; ++i) {
+            s += alphanum[rand() % (sizeof(alphanum) - 1)];
+        }
+
+        return s;
+    }
+
+    
 
 }

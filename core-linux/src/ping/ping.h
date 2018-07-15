@@ -20,19 +20,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-let myapp = {
-    myfunction : () => document.getElementById('info').innerHTML = `${NL_NAME} is running on port ${NL_PORT} inside ${NL_OS}.`
-};
-    
 
-Neutralino.init({
-    load: () => {
-        myapp.myfunction();
-    },
-    pingSuccessCallback : () => {
-        console.log("ping success");
-    },
-    pingFailCallback : () => {
-        console.log("ping fail");
-    }
-});
+using namespace std;
+
+namespace ping {
+    void receivePing();
+    void startPingReceiver();
+    void pingTick();
+
+}

@@ -21,6 +21,7 @@ typedef struct
     std::string version;    // HTTP版本
     std::string host;       // 请求的主机名
     std::string connection; // Connection首部
+    std::string auth;
     std::string body;
 } HTTPRequest;
 

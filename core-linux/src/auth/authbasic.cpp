@@ -20,19 +20,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-let myapp = {
-    myfunction : () => document.getElementById('info').innerHTML = `${NL_NAME} is running on port ${NL_PORT} inside ${NL_OS}.`
-};
-    
+#include <string>
+#include <vector>
+#include "../functions.h"
 
-Neutralino.init({
-    load: () => {
-        myapp.myfunction();
-    },
-    pingSuccessCallback : () => {
-        console.log("ping success");
-    },
-    pingFailCallback : () => {
-        console.log("ping fail");
+using namespace std;
+string token = "";
+namespace authbasic {
+    
+    void generateToken() {
+        token = functions::generateToken();
     }
-});
+
+    string getToken() {
+        return token;
+    }
+
+    bool verifyToken(string resToken) {
+        vector<string> tokenparts = functions::split(resToken,  ' '); 
+        return token == tokenparts[1];
+    }
+}
