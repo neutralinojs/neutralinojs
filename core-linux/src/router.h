@@ -10,5 +10,5 @@ namespace routes {
 
     string getIndex();
 
-    pair<string, string> handle(string path,string j);
+    pair<string, string> handle(string path, string j, string token);
 }
