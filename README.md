@@ -9,27 +9,27 @@
 
 
 
-NeutralinoJs is a portable and lightweight framework to develop apps with native functions and it allows you to run developed app inside web browsers. 
+NeutralinoJs is a portable and lightweight framework. It lets you develop apps with native functions that can run inside web browsers. 
 
-In electron and NWjs you have to install NodeJs, hundreds of dependence libraries and also the bundled app size is large even we write `hello world` due to embedded chromium and Node runtime. Neutralino is lightweight solution for this issue.
+In electron and NWjs you have to install NodeJs and hundreds of dependency libraries. Embedded Chromium and Node creates large overhead and makes even simple apps like “hello world” considerable in size. Neutralino offers a solution for this issue.
 
-Interested in NeutralinoJs idea? Get started with our [docs](https://neutralinojs.github.io/docs/#/) and build your first [Neutralino App](https://neutralinojs.github.io/docs/#/gettingstarted/firstapp) 
+Interested in the NeutralinoJs idea? Start with our [docs](https://neutralinojs.github.io/docs/#/) and build your first [Neutralino App](https://neutralinojs.github.io/docs/#/gettingstarted/firstapp) 
 
 ### How to Develop Neutralino apps
 
 - Download latest Neutralino lightweight SDK from [releases](https://github.com/neutralinojs/neutralinojs/releases)
 - Write code for your application
-- Double click on neutralino binary, it will run your app on default browser
-- Close the browser tab (Neutralino runtime will be terminated automatically)
+- Double click on the neutralino binary, it will run the app on your default browser
+- Close the browser tab (Neutralino runtime will terminate automatically)
 
 ### Deploying your app
 
-- zip the content and share your app anywhere. it's fully portable
+- Zip the content and share anywhere. It's fully portable
 
 ### Neutralinojs can be used for
 
 - Web apps with native functions
-- Lightweight cross platform apps
+- Lightweight cross-platform apps
 
 ### Platform Architecture
 
@@ -39,11 +39,11 @@ Interested in NeutralinoJs idea? Get started with our [docs](https://neutralinoj
 
 ## Contribution
 
-Help Neutralino!.
+Help Neutralino!
 
 - Give us a star 😋
 - Fork and Clone! Awesome
-- Select existing [issues](https://github.com/neutralinojs/neutralinojs/issues) or create a [new issue](https://github.com/neutralinojs/neutralinojs/issues/new) thereafter give us a PR with your bugfix or improvement. We love it ❤️ 
+- Select existing [issues](https://github.com/neutralinojs/neutralinojs/issues) or create a [new issue](https://github.com/neutralinojs/neutralinojs/issues/new) and give us a PR with your bugfix or improvement after. We love it ❤️ 
 - We use Slack for discussions. [get your invite](https://join.slack.com/t/neutralinojs/shared_invite/enQtMzk0MDU5ODMyNzM4LTc1ZjJmMzFjNjEzNjk2ODkyYWJiMTAxY2Q2OTA0MGYxNTNiMWFhMjAxMjc1M2E2NGI2OTM1ZjA1ZWNjZDFmZGU)
 - Join our [Google group](https://groups.google.com/forum/#!forum/neutralinojs) for feature proposals and requests.
 
@@ -84,7 +84,7 @@ $ cd core-linux
 $ bash build.sh
 ```
 
-Neutralino server will be compiled in to `/bin`
+Neutralino server will be compiled in `/bin`
 
 ### Build Neutralino.js with webpack
 
