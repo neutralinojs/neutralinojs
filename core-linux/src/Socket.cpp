@@ -1,7 +1,24 @@
-/*
- * Author: Broglie 
- * E-mail: yibo141@outlook.com
- */
+// MIT License
+
+// Copyright (c) 2018 Neutralinojs
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 #include "Socket.h"
 
@@ -23,11 +40,9 @@ int Socket::createSocket()
     int sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if(sockfd < 0)
     {
-        // FIXME: 写入日志
         std::cout << "Socket::createNonblock error: " << strerror(errno) << std::endl;
         exit(1);
     }
-    // setNonBlockAndCloseOnExec(sockfd);
     return sockfd;  
 }
 
@@ -53,8 +68,6 @@ void Socket::Listen(const int sockfd)
 int Socket::Accept(const int sockfd, struct sockaddr_in *addr)
 {
     socklen_t addrLen = sizeof(*addr);
-    // int connfd = accept(sockfd, (struct sockaddr*)&addr, &addrLen);
-    // setNonBlockAndCloseOnExec(connfd);
     int connfd = accept4(sockfd, (struct sockaddr*)&addr, 
                          &addrLen, SOCK_NONBLOCK | SOCK_CLOEXEC);
 
@@ -62,13 +75,11 @@ int Socket::Accept(const int sockfd, struct sockaddr_in *addr)
     {
         switch(errno)
         {
-            // 非致命错误，忽略
             case EAGAIN:
             case ECONNABORTED:
             case EINTR:
             case EMFILE:
                 break;
-            // 致命错误，退出程序
             case EFAULT:
             case EINVAL:
             case ENFILE:
@@ -76,7 +87,6 @@ int Socket::Accept(const int sockfd, struct sockaddr_in *addr)
                 std::cout << "Socket::accept error: " << strerror(errno) << std::endl;
                 exit(1);
                 break;
-            // 未知错误，退出程序
             default:
                 std::cout << "Socket::accept error: " << strerror(errno) << std::endl;
                 exit(1);
@@ -97,24 +107,5 @@ void Socket::Close(const int sockfd)
 
 void Socket::setNonBlockAndCloseOnExec(const int sockfd)
 {
-    // 这段代码有问题，一直无法成功执行(Bad file descriptor)，并且
-    // fcntl函数返回-1，不知道为什么。所以用到这个函数的地方就用别的方法
-    // 替代了，如socket和accpet4。
-    /*
-    int flags;
-    if((flags = fcntl(sockfd, F_GETFL, 0)) < 0)
-    {
-        std::cout << "Socket::setNonBlockAndCloseOnExec error: " <<
-                    strerror(errno) << std::endl;
-        exit(1);
-    }
-    flags |= O_NONBLOCK;
-    flags |= FD_CLOEXEC;
-    if(fcntl(sockfd, F_SETFL, flags) < 0)
-    {
-        std::cout << "Socket::setNonBlockAndCloseOnExec error: " <<
-                    strerror(errno) << std::endl;
-        exit(1);
-    }
-    */
+
 }
