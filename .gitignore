@@ -1,6 +1,5 @@
 node_modules
 neutralino.js/dist
-neutralino
-core-linux/bin/*.out
+core-linux/bin/neutralino
 core-windows/bin/*.exe
 Thumbs.db
