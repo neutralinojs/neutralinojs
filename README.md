@@ -107,6 +107,9 @@ $ npm run build
 - [x] Experimental Release
 - [ ] Stable Release
 
+## License
+
+[MIT](LICENSE)
 
 
 
