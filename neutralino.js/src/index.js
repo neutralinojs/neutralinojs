@@ -24,6 +24,7 @@ let filesystem = require('./core/filesystem');
 let settings = require('./core/settings');
 let os = require('./core/os');
 let computer = require('./core/computer');
+let storage = require('./core/storage');
 let init = require('./core/init');
 
 module.exports =  {
@@ -31,5 +32,6 @@ module.exports =  {
     settings : settings,
     os : os,
     computer : computer,
+    storage : storage,
     init : init
 }
