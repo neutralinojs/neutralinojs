@@ -30,6 +30,7 @@
 #include "core/filesystem.h"
 #include "core/os.h"
 #include "core/computer.h"
+#include "core/storage/storage.h"
 #include "../lib/json/json.hpp"
 #include "auth/authbasic.h"
 #include "ping/ping.h"
@@ -106,6 +107,10 @@ namespace routes {
                     }
                     else if(computer::funcmap.find(module + "." + func) != computer::funcmap.end() ){
                         pfunc f = computer::funcmap[module + "." + func];
+                        output = (*f)(j); 
+                    }
+                    else if(storage::funcmap.find(module + "." + func) != storage::funcmap.end() ){
+                        pfunc f = storage::funcmap[module + "." + func];
                         output = (*f)(j); 
                     }
                     else {
