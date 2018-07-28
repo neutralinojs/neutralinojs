@@ -28,6 +28,7 @@
 #include "core/filesystem.h"
 #include "core/os.h"
 #include "core/computer.h"
+#include "core/storage/storage.h"
 #include "settings.h"
 #include "../lib/json/json.hpp"
 #include "auth/authbasic.h"
@@ -97,7 +98,7 @@ namespace routes {
                     string module = portions[1];
                     string func = portions[2];
                     string output = "";
-                    //cout << module << "."<< func << endl;
+
                     if(filesystem::funcmap.find(module + "." + func) != filesystem::funcmap.end() ){
                         pfunc f = filesystem::funcmap[module + "." + func];
                         output = (*f)(j); 
@@ -108,6 +109,10 @@ namespace routes {
                     }
                     else if(computer::funcmap.find(module + "." + func) != computer::funcmap.end() ){
                         pfunc f = computer::funcmap[module + "." + func];
+                        output = (*f)(j); 
+                    }
+                    else if(storage::funcmap.find(module + "." + func) != storage::funcmap.end() ){
+                        pfunc f = storage::funcmap[module + "." + func];
                         output = (*f)(j); 
                     }
                     else {
