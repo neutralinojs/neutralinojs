@@ -29,11 +29,11 @@ let runCommand = (cmd, s, e) => {
         data : {
           command : cmd
         },
-        success : function(data){
+        done : function(data){
             s(data);
         },
-        errorCallback : () => {
-            e();
+        problem : (error) => {
+            e(error);
         }
     
     });
@@ -47,11 +47,11 @@ let getEnvar = (v, s, e) => {
         data : {
           name : v
         },
-        success : function(data){
+        done : function(data){
             s(data);
         },
-        errorCallback : () => {
-            e();
+        problem : (error) => {
+            e(error);
         }
     
     });

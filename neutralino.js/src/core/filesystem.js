@@ -29,11 +29,11 @@ let createDirectory = (dirName, s, e) => {
         data : {
           dir : dirName
         },
-        success : function(data){
+        done : function(data){
             s(data);
         },
-        errorCallback : () => {
-            e();
+        problem : (error) => {
+            e(error);
         }
     
     });
@@ -48,11 +48,11 @@ let removeDirectory = (dirName, s, e) => {
         data : {
           dir : dirName
         },
-        success : function(data){
+        done : function(data){
             s(data);
         },
-        errorCallback : () => {
-            e();
+        problem : (error) => {
+            e(error);
         }
     
     });
@@ -67,11 +67,11 @@ let writeFile = (fileName, content, s, e) => {
           filename : fileName,
           content : content
         },
-        success : function(data){
+        done : function(data){
             s(data);
         },
-        errorCallback : () => {
-            e();
+        problem : (error) => {
+            e(error);
         }
     
     });
@@ -85,11 +85,11 @@ let readFile = (fileName, s, e) => {
         data : {
           filename : fileName
         },
-        success : function(data){
+        done : function(data){
             s(data);
         },
-        errorCallback : () => {
-            e();
+        problem : (error) => {
+            e(error);
         }
     
     });
@@ -104,11 +104,11 @@ let removeFile = (fileName, s, e) => {
         data : {
           filename : fileName
         },
-        success : function(data){
+        done : function(data){
             s(data);
         },
-        errorCallback : () => {
-            e();
+        problem : (error) => {
+            e(error);
         }
     
     });
