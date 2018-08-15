@@ -43,7 +43,7 @@ Read the story of Neutralinojs [here](https://medium.com/@shalithasuranga/why-we
 
 Help Neutralino!
 
-- Give us a star 😋
+- Give us a star :+1:
 - Fork and Clone! Awesome
 - Select existing [issues](https://github.com/neutralinojs/neutralinojs/issues) or create a [new issue](https://github.com/neutralinojs/neutralinojs/issues/new) and give us a PR with your bugfix or improvement after. We love it ❤️ 
 - We use Slack for discussions. [get your invite](https://join.slack.com/t/neutralinojs/shared_invite/enQtMzk0MDU5ODMyNzM4LTc1ZjJmMzFjNjEzNjk2ODkyYWJiMTAxY2Q2OTA0MGYxNTNiMWFhMjAxMjc1M2E2NGI2OTM1ZjA1ZWNjZDFmZGU)
