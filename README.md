@@ -104,10 +104,11 @@ $ npm run build
 - [x] Javascript SDK
 - [x] Documentation
 - [x] Web site
-- [ ] Security improvements
-- [ ] Other milestones as per planed
+- [x] Security improvements
 - [x] Experimental Release
-- [ ] Stable Release
+- [ ] Other required features
+- [ ] Stable release
+- [ ] MacOS support
 
 ## License
 
