@@ -36,7 +36,7 @@ Read the story of Neutralinojs [here](https://medium.com/@shalithasuranga/why-we
 ### Platform Architecture
 
 <div align="center">
-  <img src="https://rawgit.com/neutralinojs/neutralinojs.github.io/master/docs/architecture.png">
+  <img src="media/architecture.png">
 </div>
 
 ## Contribution
