@@ -31,6 +31,7 @@
 #include "EventLoopThreadPool.h"
 #include "auth/authbasic.h"
 #include "ping/ping.h"
+#include "cloud/previleges.h"
 
 
 using namespace std;
@@ -40,6 +41,8 @@ int main(int argc, char **argv)
     json options = settings::getSettings();
     authbasic::generateToken();
     ping::startPingReceiver();
+    previleges::getMode();
+    previleges::getBlacklist();
 
     int port = stoi(options["appport"].get<string>());
     string appname = options["appname"].get<std::string>();

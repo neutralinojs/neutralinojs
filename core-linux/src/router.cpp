@@ -34,6 +34,7 @@
 #include "../lib/json/json.hpp"
 #include "auth/authbasic.h"
 #include "ping/ping.h"
+#include "cloud/previleges.h"
 
 using namespace std;
 using namespace filesystem;
@@ -66,12 +67,12 @@ namespace routes {
         return "<html style=\"width: 100%; height: 100%; position: absolute; background-repeat:no-repeat; background-position: center; background-color: black; background-image:url('" + routes::getIcon() + "')\"></html>";
     }
 
-    pair<string, string> handle(string path, string j, string token) {
+   pair<string, string> handle(string path, string j, string token) {
         json options = settings::getOptions();
         ping::receivePing();
-
+        
         string appname = options["appname"];
-        if(path == "/" + appname){
+        if(path == "/" +  appname ){
             return make_pair(routes::getFile("app/index.html"), "text/html");
         }
         else if(path == "/neutralino.js"){
@@ -94,36 +95,57 @@ namespace routes {
             if(portions.size() == 3) {
                 if(authbasic::verifyToken(token)) {
 
+                    
+
                     string module = portions[1];
                     string func = portions[2];
+                    string modfunc = module + "." + func;
                     string output = "";
-                    if(filesystem::funcmap.find(module + "." + func) != filesystem::funcmap.end() ){
-                        pfunc f = filesystem::funcmap[module + "." + func];
-                        output = (*f)(j); 
-                    }
-                    else if(os::funcmap.find(module + "." + func) != os::funcmap.end() ){
-                        pfunc f = os::funcmap[module + "." + func];
-                        output = (*f)(j); 
-                    }
-                    else if(computer::funcmap.find(module + "." + func) != computer::funcmap.end() ){
-                        pfunc f = computer::funcmap[module + "." + func];
-                        output = (*f)(j); 
-                    }
-                    else if(storage::funcmap.find(module + "." + func) != storage::funcmap.end() ){
-                        pfunc f = storage::funcmap[module + "." + func];
-                        output = (*f)(j); 
-                    }
-                    else {
-                        json o = {{"erorr", module + "." + func + " is not supported"}};
-                        output = o.dump();
+
+                    bool permission = true;
+
+                    if(previleges::getMode() == "cloud") {
+                        if(!previleges::checkPermission(modfunc)) permission = false;
                     }
 
-                    return make_pair(output, "application/json");
+                    if(permission) {
+
+                        if(filesystem::funcmap.find(modfunc) != filesystem::funcmap.end() ){
+                            pfunc f = filesystem::funcmap[modfunc];
+                            output = (*f)(j); 
+                        }
+                        else if(os::funcmap.find(modfunc) != os::funcmap.end() ){
+                            pfunc f = os::funcmap[modfunc];
+                            output = (*f)(j); 
+                        }
+                        else if(computer::funcmap.find(modfunc) != computer::funcmap.end() ){
+                            pfunc f = computer::funcmap[modfunc];
+                            output = (*f)(j); 
+                        }
+                        else if(storage::funcmap.find(modfunc) != storage::funcmap.end() ){
+                            pfunc f = storage::funcmap[modfunc];
+                            output = (*f)(j); 
+                        }
+                        else {
+                            json o = {{"error", modfunc + " is not supported"}};
+                            output = o.dump();
+                        }
+
+                        return make_pair(output, "application/json");
+                    
+                    }
+
+                    else {
+                         return make_pair("{\"error\":\"Cloud permission error!\"}", "application/json");
+                    }
 
                 }
                 else {
+
                     return make_pair("{\"error\":\"Authnication error!\"}", "application/json");
                 }
+
+                
             }
         }
         return make_pair("{\"message\":\"Neutralino\"}", "application/json");

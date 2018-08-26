@@ -24,48 +24,53 @@
 #include <chrono>
 #include <thread>
 #include <vector>
-#include "../cloud/previleges.h"
-
+#include "../../lib/json/json.hpp"
+#include "../settings.h"
 
 using namespace std;
-
-bool isActive = true;
-bool firstPing = false;
-
-void setInterval(auto function,int interval) {
-    thread th([&]() {
-        while(true) {
-            std::this_thread::sleep_for(5s);
-            function();
-        }
-    });
-    th.detach();
-}
+using json = nlohmann::json;
 
 
-namespace ping {
+
+
+
+namespace previleges {
+
+    string mode = "";
+    vector <string> blacklist;
+
     
-    void receivePing() {
-        isActive = true;
-        if(!firstPing) {
-            firstPing = true;
+    string getMode() {
+        if(mode != "") {
+            return mode;
+        }
+        else {
+            json options = settings::getOptions()["mode"];
+            return options;
+        }
+
+    }
+    
+    vector<string> getBlacklist() {
+        if(blacklist.size() != 0 || previleges::getMode() == "desktop") {
+            return blacklist;
+        }
+        else {
+            json options = settings::getOptions()["cloud"]["blacklist"];
+            vector<string> s = options;
+            blacklist = s;
+            return blacklist;
         }
     }
 
-    void pingTick() {
-        if(!isActive && firstPing) {
-            std::exit(0);
+
+    bool checkPermission(string func) {
+        for(int i = 0; i < blacklist.size(); i++) {
+            if(blacklist[i] == func) return false;
         }
-        isActive = false;
+        return true;
     }
 
-    void startPingReceiver() {
-        if(previleges::getMode() == "desktop") {
-            setInterval([]() {
-                pingTick();
-            },
-            10000);
-        }
-    }
+
 
 }

@@ -20,52 +20,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <iostream>
-#include <chrono>
-#include <thread>
-#include <vector>
-#include "../cloud/previleges.h"
-
 
 using namespace std;
 
-bool isActive = true;
-bool firstPing = false;
-
-void setInterval(auto function,int interval) {
-    thread th([&]() {
-        while(true) {
-            std::this_thread::sleep_for(5s);
-            function();
-        }
-    });
-    th.detach();
-}
-
-
-namespace ping {
-    
-    void receivePing() {
-        isActive = true;
-        if(!firstPing) {
-            firstPing = true;
-        }
-    }
-
-    void pingTick() {
-        if(!isActive && firstPing) {
-            std::exit(0);
-        }
-        isActive = false;
-    }
-
-    void startPingReceiver() {
-        if(previleges::getMode() == "desktop") {
-            setInterval([]() {
-                pingTick();
-            },
-            10000);
-        }
-    }
-
+namespace previleges {
+    vector<string> getBlacklist();
+    string getMode();
+    bool checkPermission(string func);
 }

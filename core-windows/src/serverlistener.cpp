@@ -35,7 +35,7 @@
 #include "router.h"
 #include "auth/authbasic.h"
 #include "ping/ping.h"
-
+#include "cloud/previleges.h"
 
 
 ServerListener::ServerListener(int port, size_t buffer_size) {
@@ -55,6 +55,8 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
     settings::getSettings();
     authbasic::generateToken();
     ping::startPingReceiver();
+    previleges::getMode();
+    previleges::getBlacklist();
     
     json options = settings::getOptions();
     string appname = options["appname"];
