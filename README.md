@@ -32,6 +32,7 @@ Read the story of Neutralinojs [here](https://medium.com/@shalithasuranga/why-we
 
 - Web apps with native functions
 - Lightweight cross-platform apps
+- Control VMs, servers or computers in a private/public network - Neutralinojs cloud
 
 ### Platform Architecture
 
