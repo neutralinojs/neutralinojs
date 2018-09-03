@@ -22,9 +22,9 @@ Select an issue which you like to work with..
 - neutralinojs website [issues](https://github.com/neutralinojs/neutralinojs.github.io/labels/hacktoberfest)
 - neutralinojs samples [issues](https://github.com/neutralinojs/neutralinojs-samples/labels/hacktoberfest)
 
-Fix the select issue and submit changes via a [pull request](https://help.github.com/articles/about-pull-requests/) 
+Fix the selected issue and submit changes via a [pull request](https://help.github.com/articles/about-pull-requests/) 
 
-Submit *5* or pull requests and wait till we merge those..
+Submit *5* or more pull requests and wait till we merge those..
 
 Congrats!! you have completed Hacktoberfest challenge.
 
