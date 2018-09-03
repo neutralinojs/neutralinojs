@@ -14,3 +14,17 @@ Select a repo you like to contribute
 - [neutralinojs-website](https://github.com/neutralinojs/neutralinojs.github.io) - If you like designing and documentation.
 - [neutralinojs-samples](https://github.com/neutralinojs/neutralinojs-samples) - If you like to build awesome stuff with Neutralinojs
 
+Star and fork selected repo
+
+Select an issue which you like to work with..
+
+- neutralinojs [issues](https://github.com/neutralinojs/neutralinojs/labels/hacktoberfest)
+- neutralinojs website [issues](https://github.com/neutralinojs/neutralinojs.github.io/labels/hacktoberfest)
+- neutralinojs samples [issues](https://github.com/neutralinojs/neutralinojs-samples/labels/hacktoberfest)
+
+Fix the select issue and submit changes via a [pull request](https://help.github.com/articles/about-pull-requests/) 
+
+Submit up to *5* pull requests and wait till we merge those..
+
+Congrats!! you have completed Hacktoberfest challenge.
+
