@@ -28,3 +28,7 @@ Submit *5* or more pull requests and wait till we merge those..
 
 Congrats!! you have completed Hacktoberfest challenge.
 
+## Join community 
+
+Get an [invite](https://join.slack.com/t/neutralinojs/shared_invite/enQtMzk0MDU5ODMyNzM4LTc1ZjJmMzFjNjEzNjk2ODkyYWJiMTAxY2Q2OTA0MGYxNTNiMWFhMjAxMjc1M2E2NGI2OTM1ZjA1ZWNjZDFmZGU) to slack
+
