@@ -4,7 +4,7 @@
 
 # Hacktoberfest with Neutralinojs
 
-Hacktoberfest is a month-long celebration of open source software where anyone can contribute and get FREE! swags.
+Hacktoberfest is a month-long celebration of open source software where anyone can contribute and also able to get FREE! swags.
 
 ## Steps to complete challenge with us 
 
@@ -24,7 +24,7 @@ Select an issue which you like to work with..
 
 Fix the select issue and submit changes via a [pull request](https://help.github.com/articles/about-pull-requests/) 
 
-Submit up to *5* pull requests and wait till we merge those..
+Submit *5* or pull requests and wait till we merge those..
 
 Congrats!! you have completed Hacktoberfest challenge.
 
