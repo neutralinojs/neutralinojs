@@ -7,7 +7,7 @@
 [![HitCount](http://hits.dwyl.io/neutralinojs/neutralinojs.svg)](http://hits.dwyl.io/neutralinojs/neutralinojs)
 [![Twitter](https://img.shields.io/twitter/url/https/github.com/neutralinojs/neutralinojs.svg?style=social)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fneutralinojs%2Fneutralinojs)
 
-<h1><a href="hackathons/hacktoberfest">Hacktoberfest with Neutralinojs</a></h1>
+<h1><a href="hackathons/hacktoberfest.md">Hacktoberfest with Neutralinojs</a></h1>
 
 NeutralinoJs is a portable and lightweight framework which lets you to develop apps with native functions that can run inside web browsers. 
 
