@@ -6,7 +6,7 @@
 
 Hacktoberfest is a month-long celebration of open source software where anyone can contribute and also able to get FREE! swags.
 
-## Steps to complete challenge with us 
+## Steps to complete hacktoberfest challenge with us 
 
 Select a repo you like to contribute 
 
