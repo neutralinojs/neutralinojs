@@ -4,7 +4,11 @@
 
 # Hacktoberfest with Neutralinojs
 
-[Hacktoberfest](https://hacktoberfest.digitalocean.com/) is a month-long celebration of open source software where anyone can contribute and also able to get FREE! swags.
+[Hacktoberfest](https://hacktoberfest.digitalocean.com/) is a month-long celebration of open source software where anyone can contribute and also able to get FREE! swags. 
+
+# Neutralinojs
+
+NeutralinoJs is a portable and lightweight framework which lets you to develop apps with native functions that can run inside web browsers.
 
 ## Steps to complete hacktoberfest challenge with us 
 
