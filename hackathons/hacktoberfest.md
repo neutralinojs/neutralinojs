@@ -8,7 +8,7 @@
 
 ## Steps to complete hacktoberfest challenge with us 
 
-Select a repo you like to contribute 
+Select a repo which you like to contribute 
 
 - [neutralinojs](https://github.com/neutralinojs/neutralinojs) - If you are good at coding with C++ & Javascript.
 - [neutralinojs-website](https://github.com/neutralinojs/neutralinojs.github.io) - If you like designing and documentation.
@@ -28,7 +28,13 @@ Submit *5* or more pull requests and wait till we merge those..
 
 Congrats!! you have completed Hacktoberfest challenge.
 
-## Join community 
+## Join Neutralinojs community 
 
 Get an [invite](https://join.slack.com/t/neutralinojs/shared_invite/enQtMzk0MDU5ODMyNzM4LTc1ZjJmMzFjNjEzNjk2ODkyYWJiMTAxY2Q2OTA0MGYxNTNiMWFhMjAxMjc1M2E2NGI2OTM1ZjA1ZWNjZDFmZGU) to slack
+
+## Are you new to Hacktoberfest?
+
+Don't worry!! Find a small issue or problem (such as typo error or maybe a documentation related mistake or improvement) then fix it via a pull request. If you have a problem drop a message to our Slack channel.
+
+Happy Coding!!!
 
