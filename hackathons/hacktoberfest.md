@@ -4,7 +4,7 @@
 
 # Hacktoberfest with Neutralinojs
 
-Hacktoberfest is a month-long celebration of open source software where anyone can contribute and also able to get FREE! swags.
+[Hacktoberfest](https://hacktoberfest.digitalocean.com/) is a month-long celebration of open source software where anyone can contribute and also able to get FREE! swags.
 
 ## Steps to complete hacktoberfest challenge with us 
 
