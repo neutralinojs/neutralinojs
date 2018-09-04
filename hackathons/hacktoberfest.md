@@ -8,7 +8,7 @@
 
 # Neutralinojs
 
-NeutralinoJs is a portable and lightweight framework which lets you to develop apps with native functions that can run inside web browsers.
+[NeutralinoJs](https://github.com/neutralinojs/neutralinojs) is a portable and lightweight framework which lets you to develop apps with native functions that can run inside web browsers.
 
 ## Steps to complete hacktoberfest challenge with us 
 
