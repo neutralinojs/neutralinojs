@@ -42,7 +42,5 @@ EventLoopThreadPool::~EventLoopThreadPool()
 
 EventLoopThread* EventLoopThreadPool::getNextThread()
 {
-    if(_nextID >= _threadNum)
-        _nextID = 0;
-    return _threads[_nextID++];
+    return new EventLoopThread();
 }
