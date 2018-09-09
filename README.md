@@ -7,7 +7,7 @@
 [![HitCount](http://hits.dwyl.io/neutralinojs/neutralinojs.svg)](http://hits.dwyl.io/neutralinojs/neutralinojs)
 [![Twitter](https://img.shields.io/twitter/url/https/github.com/neutralinojs/neutralinojs.svg?style=social)](https://twitter.com/intent/tweet?text=Wow:&url=https%3A%2F%2Fgithub.com%2Fneutralinojs%2Fneutralinojs)
 
-
+<h1><a href="hackathons/hacktoberfest.md">Hacktoberfest with Neutralinojs</a></h1>
 
 NeutralinoJs is a portable and lightweight framework which lets you to develop apps with native functions that can run inside web browsers. 
 
@@ -32,6 +32,7 @@ Read the story of Neutralinojs [here](https://medium.com/@shalithasuranga/why-we
 
 - Web apps with native functions
 - Lightweight cross-platform apps
+- Control VMs, servers or computers in a private/public network - [Neutralinojs cloud](https://medium.com/@shalithasuranga/getting-started-with-neutralinojs-cloud-preview-version-aws-ec2-6e618d8a2ddb)
 
 ### Platform Architecture
 
@@ -45,9 +46,16 @@ Help Neutralino!
 
 - Give us a star :+1:
 - Fork and Clone! Awesome
-- Select existing [issues](https://github.com/neutralinojs/neutralinojs/issues) or create a [new issue](https://github.com/neutralinojs/neutralinojs/issues/new) and give us a PR with your bugfix or improvement after. We love it ❤️ 
-- We use Slack for discussions. [get your invite](https://join.slack.com/t/neutralinojs/shared_invite/enQtMzk0MDU5ODMyNzM4LTc1ZjJmMzFjNjEzNjk2ODkyYWJiMTAxY2Q2OTA0MGYxNTNiMWFhMjAxMjc1M2E2NGI2OTM1ZjA1ZWNjZDFmZGU)
+- Select existing [issues](https://github.com/neutralinojs/neutralinojs/issues) or create a [new issue](https://github.com/neutralinojs/neutralinojs/issues/new) and give us a PR with your bugfix or improvement after. We love it ❤️
+
+### Realtime Chat Room - Slack
+
+- We use Slack for quick discussions. [get your invite](https://join.slack.com/t/neutralinojs/shared_invite/enQtMzk0MDU5ODMyNzM4LTc1ZjJmMzFjNjEzNjk2ODkyYWJiMTAxY2Q2OTA0MGYxNTNiMWFhMjAxMjc1M2E2NGI2OTM1ZjA1ZWNjZDFmZGU)
+
+### Mainling List - Google Group
+
 - Join our [Google group](https://groups.google.com/forum/#!forum/neutralinojs) for feature proposals and requests.
+- You can help us by writing sample neutralino apps,by composing or improving documentation or by writing code.
 
 ## Developer Guide
 
