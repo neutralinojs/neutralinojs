@@ -36,9 +36,10 @@ namespace computer {
         json output;
         struct sysinfo sys_info;
         sysinfo(&sys_info);
-        output["total"] = (sys_info.totalram * sys_info.mem_unit) / DIV;
-        output["available"] = (sys_info.freeram * sys_info.mem_unit) / DIV;
-        
+        output["ram"] = {
+            { "total", (sys_info.totalram * sys_info.mem_unit) / DIV },
+            { "available", (sys_info.freeram * sys_info.mem_unit) / DIV }
+        };
 
         return output.dump();
        
