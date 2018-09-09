@@ -36,5 +36,5 @@ int Thread::join()
 {
     assert(started && !joined);
     joined = true;
-    return pthread_join(pthreadId, NULL);
+    return pthread_detach(pthreadId);
 }
