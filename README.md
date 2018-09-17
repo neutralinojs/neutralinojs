@@ -32,7 +32,7 @@ Read the story of NeutralinoJs [here](https://medium.com/@shalithasuranga/why-we
 
 - Web apps with native functions
 - Lightweight cross-platform apps
-- Control VMs, servers or computers in a private/public network - [Neutralinojs cloud](https://medium.com/@shalithasuranga/getting-started-with-neutralinojs-cloud-preview-version-aws-ec2-6e618d8a2ddb)
+- Control VMs, servers or computers in a private/public network - [NeutralinoJs cloud](https://medium.com/@shalithasuranga/getting-started-with-neutralinojs-cloud-preview-version-aws-ec2-6e618d8a2ddb)
 
 ### Platform Architecture
 
