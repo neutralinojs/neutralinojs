@@ -15,7 +15,7 @@ In electron and NWjs you have to install NodeJs and hundreds of dependency libra
 
 Interested in the NeutralinoJs idea? Start with our [docs](https://neutralinojs.github.io/docs/#/) and build your first [Neutralino App](https://neutralinojs.github.io/docs/#/gettingstarted/firstapp) 
 
-Read the story of Neutralinojs [here](https://medium.com/@shalithasuranga/why-we-built-neutralinojs-framework-part-i-1d6c667951d5)
+Read the story of NeutralinoJs [here](https://medium.com/@shalithasuranga/why-we-built-neutralinojs-framework-part-i-1d6c667951d5)
 
 ### How to Develop Neutralino apps
 
