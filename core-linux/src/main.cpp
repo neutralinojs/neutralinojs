@@ -23,12 +23,12 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
+#include <thread>
+#include <map>
 #include "functions.h"
 #include "settings.h"
 #include "Socket.h"
-#include "EventLoop.h"
-#include "EventLoopThread.h"
-#include "EventLoopThreadPool.h"
+#include "Handler.h"
 #include "auth/authbasic.h"
 #include "ping/ping.h"
 #include "cloud/previleges.h"
@@ -36,11 +36,13 @@
 
 using namespace std;
 
+std::map<int, std::thread> threads;
+
 int main(int argc, char **argv)
 {
     json options = settings::getSettings();
     authbasic::generateToken();
-    ping::startPingReceiver();
+    //ping::startPingReceiver();
     previleges::getMode();
     previleges::getBlacklist();
 
@@ -61,7 +63,7 @@ int main(int argc, char **argv)
     Socket::Bind(listenFd, servAddr);
     Socket::Listen(listenFd);
 
-    EventLoopThreadPool *threadPool = new EventLoopThreadPool(4);
+
     while(true)
     {
         struct sockaddr_in clientAddr;
@@ -69,11 +71,12 @@ int main(int argc, char **argv)
         memset(&clientAddr, 0, sizeof(clientAddr));
         int connFd = Socket::Accept(listenFd, &clientAddr);
 
-        EventLoopThread *thread = threadPool->getNextThread();
-        EventLoop *loop = thread->getLoop();
-        loop->addToLoop(connFd);
+        std::cout << "socket id = " << connFd << std::endl;
+        threads[connFd] = std::thread (Handler::handle, connFd);
+        threads[connFd].detach();
+        
     }
     Socket::Close(listenFd);
-    delete threadPool;
+
     return 0;
 }

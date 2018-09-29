@@ -68,8 +68,7 @@ void Socket::Listen(const int sockfd)
 int Socket::Accept(const int sockfd, struct sockaddr_in *addr)
 {
     socklen_t addrLen = sizeof(*addr);
-    int connfd = accept4(sockfd, (struct sockaddr*)&addr, 
-                         &addrLen, SOCK_NONBLOCK | SOCK_CLOEXEC);
+    int connfd = accept(sockfd, NULL , NULL);
 
     if(connfd < 0)
     {

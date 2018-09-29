@@ -37,26 +37,7 @@
 class Handler 
 {
 public:
-    Handler(const int connfd);
-    ~Handler();
-    void handle();
-    const int connFd() const
-    {
-        return _connfd;
-    }
-private:
-    bool receiveRequest(); 
-    void sendResponse();
-    void sendErrorMsg();
-    void parseURI();
-    void getFileType();
-    int _connfd;
-    bool _isClosed;
-    std::string _fileType;
-    std::string _fileName;
-    Buffer _inputBuffer;
-    Buffer _outputBuffer;
-    HTTPRequest _request;
+    static void handle(int _connfd);
 };
 
 #endif // HANDLER_H
