@@ -30,9 +30,9 @@ Neutralino.init({
         myapp.myfunction();
     },
     pingSuccessCallback : () => {
-
+        console.log("ping success");
     },
     pingFailCallback : () => {
-
+        console.log("ping fail");
     }
 });
