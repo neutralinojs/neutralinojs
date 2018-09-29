@@ -15,7 +15,7 @@ In electron and NWjs you have to install NodeJs and hundreds of dependency libra
 
 Interested in the NeutralinoJs idea? Start with our [docs](https://neutralinojs.github.io/docs/#/) and build your first [Neutralino App](https://neutralinojs.github.io/docs/#/gettingstarted/firstapp) 
 
-Read the story of Neutralinojs [here](https://medium.com/@shalithasuranga/why-we-built-neutralinojs-framework-part-i-1d6c667951d5)
+Read the story of NeutralinoJs [here](https://medium.com/@shalithasuranga/why-we-built-neutralinojs-framework-part-i-1d6c667951d5)
 
 ### How to Develop Neutralino apps
 
@@ -32,7 +32,7 @@ Read the story of Neutralinojs [here](https://medium.com/@shalithasuranga/why-we
 
 - Web apps with native functions
 - Lightweight cross-platform apps
-- Control VMs, servers or computers in a private/public network - [Neutralinojs cloud](https://medium.com/@shalithasuranga/getting-started-with-neutralinojs-cloud-preview-version-aws-ec2-6e618d8a2ddb)
+- Control VMs, servers or computers in a private/public network - [NeutralinoJs cloud](https://medium.com/@shalithasuranga/getting-started-with-neutralinojs-cloud-preview-version-aws-ec2-6e618d8a2ddb)
 
 ### Platform Architecture
 
@@ -46,7 +46,7 @@ Help Neutralino!
 
 - Give us a star :+1:
 - Fork and Clone! Awesome
-- Select existing [issues](https://github.com/neutralinojs/neutralinojs/issues) or create a [new issue](https://github.com/neutralinojs/neutralinojs/issues/new) and give us a PR with your bugfix or improvement after. We love it ❤️
+- Select existing [issues](https://github.com/neutralinojs/neutralinojs/issues) or create a [new issue](https://github.com/neutralinojs/neutralinojs/issues/new) and give us a PR with your bugfix or improvement after. We love it :) ❤️
 
 ### Realtime Chat Room - Slack
 
