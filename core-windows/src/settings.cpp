@@ -32,15 +32,11 @@ json options;
 namespace settings {
 
     string getFileContent(string filename){
-        ifstream t(filename);
-        string buffer = "";
-        string line = "";
-        while(!t.eof()){
-            getline(t, line);
-            buffer += line + "\r\n";
-        }
-        t.close();
-        return buffer;
+        ifstream f;
+        f.open(filename);
+        stringstream strStream;
+        strStream << f.rdbuf();
+        return strStream.str();
     }
 
     json getOptions(){
