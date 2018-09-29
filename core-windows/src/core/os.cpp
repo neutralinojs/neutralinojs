@@ -32,6 +32,9 @@
 #include <string>
 #include <array>
 
+#include "../settings.h"
+#include "../functions.h"
+
 using namespace std;
 using json = nlohmann::json;
 
@@ -47,23 +50,23 @@ namespace os {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
-        string command = input["command"];
-        std::array<char, 128> buffer;
-        std::string result;
-        std::shared_ptr<FILE> pipe(popen(command.c_str(), "r"), pclose);
-        if (!pipe) {
-            output["error"] = "Pipe open failed";
-        }
-        else {
-            while (!feof(pipe.get())) {
-                if (fgets(buffer.data(), 128, pipe.get()) != nullptr)
-                    result += buffer.data();
-            }
-            output["stdout"] = result;
-        }
-        return output.dump();
-       
         
+        string command = "cmd /c " + input["command"].get<std::string>();
+
+        PROCESS_INFORMATION pi;
+        STARTUPINFO si = {sizeof(si)};
+        char temp[256];
+        GetTempPathA(256, temp);
+        string tmpFile = string(temp) + "nl_o" + functions::generateToken(4) + ".tmp";
+        CreateProcessA(NULL,(LPSTR)(command + " > " + tmpFile).c_str(),NULL,NULL,TRUE,CREATE_NO_WINDOW,NULL,NULL,&si,&pi);
+        WaitForSingleObject(pi.hProcess, INFINITE);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+
+        output["stdout"] = settings::getFileContent(tmpFile);
+        DeleteFile(tmpFile.c_str());
+        return output.dump();
+
     }
 
     string getEnvar(string jso) {
@@ -89,4 +92,6 @@ namespace os {
        
         
     }
+
+    
 }
