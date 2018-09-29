@@ -70,8 +70,6 @@ int main(int argc, char **argv)
         socklen_t clientAddrLen = sizeof(clientAddr);
         memset(&clientAddr, 0, sizeof(clientAddr));
         int connFd = Socket::Accept(listenFd, &clientAddr);
-
-        std::cout << "socket id = " << connFd << std::endl;
         threads[connFd] = std::thread (Handler::handle, connFd);
         threads[connFd].detach();
         
