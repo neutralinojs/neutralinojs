@@ -17,6 +17,8 @@ Interested in the NeutralinoJs idea? Start with our [docs](https://neutralinojs.
 
 Read the story of NeutralinoJs [here](https://medium.com/@shalithasuranga/why-we-built-neutralinojs-framework-part-i-1d6c667951d5)
 
+Ask questions on Stackoverlow using tag [neutralinojs](https://stackoverflow.com/questions/tagged/neutralinojs)
+
 ### How to Develop Neutralino apps
 
 - Download latest Neutralino lightweight SDK from [releases](https://github.com/neutralinojs/neutralinojs/releases)
