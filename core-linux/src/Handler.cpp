@@ -43,7 +43,6 @@ void Handler::handle(int _connfd)
     _request = p.getParseResult();
 
     pair<string, string> resp = routes::handle(_request.uri, _request.body, _request.auth);
-    std::cout << "url = " << _request.uri << " id = " << _connfd << std::endl;
     string content =  resp.first;
     std::string msg = "HTTP/1.1 200 OK\r\nContent-Type:" + resp.second + "\r\nContent-Length: " + std::to_string(content.size()) +"\r\nConnection: close\r\n\r\n" + content;
     _outputBuffer.append(msg.c_str(), msg.size());
