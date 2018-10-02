@@ -6,4 +6,4 @@ Open hack is an internal open source hackathon of 99xt where developers contribu
 ## Plan for upcoming hacking day
 
 - Solve issues of neutralino repos
-- Complete pending [tasks](https://github.com/neutralinojs/tasks)
+- Fix [issues](https://github.com/neutralinojs/neutralinojs/issues?q=is%3Aissue+is%3Aopen+label%3Aopenhack) and complete [tasks](https://github.com/neutralinojs/tasks)
