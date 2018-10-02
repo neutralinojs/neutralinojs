@@ -1,6 +1,6 @@
 
 <div align="center">
-  <img src="https://cdn.rawgit.com/neutralinojs/neutralinojs.github.io/b667f2c2/docs/nllogo.png" style="width:300px;"/>
+  <img src="https://cdn.rawgit.com/neutralinojs/neutralino.js.org/b667f2c2/docs/nllogo.png" style="width:300px;"/>
 </div>
 
 [![GitHub license](https://img.shields.io/github/license/neutralinojs/neutralinojs.svg)](https://github.com/neutralinojs/neutralinojs/blob/master/LICENSE)
@@ -13,7 +13,7 @@ NeutralinoJs is a portable and lightweight framework which lets you to develop a
 
 In electron and NWjs you have to install NodeJs and hundreds of dependency libraries. Embedded Chromium and Node creates large overhead and makes even simple apps like “hello world” considerable in size. Neutralino offers a solution for this issue.
 
-Interested in the NeutralinoJs idea? Start with our [docs](https://neutralinojs.github.io/docs/#/) and build your first [Neutralino App](https://neutralinojs.github.io/docs/#/gettingstarted/firstapp) 
+Interested in the NeutralinoJs idea? Start with our [docs](https://neutralino.js.org/docs/#/) and build your first [Neutralino App](https://neutralino.js.org/docs/#/gettingstarted/firstapp) 
 
 Read the story of NeutralinoJs [here](https://medium.com/@shalithasuranga/why-we-built-neutralinojs-framework-part-i-1d6c667951d5)
 
@@ -124,8 +124,3 @@ $ npm run build
 ## License
 
 [MIT](LICENSE)
-
-
-
-
-
