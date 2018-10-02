@@ -1,6 +1,6 @@
 
 <div align="center">
-  <img src="https://cdn.rawgit.com/neutralinojs/neutralino.js.org/b667f2c2/docs/nllogo.png" style="width:300px;"/>
+  <img src="https://cdn.rawgit.com/neutralinojs/neutralinojs.github.io/b667f2c2/docs/nllogo.png" style="width:300px;"/>
 </div>
 
 [![GitHub license](https://img.shields.io/github/license/neutralinojs/neutralinojs.svg)](https://github.com/neutralinojs/neutralinojs/blob/master/LICENSE)
