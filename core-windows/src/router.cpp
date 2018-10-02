@@ -28,10 +28,12 @@
 #include "core/filesystem.h"
 #include "core/os.h"
 #include "core/computer.h"
+#include "core/storage/storage.h"
 #include "settings.h"
 #include "../lib/json/json.hpp"
 #include "auth/authbasic.h"
 #include "ping/ping.h"
+#include "cloud/previleges.h"
 
 
 using namespace std;
@@ -94,28 +96,49 @@ namespace routes {
             if(portions.size() == 3) {
                 if(authbasic::verifyToken(token)) {
 
+                    
+
                     string module = portions[1];
                     string func = portions[2];
+                    string modfunc = module + "." + func;
                     string output = "";
-                    //cout << module << "."<< func << endl;
-                    if(filesystem::funcmap.find(module + "." + func) != filesystem::funcmap.end() ){
-                        pfunc f = filesystem::funcmap[module + "." + func];
-                        output = (*f)(j); 
-                    }
-                    else if(os::funcmap.find(module + "." + func) != os::funcmap.end() ){
-                        pfunc f = os::funcmap[module + "." + func];
-                        output = (*f)(j); 
-                    }
-                    else if(computer::funcmap.find(module + "." + func) != computer::funcmap.end() ){
-                        pfunc f = computer::funcmap[module + "." + func];
-                        output = (*f)(j); 
-                    }
-                    else {
-                        json o = {{"error", module + "." + func + " is not supported"}};
-                        output = o.dump();
+
+                    bool permission = true;
+
+                    if(previleges::getMode() == "cloud") {
+                        if(!previleges::checkPermission(modfunc)) permission = false;
                     }
 
-                    return make_pair(output, "application/json");
+                    if(permission) {
+
+                        if(filesystem::funcmap.find(modfunc) != filesystem::funcmap.end() ){
+                            pfunc f = filesystem::funcmap[modfunc];
+                            output = (*f)(j); 
+                        }
+                        else if(os::funcmap.find(modfunc) != os::funcmap.end() ){
+                            pfunc f = os::funcmap[modfunc];
+                            output = (*f)(j); 
+                        }
+                        else if(computer::funcmap.find(modfunc) != computer::funcmap.end() ){
+                            pfunc f = computer::funcmap[modfunc];
+                            output = (*f)(j); 
+                        }
+                        else if(storage::funcmap.find(modfunc) != storage::funcmap.end() ){
+                            pfunc f = storage::funcmap[modfunc];
+                            output = (*f)(j); 
+                        }
+                        else {
+                            json o = {{"error", modfunc + " is not supported"}};
+                            output = o.dump();
+                        }
+
+                        return make_pair(output, "application/json");
+                    
+                    }
+
+                    else {
+                         return make_pair("{\"error\":\"Cloud permission error!\"}", "application/json");
+                    }
 
                 }
                 else {

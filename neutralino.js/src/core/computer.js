@@ -26,11 +26,11 @@ let getRamUsage = (s, e) => {
     $.ajax({
         url : '/computer/getRamUsage',
         type : 'GET',
-        success : function(data){
+        done : function(data){
             s(data);
         },
-        errorCallback : () => {
-            e();
+        problem : (error) => {
+            e(error);
         }
     
     });

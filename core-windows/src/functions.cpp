@@ -38,7 +38,7 @@ namespace functions {
         return tokens;
     }
 
-    string generateToken() {
+    string generateToken(int len = 32) {
         srand (time(NULL));
         
         string s = "";
@@ -47,7 +47,7 @@ namespace functions {
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             "abcdefghijklmnopqrstuvwxyz";
 
-        for (int i = 0; i < 32; ++i) {
+        for (int i = 0; i < len; ++i) {
             s += alphanum[rand() % (sizeof(alphanum) - 1)];
         }
 

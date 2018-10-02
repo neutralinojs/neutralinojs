@@ -1,7 +1,24 @@
-/*
- * Author: Broglie 
- * E-mail: yibo141@outlook.com
- */
+// MIT License
+
+// Copyright (c) 2018 Neutralinojs
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 #ifndef PARSER_H
 #define PARSER_H
@@ -13,14 +30,14 @@
 #include <algorithm>
 #include <string.h>
 
-// 解析请求后的数据存储在http_request结构体中
+
 typedef struct
 {
-    std::string method;     // 请求的方法
-    std::string uri;        // 请求的uri
-    std::string version;    // HTTP版本
-    std::string host;       // 请求的主机名
-    std::string connection; // Connection首部
+    std::string method;    
+    std::string uri;        
+    std::string version;   
+    std::string host;   
+    std::string connection; 
     std::string auth;
     std::string body;
 } HTTPRequest;
@@ -31,11 +48,11 @@ public:
     Parser(const std::string request);
     HTTPRequest getParseResult();
 private:
-    void parseLine();        // 将请求按行解析存入_lines数组中
-    void parseRequestLine(); // 解析请求行
-    void parseHeaders();     // 解析头部字段
-    void parseBody(); // parser exnteded for POST body
-    std::string _request;    // 客户的原始请求
+    void parseLine();       
+    void parseRequestLine(); 
+    void parseHeaders();     
+    void parseBody(); 
+    std::string _request;    
     std::vector<std::string> _lines;
     HTTPRequest _parseResult;
 };

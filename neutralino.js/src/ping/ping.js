@@ -25,7 +25,6 @@ let $ = require('../lib/minAjax.js');
 let ping = {
 
     start : (s, e) => {
-        console.log(s);
         setInterval(() => {
             $.ajax({
                 url : '/ping',
@@ -34,8 +33,7 @@ let ping = {
                     if(s) s();
                 },
                 errorCallback : () => {
-                   if(e) e();
-                   console.log("error");
+                    if(e) e();
                 }
             
             });

@@ -46,16 +46,15 @@ function ajax(config) {
     xmlhttp.onreadystatechange = function() {
 
         if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-
-            if (config.success) {
-                config.success(JSON.parse(xmlhttp.responseText), xmlhttp.readyState);
+            if (config.done) {
+                config.done(JSON.parse(xmlhttp.responseText));
             }
-
         } 
         else if(xmlhttp.readyState == 4) {
-
-            if(config.errorCallback){
-                config.errorCallback();
+            if(config.problem){
+                config.problem({
+                    message : "An error occured while connecting with Neutralino server!"
+                });
             }
         }
     }

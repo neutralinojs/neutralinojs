@@ -23,7 +23,8 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
-
+#include <vector>
+#include "../cloud/previleges.h"
 
 
 using namespace std;
@@ -59,10 +60,12 @@ namespace ping {
     }
 
     void startPingReceiver() {
-        setInterval([]() {
-            pingTick();
-        },
-        10000);
+        if(previleges::getMode() == "desktop") {
+            setInterval([]() {
+                pingTick();
+            },
+            10000);
+        }
     }
 
 }

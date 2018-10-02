@@ -26,11 +26,11 @@ let getSettings = (s,e) => {
     $.ajax({
         url : '/settings.json',
         type : 'GET',
-        success : function(data){
+        done : function(data){
             s(data);
         },
-        errorCallback : () => {
-            e();
+        problem : (error) => {
+            e(error);
         }
     
     });
