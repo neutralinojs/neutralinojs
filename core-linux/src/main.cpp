@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 {
     json options = settings::getSettings();
     authbasic::generateToken();
-    //ping::startPingReceiver();
+    ping::startPingReceiver();
     previleges::getMode();
     previleges::getBlacklist();
 
