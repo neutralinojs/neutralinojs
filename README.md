@@ -55,7 +55,7 @@ Help Neutralino!
 
 - We use Slack for quick discussions. [get your invite](https://join.slack.com/t/neutralinojs/shared_invite/enQtMzk0MDU5ODMyNzM4LTc1ZjJmMzFjNjEzNjk2ODkyYWJiMTAxY2Q2OTA0MGYxNTNiMWFhMjAxMjc1M2E2NGI2OTM1ZjA1ZWNjZDFmZGU)
 
-### Mainling List - Google Group
+### Mailing List - Google Group
 
 - Join our [Google group](https://groups.google.com/forum/#!forum/neutralinojs) for feature proposals and requests.
 - You can help us by writing sample Neutralino apps,by composing or improving documentation or by writing code.
