@@ -26,4 +26,4 @@ if [ -e bin/neutranino.out ]; then
     rm bin/neutralino.out
 fi
 
-g++ -std=c++11 src/Buffer.cpp src/Handler.cpp src/Parser.cpp src/Socket.cpp src/functions.cpp src/main.cpp src/router.cpp src/core/filesystem.cpp src/settings.cpp src/core/os.cpp src/core/computer.cpp src/auth/authbasic.cpp src/ping/ping.cpp src/core/storage/storage.cpp src/cloud/previleges.cpp -pthread -std=c++14 -o bin/neutralino 
+g++ -std=c++11 src/Buffer.cpp src/Handler.cpp src/requestparser.cpp src/Socket.cpp src/functions.cpp src/main.cpp src/router.cpp src/core/filesystem.cpp src/settings.cpp src/core/os.cpp src/core/computer.cpp src/auth/authbasic.cpp src/ping/ping.cpp src/core/storage/storage.cpp src/cloud/previleges.cpp -pthread -std=c++14 -o bin/neutralino 
