@@ -17,13 +17,13 @@ Interested in the NeutralinoJs idea? Start with our [docs](https://neutralino.js
 
 Read the story of NeutralinoJs [here](https://medium.com/@shalithasuranga/why-we-built-neutralinojs-framework-part-i-1d6c667951d5)
 
-Ask questions on Stackoverlow using tag [neutralinojs](https://stackoverflow.com/questions/tagged/neutralinojs)
+Ask questions on Stackoverlow using tag [Neutralinojs](https://stackoverflow.com/questions/tagged/neutralinojs)
 
 ### How to Develop Neutralino apps
 
 - Download latest Neutralino lightweight SDK from [releases](https://github.com/neutralinojs/neutralinojs/releases)
 - Write code for your application
-- Double click on the neutralino binary, it will run the app on your default browser
+- Double click on the Neutralino binary, it will run the app on your default browser
 - Close the browser tab (Neutralino runtime will terminate automatically)
 
 ### Deploying your app
@@ -49,7 +49,7 @@ Help Neutralino!
 - Give us a star :star:
 - Fork and Clone! Awesome
 - Select existing [issues](https://github.com/neutralinojs/neutralinojs/issues) or create a [new issue](https://github.com/neutralinojs/neutralinojs/issues/new) and give us a PR with your bugfix or improvement after. We love it :) ❤️
-- Refer to this [link](https://github.com/neutralinojs/neutralinojs/blob/master/CONTRIBUTING.md) for Contribution Procedures and Standards.
+- Refer to this [guide](https://github.com/neutralinojs/neutralinojs/blob/master/CONTRIBUTING.md) for Contribution Procedures and Standards.
 
 ### Realtime Chat Room - Slack
 
@@ -58,7 +58,7 @@ Help Neutralino!
 ### Mainling List - Google Group
 
 - Join our [Google group](https://groups.google.com/forum/#!forum/neutralinojs) for feature proposals and requests.
-- You can help us by writing sample neutralino apps,by composing or improving documentation or by writing code.
+- You can help us by writing sample Neutralino apps,by composing or improving documentation or by writing code.
 
 ## Developer Guide
 
