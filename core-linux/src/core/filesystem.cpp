@@ -87,6 +87,7 @@ namespace filesystem {
         ofstream t(filename);
         t << content;
         t.close();
+	output["success"] = "write succeed in: " + filename;
         return output.dump();
     }   
 
