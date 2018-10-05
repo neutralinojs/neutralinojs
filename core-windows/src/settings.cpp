@@ -62,6 +62,12 @@ namespace settings {
         s += "let NL_PORT=" + settings["appport"].get<std::string>() + ";";
         s += "let NL_MODE='" + settings["mode"].get<std::string>() + "';";
         s += "let NL_TOKEN='" + authbasic::getToken() + "';";  
+
+        if(settings["globals"] != NULL) {
+            for ( auto it: settings["globals"].items()) {
+                s += "let NL_" + it.key() +  "='" + it.value().get<std::string>() + "';";
+            }
+        }
         return s;
     }
 
