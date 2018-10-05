@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include "../../lib/json/json.hpp"
+#include "../../../lib/json/json.hpp"
 #include <stdlib.h>
 #include <cstdio>
 #include <iostream>

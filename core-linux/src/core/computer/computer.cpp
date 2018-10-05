@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <sys/sysinfo.h>
-#include "../../lib/json/json.hpp"
+#include "../../../lib/json/json.hpp"
 
 using namespace std;
 using json = nlohmann::json;
