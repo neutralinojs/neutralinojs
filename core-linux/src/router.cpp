@@ -27,9 +27,9 @@
 #include <vector>
 #include "functions.h"
 #include "settings.h"
-#include "core/filesystem.h"
-#include "core/os.h"
-#include "core/computer.h"
+#include "core/filesystem/filesystem.h"
+#include "core/os/os.h"
+#include "core/computer/computer.h"
 #include "core/storage/storage.h"
 #include "../lib/json/json.hpp"
 #include "auth/authbasic.h"
