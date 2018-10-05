@@ -60,6 +60,7 @@ namespace settings {
         string s = "let NL_OS='Windows';";
         s += "let NL_NAME='" + settings["appname"].get<std::string>() + "';"; 
         s += "let NL_PORT=" + settings["appport"].get<std::string>() + ";";
+        s += "let NL_MODE='" + settings["mode"].get<std::string>() + "';";
         s += "let NL_TOKEN='" + authbasic::getToken() + "';";  
         return s;
     }
