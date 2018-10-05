@@ -25,13 +25,12 @@ namespace filesystem {
         }
         string filename = input["name"];
         if(mkdir(filename.c_str(), 0700) == 0){
-            output["success"] = filename + " directory was created!";
-            return output.dump();
+            output["success"] = true;
         }
         else{
             output["error"] = "Cannot create " + filename;
-            return output.dump();
         }
+        return output.dump();
        
         
     }
@@ -48,13 +47,12 @@ namespace filesystem {
         }
         string dir = input["dir"];
         if(rmdir(dir.c_str()) == 0){
-            output["success"] = dir + " was removed.";
-            return output.dump();
+            output["success"] = true;
         }
         else{
             output["error"] = "Cannot remove " + dir;
-            return output.dump();
         }   
+        return output.dump();
     }
 
     string readFile(string jso) {
@@ -87,6 +85,7 @@ namespace filesystem {
         ofstream t(filename);
         t << content;
         t.close();
+        output["success"] = true;
         return output.dump();
     }   
 
@@ -102,12 +101,11 @@ namespace filesystem {
         }
         string filename = input["filename"];
         if(remove(filename.c_str()) == 0){
-            output["success"] = filename + " was removed.";
-            return output.dump();
+            output["success"] = true;
         }
         else{
             output["error"] = "Cannot remove " + filename;
-            return output.dump();
         }   
+        return output.dump();
     }
 }
