@@ -22,7 +22,7 @@
 
 #include <iostream>
 #include <fstream>
-#include "../../lib/json/json.hpp"
+#include "../../../lib/json/json.hpp"
 #include <windows.h>
 #include <stdlib.h>
 #include <cstdio>
@@ -32,8 +32,8 @@
 #include <string>
 #include <array>
 
-#include "../settings.h"
-#include "../functions.h"
+#include "../../settings.h"
+#include "../../functions.h"
 
 using namespace std;
 using json = nlohmann::json;
