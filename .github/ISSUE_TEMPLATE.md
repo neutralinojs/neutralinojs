@@ -9,18 +9,14 @@
 **Describe your issue:**  
 Describe here
 
-
 **Steps to reproduce:**  
-
  1.
  2.
 
 **Affected Versions:**  
-
 * version name
 
 **OS, other environment details and versions:**  
-
 * OS + version, other envorments
 
 **Related Issues (optional):**  
