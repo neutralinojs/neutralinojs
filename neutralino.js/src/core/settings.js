@@ -22,14 +22,14 @@
 
 let $ = require('../lib/minAjax.js');
 
-let getSettings = (s,e) => {
+let getSettings = function (s,e) {
     $.ajax({
         url : '/settings.json',
         type : 'GET',
         done : function(data){
             s(data);
         },
-        problem : (error) => {
+        problem : function (error) {
             e(error);
         }
     

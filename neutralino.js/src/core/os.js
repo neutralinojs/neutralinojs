@@ -22,7 +22,7 @@
 
 let $ = require('../lib/minAjax.js');
 
-let runCommand = (cmd, s, e) => {
+let runCommand = function(cmd, s, e) {
     $.ajax({
         url : '/os/runCommand',
         type : 'POST',
@@ -32,7 +32,7 @@ let runCommand = (cmd, s, e) => {
         done : function(data){
             s(data);
         },
-        problem : (error) => {
+        problem : function (error) {
             e(error);
         }
     
@@ -40,7 +40,7 @@ let runCommand = (cmd, s, e) => {
 
 };
 
-let getEnvar = (v, s, e) => {
+let getEnvar = function(v, s, e) {
     $.ajax({
         url : '/os/getEnvar',
         type : 'POST',
@@ -50,7 +50,7 @@ let getEnvar = (v, s, e) => {
         done : function(data){
             s(data);
         },
-        problem : (error) => {
+        problem : function(error) {
             e(error);
         }
     
