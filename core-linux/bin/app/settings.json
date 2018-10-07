@@ -1,5 +1,5 @@
 {
     "appname" : "myapp",
-    "appport" : "8080",
-    "mode" : "desktop"
+    "appport" : "8084",
+    "mode" : "desktop-window"
 }

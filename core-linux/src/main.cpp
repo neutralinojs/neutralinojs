@@ -19,7 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-
+#define WEBVIEW_IMPLEMENTATION
 #include <iostream>
 #include <cstdlib>
 #include <string>
@@ -32,11 +32,15 @@
 #include "auth/authbasic.h"
 #include "ping/ping.h"
 #include "cloud/previleges.h"
-
+#include "webview.h"
 
 using namespace std;
 
 std::map<int, std::thread> threads;
+
+void uiThread(string appname, int port) {
+      webview(appname.c_str(), ("http://localhost:" + std::to_string(port) + "/" + appname).c_str() , 800, 600, 1);
+}
 
 int main(int argc, char **argv)
 {
@@ -48,11 +52,9 @@ int main(int argc, char **argv)
 
     int port = stoi(options["appport"].get<string>());
     string appname = options["appname"].get<std::string>();
+    string mode = previleges::getMode();
 
-    system(("xdg-open http://localhost:" + std::to_string(port) + "/" + appname).c_str() );
-
-    
-    
+        
     int listenFd = Socket::createSocket();
     Socket::setReuseAddr(listenFd, true);
     struct sockaddr_in servAddr;
@@ -62,6 +64,14 @@ int main(int argc, char **argv)
     servAddr.sin_port = htons(port);
     Socket::Bind(listenFd, servAddr);
     Socket::Listen(listenFd);
+
+    if(mode == "desktop") {
+        system(("xdg-open http://localhost:" + std::to_string(port) + "/" + appname).c_str());
+    }
+    else if(mode == "desktop-window"){
+        std::thread ren(uiThread, appname, port);
+        ren.detach();
+    }
 
 
     while(true)
