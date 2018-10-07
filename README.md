@@ -123,6 +123,10 @@ $ npm run build
 - [ ] Stable release
 - [ ] MacOS support
 
+## Become a Backer
+
+If you like to contribute by funding for sustaining our work, Please visit https://opencollective.com/neutralinojs
+
 ## License
 
 [MIT](LICENSE)
