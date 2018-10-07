@@ -52,7 +52,7 @@ int main(int argc, char **argv)
 
     int port = stoi(options["appport"].get<string>());
     string appname = options["appname"].get<std::string>();
-    string mode = options["mode"].get<std::string>();
+    string mode = previleges::getMode();
 
         
     int listenFd = Socket::createSocket();
