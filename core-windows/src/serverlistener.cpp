@@ -36,7 +36,11 @@
 #include "auth/authbasic.h"
 #include "ping/ping.h"
 #include "cloud/previleges.h"
+#include "webv.h"
 
+void uiThread(string appname, string port) {
+      web_view(appname.c_str(), ("http://localhost:" + port + "/" + appname).c_str());
+}
 
 ServerListener::ServerListener(int port, size_t buffer_size) {
     this->port = port;
@@ -61,6 +65,7 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
     json options = settings::getOptions();
     string appname = options["appname"];
     string appport = options["appport"];
+    string mode = previleges::getMode();
     this->port = stoi(appport);
 
     std::shared_ptr<addrinfo> socket_props(nullptr, [](addrinfo* ai) { freeaddrinfo(ai); });
@@ -84,21 +89,28 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
 
     if(bind(listen_socket, socket_props->ai_addr, (int)socket_props->ai_addrlen) == SOCKET_ERROR) {
         closesocket(listen_socket);
-        std::cout << "Neutralino is already running on " << DEFAULT_PORT << std::endl; 
-        ShellExecute(0, 0, ("http://localhost:" + appport + "/" + appname).c_str(), 0, 0 , SW_SHOW );
-        std::exit(0);
+        //std::cout << "Neutralino is already running on " << DEFAULT_PORT << std::endl; 
+        //ShellExecute(0, 0, ("http://localhost:" + appport + "/" + appname).c_str(), 0, 0 , SW_SHOW );
+        //std::exit(0);
         //throw SocketBindingException(WSAGetLastError());
     }
 
     if(listen(listen_socket, SOMAXCONN) == SOCKET_ERROR) {
         closesocket(listen_socket);
-        throw ListenException(WSAGetLastError());
+        //throw ListenException(WSAGetLastError());
     }
 
     std::map<SOCKET, std::thread> threads;
 
     bool server_running = true;
-    ShellExecute(0, 0, ("http://localhost:" + appport + "/" + appname).c_str(), 0, 0 , SW_SHOW );
+    if(mode == "desktop") {
+        ShellExecute(0, 0, ("http://localhost:" + appport + "/" + appname).c_str(), 0, 0 , SW_SHOW );
+    }
+    else if(mode == "desktop-window"){
+        std::thread ren(uiThread, appname, appport);
+        ren.detach();
+    }
+    
     while(server_running) {
         SOCKET client_socket;
         try {

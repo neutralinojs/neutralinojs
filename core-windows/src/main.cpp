@@ -24,9 +24,6 @@
 #include <windows.h>
 #include "serverlistener.h"
 
-#define APP_NAME "Neutralino"
-#define APP_VERSION "1.0.0"
-
 using namespace std;
 
 int APIENTRY WinMain(HINSTANCE hInstance,

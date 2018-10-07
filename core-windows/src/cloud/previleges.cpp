@@ -55,12 +55,13 @@ namespace previleges {
         if(blacklist.size() != 0 || previleges::getMode() == "desktop") {
             return blacklist;
         }
-        else {
+        else if(previleges::getMode() == "cloud") {
             json options = settings::getOptions()["cloud"]["blacklist"];
             vector<string> s = options;
             blacklist = s;
             return blacklist;
         }
+        return vector<string>();
     }
 
 
