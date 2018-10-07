@@ -1,8 +1,5 @@
 {
     "appname" : "myapp",
-    "appport" : "8085",
-    "mode" : "desktop-window",
-    "cloud" : {
-        "blacklist" : []    
-    }
+    "appport" : "8084",
+    "mode" : "desktop-window"
 }
