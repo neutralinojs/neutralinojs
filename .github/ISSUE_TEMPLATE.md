@@ -1,23 +1,18 @@
 <!-- ISSUE TEMPLATE -->
 <!-- (Update "[ ]" to "[x]" to check a box) -->
 
-**Select your issue type:** (pick at least one)
-- [ ] Bug
-- [ ] Question
-- [ ] Suggestion
+**Expected Behavior**  
+Description about what should be the expected behavior of the framework.
+  
+**Actual Behavior**  
+Description about how the framework is actually behaving and deviating from the expected behavior. 
 
-**Describe your issue:**  
-Describe here
+**Steps to Reproduce the Problem**  
+ 1. List the steps to reproduce the problem
+ 2. Step 2
+ 3. Step 3
 
-**Steps to reproduce:**  
- 1.
- 2.
-
-**Affected Versions:**  
-* version name
-
-**OS, other environment details and versions:**  
-* OS + version, other envorments
-
-**Related Issues (optional):**  
+**Specifications**  
+* NeutralinoJs Version: [Version number of NeutralinoJs framework]
+* Platform: [Platform specifications] 
 
