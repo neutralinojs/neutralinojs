@@ -1267,6 +1267,7 @@ WEBVIEW_API int webview_loop(struct webview *w, int blocking) {
   }
   switch (msg.message) {
   case WM_QUIT:
+    std::exit(0);
     return -1;
   case WM_COMMAND:
   case WM_KEYDOWN:
