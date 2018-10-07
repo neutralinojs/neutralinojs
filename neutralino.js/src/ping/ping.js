@@ -24,15 +24,15 @@ let $ = require('../lib/minAjax.js');
 
 let ping = {
 
-    start : (s, e) => {
-        setInterval(() => {
+    start : function (s, e) {
+        setInterval(function () {
             $.ajax({
                 url : '/ping',
                 type : 'GET',
                 success : function(data){
                     if(s) s();
                 },
-                errorCallback : () => {
+                errorCallback : function () {
                     if(e) e();
                 }
             

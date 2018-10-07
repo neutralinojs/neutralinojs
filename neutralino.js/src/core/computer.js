@@ -22,14 +22,14 @@
 
 let $ = require('../lib/minAjax.js');
 
-let getRamUsage = (s, e) => {
+let getRamUsage = function (s, e) {
     $.ajax({
         url : '/computer/getRamUsage',
         type : 'GET',
         done : function(data){
             s(data);
         },
-        problem : (error) => {
+        problem : function (error) {
             e(error);
         }
     

@@ -22,7 +22,7 @@
 
 let $ = require('../lib/minAjax.js');
 
-let createDirectory = (dirName, s, e) => {
+let createDirectory = function (dirName, s, e) {
     $.ajax({
         url : '/filesystem/createDirectory',
         type : 'POST',
@@ -32,7 +32,7 @@ let createDirectory = (dirName, s, e) => {
         done : function(data){
             s(data);
         },
-        problem : (error) => {
+        problem : function (error) {
             e(error);
         }
     
@@ -41,7 +41,7 @@ let createDirectory = (dirName, s, e) => {
 };
 
 
-let removeDirectory = (dirName, s, e) => {
+let removeDirectory = function (dirName, s, e) {
     $.ajax({
         url : '/filesystem/removeDirectory',
         type : 'POST',
@@ -51,7 +51,7 @@ let removeDirectory = (dirName, s, e) => {
         done : function(data){
             s(data);
         },
-        problem : (error) => {
+        problem : function(error) {
             e(error);
         }
     
@@ -59,7 +59,7 @@ let removeDirectory = (dirName, s, e) => {
 
 };
 
-let writeFile = (fileName, content, s, e) => {
+let writeFile = function (fileName, content, s, e) {
     $.ajax({
         url : '/filesystem/writeFile',
         type : 'POST',
@@ -70,7 +70,7 @@ let writeFile = (fileName, content, s, e) => {
         done : function(data){
             s(data);
         },
-        problem : (error) => {
+        problem : function(error) {
             e(error);
         }
     
@@ -78,7 +78,7 @@ let writeFile = (fileName, content, s, e) => {
 
 };
 
-let readFile = (fileName, s, e) => {
+let readFile = function (fileName, s, e) {
     $.ajax({
         url : '/filesystem/readFile',
         type : 'POST',
@@ -88,7 +88,7 @@ let readFile = (fileName, s, e) => {
         done : function(data){
             s(data);
         },
-        problem : (error) => {
+        problem : function(error) {
             e(error);
         }
     
@@ -97,7 +97,7 @@ let readFile = (fileName, s, e) => {
 };
 
 
-let removeFile = (fileName, s, e) => {
+let removeFile = function (fileName, s, e) {
     $.ajax({
         url : '/filesystem/removeFile',
         type : 'POST',
@@ -107,7 +107,7 @@ let removeFile = (fileName, s, e) => {
         done : function(data){
             s(data);
         },
-        problem : (error) => {
+        problem : function(error) {
             e(error);
         }
     

@@ -22,7 +22,7 @@
 
 let ping = require('../ping/ping');
 
-module.exports =  (options) => {
+module.exports =  function (options) {
     let pingSuccessCallback = null;
     let pingFailCallback = null;
 

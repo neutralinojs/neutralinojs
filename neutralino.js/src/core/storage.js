@@ -22,7 +22,7 @@
 
 let $ = require('../lib/minAjax.js');
 
-let putData = (data, s, e) => {
+let putData = function (data, s, e) {
     $.ajax({
         url : '/storage/putData',
         type : 'POST',
@@ -33,7 +33,7 @@ let putData = (data, s, e) => {
         done : function(data){
             s(data);
         },
-        problem : (error) => {
+        problem : function (error) {
             e(error);
         }
     
@@ -41,7 +41,7 @@ let putData = (data, s, e) => {
 
 };
 
-let getData = (bucket, s, e) => {
+let getData = function (bucket, s, e) {
     $.ajax({
         url : '/storage/getData',
         type : 'POST',
@@ -51,7 +51,7 @@ let getData = (bucket, s, e) => {
         done : function(data){
             s(JSON.parse(data.content));
         },
-        problem : (error) => {
+        problem : function(error) {
             e(error);
         }
     
