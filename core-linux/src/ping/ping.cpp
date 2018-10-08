@@ -60,7 +60,7 @@ namespace ping {
     }
 
     void startPingReceiver() {
-        if(previleges::getMode() == "desktop") {
+        if(previleges::getMode() == "desktop" || previleges::getMode() == "desktop-window") {
             setInterval([]() {
                 pingTick();
             },

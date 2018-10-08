@@ -274,6 +274,7 @@ static void webview_destroy_cb(GtkWidget *widget, gpointer arg) {
   (void)widget;
   struct webview *w = (struct webview *)arg;
   webview_terminate(w);
+  std::exit(0); // Exit main process
 }
 
 static gboolean webview_context_menu_cb(WebKitWebView *webview,
@@ -344,6 +345,7 @@ WEBVIEW_API int webview_init(struct webview *w) {
 
   g_signal_connect(G_OBJECT(w->priv.window), "destroy",
                    G_CALLBACK(webview_destroy_cb), w);
+  g_signal_connect (G_OBJECT(w->priv.window), "delete_event", G_CALLBACK (webview_destroy_cb), w);
   return 0;
 }
 

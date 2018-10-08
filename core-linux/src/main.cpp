@@ -38,8 +38,8 @@ using namespace std;
 
 std::map<int, std::thread> threads;
 
-void uiThread(string appname, int port) {
-      webview(appname.c_str(), ("http://localhost:" + std::to_string(port) + "/" + appname).c_str() , 800, 600, 1);
+void uiThread(string appname, int port, int width, int height) {
+      webview(appname.c_str(), ("http://localhost:" + std::to_string(port) + "/" + appname).c_str() , width, height, 1);
 }
 
 int main(int argc, char **argv)
@@ -69,7 +69,14 @@ int main(int argc, char **argv)
         system(("xdg-open http://localhost:" + std::to_string(port) + "/" + appname).c_str());
     }
     else if(mode == "desktop-window"){
-        std::thread ren(uiThread, appname, port);
+        int width = 800;
+        int height = 600;
+        if(!options["desktopwindow"].is_null()) {
+            json windowProp = options["desktopwindow"];
+            width =  stoi(windowProp["width"].get<std::string>());
+            height =  stoi(windowProp["height"].get<std::string>());
+        }
+        std::thread ren(uiThread, appname, port, width, height);
         ren.detach();
     }
 
