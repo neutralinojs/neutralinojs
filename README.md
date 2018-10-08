@@ -25,8 +25,8 @@ Ask questions on Stackoverflow using tag [neutralinojs](https://stackoverflow.co
 
 - Download latest Neutralino lightweight SDK from [releases](https://github.com/neutralinojs/neutralinojs/releases)
 - Write code for your application
-- Double click on the Neutralino binary, it will run the app on your default browser
-- Close the browser tab (Neutralino runtime will terminate automatically)
+- Double click on the Neutralino binary, it will run the app on your default browser or a native window
+- Close the browser tab (Neutralino runtime will terminate automatically) or Close window
 
 ### Deploying your app
 
@@ -71,6 +71,7 @@ To create Neutralino developer environment in your pc, install these tool kits.
 - [MinGW Compiler for C++](http://mingw.org/)
 - [NodeJs](https://nodejs.org/en/download/)
 - [Webpack Bundler](https://webpack.js.org/)
+- [WebKitGTK+](https://webkitgtk.org/)
 
 ### Build Neutralino platform in Windows
 
@@ -79,6 +80,15 @@ To create Neutralino developer environment in your pc, install these tool kits.
 ```
 
 ### Build Neutralino platform in Linux
+
+Install GTk and webkit libraries
+
+```bash
+$ sudo apt-get install libgtk-3-dev
+$ sudo add-apt-repository ppa:webkit-team/ppa
+$ sudo apt-get update
+$ sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev
+```
 
 ```bash
 $ bash build.sh
