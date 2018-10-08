@@ -23,11 +23,11 @@ Ask questions on Stackoverflow using tag [neutralinojs](https://stackoverflow.co
 
 ### Run apps on web browser
 
-<img src="media/njs-browser.png">
+<img src="media/njs-browser.png?v2">
 
 ### Run apps on a native window (Like electron)
 
-<img src="media/njs-window.png">
+<img src="media/njs-window.png?v2">
 
 ### How to Develop Neutralino apps
 
