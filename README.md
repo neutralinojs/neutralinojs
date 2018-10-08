@@ -11,7 +11,7 @@
 
 <h1><a href="hackathons/hacktoberfest.md">Hacktoberfest with Neutralinojs</a></h1>
 
-NeutralinoJs is a portable and lightweight framework which lets you to develop apps with native functions that can run inside web browsers. 
+NeutralinoJs is a portable and lightweight framework which lets you to develop apps with native functions that can run inside web browsers or a native window like Electronjs. 
 
 In electron and NWjs you have to install NodeJs and hundreds of dependency libraries. Embedded Chromium and Node creates large overhead and makes even simple apps like “hello world” considerable in size. Neutralino offers a solution for this issue.
 
