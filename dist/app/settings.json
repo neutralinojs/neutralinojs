@@ -1,5 +1,9 @@
 {
     "appname" : "myapp",
     "appport" : "8080",
-    "mode" : "desktop-window"
+    "mode" : "desktop-window",
+    "desktopwindow" : {
+        "width" : "1000",
+        "height" : "700"
+    }
 }

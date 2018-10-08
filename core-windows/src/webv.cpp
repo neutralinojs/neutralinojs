@@ -4,8 +4,8 @@
 #include "webview.h"
 
 extern "C" {
-	void web_view(const char * title, const char * url)
+	void web_view(const char * title, const char * url, int width, int height)
 	{
-		webview(title, url , 800, 600, 1);
+		webview(title, url , width, height, 1);
 	}
 }

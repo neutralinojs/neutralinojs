@@ -38,8 +38,8 @@
 #include "cloud/previleges.h"
 #include "webv.h"
 
-void uiThread(string appname, string port) {
-      web_view(appname.c_str(), ("http://localhost:" + port + "/" + appname).c_str());
+void uiThread(string appname, string port, int width, int height) {
+      web_view(appname.c_str(), ("http://localhost:" + port + "/" + appname).c_str(), width, height);
 }
 
 ServerListener::ServerListener(int port, size_t buffer_size) {
@@ -107,7 +107,14 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
         ShellExecute(0, 0, ("http://localhost:" + appport + "/" + appname).c_str(), 0, 0 , SW_SHOW );
     }
     else if(mode == "desktop-window"){
-        std::thread ren(uiThread, appname, appport);
+        int width = 800;
+        int height = 600;
+        if(!options["desktopwindow"].is_null()) {
+            json windowProp = options["desktopwindow"];
+            width =  stoi(windowProp["width"].get<std::string>());
+            height =  stoi(windowProp["height"].get<std::string>());
+        }
+        std::thread ren(uiThread, appname, appport, width, height);
         ren.detach();
     }
     
