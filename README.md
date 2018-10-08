@@ -21,6 +21,14 @@ Read the story of NeutralinoJs [here](https://medium.com/@shalithasuranga/why-we
 
 Ask questions on Stackoverflow using tag [neutralinojs](https://stackoverflow.com/questions/tagged/neutralinojs)
 
+### Run apps on web browser
+
+<img src="njs-browser.png">
+
+### Run apps on a native window (Like electron)
+
+<img src="njs-window.png">
+
 ### How to Develop Neutralino apps
 
 - Download latest Neutralino lightweight SDK from [releases](https://github.com/neutralinojs/neutralinojs/releases)
