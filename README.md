@@ -8,10 +8,6 @@
 [![Twitter](https://img.shields.io/twitter/url/https/github.com/neutralinojs/neutralinojs.svg?style=social)](https://twitter.com/intent/tweet?text=NeutralinoJs%20is%20a%20portable%20and%20lightweight%20framework%20which%20lets%20you%20to%20develop%20apps%20with%20native%20functions%20that%20can%20run%20inside%20web%20browsers.%20Check%20it%20out:&url=https%3A%2F%2Fgithub.com%2Fneutralinojs%2Fneutralinojs)
 [![OpenCollective](https://opencollective.com/neutralinojs/backers/badge.svg)](#backers) 
 
-
-<h1><a href="hackathons/hacktoberfest.md">Hacktoberfest with Neutralinojs</a></h1>
-
-
 Neutralino is a lightweight application development framework. It lets you develop desktop apps, cloud apps and even browser based apps.
 
 *Neutralino is purely native, it uses native features to run its apps. There are no extra dependencies or bundled bloatware libraries.*
