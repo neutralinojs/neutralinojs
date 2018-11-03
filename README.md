@@ -47,7 +47,7 @@ Ask questions on Stackoverflow using tag [neutralinojs](https://stackoverflow.co
 
 - Web apps with native functions
 - Lightweight cross-platform apps
-- Control VMs, Servers or Computers in a private/public network - [NeutralinoJs Cloud](https://medium.com/@shalithasuranga/getting-started-with-neutralinojs-cloud-preview-version-aws-ec2-6e618d8a2ddb)
+- Control VMs, Servers or Computers in a private/public network - [Neutralinojs Cloud](#neutralinojs-cloud)
 
 ### Platform Architecture
 
@@ -71,6 +71,7 @@ This experimental mode can be used to expose native functions for clients
 ```bash
 ./neutralino  /dev/null 2>&1 &
 ```
+Check this [article](https://medium.com/@shalithasuranga/getting-started-with-neutralinojs-cloud-preview-version-aws-ec2-6e618d8a2ddb)
 
 ### Realtime Chat Room - Slack
 
