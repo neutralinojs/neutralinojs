@@ -14,6 +14,8 @@
 Neutralino is a lightweight application development framework. It lets you develop desktop apps, cloud apps and even browser based apps.
 
 *Neutralino is purely native, it uses native features to run its apps. There are no extra dependencies or bundled bloatware libraries.*
+
+See this [experiment](https://github.com/neutralinojs/evaluation) which compares Neutralino with Electron and NW.js 
  
 ## Why Neutralinojs? 
 In electron and NWjs you have to install NodeJs and hundreds of dependency libraries. Embedded Chromium and Node creates large overhead and makes even simple apps like “hello world” considerable in size. Neutralino offers a solution for this issue.
