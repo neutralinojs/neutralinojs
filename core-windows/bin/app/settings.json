@@ -3,7 +3,7 @@
     "appport" : "8080",
     "mode" : "desktop-window",
     "desktopwindow" : {
-        "width" : "1000",
-        "height" : "700"
+        "width" : "800",
+        "height" : "500"
     }
 }
