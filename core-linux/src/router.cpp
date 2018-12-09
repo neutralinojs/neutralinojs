@@ -42,21 +42,8 @@ using json = nlohmann::json;
 
 namespace routes {
 
-    string getFile(string file) {
-        ifstream t;
-        t.open(file);
-        string buffer = "";
-        string line;
-        while(!t.eof()){
-            getline(t, line);
-            buffer += line + "\r\n";
-        }
-        t.close();
-        return buffer;
-    }
-
     string getClientJs() {
-        return routes::getFile("app/assets/neutralino.js");
+        return settings::getFileContent("app/assets/neutralino.js");
     }
 
     string getIcon() {
@@ -73,7 +60,7 @@ namespace routes {
         
         string appname = options["appname"];
         if(path == "/" +  appname ){
-            return make_pair(routes::getFile("app/index.html"), "text/html");
+            return make_pair(settings::getFileContent("app/index.html"), "text/html");
         }
         else if(path == "/neutralino.js"){
             return make_pair(routes::getClientJs() + settings::getGlobalVars(), "text/javascript");
@@ -82,10 +69,10 @@ namespace routes {
             return make_pair(settings::getSettings().dump(), "application/json");
         }
         else if(path.find("/assets") != string::npos && path.find(".js") != string::npos){
-            return make_pair(routes::getFile("app" + path), "text/javascript");
+            return make_pair(settings::getFileContent("app" + path), "text/javascript");
         }
         else if(path.find("/assets") != string::npos && path.find(".css") != string::npos){
-            return make_pair(routes::getFile("app" + path), "text/css");
+            return make_pair(settings::getFileContent("app" + path), "text/css");
         }
         else if(path == "/") {
             return make_pair(routes::getIndex(), "text/html");
