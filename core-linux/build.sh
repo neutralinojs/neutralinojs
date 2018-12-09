@@ -29,7 +29,7 @@ fi
 g++ -std=c++11 src/Buffer.cpp src/Handler.cpp src/requestparser.cpp src/Socket.cpp src/functions.cpp src/main.cpp src/router.cpp src/core/filesystem/filesystem.cpp src/settings.cpp src/core/os/os.cpp src/core/computer/computer.cpp src/auth/authbasic.cpp src/ping/ping.cpp src/core/storage/storage.cpp src/cloud/previleges.cpp -pthread -std=c++14 -DWEBVIEW_GTK=1 `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0` -o bin/neutralino -no-pie
 
 if [ -e bin/neutralino ]; then 
-    echo "Neutralino binary is compiled in to bin/netralino.out"
+    echo "Neutralino binary is compiled in to bin/netralino"
 else 
     echo "ERR : Neutralino binary is not compiled"
 fi
