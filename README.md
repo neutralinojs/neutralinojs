@@ -11,47 +11,18 @@
 [![OpenCollective](https://opencollective.com/neutralinojs/backers/badge.svg)](#backers) 
 <a href="https://opencollective.com/neutralinojs"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
 
-Neutralino is a lightweight application development framework. It lets you develop desktop apps, cloud apps and even browser based apps.
+Neutralino is a lightweight application development framework. It lets you develop cross-platform applications using JavaScript, HTML and CSS.
 
 *Neutralino is purely native, it uses native features to run its apps. There are no extra dependencies or bundled bloatware libraries.*
 
 See this [experiment](https://github.com/neutralinojs/evaluation) which compares Neutralino with Electron and NW.js 
  
 ## Why Neutralinojs? 
-In electron and NWjs you have to install NodeJs and hundreds of dependency libraries. Embedded Chromium and Node creates large overhead and makes even simple apps like “hello world” considerable in size. Neutralino offers a solution for this issue.
-
-Interested in the NeutralinoJs idea? Start with our [docs](https://neutralino.js.org/docs/#/) and build your first [Neutralino App](https://neutralino.js.org/docs/#/gettingstarted/firstapp) 
-
-Read the story of NeutralinoJs [here](https://medium.com/@shalithasuranga/why-we-built-neutralinojs-framework-part-i-1d6c667951d5)
+In electron and NWjs you have to install NodeJs and hundreds of dependency libraries. Embedded Chromium and Node creates large overhead and makes even simple apps like “hello world” considerable in size. Neutralino offers a lightweight and portable SDK which is an alternative for Electron and NW.js
 
 Ask questions on Stackoverflow using tag [neutralinojs](https://stackoverflow.com/questions/tagged/neutralinojs)
 
-### Run apps on web browser
-
-<img src="media/njs-browser.png?v2">
-
-### Run apps on a native window (Like electron)
-
-<img src="media/njs-window.png?v2">
-
-### How to Develop Neutralino apps
-
-- Download latest Neutralino lightweight SDK from [releases](https://github.com/neutralinojs/neutralinojs/releases)
-- Write code for your application
-- Double click on the Neutralino binary, it will run the app on your default browser or a native window
-- Close the browser tab (Neutralino runtime will terminate automatically) or Close window
-
-### Deploying your app
-
-- Zip the content and share anywhere. It's fully portable
-
-### Neutralinojs can be used for
-
-- Web apps with native functions
-- Lightweight cross-platform apps
-- Control VMs, Servers or Computers in a private/public network - [Neutralinojs Cloud](#neutralinojs-cloud)
-
-### Platform Architecture
+### How it works?
 
 <div align="center">
   <img src="media/architecture.png">
@@ -151,8 +122,7 @@ $ npm run build
 - [x] Web site
 - [x] Security improvements
 - [x] Experimental Release
-- [ ] Other required features
-- [ ] Stable release
+- [x] Stable release
 - [ ] MacOS support
 
 ## Become a Backer
