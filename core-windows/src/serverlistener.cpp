@@ -103,14 +103,14 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
     std::map<SOCKET, std::thread> threads;
 
     bool server_running = true;
-    if(mode == "desktop") {
+    if(mode == "browser") {
         ShellExecute(0, 0, ("http://localhost:" + appport + "/" + appname).c_str(), 0, 0 , SW_SHOW );
     }
-    else if(mode == "desktop-window"){
+    else if(mode == "window"){
         int width = 800;
         int height = 600;
-        if(!options["desktopwindow"].is_null()) {
-            json windowProp = options["desktopwindow"];
+        if(!options["window"].is_null()) {
+            json windowProp = options["window"];
             width =  stoi(windowProp["width"].get<std::string>());
             height =  stoi(windowProp["height"].get<std::string>());
         }

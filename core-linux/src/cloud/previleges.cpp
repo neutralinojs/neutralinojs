@@ -52,7 +52,7 @@ namespace previleges {
     }
     
     vector<string> getBlacklist() {
-        if(blacklist.size() != 0 || previleges::getMode() == "desktop") {
+        if(blacklist.size() != 0 || previleges::getMode() == "browser") {
             return blacklist;
         }
         else if(previleges::getMode() == "cloud") {

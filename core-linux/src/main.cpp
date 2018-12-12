@@ -65,14 +65,14 @@ int main(int argc, char **argv)
     Socket::Bind(listenFd, servAddr);
     Socket::Listen(listenFd);
 
-    if(mode == "desktop") {
+    if(mode == "browser") {
         system(("xdg-open http://localhost:" + std::to_string(port) + "/" + appname).c_str());
     }
-    else if(mode == "desktop-window"){
+    else if(mode == "window"){
         int width = 800;
         int height = 600;
-        if(!options["desktopwindow"].is_null()) {
-            json windowProp = options["desktopwindow"];
+        if(!options["window"].is_null()) {
+            json windowProp = options["window"];
             width =  stoi(windowProp["width"].get<std::string>());
             height =  stoi(windowProp["height"].get<std::string>());
         }
