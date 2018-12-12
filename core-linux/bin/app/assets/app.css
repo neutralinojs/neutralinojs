@@ -32,3 +32,7 @@ SOFTWARE. */
 #neutralinoapp a {
     margin-left: 12px;
 }
+#neutralinoapp span {
+    font-size: 12px;
+    font-weight: normal;
+}
