@@ -1,0 +1,27 @@
+
+1 VERSIONINFO
+FILEVERSION 1,0,0,0
+PRODUCTVERSION 1,0,0,0
+FILEOS 0x40004
+FILETYPE 0x1
+{
+BLOCK "StringFileInfo"
+{
+	BLOCK "040904B0"
+	{
+		VALUE "FileDescription", "Neutralino"
+		VALUE "InternalName", "neutralino.exe"
+		VALUE "OriginalFilename", "neutralino.exe"
+		VALUE "CompanyName", "Neutralino Team"
+		VALUE "LegalCopyright", "\xA9 Neutralino"
+		VALUE "ProductName", "Neutralinojs Framework"
+		VALUE "FileVersion", "1.0.8"
+		VALUE "ProductVersion", "1.0.8"
+	}
+}
+
+BLOCK "VarFileInfo"
+{
+	VALUE "Translation", 0x0409 0x04B0  
+}
+}
