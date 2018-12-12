@@ -63,7 +63,7 @@ namespace routes {
             return make_pair(settings::getFileContent("app/index.html"), "text/html");
         }
         else if(path == "/neutralino.js"){
-            return make_pair(routes::getClientJs() + settings::getGlobalVars(), "text/javascript");
+            return make_pair(settings::getGlobalVars() + routes::getClientJs(), "text/javascript");
         }
         else if(path == "/settings.json"){
             return make_pair(settings::getSettings().dump(), "application/json");
