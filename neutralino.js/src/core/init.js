@@ -35,6 +35,6 @@ module.exports =  function (options) {
     if(options.pingFailCallback) {
         pingFailCallback = options.pingFailCallback;
     }
-    if(typeof options.ping == 'undefined' || options.ping)
+    if(options.ping)
         ping.start(pingSuccessCallback, pingFailCallback);
 }
