@@ -35,6 +35,6 @@ module.exports =  function (options) {
     if(options.pingFailCallback) {
         pingFailCallback = options.pingFailCallback;
     }
-    if(options.ping)
+    if(NL_MODE == 'browser')
         ping.start(pingSuccessCallback, pingFailCallback);
 }
