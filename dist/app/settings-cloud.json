@@ -1,7 +1,7 @@
 {
     "appname" : "myapp",
     "appport" : "8080",
-    "mode" : "window",
+    "mode" : "cloud",
     "cloud" : {
         "blacklist" : ["os.runCommand"]
     }
