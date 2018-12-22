@@ -14,6 +14,11 @@
 Neutralino is a lightweight and portable application development framework. It lets you develop cross-platform applications using JavaScript, HTML and CSS.
 
 [Neutralinojs vs Electron vs NW.js](https://github.com/neutralinojs/evaluation)
+
+
+<div align="center">
+  <img src="media/demo_njs.png"/>
+</div>
  
 ## Why Neutralinojs? 
 
