@@ -17,7 +17,7 @@ Neutralino is a lightweight and portable application development framework. It l
 
 
 <div align="center">
-  <img src="media/demo_njs.png"/>
+  <img src="media/demo_njs.gif"/>
 </div>
  
 ## Why Neutralinojs? 
