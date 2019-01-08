@@ -59,7 +59,27 @@ let getEnvar = function(v, s, e) {
 };
 
 
+let dialogOpen = function(v, s, e) {
+    $.ajax({
+        url : '/os/dialogOpen',
+        type : 'POST',
+        data : {
+          name : v
+        },
+        done : function(data){
+            s(data);
+        },
+        problem : function(error) {
+            e(error);
+        }
+    
+    });
+
+};
+
+
 module.exports = {
     runCommand : runCommand,
-    getEnvar : getEnvar
+    getEnvar : getEnvar,
+    dialogOpen : dialogOpen
 }
