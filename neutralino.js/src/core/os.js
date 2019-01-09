@@ -78,8 +78,28 @@ let dialogOpen = function(v, s, e) {
 };
 
 
+let dialogSave = function(v, s, e) {
+    $.ajax({
+        url : '/os/dialogSave',
+        type : 'POST',
+        data : {
+          name : v
+        },
+        done : function(data){
+            s(data);
+        },
+        problem : function(error) {
+            e(error);
+        }
+    
+    });
+
+};
+
+
 module.exports = {
     runCommand : runCommand,
     getEnvar : getEnvar,
-    dialogOpen : dialogOpen
+    dialogOpen : dialogOpen,
+    dialogSave : dialogSave
 }
