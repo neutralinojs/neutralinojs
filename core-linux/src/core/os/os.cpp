@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <string>
 #include <array>
+#include <gtk/gtk.h>
 
 using namespace std;
 using json = nlohmann::json;
@@ -63,6 +64,52 @@ namespace os {
             output["value"] = o;
         }
         return output.dump();       
+        
+    }
+
+
+    string dialogOpen(string jso) {
+        json input;
+        json output;
+        try {
+            input = json::parse(jso);
+        }
+        catch(exception e){
+            output["error"] = "JSON parse error is occurred!";
+            return output.dump();
+        }
+
+        char file[1024];
+        FILE *f = popen("zenity --file-selection --title \"Open a file\"", "r");
+        fgets(file, 1024, f);
+
+        output["file"] = file;
+
+        return output.dump();
+       
+        
+    }
+
+
+    string dialogSave(string jso) {
+        json input;
+        json output;
+        try {
+            input = json::parse(jso);
+        }
+        catch(exception e){
+            output["error"] = "JSON parse error is occurred!";
+            return output.dump();
+        }
+
+        char file[1024];
+        FILE *f = popen("zenity --file-selection --title \"Save a file\" --save", "r");
+        fgets(file, 1024, f);
+
+        output["file"] = file;
+
+        return output.dump();
+       
         
     }
 }
