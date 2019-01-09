@@ -129,5 +129,41 @@ namespace os {
         
     }
 
+
+    string dialogSave(string jso) {
+        json input;
+        json output;
+        try {
+            input = json::parse(jso);
+        }
+        catch(exception e){
+            output["error"] = "JSON parse error is occurred!";
+            return output.dump();
+        }
+        OPENFILENAME ofn;
+        TCHAR szFile[260] = { 0 }; 
+
+        ZeroMemory(&ofn, sizeof(ofn));
+        ofn.lStructSize = sizeof(ofn);
+        ofn.lpstrFile = szFile;
+        ofn.nMaxFile = sizeof(szFile);
+        ofn.nFilterIndex = 1;
+        ofn.lpstrFileTitle = NULL;
+        ofn.nMaxFileTitle = 0;
+        ofn.lpstrInitialDir = NULL;
+        ofn.Flags = OFN_PATHMUSTEXIST;
+
+        if (GetSaveFileName(&ofn)) {
+            output["file"] = ofn.lpstrFile;
+        }
+        else {
+            output["file"] = "";
+        }
+
+        return output.dump();
+       
+        
+    }
+
     
 }
