@@ -55,10 +55,5 @@ namespace functions {
         return s;
     }
 
-    int randomNumber(int min, int max) {
-        srand(time(NULL));
-        int random = min + (rand() % static_cast<int>(max - min + 1));
-        return random;
-    }
 
 }

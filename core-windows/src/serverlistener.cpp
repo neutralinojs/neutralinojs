@@ -89,15 +89,23 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
 
     if(bind(listen_socket, socket_props->ai_addr, (int)socket_props->ai_addrlen) == SOCKET_ERROR) {
         closesocket(listen_socket);
-        //std::cout << "Neutralino is already running on " << DEFAULT_PORT << std::endl; 
-        //ShellExecute(0, 0, ("http://localhost:" + appport + "/" + appname).c_str(), 0, 0 , SW_SHOW );
-        //std::exit(0);
-        //throw SocketBindingException(WSAGetLastError());
+        throw SocketBindingException(WSAGetLastError());
+    }
+
+    struct sockaddr_in sin;
+    socklen_t len = sizeof(sin);
+    if (getsockname(listen_socket, (struct sockaddr *)&sin, &len) == -1) {
+        perror("getsockname");
+    }
+    else {
+        port = ntohs(sin.sin_port);
+        settings::setOption("appport", std::to_string(port));
+        appport = std::to_string(port);
     }
 
     if(listen(listen_socket, SOMAXCONN) == SOCKET_ERROR) {
         closesocket(listen_socket);
-        //throw ListenException(WSAGetLastError());
+        throw ListenException(WSAGetLastError());
     }
 
     std::map<SOCKET, std::thread> threads;
