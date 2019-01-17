@@ -28,6 +28,7 @@ using json = nlohmann::json;
 namespace settings {
     json getSettings();
     json getOptions();
+    void setOption(string key, string value);
     string getFileContent(string filename);
     string getGlobalVars();
 }

@@ -48,6 +48,10 @@ namespace settings {
         return options;
     }
 
+    void setOption(string key, string value) {
+        options[key] = value;
+    }
+
     json getSettings() {
         json settings;
         try {
