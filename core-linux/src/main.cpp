@@ -63,6 +63,17 @@ int main(int argc, char **argv)
     servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servAddr.sin_port = htons(port);
     Socket::Bind(listenFd, servAddr);
+
+    struct sockaddr_in sin;
+    socklen_t len = sizeof(sin);
+    if (getsockname(listenFd, (struct sockaddr *)&sin, &len) == -1) {
+        perror("getsockname");
+    }
+    else {
+        port = ntohs(sin.sin_port);
+        settings::setOption("appport", std::to_string(port));
+    }
+
     Socket::Listen(listenFd);
 
     if(mode == "browser") {
