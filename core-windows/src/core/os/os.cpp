@@ -104,10 +104,12 @@ namespace os {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
+        string title = input["title"];
         OPENFILENAME ofn;
         TCHAR szFile[260] = { 0 }; 
 
         ZeroMemory(&ofn, sizeof(ofn));
+        ofn.lpstrTitle = const_cast<char *>(title.c_str());
         ofn.lStructSize = sizeof(ofn);
         ofn.lpstrFile = szFile;
         ofn.nMaxFile = sizeof(szFile);
@@ -140,10 +142,12 @@ namespace os {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
+        string title = input["title"];
         OPENFILENAME ofn;
         TCHAR szFile[260] = { 0 }; 
 
         ZeroMemory(&ofn, sizeof(ofn));
+        ofn.lpstrTitle = const_cast<char *>(title.c_str());
         ofn.lStructSize = sizeof(ofn);
         ofn.lpstrFile = szFile;
         ofn.nMaxFile = sizeof(szFile);
