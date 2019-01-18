@@ -59,12 +59,12 @@ let getEnvar = function(v, s, e) {
 };
 
 
-let dialogOpen = function(v, s, e) {
+let dialogOpen = function(t, s, e) {
     $.ajax({
         url : '/os/dialogOpen',
         type : 'POST',
         data : {
-          name : v
+          title : t
         },
         done : function(data){
             s(data);
@@ -78,12 +78,12 @@ let dialogOpen = function(v, s, e) {
 };
 
 
-let dialogSave = function(v, s, e) {
+let dialogSave = function(t, s, e) {
     $.ajax({
         url : '/os/dialogSave',
         type : 'POST',
         data : {
-          name : v
+          title : t
         },
         done : function(data){
             s(data);
