@@ -116,10 +116,30 @@ let removeFile = function (fileName, s, e) {
 };
 
 
+let readDirectory = function (path, s, e) {
+    $.ajax({
+        url : '/filesystem/readDirectory',
+        type : 'POST',
+        data : {
+          path : path
+        },
+        done : function(data){
+            s(data);
+        },
+        problem : function(error) {
+            e(error);
+        }
+    
+    });
+
+};
+
+
 module.exports = {
     createDirectory : createDirectory,
     removeDirectory : removeDirectory,
     writeFile : writeFile,
     readFile : readFile,
-    removeFile : removeFile
+    removeFile : removeFile,
+    readDirectory : readDirectory
 }
