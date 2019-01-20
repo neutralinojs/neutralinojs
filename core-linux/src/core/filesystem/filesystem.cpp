@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <unistd.h>
+#include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "../../../lib/json/json.hpp"
@@ -106,6 +107,41 @@ namespace filesystem {
         else{
             output["error"] = "Cannot remove " + filename;
         }   
+        return output.dump();
+    }
+
+    string readDirectory(string jso) {
+        json input;
+        json output;
+        try {
+            input = json::parse(jso);
+        }
+        catch(exception e){
+            output["error"] = "JSON parse error is occurred!";
+            return output.dump();
+        }
+        string path = input["path"];
+            
+        DIR *dirp;
+        struct dirent *directory;
+
+        dirp = opendir(path.c_str());
+        if (dirp) {
+            while ((directory = readdir(dirp)) != NULL) {
+                string type = "other";
+                if(directory->d_type == DT_DIR)
+                    type = "directory";
+                else if(directory->d_type == DT_REG)
+                    type = "file";
+                json file = {
+                    {"name", directory->d_name},
+                    {"type", type},
+                };
+                output["files"].push_back(file);
+            }
+            closedir(dirp);
+        }
+
         return output.dump();
     }
 }
