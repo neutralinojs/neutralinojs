@@ -75,6 +75,9 @@ namespace routes {
         else if(path.find("/assets") != string::npos && path.find(".css") != string::npos){
             return make_pair(settings::getFileContent("app" + path), "text/css");
         }
+        else if(path.find("/assets") != string::npos && path.find(".html") != string::npos){
+            return make_pair(settings::getFileContent("app" + path), "text/html");
+        }
         else if(path == "/") {
             return make_pair(routes::getIndex(), "text/html");
         }
