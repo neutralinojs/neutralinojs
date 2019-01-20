@@ -35,6 +35,8 @@ namespace filesystem {
 
     string removeFile(string jso);
 
+    string readDirectory(string jso);
+
     typedef string (*pfunc)(string);
 
     map <string, pfunc> funcmap = {
@@ -42,7 +44,8 @@ namespace filesystem {
         {"filesystem.removeDirectory", filesystem::removeDirectory},
         {"filesystem.readFile", filesystem::readFile},
         {"filesystem.writeFile", filesystem::writeFile},
-        {"filesystem.removeFile", filesystem::removeFile}
+        {"filesystem.removeFile", filesystem::removeFile},
+        {"filesystem.readDirectory", filesystem::readDirectory}
     };
 
 

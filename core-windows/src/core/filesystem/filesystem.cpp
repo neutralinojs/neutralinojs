@@ -124,4 +124,37 @@ namespace filesystem {
         }   
         return output.dump();
     }
+
+    string readDirectory(string jso) {
+        json input;
+        json output;
+        try {
+            input = json::parse(jso);
+        }
+        catch(exception e){
+            output["error"] = "JSON parse error is occurred!";
+            return output.dump();
+        }
+        string path = input["path"];
+        string search_path = path + "/*.*";
+        WIN32_FIND_DATA fd; 
+        HANDLE hFind = FindFirstFile(search_path.c_str(), &fd); 
+        if(hFind != INVALID_HANDLE_VALUE) { 
+            do { 
+                string type = "other";
+                if((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
+                    type = "directory";
+                else if((fd.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE) == FILE_ATTRIBUTE_ARCHIVE)
+                    type = "file";
+                
+                json file = {
+                    {"name", fd.cFileName},
+                    {"type", type}
+                };
+                output["files"].push_back(file);
+            } while(FindNextFile(hFind, &fd)); 
+            FindClose(hFind); 
+        }
+        return output.dump();
+    }
 }
