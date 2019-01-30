@@ -44,13 +44,7 @@ g++ src/main.cpp ^
   src/cloud/previleges.cpp ^
   src/webv.cpp ^
   ^
-  -static-libgcc ^
-  -static-libstdc++ ^
-  -Wl,-Bstatic ^
-  -lstdc++ ^
-  -lpthread ^
-  -Wl,-Bdynamic ^
-  -mwindows ^
+  -static ^
   ^
   -Wconversion-null ^
   -DWEBVIEW_WINAPI=1 ^
@@ -60,6 +54,7 @@ g++ src/main.cpp ^
   -loleaut32 ^
   -luuid ^
   -mwindows ^
+  -pthread ^
   -o bin/neutralino 
 
 if EXIST bin\neutralino.exe (
