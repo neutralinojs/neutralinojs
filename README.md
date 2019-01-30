@@ -65,7 +65,7 @@ Check this [article](https://medium.com/@shalithasuranga/getting-started-with-ne
 
 To create Neutralino developer environment in your pc, install these tool kits.
 
-- [MinGW Compiler for C++](http://mingw.org/)
+- [MinGW-W64](https://mingw-w64.org/)
 - [NodeJs](https://nodejs.org/en/download/)
 - [Webpack Bundler](https://webpack.js.org/)
 - [WebKitGTK+](https://webkitgtk.org/)
