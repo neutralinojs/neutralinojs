@@ -3,4 +3,6 @@ neutralino.js/dist
 core-linux/bin/neutralino
 core-windows/bin/*.exe
 Thumbs.db
+dist/neutralino
+dist/*.exe
 
