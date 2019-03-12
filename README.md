@@ -26,6 +26,8 @@ In Electron and NWjs you have to install NodeJs and hundreds of dependency libra
 
 Ask questions on Stackoverflow using tag [neutralinojs](https://stackoverflow.com/questions/tagged/neutralinojs)
 
+See how it [works](https://www.99xtechnology.com/blog/research/neutralinojs-internals/)
+
 ### How it works?
 
 <div align="center">
