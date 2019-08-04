@@ -29,7 +29,7 @@ if EXIST bin\neutralino.exe (
     del /f bin\neutralino.exe 
 )
 
-g++ src/main.cpp src/settings.cpp src/requestparser.cpp src/serverlistener.cpp src/functions.cpp src/core/computer/computer.cpp src/core/filesystem/filesystem.cpp src/core/os/os.cpp src/router.cpp src/auth/authbasic.cpp src/ping/ping.cpp src/core/storage/storage.cpp src/cloud/previleges.cpp src/webv.cpp -lws2_32 -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic -mwindows -Wconversion-null -DWEBVIEW_WINAPI=1 -lole32 -lcomctl32 -loleaut32 -luuid -mwindows -o bin/neutralino 
+g++ -I ../core-shared ../core-shared/log.cpp src/main.cpp src/settings.cpp src/requestparser.cpp src/serverlistener.cpp src/functions.cpp src/core/computer/computer.cpp src/core/filesystem/filesystem.cpp src/core/os/os.cpp src/router.cpp src/auth/authbasic.cpp src/ping/ping.cpp src/core/storage/storage.cpp src/cloud/previleges.cpp src/webv.cpp -lws2_32 -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic -mwindows -Wconversion-null -DWEBVIEW_WINAPI=1 -lole32 -lcomctl32 -loleaut32 -luuid -mwindows -o bin/neutralino 
 
 if EXIST bin\neutralino.exe (
     echo Neutralino binary is compiled in to bin/netralino.exe

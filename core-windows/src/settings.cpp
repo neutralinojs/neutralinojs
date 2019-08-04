@@ -24,6 +24,7 @@
 #include <fstream>
 #include "../lib/json/json.hpp"
 #include "auth/authbasic.h"
+#include "log.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -58,7 +59,7 @@ namespace settings {
             settings = json::parse(getFileContent("app\\settings.json"));
         }
         catch(exception e){
-            cout << e.what() << endl;
+            ERROR() << e.what();
         }
         options = settings;
         return options;
