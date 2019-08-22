@@ -1,0 +1,9 @@
+{
+    "appname" : "neutralinojs",
+    "appport" : "8080",
+    "mode" : "window",
+    "window" : {
+        "width" : "1000",
+        "height" : "700"
+    }
+}
