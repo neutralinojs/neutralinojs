@@ -25,13 +25,15 @@
 
 #include <map>
 
+using namespace std;
+
 namespace computer {
 
     string getRamUsage(string json);
     
     typedef string (*pfunc)(string);
 
-    map <string, pfunc> funcmap = {
+    static map <string, pfunc> funcmap = {
         {"computer.getRamUsage", computer::getRamUsage}
     };
 }

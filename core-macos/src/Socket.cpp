@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 #include "Socket.h"
+#include "core/include/log.h"
 
 void Socket::setReuseAddr(const int fd, bool on)
 {
@@ -40,7 +41,7 @@ int Socket::createSocket()
     int sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if(sockfd < 0)
     {
-        std::cout << "Socket::createNonblock error: " << strerror(errno) << std::endl;
+        ERROR() << "Socket::createNonblock error: " << strerror(errno);
         exit(1);
     }
     return sockfd;  
@@ -51,7 +52,7 @@ void Socket::Bind(const int sockfd, const struct sockaddr_in &addr)
     int ret = bind(sockfd, (struct sockaddr*)(&addr), sizeof(addr));
     if(ret < 0) 
     {
-        std::cout << "Socket::bind error: " << strerror(errno) << std::endl;
+        ERROR() << "Socket::bind error: " << strerror(errno);
         exit(1);
     }
 }
@@ -60,7 +61,7 @@ void Socket::Listen(const int sockfd)
 {
     if(listen(sockfd, 5) < 0)
     {
-        std::cout << "Socket::listen error: " << strerror(errno) << std::endl;
+        ERROR() << "Socket::listen error: " << strerror(errno);
         exit(1);
     }
 }
@@ -83,11 +84,11 @@ int Socket::Accept(const int sockfd, struct sockaddr_in *addr)
             case EINVAL:
             case ENFILE:
             case ENOMEM:
-                std::cout << "Socket::accept error: " << strerror(errno) << std::endl;
+                ERROR() << "Socket::accept error: " << strerror(errno);
                 exit(1);
                 break;
             default:
-                std::cout << "Socket::accept error: " << strerror(errno) << std::endl;
+                ERROR() << "Socket::accept error: " << strerror(errno);
                 exit(1);
                 break;
         }
@@ -99,7 +100,7 @@ void Socket::Close(const int sockfd)
 {
     if(close(sockfd) < 0)
     {
-        std::cout << "Socket::close error: " << strerror(errno) << std::endl;
+        ERROR() << "Socket::close error: " << strerror(errno);
         exit(1);
     }
 }

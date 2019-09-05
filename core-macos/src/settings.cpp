@@ -22,8 +22,9 @@
 
 #include <iostream>
 #include <fstream>
-#include "../lib/json/json.hpp"
+#include "nlohmann/json.hpp"
 #include "auth/authbasic.h"
+#include "core/include/log.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -58,7 +59,7 @@ namespace settings {
             settings = json::parse(getFileContent("app/settings.json"));
         }
         catch(exception e){
-            cout << e.what() << endl;
+            ERROR() << e.what();
         }
         options = settings;
         return options;
@@ -66,7 +67,7 @@ namespace settings {
 
     string getGlobalVars(){
         json settings = getOptions();
-        string s = "var NL_OS='Darwin';";
+        string s = "var NL_OS='MacOS(Darwin)';";
         s += "var NL_VERSION='1.0.8';";
         s += "var NL_NAME='" + settings["appname"].get<std::string>() + "';"; 
         s += "var NL_PORT=" + settings["appport"].get<std::string>() + ";";

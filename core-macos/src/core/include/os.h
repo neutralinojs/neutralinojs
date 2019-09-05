@@ -20,30 +20,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#ifndef OS_H
+#define OS_H
 
-#include <stdint.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/sysctl.h>
-#include "../../../lib/json/json.hpp"
-#include "sysstat.h"
+#include <map>
 
 using namespace std;
-using namespace SystemStat;
-using json = nlohmann::json;
 
-#define DIV 1024
+namespace os {
 
-namespace computer {
-    string getRamUsage(string jso) {
-        json output;
-        MemoryStat memstat;
-        getMemoryStat(&memstat);
-        output["ram"] = {
-            { "total", (memstat.phys.total) / DIV / DIV },
-            { "available", (memstat.phys.total - memstat.phys.avail) / DIV }
-        };
+    string runCommand(string jso);
+    string getEnvar(string jso);
+    string dialogOpen(string jso);
+    string dialogSave(string jso);
+    
+    typedef string (*pfunc)(string);
 
-        return output.dump();
-    }
+    static map <string, pfunc> funcmap = {
+        {"os.runCommand", os::runCommand},
+        {"os.getEnvar", os::getEnvar},
+        {"os.dialogOpen", os::dialogOpen},
+        {"os.dialogSave", os::dialogSave}
+    };
 }
+
+#endif

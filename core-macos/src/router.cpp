@@ -25,13 +25,16 @@
 #include <fstream>
 #include <unistd.h>
 #include <vector>
+
+#include "nlohmann/json.hpp"
+
 #include "functions.h"
 #include "settings.h"
-#include "core/filesystem/filesystem.h"
-#include "core/os/os.h"
-#include "core/computer/computer.h"
-#include "core/storage/storage.h"
-#include "../lib/json/json.hpp"
+#include "core/include/filesystem.h"
+#include "core/include/os.h"
+#include "core/include/computer.h"
+#include "core/include/storage.h"
+
 #include "auth/authbasic.h"
 #include "ping/ping.h"
 #include "cloud/previleges.h"

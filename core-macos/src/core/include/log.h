@@ -20,36 +20,49 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <map>
-#ifndef FILESYSTEM_H
-#define FILESYSTEM_H
+#ifndef LOG_H
+#define LOG_H
 
-namespace filesystem {
-    string createDirectory(string jso);
+#include <memory>
+#include <mutex>
+#include <iostream>
+
+class log {
+private:
+    static std::mutex _mutex;
+    std::lock_guard<std::mutex> _lock_guard;
+
+    log() : _lock_guard (_mutex) {}
+
+    log(const log&) = delete;
+    log& operator=(const log&) = delete;
+    log(log&&) : _lock_guard(_mutex) {}
+    log& operator=(log&&) = default;
+
     
-    string removeDirectory(string jso);
 
-    string writeFile(string jso);
+public:
+    ~log() {
+        std::cout << "\n";
+    }
 
-    string readFile(string jso);
+    template<typename T>
+    log& operator <<(const T& val) {
+        std::cout << val;
+        return *this;
+    }
 
-    string removeFile(string jso);
+    static log Log(const std::string& prefix, const std::string& file, const std::string& func) {
+        std::cout << prefix << " [" + file + ":" + func + "] ";
+        return log();
+    }
+};
 
-    string readDirectory(string jso);
-
-    typedef string (*pfunc)(string);
-
-    map <string, pfunc> funcmap = {
-        {"filesystem.createDirectory", filesystem::createDirectory},
-        {"filesystem.removeDirectory", filesystem::removeDirectory},
-        {"filesystem.readFile", filesystem::readFile},
-        {"filesystem.writeFile", filesystem::writeFile},
-        {"filesystem.removeFile", filesystem::removeFile},
-        {"filesystem.readDirectory", filesystem::readDirectory}
-    };
-
-
-
-}
+#define INFO() log::Log("INFO",__FILE__, __func__)
+#define DEBUG() log::Log("DEBUG",__FILE__, __func__)
+#define TRACE() log::Log("TRACE",__FILE__, __func__)
+#define ERROR() log::Log("ERROR",__FILE__, __func__)
+#define WARN() log::Log("WARN",__FILE__, __func__)
+#define FIXME() log::Log("FIXME",__FILE__, __func__)
 
 #endif

@@ -1,3 +1,30 @@
-### Neutralino server for Linux
+# MacOS Build
 
-Forked from [https://github.com/yibo141/Servant](https://github.com/yibo141/Servant) and modified according to requirement.
+Neutralino now supports MacOSX
+
+## Build Requirenments
+
+- XCode Libraries
+- CMake
+
+## Debug Builds
+
+- `mkdir build`
+- `cd build`
+- `cmake ..`
+- `make -j 4`
+
+The resulting binary will be placed in build directory
+
+## Release Builds
+
+- `mkdir release`
+- `cd release`
+- `cmake .. -DCMAKE_BUILD_TYPE=Release`
+- `make -j 4`
+
+The resulting binary will be placed in release directory
+
+To install resulting binary to bin directory use
+
+`make install`

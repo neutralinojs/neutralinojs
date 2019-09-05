@@ -20,22 +20,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef ROUTER_H
-#define ROUTER_H
+#ifndef FILESYSTEM_H
+#define FILESYSTEM_H
 
-#include <string>
+#include <map>
 
 using namespace std;
 
-namespace routes {
+namespace filesystem {
+    string createDirectory(string jso);
+    
+    string removeDirectory(string jso);
 
-    string getFile(string file);
+    string writeFile(string jso);
 
-    string getClientJs();
+    string readFile(string jso);
 
-    string getIndex();
+    string removeFile(string jso);
 
-    pair<string, string> handle(string path, string j, string token);
+    string readDirectory(string jso);
+
+    typedef string (*pfunc)(string);
+
+    static map <string, pfunc> funcmap = {
+        {"filesystem.createDirectory", filesystem::createDirectory},
+        {"filesystem.removeDirectory", filesystem::removeDirectory},
+        {"filesystem.readFile", filesystem::readFile},
+        {"filesystem.writeFile", filesystem::writeFile},
+        {"filesystem.removeFile", filesystem::removeFile},
+        {"filesystem.readDirectory", filesystem::readDirectory}
+    };
+
+
+
 }
 
 #endif

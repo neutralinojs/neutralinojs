@@ -19,26 +19,23 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+#ifndef STORAGE_H
+#define STORAGE_H
 
-#ifndef OS_H
-#define OS_H
-
+#include <iostream>
 #include <map>
 
-namespace os {
+using namespace std;
 
-    string runCommand(string jso);
-    string getEnvar(string jso);
-    string dialogOpen(string jso);
-    string dialogSave(string jso);
-    
+namespace storage {
+    string putData(string jso); 
+    string getData(string jso);
+
     typedef string (*pfunc)(string);
 
-    map <string, pfunc> funcmap = {
-        {"os.runCommand", os::runCommand},
-        {"os.getEnvar", os::getEnvar},
-        {"os.dialogOpen", os::dialogOpen},
-        {"os.dialogSave", os::dialogSave}
+    static map <string, pfunc> funcmap = {
+        {"storage.putData", storage::putData},
+        {"storage.getData", storage::getData}
     };
 }
 

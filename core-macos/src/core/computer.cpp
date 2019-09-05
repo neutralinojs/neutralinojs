@@ -19,23 +19,31 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#ifndef STORAGE_H
-#define STORAGE_H
 
-#include <iostream>
+#include <stdint.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#include "nlohmann/json.hpp"
+#include "include/computer.h"
+#include "sysstat.h"
 
 using namespace std;
+using namespace SystemStat;
+using json = nlohmann::json;
 
-namespace storage {
-    string putData(string jso); 
-    string getData(string jso);
+#define DIV 1024
 
-    typedef string (*pfunc)(string);
+namespace computer {
+    string getRamUsage(string jso) {
+        json output;
+        MemoryStat memstat;
+        getMemoryStat(&memstat);
+        output["ram"] = {
+            { "total", (memstat.phys.total) / DIV / DIV },
+            { "available", (memstat.phys.total - memstat.phys.avail) / DIV }
+        };
 
-    map <string, pfunc> funcmap = {
-        {"storage.putData", storage::putData},
-        {"storage.getData", storage::getData}
-    };
+        return output.dump();
+    }
 }
-
-#endif

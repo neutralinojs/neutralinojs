@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include "../../../lib/json/json.hpp"
 #include <stdlib.h>
 #include <cstdio>
 #include <iostream>
@@ -9,6 +8,8 @@
 #include <string>
 #include <array>
 
+#include "include/os.h"
+#include "nlohmann/json.hpp"
 
 using namespace std;
 using json = nlohmann::json;
@@ -86,8 +87,6 @@ namespace os {
         output["file"] = file;
 
         return output.dump();
-       
-        
     }
 
 
