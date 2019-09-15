@@ -59,10 +59,10 @@ public:
 };
 
 #define INFO() log::Log("INFO",__FILE__, __func__)
-#define DEBUG() log::Log("DEBUG",__FILE__, __func__)
-#define TRACE() log::Log("TRACE",__FILE__, __func__)
-#define ERROR() log::Log("ERROR",__FILE__, __func__)
+#define DEBUG() log::Log("DEBU",__FILE__, __func__)
+#define TRACE() log::Log("TRAC",__FILE__, __func__)
+#define ERROR() log::Log("ERRO",__FILE__, __func__)
 #define WARN() log::Log("WARN",__FILE__, __func__)
-#define FIXME() log::Log("FIXME",__FILE__, __func__)
+#define FIXME() log::Log("FIXM",__FILE__, __func__)
 
 #endif
