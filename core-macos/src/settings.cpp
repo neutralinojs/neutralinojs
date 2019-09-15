@@ -26,22 +26,47 @@
 #include "auth/authbasic.h"
 #include "core/include/log.h"
 
+#ifdef __APPLE__
+#include "CoreFoundation/CoreFoundation.h"
+#endif
+
 using namespace std;
 using json = nlohmann::json;
 json options;
 
 namespace settings {
-
     string getFileContent(string filename){
-        ifstream t;
-        t.open(filename);
+        INFO() << "Loading: " << filename;
+
+        // Latest MACOS requires to obtain a full path to resources using Bundle API
+        #ifdef __APPLE__    
+        CFBundleRef mainBundle = CFBundleGetMainBundle();
+        CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
+        char path[PATH_MAX];
+        if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)path, PATH_MAX))
+        {
+            // error!
+        }
+        CFRelease(resourcesURL);
+        
+        std::string ppath(path);
+        filename = ppath + "/" + filename;
+        DEBUG() << "Resolving: " << filename;
+        #endif
+
+        ifstream iFile(filename);
+        if(!iFile){
+            ERROR() << "Cannot read: " << filename;
+            exit(1);
+        }
+        
         string buffer = "";
         string line;
-        while(!t.eof()){
-            getline(t, line);
+        while(!iFile.eof()){
+            getline(iFile, line);
             buffer += line + "\n";
         }
-        t.close();
+        iFile.close();
         return buffer;
     }
 
@@ -56,9 +81,10 @@ namespace settings {
     json getSettings() {
         json settings;
         try {
-            settings = json::parse(getFileContent("app/settings.json"));
+            std::string raw = getFileContent("app/settings.json");
+            settings = json::parse(raw);
         }
-        catch(exception e){
+        catch(std::exception& e) { 
             ERROR() << e.what();
         }
         options = settings;
