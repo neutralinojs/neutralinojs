@@ -20,49 +20,22 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef LOG_H
-#define LOG_H
-
-#include <memory>
-#include <mutex>
-#include <iostream>
-
-class log {
-private:
-    static std::mutex _mutex;
-    std::lock_guard<std::mutex> _lock_guard;
-
-    log() : _lock_guard (_mutex) {}
-
-    log(const log&) = delete;
-    log& operator=(const log&) = delete;
-    log(log&&) : _lock_guard(_mutex) {}
-    log& operator=(log&&) = default;
-
-    
-
-public:
-    ~log() {
-        std::cout << "\n";
-    }
-
-    template<typename T>
-    log& operator <<(const T& val) {
-        std::cout << val;
-        return *this;
-    }
-
-    static log Log(const std::string& prefix, const std::string& file, const std::string& func) {
-        std::cout << prefix << " [" + file + ":" + func + "] ";
-        return log();
+let myapp = {
+    myfunction : function () { 
+        document.getElementById('info').innerHTML = NL_NAME + " is running on port " +
+                    NL_PORT + " inside " + NL_OS + "<br/><br/>" + "<span>v" + NL_VERSION + "</span>"; 
     }
 };
+    
 
-#define INFO() log::Log("INFO",__FILE__, __func__)
-#define DEBUG() log::Log("DEBU",__FILE__, __func__)
-#define TRACE() log::Log("TRAC",__FILE__, __func__)
-#define ERROR() log::Log("ERRO",__FILE__, __func__)
-#define WARN() log::Log("WARN",__FILE__, __func__)
-#define FIXME() log::Log("FIXM",__FILE__, __func__)
+Neutralino.init({
+    load: function() {
+        myapp.myfunction();
+    },
+    pingSuccessCallback : function() {
 
-#endif
+    },
+    pingFailCallback : function() {
+
+    }
+});

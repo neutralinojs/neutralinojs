@@ -19,7 +19,9 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-
+#ifndef SETTINGS_H
+#define SETTINGS_H
+#include <string>
 #include "nlohmann/json.hpp"
 
 using namespace std;
@@ -32,4 +34,5 @@ namespace settings {
     string getFileContent(string filename);
     string getGlobalVars();
 }
+#endif
 
