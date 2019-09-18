@@ -130,7 +130,7 @@ $ npm run build
 - [x] Experimental Release
 - [x] Stable release
 - [ ] Neutralino-packager CLI
-- [ ] MacOS support
+- [x] MacOS support
 
 ## Become a Backer
 
