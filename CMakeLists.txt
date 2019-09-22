@@ -7,31 +7,33 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(LINK_LIBS "")
 
-# Apple Specific
+# Platform Specific
 if(APPLE)
-    message(STATUS "Using Cocoa Framework")
+    message(STATUS "Apple Detected")
     set(FRAMEWORK_FLAG -DWEBVIEW_COCOA=1)
     find_library(WEBKIT WebKit)
     list(APPEND LINK_LIBS ${WEBKIT})
-elseif(UNIX AND NOT APPLE)
-    message(STATUS "Using GTK Framework")
-    set(FRAMEWORK_FLAG -DWEBVIEW_GTK=1)
+    find_library(COCOA Cocoa)
+    list(APPEND LINK_LIBS ${COCOA})
 elseif(WIN32)
-    message(STATUS "Using WinAPI")
+    message(STATUS "Windows Detected")
     set(FRAMEWORK_FLAG -DWEBVIEW_WINAPI=1)
+else()
+    message(STATUS "Linux Detected")
+    find_package(PkgConfig REQUIRED)
+	pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+	pkg_check_modules(WEBKIT REQUIRED webkitgtk-3.0)
+    set(FRAMEWORK_FLAG -DWEBVIEW_GTK=1)
 endif()
-
-# Find these libraries from any *nix
-if(UNIX)
-    find_library(PTHREAD pthread)
-    list(APPEND LINK_LIBS ${PTHREAD})
-endif(UNIX)
 
 # Microsoft C++ specific
 if(MSVC)
-    
-endif(MSVC)
-
+    message("Microsoft Visual C++ Detected")
+else() # valid for MinGW also
+    message("GNU Compatible compiler detected")
+    find_library(PTHREAD pthread)
+    list(APPEND LINK_LIBS ${PTHREAD})
+endif()
 
 file(GLOB SOURCES src/*.cc)
 add_executable(neutralino ${SOURCES})
@@ -44,3 +46,4 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     message(STATUS "Configuring Release build")
     install(TARGETS neutralino DESTINATION ${CMAKE_SOURCE_DIR}/bin)
 endif()
+

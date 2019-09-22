@@ -6,3 +6,6 @@ Thumbs.db
 dist/neutralino
 dist/*.exe
 
+# Cross Platform build
+build
+release
