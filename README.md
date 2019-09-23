@@ -130,17 +130,13 @@ $ npm run build
 - [x] Experimental Release
 - [x] Stable release
 - [ ] Neutralino-packager CLI
-- [ ] MacOS support
+- [x] MacOS support
 
 ## Become a Backer
 
 If you like to contribute by funding for sustaining our work, Please visit https://opencollective.com/neutralinojs
 
 [![Become a Patron](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/shalithasuranga)
-
-**Thanks! Sponsors.**
-
-- Brian McGonagill
 
 ## License
 

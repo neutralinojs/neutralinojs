@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleExecutable</key>
+    <string>neutralino</string>
+    <key>CFBundleGetInfoString</key>
+    <string>Neut</string>
+    <key>CFBundleIconFile</key>
+    <string>Glitch</string>
+    <key>CFBundleIdentifier</key>
+    <string>com.example.neut</string>
+    <key>CFBundleName</key>
+    <string>Neut</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+</dict>
+</plist>

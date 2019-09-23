@@ -19,50 +19,22 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+#ifndef DEBUG_H
+#define DEBUG_H
 
-#ifndef LOG_H
-#define LOG_H
-
-#include <memory>
-#include <mutex>
 #include <iostream>
+#include <map>
 
-class log {
-private:
-    static std::mutex _mutex;
-    std::lock_guard<std::mutex> _lock_guard;
+using namespace std;
 
-    log() : _lock_guard (_mutex) {}
+namespace debug {
+    string log(string jso); 
 
-    log(const log&) = delete;
-    log& operator=(const log&) = delete;
-    log(log&&) : _lock_guard(_mutex) {}
-    log& operator=(log&&) = default;
+    typedef string (*pfunc)(string);
 
-    
-
-public:
-    ~log() {
-        std::cout << "\n";
-    }
-
-    template<typename T>
-    log& operator <<(const T& val) {
-        std::cout << val;
-        return *this;
-    }
-
-    static log Log(const std::string& prefix, const std::string& file, const std::string& func) {
-        std::cout << prefix << " [" + file + ":" + func + "] ";
-        return log();
-    }
-};
-
-#define INFO() log::Log("INFO",__FILE__, __func__)
-#define DEBUG() log::Log("DEBU",__FILE__, __func__)
-#define TRACE() log::Log("TRAC",__FILE__, __func__)
-#define ERROR() log::Log("ERRO",__FILE__, __func__)
-#define WARN() log::Log("WARN",__FILE__, __func__)
-#define FIXME() log::Log("FIXM",__FILE__, __func__)
+    map <string, pfunc> funcmap = {
+        {"debug.log", debug::log}
+    };
+}
 
 #endif

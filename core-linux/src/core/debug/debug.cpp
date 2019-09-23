@@ -20,49 +20,40 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef LOG_H
-#define LOG_H
-
-#include <memory>
-#include <mutex>
 #include <iostream>
+#include <fstream>
+#include "../../../lib/json/json.hpp"
+#include "../../settings.h"
+#include "../core-shared/log.h"
 
-class log {
-private:
-    static std::mutex _mutex;
-    std::lock_guard<std::mutex> _lock_guard;
+using namespace std;
+using json = nlohmann::json;
 
-    log() : _lock_guard (_mutex) {}
+namespace debug {
+    string log(string jso) {
+        json input;
+        json output;
+        try {
+            input = json::parse(jso);
+        }
+        catch(exception e){
+            output["error"] = "JSON parse error is occurred!";
+            return output.dump();
+        }
+        string type = input["type"].get<std::string>();
+        string message = input["message"].get<std::string>();
 
-    log(const log&) = delete;
-    log& operator=(const log&) = delete;
-    log(log&&) : _lock_guard(_mutex) {}
-    log& operator=(log&&) = default;
+        if(type == "INFO")
+            INFO() << message;
+        else if(type == "ERROR")
+            ERROR() << message;
+        else if(type == "WARN")
+            WARN() << message;
+        else
+            DEBUG() << message;
 
-    
-
-public:
-    ~log() {
-        std::cout << "\n";
+        output["message"] = "Wrote to log file neutralino.log";
+        return output.dump();
     }
 
-    template<typename T>
-    log& operator <<(const T& val) {
-        std::cout << val;
-        return *this;
-    }
-
-    static log Log(const std::string& prefix, const std::string& file, const std::string& func) {
-        std::cout << prefix << " [" + file + ":" + func + "] ";
-        return log();
-    }
-};
-
-#define INFO() log::Log("INFO",__FILE__, __func__)
-#define DEBUG() log::Log("DEBU",__FILE__, __func__)
-#define TRACE() log::Log("TRAC",__FILE__, __func__)
-#define ERROR() log::Log("ERRO",__FILE__, __func__)
-#define WARN() log::Log("WARN",__FILE__, __func__)
-#define FIXME() log::Log("FIXM",__FILE__, __func__)
-
-#endif
+}

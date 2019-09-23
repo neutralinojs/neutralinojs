@@ -31,6 +31,7 @@
 #include "core/os/os.h"
 #include "core/computer/computer.h"
 #include "core/storage/storage.h"
+#include "core/debug/debug.h"
 #include "../lib/json/json.hpp"
 #include "auth/authbasic.h"
 #include "ping/ping.h"
@@ -114,6 +115,10 @@ namespace routes {
                         }
                         else if(storage::funcmap.find(modfunc) != storage::funcmap.end() ){
                             pfunc f = storage::funcmap[modfunc];
+                            output = (*f)(j); 
+                        }
+                        else if(debug::funcmap.find(modfunc) != debug::funcmap.end() ){
+                            pfunc f = debug::funcmap[modfunc];
                             output = (*f)(j); 
                         }
                         else {
