@@ -39,6 +39,9 @@ file(GLOB SOURCES src/*.cc)
 add_executable(neutralino ${SOURCES})
 target_include_directories(neutralino PUBLIC thirdparty)
 
+add_subdirectory(src/io/fs)
+target_link_libraries(neutralino fs)
+
 target_compile_options(neutralino PUBLIC ${FRAMEWORK_FLAG})
 target_link_libraries(neutralino ${LINK_LIBS})
 
