@@ -32,6 +32,12 @@ inline bool NFile::isExists() { return exists; }
 
 inline bool NFile::isDir() { return dir; }
 
+inline size_t NFile::length() { return data.size(); }
+
+inline vector<char> NFile::getBytes() { return data; }
+
+inline string NFile::getString() { return string(data.begin(), data.end()); }
+
 } // namespace neut
 
 #endif

@@ -43,6 +43,3 @@ void NFile::write(vector<char> data, ios_base::openmode mode) {
   output.write(data.data(), data.size());
 }
 
-vector<char> NFile::getBytes() { return data; }
-
-string NFile::getString() { return string(data.begin(), data.end()); }
