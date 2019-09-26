@@ -1,13 +1,15 @@
 #ifndef NFILE_H
 #define NFILE_H
 
+#include <filesystem>
 #include <string>
 #include <vector>
-#include <filesystem>
 
 using namespace std;
 
 namespace neut {
+
+// NFile conatins definitions for file handling
 class NFile {
 private:
   vector<char> data;
