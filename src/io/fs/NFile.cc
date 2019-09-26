@@ -10,7 +10,9 @@
 using namespace std;
 using namespace neut;
 
-NFile::NFile(const string path) : path(path){
+NFile::NFile(const string path)
+    : path(path)
+{
     exists = filesystem::exists(path);
     dir = filesystem::is_directory(path);
 }
@@ -21,8 +23,7 @@ void NFile::read(ios_base::openmode mode)
     ios_base::openmode _openmode = ios_base::ate | mode; // always seek to the end
 
     ifs.open(path, _openmode);
-    if (ifs.fail())
-    {
+    if (ifs.fail()) {
         throw runtime_error(strerror(errno));
     }
 
@@ -38,8 +39,7 @@ void NFile::read(ios_base::openmode mode)
 void NFile::write(vector<char> data, ios_base::openmode mode)
 {
     ofstream output(path, mode);
-    if (output.fail())
-    {
+    if (output.fail()) {
         throw runtime_error(strerror(errno));
     }
 
@@ -47,20 +47,14 @@ void NFile::write(vector<char> data, ios_base::openmode mode)
     output.write(data.data(), data.size());
 }
 
-vector<char> NFile::getBytes()
+vector<char>
+NFile::getBytes()
 {
     return data;
 }
 
-string NFile::getString()
+string
+NFile::getString()
 {
     return string(data.begin(), data.end());
-}
-
-bool NFile::isExists(){
-    return exists;
-}
-
-bool NFile::isDir(){
-    return dir;
 }
