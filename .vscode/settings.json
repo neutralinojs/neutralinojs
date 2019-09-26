@@ -72,6 +72,30 @@
         "vector": "cpp",
         "hash_map": "cpp",
         "condition_variable": "cpp",
-        "deque": "cpp"
-    }
+        "deque": "cpp",
+        "xiosbase": "cpp",
+        "xstring": "cpp",
+        "hash_set": "cpp",
+        "unordered_set": "cpp",
+        "memory_resource": "cpp",
+        "random": "cpp",
+        "set": "cpp",
+        "resumable": "cpp",
+        "queue": "cpp",
+        "xfacet": "cpp",
+        "xhash": "cpp",
+        "xlocale": "cpp",
+        "xlocbuf": "cpp",
+        "xlocinfo": "cpp",
+        "xlocmes": "cpp",
+        "xlocmon": "cpp",
+        "xlocnum": "cpp",
+        "xloctime": "cpp",
+        "xmemory": "cpp",
+        "xstddef": "cpp",
+        "xtr1common": "cpp",
+        "xtree": "cpp",
+        "xutility": "cpp"
+    },
+    "C_Cpp.dimInactiveRegions": false
 }
