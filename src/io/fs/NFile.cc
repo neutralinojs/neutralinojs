@@ -42,4 +42,3 @@ void NFile::write(vector<char> data, ios_base::openmode mode) {
   // write data to the disk
   output.write(data.data(), data.size());
 }
-
