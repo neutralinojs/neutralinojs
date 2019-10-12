@@ -141,3 +141,11 @@ If you like to contribute by funding for sustaining our work, Please visit https
 ## License
 
 [MIT](LICENSE)
+
+## Contributors
+
+<a href="https://github.com/neutralinojs/neutralinojs/graphs/contributors">
+  <img src="https://contributors-img.firebaseapp.com/image?repo=neutralinojs/neutralinojs" />
+</a>
+
+Made with [contributors-img](https://contributors-img.firebaseapp.com).
