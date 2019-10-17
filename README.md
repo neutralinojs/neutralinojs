@@ -92,7 +92,7 @@ $ sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev
 ```bash
 $ bash build.sh
 ```
-Neutralino platform components will be assembled in to `/dist`
+Neutralino platform components will be assembled in `/dist`
 
 ### Build Neutralino server in Windows
 
