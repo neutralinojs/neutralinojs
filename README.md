@@ -131,6 +131,7 @@ $ npm run build
 - [x] Stable release
 - [ ] Neutralino-packager CLI
 - [x] MacOS support
+- [x] MacOS server
 
 ## Become a Backer
 
