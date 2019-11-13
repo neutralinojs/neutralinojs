@@ -24,7 +24,7 @@
 #include <chrono>
 #include <thread>
 #include <vector>
-#include "../cloud/previleges.h"
+#include "../cloud/privileges.h"
 
 
 using namespace std;
@@ -60,7 +60,7 @@ namespace ping {
     }
 
     void startPingReceiver() {
-        if(previleges::getMode() == "browser") {
+        if(privileges::getMode() == "browser") {
             setInterval([]() {
                 pingTick();
             },
