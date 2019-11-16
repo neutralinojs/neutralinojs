@@ -149,4 +149,4 @@ If you like to contribute by funding for sustaining our work, Please visit https
   <img src="https://contributors-img.firebaseapp.com/image?repo=neutralinojs/neutralinojs" />
 </a>
 
-Made with [contributors-img](https://contributors-img.firebaseapp.com).
+Made with [contributors-img](https://contributors-img.firebaseapp.com)...
