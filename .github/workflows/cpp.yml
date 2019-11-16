@@ -9,5 +9,7 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+    - name: configure
+      run: sudo apt-get install libgtk-3-dev && sudo add-apt-repository ppa:webkit-team/ppa && sudo apt-get update && sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev
     - name: build
       run: bash build.sh
