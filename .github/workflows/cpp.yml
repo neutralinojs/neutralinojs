@@ -10,4 +10,4 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: build
-      run: bash core-linux/build.sh
+      run: bash build.sh
