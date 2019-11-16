@@ -31,7 +31,7 @@
 #include "Handler.h"
 #include "auth/authbasic.h"
 #include "ping/ping.h"
-#include "cloud/previleges.h"
+#include "cloud/privileges.h"
 #include "webview.h"
 
 using namespace std;
@@ -60,12 +60,12 @@ int main(int argc, char **argv)
     json options = settings::getSettings();
     authbasic::generateToken();
     ping::startPingReceiver();
-    previleges::getMode();
-    previleges::getBlacklist();
+    privileges::getMode();
+    privileges::getBlacklist();
 
     int port = stoi(options["appport"].get<string>());
     string appname = options["appname"].get<std::string>();
-    string mode = previleges::getMode();
+    string mode = privileges::getMode();
 
     int listenFd = Socket::createSocket();
     Socket::setReuseAddr(listenFd, true);

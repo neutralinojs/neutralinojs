@@ -24,7 +24,7 @@
 #include <chrono>
 #include <thread>
 #include <vector>
-#include "../../lib/json/json.hpp"
+#include "nlohmann/json.hpp"
 #include "../settings.h"
 
 using namespace std;
@@ -34,7 +34,7 @@ using json = nlohmann::json;
 
 
 
-namespace previleges {
+namespace privileges {
 
     string mode = "";
     vector <string> blacklist;
@@ -52,10 +52,10 @@ namespace previleges {
     }
     
     vector<string> getBlacklist() {
-        if(blacklist.size() != 0 || previleges::getMode() == "browser") {
+        if(blacklist.size() != 0 || privileges::getMode() == "browser") {
             return blacklist;
         }
-        else if(previleges::getMode() == "cloud") {
+        else if(privileges::getMode() == "cloud") {
             json options = settings::getOptions()["cloud"]["blacklist"];
             vector<string> s = options;
             blacklist = s;

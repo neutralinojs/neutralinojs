@@ -35,7 +35,7 @@
 #include "router.h"
 #include "auth/authbasic.h"
 #include "ping/ping.h"
-#include "cloud/previleges.h"
+#include "cloud/privileges.h"
 #include "webv.h"
 
 void uiThread(string appname, string port, int width, int height) {
@@ -59,13 +59,13 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
     settings::getSettings();
     authbasic::generateToken();
     ping::startPingReceiver();
-    previleges::getMode();
-    previleges::getBlacklist();
+    privileges::getMode();
+    privileges::getBlacklist();
     
     json options = settings::getOptions();
     string appname = options["appname"];
     string appport = options["appport"];
-    string mode = previleges::getMode();
+    string mode = privileges::getMode();
     this->port = stoi(appport);
 
     std::shared_ptr<addrinfo> socket_props(nullptr, [](addrinfo* ai) { freeaddrinfo(ai); });

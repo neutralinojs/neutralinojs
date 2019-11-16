@@ -23,7 +23,7 @@
 
 using namespace std;
 
-namespace previleges {
+namespace privileges {
     vector<string> getBlacklist();
     string getMode();
     bool checkPermission(string func);

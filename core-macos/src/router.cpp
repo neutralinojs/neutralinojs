@@ -37,7 +37,7 @@
 
 #include "auth/authbasic.h"
 #include "ping/ping.h"
-#include "cloud/previleges.h"
+#include "cloud/privileges.h"
 
 using namespace std;
 using namespace filesystem;
@@ -97,8 +97,8 @@ namespace routes {
 
                     bool permission = true;
 
-                    if(previleges::getMode() == "cloud") {
-                        if(!previleges::checkPermission(modfunc)) permission = false;
+                    if(privileges::getMode() == "cloud") {
+                        if(!privileges::checkPermission(modfunc)) permission = false;
                     }
 
                     if(permission) {
