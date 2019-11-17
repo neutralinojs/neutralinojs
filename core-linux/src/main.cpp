@@ -38,8 +38,23 @@ using namespace std;
 
 std::map<int, std::thread> threads;
 
-void uiThread(string appname, int port, int width, int height) {
-      webview(appname.c_str(), ("http://localhost:" + std::to_string(port) + "/" + appname).c_str() , width, height, 1);
+void uiThread(string appname, int port, int width, int height, int fullscreen) {
+    struct webview webview;
+    string url = ("http://localhost:" + std::to_string(port) + "/" + appname);
+    memset(&webview, 0, sizeof(webview));
+    webview.title = appname.c_str();
+    webview.url = url.c_str();
+    webview.width = width;
+    webview.height = height;
+    webview.resizable = 1;
+    int r = webview_init(&webview);
+    webview_set_fullscreen(&webview, fullscreen);
+    if (r != 0) {
+        return;
+    }
+    while (webview_loop(&webview, 1) == 0) {
+    }
+    webview_exit(&webview);
 }
 
 int main(int argc, char **argv)
@@ -82,12 +97,15 @@ int main(int argc, char **argv)
     else if(mode == "window"){
         int width = 800;
         int height = 600;
+        int fullscreen = 0;
         if(!options["window"].is_null()) {
             json windowProp = options["window"];
             width =  stoi(windowProp["width"].get<std::string>());
             height =  stoi(windowProp["height"].get<std::string>());
+            if(!windowProp["fullscreen"].is_null())
+                fullscreen =  windowProp["fullscreen"].get<bool>() ? 1 : 0;
         }
-        std::thread ren(uiThread, appname, port, width, height);
+        std::thread ren(uiThread, appname, port, width, height, fullscreen);
         ren.detach();
     }
 
