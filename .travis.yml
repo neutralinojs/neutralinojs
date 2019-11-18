@@ -1,0 +1,7 @@
+language: node_js
+node_js:
+  - lts
+  - latest
+
+script:
+  - npm test
