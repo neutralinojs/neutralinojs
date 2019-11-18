@@ -1,7 +1,10 @@
 language: node_js
+
 node_js:
   - lts/*
   - node
+
+cache: npm
 
 script:
   - npm test
