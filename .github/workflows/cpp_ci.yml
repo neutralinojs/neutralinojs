@@ -4,9 +4,7 @@ on: [push, pull_request, schedule]
 
 jobs:
   build-linux:
-
     runs-on: ubuntu-latest
-    
     steps:
     - uses: actions/checkout@v1
     - name: configure
@@ -15,12 +13,19 @@ jobs:
       run: bash build.sh
 
   build-windows:
-
     runs-on: windows-latest
-    
     steps:
     - uses: actions/checkout@v1
     - name: build
       run: ./build
 
-    
+  build-osx:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Configure
+      working-directory: core-macos
+      run: mkdir -p build && cd build && cmake ..
+    - name: Build
+      working-directory: core-macos/build
+      run: cmake --build .
