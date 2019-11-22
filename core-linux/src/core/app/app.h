@@ -19,23 +19,23 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+#ifndef AP_H
+#define AP_H
 
-let filesystem = require('./core/filesystem');
-let settings = require('./core/settings');
-let os = require('./core/os');
-let computer = require('./core/computer');
-let storage = require('./core/storage');
-let init = require('./core/init');
-let debug = require('./core/debug');
-let app = require('./core/app');
+#include <iostream>
+#include <map>
 
-module.exports =  {
-    app: app,
-    filesystem : filesystem,
-    settings : settings,
-    os : os,
-    computer : computer,
-    storage : storage,
-    init : init,
-    debug : debug
+using namespace std;
+
+namespace app {
+
+    string exit(string jso); 
+
+    typedef string (*pfunc)(string);
+
+    map <string, pfunc> funcmap = {
+        {"app.exit", app::exit}
+    };
 }
+
+#endif
