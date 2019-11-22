@@ -20,22 +20,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-let filesystem = require('./core/filesystem');
-let settings = require('./core/settings');
-let os = require('./core/os');
-let computer = require('./core/computer');
-let storage = require('./core/storage');
-let init = require('./core/init');
-let debug = require('./core/debug');
-let app = require('./core/app');
+#include <iostream>
+#include <signal.h>
+#include <unistd.h>
+#include "../../../lib/json/json.hpp"
 
-module.exports =  {
-    app: app,
-    filesystem : filesystem,
-    settings : settings,
-    os : os,
-    computer : computer,
-    storage : storage,
-    init : init,
-    debug : debug
+using namespace std;
+using json = nlohmann::json;
+
+namespace app {
+
+    string exit(string jso) {
+        kill(getpid(),SIGINT); // Experimental: TODO: check further
+        return "";
+    }
+
 }

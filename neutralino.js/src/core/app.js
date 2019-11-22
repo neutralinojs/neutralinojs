@@ -20,22 +20,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-let filesystem = require('./core/filesystem');
-let settings = require('./core/settings');
-let os = require('./core/os');
-let computer = require('./core/computer');
-let storage = require('./core/storage');
-let init = require('./core/init');
-let debug = require('./core/debug');
-let app = require('./core/app');
+let $ = require('../lib/minAjax.js');
 
-module.exports =  {
-    app: app,
-    filesystem : filesystem,
-    settings : settings,
-    os : os,
-    computer : computer,
-    storage : storage,
-    init : init,
-    debug : debug
+let exit = function (s, e) {
+    $.ajax({
+        url : '/app/exit',
+        type : 'POST',
+        data : {
+        },
+        done : function(data){
+            s(data);
+        },
+        problem : function (error) {
+            e(error);
+        }
+    
+    });
+
+};
+
+
+module.exports = {
+    exit: exit
 }
