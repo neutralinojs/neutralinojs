@@ -27,7 +27,7 @@
 
 using namespace std;
 
-namespace filesystem {
+namespace fs {
     string createDirectory(string jso);
     
     string removeDirectory(string jso);
@@ -43,12 +43,12 @@ namespace filesystem {
     typedef string (*pfunc)(string);
 
     static map <string, pfunc> funcmap = {
-        {"filesystem.createDirectory", filesystem::createDirectory},
-        {"filesystem.removeDirectory", filesystem::removeDirectory},
-        {"filesystem.readFile", filesystem::readFile},
-        {"filesystem.writeFile", filesystem::writeFile},
-        {"filesystem.removeFile", filesystem::removeFile},
-        {"filesystem.readDirectory", filesystem::readDirectory}
+        {"filesystem.createDirectory", fs::createDirectory},
+        {"filesystem.removeDirectory", fs::removeDirectory},
+        {"filesystem.readFile", fs::readFile},
+        {"filesystem.writeFile", fs::writeFile},
+        {"filesystem.removeFile", fs::removeFile},
+        {"filesystem.readDirectory", fs::readDirectory}
     };
 
 
