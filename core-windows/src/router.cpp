@@ -30,6 +30,7 @@
 #include "core/computer/computer.h"
 #include "core/storage/storage.h"
 #include "core/debug/debug.h"
+#include "core/app/app.h"
 #include "settings.h"
 #include "../lib/json/json.hpp"
 #include "auth/authbasic.h"
@@ -120,6 +121,10 @@ namespace routes {
                         }
                         else if(debug::funcmap.find(modfunc) != debug::funcmap.end() ){
                             pfunc f = debug::funcmap[modfunc];
+                            output = (*f)(j); 
+                        }
+                        else if(app::funcmap.find(modfunc) != app::funcmap.end() ){
+                            pfunc f = app::funcmap[modfunc];
                             output = (*f)(j); 
                         }
                         else {
