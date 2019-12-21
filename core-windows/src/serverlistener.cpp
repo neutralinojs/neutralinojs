@@ -19,9 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-
 #include "serverlistener.h"
-
 #include <iostream>
 #include <cstdlib>
 #include <list>
@@ -38,8 +36,8 @@
 #include "cloud/privileges.h"
 #include "webv.h"
 
-void uiThread(string appname, string port, int width, int height) {
-      web_view(appname.c_str(), ("http://localhost:" + port + "/" + appname).c_str(), width, height);
+void uiThread(string appname, string port, int width, int height, int fullscreen) {
+      web_view(appname.c_str(), ("http://localhost:" + port + "/" + appname).c_str(), width, height, fullscreen);
 }
 
 ServerListener::ServerListener(int port, size_t buffer_size) {
@@ -117,12 +115,15 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
     else if(mode == "window"){
         int width = 800;
         int height = 600;
+        int fullscreen = 0;
         if(!options["window"].is_null()) {
             json windowProp = options["window"];
             width =  stoi(windowProp["width"].get<std::string>());
             height =  stoi(windowProp["height"].get<std::string>());
+            if(!windowProp["fullscreen"].is_null())
+                fullscreen =  windowProp["fullscreen"].get<bool>() ? 1 : 0;
         }
-        std::thread ren(uiThread, appname, appport, width, height);
+        std::thread ren(uiThread, appname, appport, width, height, fullscreen);
         ren.detach();
     }
     
