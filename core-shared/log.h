@@ -24,7 +24,7 @@
 #define LOG_H
 
 #include <atomic>
-#include <experimental/filesystem>
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <mutex>
@@ -37,7 +37,7 @@ private:
     std::lock_guard<std::mutex> _lock_guard;
 
     // Path of the logfile. This is set during „init“.
-    static std::experimental::filesystem::path _logfile_path;
+    static std::filesystem::path _logfile_path;
 
     // Handle of the logfile.
     std::ofstream _log_file;
