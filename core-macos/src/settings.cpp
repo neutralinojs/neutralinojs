@@ -94,7 +94,7 @@ namespace settings {
     string getGlobalVars(){
         json settings = getOptions();
         string s = "var NL_OS='MacOS(Darwin)';";
-        s += "var NL_VERSION='1.0.8';";
+        s += "var NL_VERSION='1.2.0';";
         s += "var NL_NAME='" + settings["appname"].get<std::string>() + "';"; 
         s += "var NL_PORT=" + settings["appport"].get<std::string>() + ";";
         s += "var NL_MODE='" + settings["mode"].get<std::string>() + "';";
