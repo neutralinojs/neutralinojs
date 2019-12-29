@@ -35,6 +35,7 @@
 #include "core/include/computer.h"
 #include "core/include/storage.h"
 #include "core/include/debug.h"
+#include "core/include/app.h"
 
 #include "auth/authbasic.h"
 #include "ping/ping.h"
@@ -122,6 +123,10 @@ namespace routes {
                         }
                         else if(debug::funcmap.find(modfunc) != debug::funcmap.end() ){
                             pfunc f = debug::funcmap[modfunc];
+                            output = (*f)(j); 
+                        }
+                        else if(app::funcmap.find(modfunc) != app::funcmap.end() ){
+                            pfunc f = app::funcmap[modfunc];
                             output = (*f)(j); 
                         }
                         else {
