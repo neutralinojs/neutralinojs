@@ -5,6 +5,6 @@
     "window" : {
         "width" : "1000",
         "height" : "700",
-        "fullscreen" : true
+        "fullscreen" : false
     }
 }
