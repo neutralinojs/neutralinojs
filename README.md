@@ -110,6 +110,19 @@ $ bash build.sh
 
 Neutralino server will be compiled in `/bin`
 
+### Build Neutralino server in MacOS
+
+```cpp
+$ mkdir build
+$ cd build
+$ make ..
+$ make -j 4
+```
+
+The resulting binary will be placed in **build** directory
+
+TODO: .sh file is to be added.
+
 ### Build Neutralino.js with webpack
 
 ```bash
@@ -130,7 +143,6 @@ $ npm run build
 - [x] Experimental Release
 - [x] Stable release
 - [ ] Neutralino-packager CLI
-- [x] MacOS support
 - [x] MacOS server
 
 ## Become a Backer
