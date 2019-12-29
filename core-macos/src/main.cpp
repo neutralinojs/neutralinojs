@@ -20,6 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 #define WEBVIEW_IMPLEMENTATION
+#define OBJC_OLD_DISPATCH_PROTOTYPES 1
 #include <iostream>
 #include <cstdlib>
 #include <string>
