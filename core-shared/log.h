@@ -24,7 +24,17 @@
 #define LOG_H
 
 #include <atomic>
-#include <filesystem>
+#ifndef __has_include
+  static_assert(false, "__has_include not supported");
+#else
+#  if __has_include(<filesystem>)
+#    include <filesystem>
+     namespace fs = std::filesystem;
+#  elif __has_include(<experimental/filesystem>)
+#    include <experimental/filesystem>
+     namespace fs = std::experimental::filesystem;
+#  endif
+#endif
 #include <fstream>
 #include <memory>
 #include <mutex>
@@ -37,7 +47,7 @@ private:
     std::lock_guard<std::mutex> _lock_guard;
 
     // Path of the logfile. This is set during „init“.
-    static std::filesystem::path _logfile_path;
+    static fs::path _logfile_path;
 
     // Handle of the logfile.
     std::ofstream _log_file;
