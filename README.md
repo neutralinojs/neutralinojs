@@ -154,20 +154,6 @@ $ npm install
 $ npm run build
 ```
 
-## Development Milestones
-
-- [x] Solution Design
-- [x] Windows Server 
-- [x] Linux Server
-- [x] Javascript SDK
-- [x] Documentation
-- [x] Web site
-- [x] Security improvements
-- [x] Experimental Release
-- [x] Stable release
-- [ ] Neutralino-packager CLI
-- [x] MacOS server
-
 ## Become a Backer
 
 If you like to contribute by funding for sustaining our work, Please visit https://opencollective.com/neutralinojs
