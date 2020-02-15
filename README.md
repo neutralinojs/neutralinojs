@@ -11,7 +11,7 @@
 [![OpenCollective](https://opencollective.com/neutralinojs/backers/badge.svg)](#backers) 
 <a href="https://opencollective.com/neutralinojs"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
 
-Neutralino is a lightweight and portable application development framework. It lets you develop cross-platform applications using JavaScript, HTML and CSS.
+Neutralino is a lightweight and portable application development framework. It lets you develop cross-platform applications using JavaScript/TypeScript, HTML and CSS.
 
 [Neutralinojs vs Electron vs NW.js](https://github.com/neutralinojs/evaluation)
 
