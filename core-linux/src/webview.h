@@ -62,7 +62,6 @@ struct webview_priv {
 #include <mshtmhst.h>
 #include <mshtml.h>
 #include <shobjidl.h>
-
 #include <stdio.h>
 
 struct webview_priv {
@@ -104,6 +103,8 @@ struct webview {
   webview_external_invoke_cb_t external_invoke_cb;
   struct webview_priv priv;
   void *userdata;
+  const char *iconfile;
+  bool always_on_top;
 };
 
 enum webview_dialog_type {
@@ -300,6 +301,8 @@ WEBVIEW_API int webview_init(struct webview *w) {
   w->priv.queue = g_async_queue_new();
   w->priv.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(w->priv.window), w->title);
+  gtk_window_set_icon_from_file(GTK_WINDOW(w->priv.window), w->iconfile, NULL);
+  gtk_window_set_keep_above(GTK_WINDOW(w->priv.window), w->always_on_top);
 
   if (w->resizable) {
     gtk_window_set_default_size(GTK_WINDOW(w->priv.window), w->width,

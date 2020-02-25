@@ -38,7 +38,8 @@ using namespace std;
 
 std::map<int, std::thread> threads;
 
-void uiThread(string appname, int port, int width, int height, int fullscreen) {
+void uiThread(string appname, int port, int width, int height,
+              int fullscreen, bool always_on_top, string iconfile) {
     struct webview webview;
     string url = ("http://localhost:" + std::to_string(port) + "/" + appname);
     memset(&webview, 0, sizeof(webview));
@@ -47,6 +48,8 @@ void uiThread(string appname, int port, int width, int height, int fullscreen) {
     webview.width = width;
     webview.height = height;
     webview.resizable = 1;
+    webview.always_on_top = always_on_top;
+    webview.iconfile = iconfile.c_str();
     int r = webview_init(&webview);
     webview_set_fullscreen(&webview, fullscreen);
     if (r != 0) {
@@ -98,14 +101,23 @@ int main(int argc, char **argv)
         int width = 800;
         int height = 600;
         int fullscreen = 0;
+        bool is_always_on_top = false;
+        std::string iconfile = "neutrolino.png";
         if(!options["window"].is_null()) {
             json windowProp = options["window"];
             width =  stoi(windowProp["width"].get<std::string>());
             height =  stoi(windowProp["height"].get<std::string>());
             if(!windowProp["fullscreen"].is_null())
                 fullscreen =  windowProp["fullscreen"].get<bool>() ? 1 : 0;
+
+            if(!windowProp["alwaysontop"].is_null())
+                is_always_on_top = windowProp["alwaysontop"].get<bool>();
+            
+            if(!windowProp["iconfile"].is_null())
+                iconfile = windowProp["iconfile"].get<std::string>();
         }
-        std::thread ren(uiThread, appname, port, width, height, fullscreen);
+        std::thread ren(uiThread, appname, port, width,
+                        height, fullscreen, is_always_on_top, iconfile);
         ren.detach();
     }
 
