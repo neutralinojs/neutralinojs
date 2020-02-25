@@ -6,7 +6,7 @@
         "width" : "1000",
         "height" : "700",
         "fullscreen" : false,
-        "alwaysOnTop" : false,
+        "alwaysontop" : false,
         "iconfile" : "neutrolino.png"
     }
 }

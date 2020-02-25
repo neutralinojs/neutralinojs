@@ -110,8 +110,8 @@ int main(int argc, char **argv)
             if(!windowProp["fullscreen"].is_null())
                 fullscreen =  windowProp["fullscreen"].get<bool>() ? 1 : 0;
 
-            if(!windowProp["alwaysOnTop"].is_null())
-                is_always_on_top = windowProp["alwaysOnTop"].get<bool>();
+            if(!windowProp["alwaysontop"].is_null())
+                is_always_on_top = windowProp["alwaysontop"].get<bool>();
             
             if(!windowProp["iconfile"].is_null())
                 iconfile = windowProp["iconfile"].get<std::string>();
