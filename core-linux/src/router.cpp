@@ -142,7 +142,7 @@ namespace routes {
                 }
                 else {
 
-                    return make_pair("{\"error\":\"Authnication error!\"}", "application/json");
+                    return make_pair("{\"error\":\"Authentication error!\"}", "application/json");
                 }
 
                 
