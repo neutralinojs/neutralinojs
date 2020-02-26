@@ -104,7 +104,7 @@ int main(int argc, char **argv)
         int height = 600;
         int fullscreen = 0;
         bool is_always_on_top = false;
-        std::string iconfile = "neutrolino.png";
+        std::string iconfile = "neutralino.png";
         int enable_inspector = 0;
         if(!options["window"].is_null()) {
             json windowProp = options["window"];

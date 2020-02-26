@@ -7,7 +7,7 @@
         "height" : "700",
         "fullscreen" : false,
         "alwaysontop" : false,
-        "iconfile" : "neutrolino.png",
+        "iconfile" : "neutralino.png",
         "enableinspector" : false
     }
 }
