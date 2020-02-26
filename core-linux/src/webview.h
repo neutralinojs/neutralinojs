@@ -333,6 +333,12 @@ WEBVIEW_API int webview_init(struct webview *w) {
         webkit_web_view_get_settings(WEBKIT_WEB_VIEW(w->priv.webview));
     webkit_settings_set_enable_write_console_messages_to_stdout(settings, true);
     webkit_settings_set_enable_developer_extras(settings, true);
+
+    // enable firefox/chrome like web developer tools
+    // aka inspector
+    WebKitWebInspector *inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(w->priv.webview));
+    webkit_web_inspector_show(WEBKIT_WEB_INSPECTOR(inspector));
+
   } else {
     g_signal_connect(G_OBJECT(w->priv.webview), "context-menu",
                      G_CALLBACK(webview_context_menu_cb), w);
