@@ -39,7 +39,8 @@ using namespace std;
 std::map<int, std::thread> threads;
 
 void uiThread(string appname, int port, int width, int height,
-              int fullscreen, bool always_on_top, string iconfile) {
+              int fullscreen, bool always_on_top, string iconfile,
+              int enable_inspector) {
     struct webview webview;
     string url = ("http://localhost:" + std::to_string(port) + "/" + appname);
     memset(&webview, 0, sizeof(webview));
@@ -50,6 +51,7 @@ void uiThread(string appname, int port, int width, int height,
     webview.resizable = 1;
     webview.always_on_top = always_on_top;
     webview.iconfile = iconfile.c_str();
+    webview.debug = enable_inspector;
     int r = webview_init(&webview);
     webview_set_fullscreen(&webview, fullscreen);
     if (r != 0) {
@@ -102,7 +104,8 @@ int main(int argc, char **argv)
         int height = 600;
         int fullscreen = 0;
         bool is_always_on_top = false;
-        std::string iconfile = "neutrolino.png";
+        std::string iconfile = "neutralino.png";
+        int enable_inspector = 0;
         if(!options["window"].is_null()) {
             json windowProp = options["window"];
             width =  stoi(windowProp["width"].get<std::string>());
@@ -115,9 +118,13 @@ int main(int argc, char **argv)
             
             if(!windowProp["iconfile"].is_null())
                 iconfile = windowProp["iconfile"].get<std::string>();
+
+            if(!windowProp["enableinspector"].is_null())
+                enable_inspector = windowProp["enableinspector"].get<bool>() ? 1 : 0;
         }
         std::thread ren(uiThread, appname, port, width,
-                        height, fullscreen, is_always_on_top, iconfile);
+                        height, fullscreen, is_always_on_top, iconfile,
+                        enable_inspector);
         ren.detach();
     }
 
