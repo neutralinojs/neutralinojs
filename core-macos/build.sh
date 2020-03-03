@@ -21,9 +21,10 @@
 # SOFTWARE.
 
 echo "Debug build for MacOSX" 
-mkdir -p build
+test ! -d build && mkdir -p build
 cd build || exit
 cmake ..
-echo $(sysctl -n hw.physicalcpu)
-make -j $(sysctl -n hw.physicalcpu)
+
+echo "Building with max core: $(sysctl -n hw.physicalcpu)"
+make -j "$(sysctl -n hw.physicalcpu)"
 
