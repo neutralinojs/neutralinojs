@@ -25,7 +25,6 @@ if [ -d build ]
 then 
     cmake --build .
 else
-    mkdir -p build && cd build && cmake ..
-    cmake -- build .
+    mkdir -p build && cd build && cmake .. && cmake -- build .
 fi
 
