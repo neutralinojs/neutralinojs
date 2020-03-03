@@ -120,7 +120,7 @@ Neutralino now supports MacOSX
 - CMake 3.15+
 
 ```bash
-bash build.sh macos
+$ bash build.sh macos
 ```
 
 #### Debug Builds
