@@ -1,6 +1,6 @@
 # MIT License
 
-# Copyright (c) 2018 Neutralinojs
+# Copyright (c) 2018-2020 Neutralinojs
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,12 +20,26 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+USER_PLATFORM="$1"
+if [ "$USER_PLATFORM" != linux ] && [ "$USER_PLATFORM" != macos ]
+then
+    echo "Error: platform must be either linux or macos!" 2>&1
+    exit 1
+fi
 
-cd core-linux
+cd "core-$USER_PLATFORM" || exit
 bash build.sh
+
 echo "Building neutralino.js"
-cd ../neutralino.js
+cd ../neutralino.js || exit
+
+if [ ! -d node_modules/ ]
+then
+    npm install
+fi
+
 npm run build
-cp dist/neutralino.js ../core-linux/bin/app/assets/neutralino.js
-cd ..
-cp -r core-linux/bin/* dist/
+cp dist/neutralino.js ../"core-$USER_PLATFORM"/bin/app/assets/neutralino.js
+
+cd .. || exit
+cp -r "core-$USER_PLATFORM"/bin/* dist/
