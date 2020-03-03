@@ -25,4 +25,5 @@ then
     cmake --build .
 else
     mkdir -p build && cd build && cmake ..
+    cmake -- build .
 fi
