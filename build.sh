@@ -33,11 +33,7 @@ bash build.sh
 echo "Building neutralino.js"
 cd ../neutralino.js || exit
 
-if [ ! -d node_modules/ ]
-then
-    npm install
-fi
-
+test ! -d node_modules/ && npm install
 npm run build
 cp dist/neutralino.js ../"core-$USER_PLATFORM"/bin/app/assets/neutralino.js
 
