@@ -20,10 +20,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+echo "Debug build for MacOSX"
 if [ -d build ]
-then
+then 
     cmake --build .
 else
     mkdir -p build && cd build && cmake ..
     cmake -- build .
 fi
+
