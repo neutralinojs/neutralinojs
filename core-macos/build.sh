@@ -20,11 +20,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-echo "Debug build for MacOSX"
-if [ -d build ]
-then 
-    cmake --build .
-else
-    mkdir -p build && cd build && cmake .. && cmake -- build .
-fi
+echo "Debug build for MacOSX" 
+mkdir -p build
+cd build || exit
+cmake ..
+echo $(sysctl -n hw.physicalcpu)
+make -j $(sysctl -n hw.physicalcpu)
 
