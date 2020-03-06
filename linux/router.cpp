@@ -33,7 +33,7 @@
 #include "core/storage/storage.h"
 #include "core/debug/debug.h"
 #include "core/app/app.h"
-#include "../lib/json/json.hpp"
+#include "json/json.hpp"
 #include "auth/authbasic.h"
 #include "ping/ping.h"
 #include "cloud/privileges.h"

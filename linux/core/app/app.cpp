@@ -23,7 +23,7 @@
 #include <iostream>
 #include <signal.h>
 #include <unistd.h>
-#include "../../../lib/json/json.hpp"
+#include "json/json.hpp"
 
 using namespace std;
 using json = nlohmann::json;

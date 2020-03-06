@@ -24,7 +24,7 @@
 #include <chrono>
 #include <thread>
 #include <vector>
-#include "../../lib/json/json.hpp"
+#include "json/json.hpp"
 #include "../settings.h"
 
 using namespace std;

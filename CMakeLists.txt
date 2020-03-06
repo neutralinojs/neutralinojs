@@ -10,10 +10,9 @@ find_library(PTHREAD pthread)
 pkg_check_modules(WEBKIT REQUIRED webkit2gtk-4.0)
 
 set(FRAMEWORK_FLAG -DWEBVIEW_GTK=1)
-set(LINK_OPTS ${PTHREAD} ${WEBKIT})
+set(LINK_OPTS ${PTHREAD})
 
-include_directories(core-shared)
-include_directories(core-shared/include)
+include_directories(core-shared core-shared/include)
 
 file(GLOB SOURCES
   linux/*.cpp
@@ -26,12 +25,13 @@ file(GLOB SOURCES
   linux/core/filesystem/*.cpp
   linux/core/os/*.cpp
   linux/core/storage/*.cpp)
-add_executable(neutralino ${SOURCES})
 
-target_link_libraries(neutralino core)
-target_link_libraries(neutralino auth)
-target_link_libraries(neutralino ping)
-target_link_libraries(neutralino cloud)
+add_executable(neutralino ${SOURCES})
+target_include_directories(neutralino PUBLIC core-shared)
+
+target_link_libraries(neutralino stdc++fs)
+target_link_libraries(neutralino ${WEBKIT_LIBRARIES})
+target_include_directories(neutralino PUBLIC ${WEBKIT_INCLUDE_DIRS})
 
 target_compile_options(neutralino PUBLIC ${FRAMEWORK_FLAG})
 target_link_libraries(neutralino ${LINK_OPTS})
