@@ -20,16 +20,40 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "../lib/json/json.hpp"
+#include <iostream>
+#include <sstream>
+#include <vector>
+#include <time.h>
 
 using namespace std;
-using json = nlohmann::json;
+namespace functions {
 
-namespace settings {
-    json getSettings();
-    json getOptions();
-    void setOption(string key, string value);
-    string getFileContent(string filename);
-    string getGlobalVars();
+    vector<string> split(const string &s, char delim) {
+        stringstream ss(s);
+        string item;
+        vector<string> tokens;
+        while (getline(ss, item, delim)) {
+            tokens.push_back(item);
+        }
+        return tokens;
+    }
+
+    string generateToken() {
+        srand (time(NULL));
+        
+        string s = "";
+        static const char alphanum[] =
+            "0123456789"
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "abcdefghijklmnopqrstuvwxyz";
+
+        for (int i = 0; i < 32; ++i) {
+            s += alphanum[rand() % (sizeof(alphanum) - 1)];
+        }
+
+        return s;
+    }
+
+    
+
 }
-

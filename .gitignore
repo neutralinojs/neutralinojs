@@ -6,4 +6,4 @@ Thumbs.db
 dist/neutralino
 dist/*.exe
 .DS_Store
-
+build/

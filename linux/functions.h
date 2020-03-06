@@ -20,20 +20,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-let myapp = {
-    myfunction : function () { document.getElementById('info').innerHTML = NL_NAME + " is running on port " +
-                    NL_PORT + " inside " + NL_OS + "<br/><br/>" + "<span>v" + NL_VERSION + "</span>"; }
-};
-    
+#include <vector>
 
-Neutralino.init({
-    load: function() {
-        myapp.myfunction();
-    },
-    pingSuccessCallback : function() {
+using namespace std;
 
-    },
-    pingFailCallback : function() {
-
-    }
-});
+namespace functions {
+    vector<string> split(const string &s, char delim);
+    string generateToken();
+}

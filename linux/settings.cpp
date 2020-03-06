@@ -22,7 +22,7 @@
 
 #include <iostream>
 #include <fstream>
-#include "../lib/json/json.hpp"
+#include "json/json.hpp"
 #include "auth/authbasic.h"
 #include "log.h"
 
