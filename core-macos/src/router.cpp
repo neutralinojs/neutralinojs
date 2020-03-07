@@ -73,6 +73,24 @@ namespace routes {
         else if(path == "/settings.json"){
             return make_pair(settings::getSettings().dump(), "application/json");
         }
+        else if(path.find("/assets") != string::npos && (path.find(".jpg") != string::npos || path.find(".jpeg") != string::npos)){
+            return make_pair(settings::getFileContentBinary("app" + path), "image/jpeg");
+        }
+        else if(path.find("/assets") != string::npos && path.find(".png") != string::npos){
+            return make_pair(settings::getFileContentBinary("app" + path), "image/png");
+        }
+        else if(path.find("/assets") != string::npos && path.find(".svg") != string::npos){
+            return make_pair(settings::getFileContentBinary("app" + path), "image/svg+xml");
+        }
+        else if(path.find("/assets") != string::npos && path.find(".gif") != string::npos){
+            return make_pair(settings::getFileContentBinary("app" + path), "image/gif");
+        }
+        else if(path.find("/assets") != string::npos && path.find(".ico") != string::npos){
+            return make_pair(settings::getFileContentBinary("app" + path), "image/x-icon");
+        }
+        else if(path.find("/assets") != string::npos && path.find(".woff2") != string::npos){
+            return make_pair(settings::getFileContentBinary("app" + path), "font/woff2");
+        }
         else if(path.find("/assets") != string::npos && path.find(".js") != string::npos){
             return make_pair(settings::getFileContent("app" + path), "text/javascript");
         }
