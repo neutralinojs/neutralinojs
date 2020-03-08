@@ -20,22 +20,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-USER_PLATFORM="$1"
-if [ "$USER_PLATFORM" != linux ] && [ "$USER_PLATFORM" != macos ]
-then
-    echo "Error: platform must be either linux or macos!" 2>&1
-    exit 1
-fi
+echo "Debug build for MacOSX" 
+test ! -d build && mkdir -p build
+cd build || exit
+cmake ..
 
-cd "core-$USER_PLATFORM" || exit
-bash build.sh
+echo "Building with max core: $(sysctl -n hw.physicalcpu)"
+make -j "$(sysctl -n hw.physicalcpu)"
 
-echo "Building neutralino.js"
-cd ../neutralino.js || exit
-
-test ! -d node_modules/ && npm install
-npm run build
-cp dist/neutralino.js ../"core-$USER_PLATFORM"/bin/app/assets/neutralino.js
-
-cd .. || exit
-cp -r "core-$USER_PLATFORM"/bin/* dist/

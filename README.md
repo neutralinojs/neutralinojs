@@ -119,14 +119,23 @@ Neutralino now supports MacOSX
 - Xcode Command Line Tools
 - CMake 3.15+
 
+```bash
+$ bash build.sh macos
+```
+
 #### Debug Builds
 
 Debug builds are unoptimized fat binaries containing debug information. This is the type you should use for any debugging purpose.
 
+##### Automatically
+- `cd core-macos`
+- `bash build.sh`
+
+##### Manually
 - `mkdir build`
 - `cd build`
 - `cmake ..`
-- `make -j 4`
+- `make -j "$(sysctl -n hw.physicalcpu)"`
 
 The resulting binary will be placed in **build** directory
 
@@ -137,7 +146,7 @@ Release builds are optimized binaries with a very small footprint. Suitable for 
 - `mkdir release`
 - `cd release`
 - `cmake .. -DCMAKE_BUILD_TYPE=Release`
-- `make -j 4`
+- `make -j "$(sysctl -n hw.physicalcpu)"`
 
 The resulting binary will be placed in **release** directory
 
