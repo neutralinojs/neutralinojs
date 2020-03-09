@@ -8,9 +8,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: configure
-      run: sudo apt-get install libgtk-3-dev -y && sudo apt-get update && sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev
+      run: sudo apt-get install libgtk-3-dev -y && sudo apt-get update && sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev zenity
     - name: build
-      run: bash build.sh linux
+      run: mkdir build; cd build; cmake ..; make; cp neutralino ../dist; [[ -z ../dist/neutralino ]]
 
   build-windows:
     runs-on: windows-latest
@@ -18,10 +18,3 @@ jobs:
     - uses: actions/checkout@v1
     - name: build
       run: ./build
-
-  build-osx:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v1
-    - name: Configure & Build
-      run: bash build.sh macos
