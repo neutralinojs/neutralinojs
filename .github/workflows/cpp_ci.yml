@@ -10,7 +10,7 @@ jobs:
     - name: configure
       run: sudo apt-get install libgtk-3-dev -y && sudo apt-get update && sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev zenity
     - name: build
-      run: mkdir build; cd build; cmake ..; make; cp neutralino ../dist; [[ -z ../dist/neutralino ]]
+      run: mkdir build; cd build; cmake ..; make; cp neutralino ../dist;
 
   build-windows:
     runs-on: windows-latest
