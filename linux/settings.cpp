@@ -45,6 +45,17 @@ namespace settings {
         return buffer;
     }
 
+    string getFileContentBinary(string filename){
+        vector<char> buffer;
+        ifstream ifd(filename.c_str(), ios::binary | ios::ate);
+        int size = ifd.tellg();
+        ifd.seekg(0, ios::beg);
+        buffer.resize(size);
+        ifd.read(buffer.data(), size);
+        string result(buffer.begin(), buffer.end());
+        return result;
+    }
+
     json getOptions(){
         return options;
     }
