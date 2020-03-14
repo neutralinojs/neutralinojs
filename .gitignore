@@ -7,3 +7,4 @@ dist/neutralino
 dist/*.exe
 .DS_Store
 build/
+.vscode/
