@@ -31,9 +31,8 @@ if(CMAKE_BUILD_PLATFORM STREQUAL "linux")
     linux/core/os/*.cpp
     linux/core/storage/*.cpp
   )
-endif()
 
-if(CMAKE_BUILD_PLATFORM STREQUAL "macos")
+elseif(CMAKE_BUILD_PLATFORM STREQUAL "macos")
   message(STATUS "Configuring MacOSX platform build..")
   set(FRAMEWORK_FLAG -DWEBVIEW_COCOA=1)
   find_library(WEBKIT Webkit)
