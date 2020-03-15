@@ -7,7 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 find_library(PTHREAD pthread)
 set(LINK_OPTS ${PTHREAD})
-include_directories(core-shared core-shared/include)
+include_directories(shared shared/include)
 
 if(CMAKE_BUILD_PLATFORM STREQUAL "linux")
   message(STATUS "Configuring Linux platform build..")
