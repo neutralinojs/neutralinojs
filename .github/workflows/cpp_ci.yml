@@ -8,9 +8,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: configure
-      run: sudo apt-get install libgtk-3-dev -y && sudo apt-get update && sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev zenity
+      run: sudo apt-get install libgtk-3-dev -y && sudo apt-get update && sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev zenity cmake
     - name: build
-      run: mkdir build; cd build; cmake ..; make; cp neutralino ../dist;
+      run: mkdir build; cd build; cmake -DCMAKE_BUILD_PLATFORM=linux ..; make; cp neutralino ../dist;
 
   build-windows:
     runs-on: windows-latest
@@ -25,10 +25,5 @@ jobs:
     - uses: actions/checkout@v1
     - name: Install CMake Latest
       run: brew install cmake
-    - name: Configure
-      run: cd core-macos && mkdir -p build && cmake ..
-      working-directory: core-macos
-      run: mkdir -p build && cd build && cmake ..
-    - name: Build
-      working-directory: core-macos/build
-      run: cmake --build .
+    - name: build
+      run: mkdir build; cd build; cmake -DCMAKE_BUILD_PLATFORM=macos ..; make; cp neutralino ../dist;
