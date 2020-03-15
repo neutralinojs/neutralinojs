@@ -23,4 +23,12 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v1
-      run: 
+    - name: Install CMake Latest
+      run: brew install cmake
+    - name: Configure
+      run: cd core-macos && mkdir -p build && cmake ..
+      working-directory: core-macos
+      run: mkdir -p build && cd build && cmake ..
+    - name: Build
+      working-directory: core-macos/build
+      run: cmake --build .
