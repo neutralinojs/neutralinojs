@@ -15,9 +15,9 @@ include_directories(shared shared/include)
 
 if(CMAKE_BUILD_PLATFORM STREQUAL "linux")
   message(STATUS "Configuring Linux platform build..")
+  set(FRAMEWORK_FLAG -DWEBVIEW_GTK=1)
   find_package(PkgConfig REQUIRED)
   pkg_check_modules(WEBKIT REQUIRED webkit2gtk-4.0)
-  set(FRAMEWORK_FLAG -DWEBVIEW_GTK=1)
   
   file(GLOB SOURCES
   linux/*.cpp
@@ -30,6 +30,12 @@ if(CMAKE_BUILD_PLATFORM STREQUAL "linux")
   linux/core/filesystem/*.cpp
   linux/core/os/*.cpp
   linux/core/storage/*.cpp)
+endif()
+
+if(CMAKE_BUILD_PLATFORM STREQUAL "macos")
+  message(STATUS "Configuring MacOSX platform build..")
+  set(FRAMEWORK_FLAG -DWEBVIEW_COCOA=1)
+  find_library(WEBKIT Webkit)
 endif()
 
 add_executable(neutralino ${SOURCES})
