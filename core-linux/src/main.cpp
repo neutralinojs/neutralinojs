@@ -40,7 +40,8 @@ std::map<int, std::thread> threads;
 
 void uiThread(string appname, int port, int width, int height,
               int fullscreen, bool always_on_top, string iconfile,
-              int enable_inspector, bool borderless_window) {
+              int enable_inspector, bool borderless_window)
+{
   struct webview webview;
   string url = ("http://localhost:" + std::to_string(port) + "/" + appname);
   memset(&webview, 0, sizeof(webview));
@@ -55,96 +56,100 @@ void uiThread(string appname, int port, int width, int height,
   webview.borderless_window = borderless_window;
   int r = webview_init(&webview);
   webview_set_fullscreen(&webview, fullscreen);
-  if (r != 0) {
+  if (r != 0)
+  {
     return;
   }
-  while (webview_loop(&webview, 1) == 0) {
+  while (webview_loop(&webview, 1) == 0)
+  {
   }
   webview_exit(&webview);
 }
 
 int main(int argc, char **argv)
 {
-    json options = settings::getSettings();
-    authbasic::generateToken();
-    ping::startPingReceiver();
-    privileges::getMode();
-    privileges::getBlacklist();
+  json options = settings::getSettings();
+  authbasic::generateToken();
+  ping::startPingReceiver();
+  privileges::getMode();
+  privileges::getBlacklist();
 
-    int port = stoi(options["appport"].get<string>());
-    string appname = options["appname"].get<std::string>();
-    string mode = privileges::getMode();
+  int port = stoi(options["appport"].get<string>());
+  string appname = options["appname"].get<std::string>();
+  string mode = privileges::getMode();
 
-        
-    int listenFd = Socket::createSocket();
-    Socket::setReuseAddr(listenFd, true);
-    struct sockaddr_in servAddr;
-    memset(&servAddr, 0, sizeof(servAddr));
-    servAddr.sin_family = AF_INET;
-    servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servAddr.sin_port = htons(port);
-    Socket::Bind(listenFd, servAddr);
+  int listenFd = Socket::createSocket();
+  Socket::setReuseAddr(listenFd, true);
+  struct sockaddr_in servAddr;
+  memset(&servAddr, 0, sizeof(servAddr));
+  servAddr.sin_family = AF_INET;
+  servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+  servAddr.sin_port = htons(port);
+  Socket::Bind(listenFd, servAddr);
 
-    struct sockaddr_in sin;
-    socklen_t len = sizeof(sin);
-    if (getsockname(listenFd, (struct sockaddr *)&sin, &len) == -1) {
-        perror("getsockname");
-    }
-    else {
-        port = ntohs(sin.sin_port);
-        settings::setOption("appport", std::to_string(port));
-    }
+  struct sockaddr_in sin;
+  socklen_t len = sizeof(sin);
+  if (getsockname(listenFd, (struct sockaddr *)&sin, &len) == -1)
+  {
+    perror("getsockname");
+  }
+  else
+  {
+    port = ntohs(sin.sin_port);
+    settings::setOption("appport", std::to_string(port));
+  }
 
-    Socket::Listen(listenFd);
+  Socket::Listen(listenFd);
 
-    if(mode == "browser") {
-        system(("xdg-open http://localhost:" + std::to_string(port) + "/" + appname).c_str());
-    }
-    else if(mode == "window"){
-        int width = 800;
-        int height = 600;
-        int fullscreen = 0;
-        bool is_always_on_top = false;
-        std::string iconfile = "neutralino.png";
-        int enable_inspector = 0;
-        bool is_borderless_window = true;
-        if(!options["window"].is_null()) {
-          json windowProp = options["window"];
-          width =  stoi(windowProp["width"].get<std::string>());
-          height =  stoi(windowProp["height"].get<std::string>());
-          if(!windowProp["fullscreen"].is_null())
-            fullscreen =  windowProp["fullscreen"].get<bool>() ? 1 : 0;
-
-          if(!windowProp["alwaysontop"].is_null())
-            is_always_on_top = windowProp["alwaysontop"].get<bool>();
-            
-          if(!windowProp["iconfile"].is_null())
-            iconfile = windowProp["iconfile"].get<std::string>();
-
-          if(!windowProp["enableinspector"].is_null())
-            enable_inspector = windowProp["enableinspector"].get<bool>() ? 1 : 0;
-
-          if (!windowProp["borderlesswindow"].is_null())
-            is_borderless_window = windowProp["borderlesswindow"].get<bool>();
-        }
-        std::thread ren(uiThread, appname, port, width,
-                        height, fullscreen, is_always_on_top, iconfile,
-                        enable_inspector, is_borderless_window);
-        ren.detach();
-    }
-
-
-    while(true)
+  if (mode == "browser")
+  {
+    system(("xdg-open http://localhost:" + std::to_string(port) + "/" + appname).c_str());
+  }
+  else if (mode == "window")
+  {
+    int width = 800;
+    int height = 600;
+    int fullscreen = 0;
+    bool is_always_on_top = false;
+    std::string iconfile = "neutralino.png";
+    int enable_inspector = 0;
+    bool is_borderless_window = true;
+    if (!options["window"].is_null())
     {
-        struct sockaddr_in clientAddr;
-        socklen_t clientAddrLen = sizeof(clientAddr);
-        memset(&clientAddr, 0, sizeof(clientAddr));
-        int connFd = Socket::Accept(listenFd, &clientAddr);
-        threads[connFd] = std::thread (Handler::handle, connFd);
-        threads[connFd].detach();
-        
-    }
-    Socket::Close(listenFd);
+      json windowProp = options["window"];
+      width = stoi(windowProp["width"].get<std::string>());
+      height = stoi(windowProp["height"].get<std::string>());
+      if (!windowProp["fullscreen"].is_null())
+        fullscreen = windowProp["fullscreen"].get<bool>() ? 1 : 0;
 
-    return 0;
+      if (!windowProp["alwaysontop"].is_null())
+        is_always_on_top = windowProp["alwaysontop"].get<bool>();
+
+      if (!windowProp["iconfile"].is_null())
+        iconfile = windowProp["iconfile"].get<std::string>();
+
+      if (!windowProp["enableinspector"].is_null())
+        enable_inspector = windowProp["enableinspector"].get<bool>() ? 1 : 0;
+
+      if (!windowProp["borderlesswindow"].is_null())
+        is_borderless_window = windowProp["borderlesswindow"].get<bool>();
+    }
+    std::thread ren(uiThread, appname, port, width,
+                    height, fullscreen, is_always_on_top, iconfile,
+                    enable_inspector, is_borderless_window);
+    ren.detach();
+  }
+
+  while (true)
+  {
+    struct sockaddr_in clientAddr;
+    socklen_t clientAddrLen = sizeof(clientAddr);
+    memset(&clientAddr, 0, sizeof(clientAddr));
+    int connFd = Socket::Accept(listenFd, &clientAddr);
+    threads[connFd] = std::thread(Handler::handle, connFd);
+    threads[connFd].detach();
+  }
+  Socket::Close(listenFd);
+
+  return 0;
 }
