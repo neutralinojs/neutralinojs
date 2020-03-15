@@ -105,6 +105,7 @@ struct webview {
   void *userdata;
   const char *iconfile;
   bool always_on_top;
+  bool borderless_window;
 };
 
 enum webview_dialog_type {
@@ -302,6 +303,9 @@ WEBVIEW_API int webview_init(struct webview *w) {
   w->priv.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(w->priv.window), w->title);
   gtk_window_set_icon_from_file(GTK_WINDOW(w->priv.window), w->iconfile, NULL);
+  if (w->borderless_window == true)
+    gtk_window_set_decorated(GTK_WINDOW(w->priv.window), false);
+    
   gtk_window_set_keep_above(GTK_WINDOW(w->priv.window), w->always_on_top);
 
   if (w->resizable) {
@@ -330,7 +334,7 @@ WEBVIEW_API int webview_init(struct webview *w) {
 
   if (w->debug) {
     WebKitSettings *settings =
-        webkit_web_view_get_settings(WEBKIT_WEB_VIEW(w->priv.webview));
+      webkit_web_view_get_settings(WEBKIT_WEB_VIEW(w->priv.webview));
     webkit_settings_set_enable_write_console_messages_to_stdout(settings, true);
     webkit_settings_set_enable_developer_extras(settings, true);
 

@@ -8,6 +8,7 @@
         "fullscreen" : false,
         "alwaysontop" : false,
         "iconfile" : "neutralino.png",
-        "enableinspector" : false
+        "enableinspector" : false,
+	"borderlesswindow" : false
     }
 }

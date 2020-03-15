@@ -40,26 +40,27 @@ std::map<int, std::thread> threads;
 
 void uiThread(string appname, int port, int width, int height,
               int fullscreen, bool always_on_top, string iconfile,
-              int enable_inspector) {
-    struct webview webview;
-    string url = ("http://localhost:" + std::to_string(port) + "/" + appname);
-    memset(&webview, 0, sizeof(webview));
-    webview.title = appname.c_str();
-    webview.url = url.c_str();
-    webview.width = width;
-    webview.height = height;
-    webview.resizable = 1;
-    webview.always_on_top = always_on_top;
-    webview.iconfile = iconfile.c_str();
-    webview.debug = enable_inspector;
-    int r = webview_init(&webview);
-    webview_set_fullscreen(&webview, fullscreen);
-    if (r != 0) {
-        return;
-    }
-    while (webview_loop(&webview, 1) == 0) {
-    }
-    webview_exit(&webview);
+              int enable_inspector, bool borderless_window) {
+  struct webview webview;
+  string url = ("http://localhost:" + std::to_string(port) + "/" + appname);
+  memset(&webview, 0, sizeof(webview));
+  webview.title = appname.c_str();
+  webview.url = url.c_str();
+  webview.width = width;
+  webview.height = height;
+  webview.resizable = 1;
+  webview.always_on_top = always_on_top;
+  webview.iconfile = iconfile.c_str();
+  webview.debug = enable_inspector;
+  webview.borderless_window = borderless_window;
+  int r = webview_init(&webview);
+  webview_set_fullscreen(&webview, fullscreen);
+  if (r != 0) {
+    return;
+  }
+  while (webview_loop(&webview, 1) == 0) {
+  }
+  webview_exit(&webview);
 }
 
 int main(int argc, char **argv)
@@ -106,25 +107,29 @@ int main(int argc, char **argv)
         bool is_always_on_top = false;
         std::string iconfile = "neutralino.png";
         int enable_inspector = 0;
+        bool is_borderless_window = true;
         if(!options["window"].is_null()) {
-            json windowProp = options["window"];
-            width =  stoi(windowProp["width"].get<std::string>());
-            height =  stoi(windowProp["height"].get<std::string>());
-            if(!windowProp["fullscreen"].is_null())
-                fullscreen =  windowProp["fullscreen"].get<bool>() ? 1 : 0;
+          json windowProp = options["window"];
+          width =  stoi(windowProp["width"].get<std::string>());
+          height =  stoi(windowProp["height"].get<std::string>());
+          if(!windowProp["fullscreen"].is_null())
+            fullscreen =  windowProp["fullscreen"].get<bool>() ? 1 : 0;
 
-            if(!windowProp["alwaysontop"].is_null())
-                is_always_on_top = windowProp["alwaysontop"].get<bool>();
+          if(!windowProp["alwaysontop"].is_null())
+            is_always_on_top = windowProp["alwaysontop"].get<bool>();
             
-            if(!windowProp["iconfile"].is_null())
-                iconfile = windowProp["iconfile"].get<std::string>();
+          if(!windowProp["iconfile"].is_null())
+            iconfile = windowProp["iconfile"].get<std::string>();
 
-            if(!windowProp["enableinspector"].is_null())
-                enable_inspector = windowProp["enableinspector"].get<bool>() ? 1 : 0;
+          if(!windowProp["enableinspector"].is_null())
+            enable_inspector = windowProp["enableinspector"].get<bool>() ? 1 : 0;
+
+          if (!windowProp["borderlesswindow"].is_null())
+            is_borderless_window = windowProp["borderlesswindow"].get<bool>();
         }
         std::thread ren(uiThread, appname, port, width,
                         height, fullscreen, is_always_on_top, iconfile,
-                        enable_inspector);
+                        enable_inspector, is_borderless_window);
         ren.detach();
     }
 
