@@ -1,6 +1,10 @@
 cmake_minimum_required (VERSION 3.10)
 project(NeutralinoJS)
 
+if (NOT CMAKE_BUILD_PLATFORM)
+  message(FATAL_ERROR "\nCMake don't know which platform to target!\nConsider using cmake -DCMAKE_BUILD_PLATFORM=<your-platform ..\nPlease try again.")
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
