@@ -82,6 +82,7 @@ To create Neutralino developer environment in your pc, install these tool kits.
 
 Install GTk and webkit libraries
 
+#### On Debian/Ubuntu based OS
 ```bash
 $ sudo apt-get install libgtk-3-dev
 $ sudo add-apt-repository ppa:webkit-team/ppa
@@ -90,7 +91,7 @@ $ sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev
 ```
 
 ```bash
-$ bash build.sh
+$ bash build.sh linux
 ```
 Neutralino platform components will be assembled in `/dist`
 
