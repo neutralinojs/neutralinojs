@@ -31,6 +31,7 @@ using namespace std;
 namespace functions {
     vector<string> split(const string &s, char delim);
     string generateToken(int len = 32);
+    string decodeUrl(string &encoded);
 }
 
 #endif // end of FUNCTIONS_H
