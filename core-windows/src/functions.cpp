@@ -55,5 +55,23 @@ namespace functions {
         return s;
     }
 
+    string decodeUrl(string &encoded) {
+        string decoded;
+        char c;
+        int i, j;
+
+        for (i = 0; i < encoded.length(); ++i) {
+            if (int(encoded[i]) == 37) {
+                sscanf(encoded.substr(i + 1, 2).c_str(), "%x", &j);
+                c = static_cast<char>(j);
+                decoded += c;
+                i += 2;
+            } else {
+                decoded += encoded[i];
+            }
+        }
+
+        return decoded;
+    }
 
 }
