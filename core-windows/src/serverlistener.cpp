@@ -36,8 +36,8 @@
 #include "cloud/privileges.h"
 #include "webv.h"
 
-void uiThread(string appname, string port, int width, int height, int fullscreen) {
-      web_view(appname.c_str(), ("http://localhost:" + port + "/" + appname).c_str(), width, height, fullscreen);
+void uiThread(string appname, string port, int width, int height, int fullscreen, bool always_on_top, string iconfile) {
+      web_view(appname.c_str(), ("http://localhost:" + port + "/" + appname).c_str(), width, height, fullscreen, always_on_top, iconfile.c_str());
 }
 
 ServerListener::ServerListener(int port, size_t buffer_size) {
@@ -116,14 +116,22 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
         int width = 800;
         int height = 600;
         int fullscreen = 0;
+        bool is_always_on_top = false;
+        string iconfile = "neutralino.png";
         if(!options["window"].is_null()) {
             json windowProp = options["window"];
             width =  stoi(windowProp["width"].get<std::string>());
             height =  stoi(windowProp["height"].get<std::string>());
             if(!windowProp["fullscreen"].is_null())
                 fullscreen =  windowProp["fullscreen"].get<bool>() ? 1 : 0;
+            
+            if(!windowProp["alwaysontop"].is_null())
+                is_always_on_top = windowProp["alwaysontop"].get<bool>();
+            
+            if(!windowProp["iconfile"].is_null())
+                iconfile = windowProp["iconfile"].get<std::string>();
         }
-        std::thread ren(uiThread, appname, appport, width, height, fullscreen);
+        std::thread ren(uiThread, appname, appport, width, height, fullscreen, is_always_on_top, iconfile);
         ren.detach();
     }
     
