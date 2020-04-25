@@ -22,6 +22,8 @@
 
 #include <iostream>
 #include <fstream>
+#include <unistd.h>
+#include <limits.h>
 #include "../lib/json/json.hpp"
 #include "auth/authbasic.h"
 #include "log.h"
@@ -56,6 +58,11 @@ namespace settings {
         return result;
     }
 
+    string getCurrentDir() {
+        char cwd[PATH_MAX];
+        return getcwd(cwd, sizeof(cwd));
+    }
+
     json getOptions(){
         return options;
     }
@@ -84,6 +91,7 @@ namespace settings {
         s += "var NL_PORT=" + settings["appport"].get<std::string>() + ";";
         s += "var NL_MODE='" + settings["mode"].get<std::string>() + "';";
         s += "var NL_TOKEN='" + authbasic::getToken() + "';";   
+        s += "var NL_CWD='" + settings::getCurrentDir() + "';";
 
         if(settings["globals"] != NULL) {
             for ( auto it: settings["globals"].items()) {
