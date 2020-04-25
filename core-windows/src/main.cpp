@@ -22,15 +22,20 @@
 
 #include <winsock2.h>
 #include <windows.h>
+#include <gdiplus.h>
 #include "serverlistener.h"
 
 using namespace std;
-
+using namespace Gdiplus;
 int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPTSTR    lpCmdLine,
                      int       nCmdShow) {
+    GdiplusStartupInput gdiplusStartupInput;
+    ULONG_PTR gdiplusToken;
+    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
     ServerListener().run();
+    GdiplusShutdown(gdiplusToken);
     return 0;
 }
 

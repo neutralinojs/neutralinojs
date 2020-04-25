@@ -56,7 +56,8 @@ struct webview_priv {
 #elif defined(WEBVIEW_WINAPI)
 #define CINTERFACE
 #include <windows.h>
-
+#include <gdiplus.h>
+#include <tchar.h>
 #include <commctrl.h>
 #include <exdisp.h>
 #include <mshtmhst.h>
@@ -104,6 +105,8 @@ struct webview {
   webview_external_invoke_cb_t external_invoke_cb;
   struct webview_priv priv;
   void *userdata;
+  bool always_on_top;
+  const char *iconfile; 
 };
 
 enum webview_dialog_type {
@@ -1216,6 +1219,11 @@ WEBVIEW_API int webview_init(struct webview *w) {
   wc.hInstance = hInstance;
   wc.lpfnWndProc = wndproc;
   wc.lpszClassName = classname;
+  wchar_t *iconFile = webview_to_utf16(w->iconfile);
+  Gdiplus::Bitmap* icon = Gdiplus::Bitmap::FromFile(iconFile, TRUE);
+  HICON hIcon;
+  icon->GetHICON(&hIcon);
+  wc.hIcon = hIcon;
   RegisterClassEx(&wc);
 
   style = WS_OVERLAPPEDWINDOW;
@@ -1244,6 +1252,10 @@ WEBVIEW_API int webview_init(struct webview *w) {
   if (w->priv.hwnd == 0) {
     OleUninitialize();
     return -1;
+  }
+
+  if (w->always_on_top) {
+    SetWindowPos( w->priv.hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
   }
 
   SetWindowLongPtr(w->priv.hwnd, GWLP_USERDATA, (LONG_PTR)w);
