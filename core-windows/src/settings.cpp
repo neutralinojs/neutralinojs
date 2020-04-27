@@ -22,6 +22,17 @@
 
 #include <iostream>
 #include <fstream>
+#ifndef __has_include
+  static_assert(false, "__has_include not supported");
+#else
+#  if __has_include(<filesystem>)
+#    include <filesystem>
+     namespace fs = std::filesystem;
+#  elif __has_include(<experimental/filesystem>)
+#    include <experimental/filesystem>
+     namespace fs = std::experimental::filesystem;
+#  endif
+#endif
 #include "../lib/json/json.hpp"
 #include "auth/authbasic.h"
 #include "log.h"
@@ -56,6 +67,10 @@ namespace settings {
         return result;
     }
 
+    string getCurrentDir() {
+        return fs::current_path().generic_string();
+    }
+
     json getOptions(){
         return options;
     }
@@ -84,6 +99,7 @@ namespace settings {
         s += "var NL_PORT=" + settings["appport"].get<std::string>() + ";";
         s += "var NL_MODE='" + settings["mode"].get<std::string>() + "';";
         s += "var NL_TOKEN='" + authbasic::getToken() + "';";  
+        s += "var NL_CWD='" + settings::getCurrentDir() + "';";
 
         if(settings["globals"] != NULL) {
             for ( auto it: settings["globals"].items()) {

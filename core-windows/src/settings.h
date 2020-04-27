@@ -32,5 +32,6 @@ namespace settings {
     string getFileContent(string filename);
     string getFileContentBinary(string filename);
     string getGlobalVars();
+    string getCurrentDir();
 }
 
