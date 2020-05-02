@@ -39,13 +39,13 @@ using namespace std;
 std::map<int, std::thread> threads;
 
 void uiThread(string appname, int port, int width, int height,
-              int fullscreen, bool always_on_top, string iconfile,
+              int fullscreen, string title, bool always_on_top, string iconfile,
               int enable_inspector, bool borderless_window)
 {
   struct webview webview;
   string url = ("http://localhost:" + std::to_string(port) + "/" + appname);
   memset(&webview, 0, sizeof(webview));
-  webview.title = appname.c_str();
+  webview.title = title.c_str();
   webview.url = url.c_str();
   webview.width = width;
   webview.height = height;
@@ -112,8 +112,9 @@ int main(int argc, char **argv)
     int fullscreen = 0;
     bool is_always_on_top = false;
     std::string iconfile = "neutralino.png";
+    std::string title = "Neutralino window";
     int enable_inspector = 0;
-    bool is_borderless_window = true;
+    bool is_borderless_window = false;
     if (!options["window"].is_null())
     {
       json windowProp = options["window"];
@@ -124,6 +125,9 @@ int main(int argc, char **argv)
 
       if (!windowProp["alwaysontop"].is_null())
         is_always_on_top = windowProp["alwaysontop"].get<bool>();
+      
+      if (!windowProp["title"].is_null())
+        title = windowProp["title"].get<std::string>();
 
       if (!windowProp["iconfile"].is_null())
         iconfile = windowProp["iconfile"].get<std::string>();
@@ -131,11 +135,11 @@ int main(int argc, char **argv)
       if (!windowProp["enableinspector"].is_null())
         enable_inspector = windowProp["enableinspector"].get<bool>() ? 1 : 0;
 
-      if (!windowProp["borderlesswindow"].is_null())
-        is_borderless_window = windowProp["borderlesswindow"].get<bool>();
+      if (!windowProp["borderless"].is_null())
+        is_borderless_window = windowProp["borderless"].get<bool>();
     }
     std::thread ren(uiThread, appname, port, width,
-                    height, fullscreen, is_always_on_top, iconfile,
+                    height, fullscreen, title, is_always_on_top, iconfile,
                     enable_inspector, is_borderless_window);
     ren.detach();
   }
