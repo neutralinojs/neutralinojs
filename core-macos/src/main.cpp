@@ -39,11 +39,11 @@ using namespace std;
 
 std::map<int, std::thread> threads;
 
-void runUi(string appname, int port, int width, int height, int fullscreen) {
+void runUi(string appname, int port, int width, int height, int fullscreen, string title) {
     struct webview webview;
     string url = ("http://localhost:" + std::to_string(port) + "/" + appname);
     memset(&webview, 0, sizeof(webview));
-    webview.title = appname.c_str();
+    webview.title = title.c_str();
     webview.url = url.c_str();
     webview.width = width;
     webview.height = height;
@@ -112,16 +112,19 @@ int main(int argc, char **argv)
         int width = 800;
         int height = 600;
         int fullscreen = 0;
+        string title = "Neutralino window";
         if(!options["window"].is_null()) {
             json windowProp = options["window"];
             width =  stoi(windowProp["width"].get<std::string>());
             height =  stoi(windowProp["height"].get<std::string>());
             if(!windowProp["fullscreen"].is_null())
                 fullscreen =  windowProp["fullscreen"].get<bool>() ? 1 : 0;
+            if(!windowProp["title"].is_null())
+                title = windowProp["title"].get<std::string>();
         }
         std::thread srv(runServer, listenFd);
         srv.detach();
-        runUi(appname, port, width, height, fullscreen);
+        runUi(appname, port, width, height, fullscreen, title);
     }
 
     return 0;

@@ -36,8 +36,6 @@ json options;
 
 namespace settings {
     string getFileContent(string filename){
-        INFO() << "Loading: " << filename;
-
         // Latest MACOS requires to obtain a full path to resources using Bundle API
         #ifdef __APPLE__    
         CFBundleRef mainBundle = CFBundleGetMainBundle();
@@ -51,7 +49,6 @@ namespace settings {
         
         std::string ppath(path);
         filename = ppath + "/" + filename;
-        DEBUG() << "Resolving: " << filename;
         #endif
 
         ifstream iFile(filename);
@@ -71,18 +68,28 @@ namespace settings {
     }
 
     string getFileContentBinary(string filename){
+        // Latest MACOS requires to obtain a full path to resources using Bundle API
+        #ifdef __APPLE__    
+        CFBundleRef mainBundle = CFBundleGetMainBundle();
+        CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
+        char path[PATH_MAX];
+        if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)path, PATH_MAX))
+        {
+            // error!
+        }
+        CFRelease(resourcesURL);
+        std::string ppath(path);
+        filename = ppath + "/" + filename;
+        #endif
         string result = "";
-        return result;
-        /*
         vector<char> buffer;
         ifstream ifd(filename.c_str(), ios::binary | ios::ate);
         int size = ifd.tellg();
         ifd.seekg(0, ios::beg);
         buffer.resize(size);
         ifd.read(buffer.data(), size);
-        string result(buffer.begin(), buffer.end());
+        result = string(buffer.begin(), buffer.end());
         return result;
-        */
     }
 
     json getOptions(){
