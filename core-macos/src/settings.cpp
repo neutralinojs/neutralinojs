@@ -93,6 +93,7 @@ namespace settings {
         s += "var NL_PORT=" + settings["appport"].get<std::string>() + ";";
         s += "var NL_MODE='" + settings["mode"].get<std::string>() + "';";
         s += "var NL_TOKEN='" + authbasic::getToken() + "';";   
+        s += "var NL_CWD='" + functions::getAppPath() + "';";
 
         if(settings["globals"] != NULL) {
             for ( auto it: settings["globals"].items()) {
