@@ -39,7 +39,8 @@ using namespace std;
 
 std::map<int, std::thread> threads;
 
-void runUi(string appname, int port, int width, int height, int fullscreen, string title) {
+void runUi(string appname, int port, int width, int height, int fullscreen, 
+            string title, bool always_on_top, bool borderless) {
     struct webview webview;
     string url = ("http://localhost:" + std::to_string(port) + "/" + appname);
     memset(&webview, 0, sizeof(webview));
@@ -48,6 +49,8 @@ void runUi(string appname, int port, int width, int height, int fullscreen, stri
     webview.width = width;
     webview.height = height;
     webview.resizable = 1;
+    webview.always_on_top = always_on_top;
+    webview.borderless_window = borderless;
     int r = webview_init(&webview);
     webview_set_fullscreen(&webview, fullscreen);
     if (r != 0) {
@@ -112,19 +115,25 @@ int main(int argc, char **argv)
         int width = 800;
         int height = 600;
         int fullscreen = 0;
+        bool is_always_on_top = false;
+        bool is_borderless_window = false;
         string title = "Neutralino window";
         if(!options["window"].is_null()) {
             json windowProp = options["window"];
             width =  stoi(windowProp["width"].get<std::string>());
             height =  stoi(windowProp["height"].get<std::string>());
             if(!windowProp["fullscreen"].is_null())
-                fullscreen =  windowProp["fullscreen"].get<bool>() ? 1 : 0;
+                fullscreen =  windowProp["fullscreen"].get<bool>() ? 1 : 0;   
+            if (!windowProp["alwaysontop"].is_null())
+                is_always_on_top = windowProp["alwaysontop"].get<bool>();
+            if (!windowProp["borderless"].is_null())
+                is_borderless_window = windowProp["borderless"].get<bool>();
             if(!windowProp["title"].is_null())
                 title = windowProp["title"].get<std::string>();
         }
         std::thread srv(runServer, listenFd);
         srv.detach();
-        runUi(appname, port, width, height, fullscreen, title);
+        runUi(appname, port, width, height, fullscreen, title, is_always_on_top, is_borderless_window);
     }
 
     return 0;

@@ -62,7 +62,6 @@ struct webview_priv {
 #include <mshtmhst.h>
 #include <mshtml.h>
 #include <shobjidl.h>
-
 #include <stdio.h>
 
 struct webview_priv {
@@ -104,6 +103,9 @@ struct webview {
   webview_external_invoke_cb_t external_invoke_cb;
   struct webview_priv priv;
   void *userdata;
+  const char *iconfile;
+  bool always_on_top;
+  bool borderless_window;
 };
 
 enum webview_dialog_type {
@@ -300,6 +302,11 @@ WEBVIEW_API int webview_init(struct webview *w) {
   w->priv.queue = g_async_queue_new();
   w->priv.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(w->priv.window), w->title);
+  gtk_window_set_icon_from_file(GTK_WINDOW(w->priv.window), w->iconfile, NULL);
+  if (w->borderless_window == true)
+    gtk_window_set_decorated(GTK_WINDOW(w->priv.window), false);
+    
+  gtk_window_set_keep_above(GTK_WINDOW(w->priv.window), w->always_on_top);
 
   if (w->resizable) {
     gtk_window_set_default_size(GTK_WINDOW(w->priv.window), w->width,
@@ -327,9 +334,15 @@ WEBVIEW_API int webview_init(struct webview *w) {
 
   if (w->debug) {
     WebKitSettings *settings =
-        webkit_web_view_get_settings(WEBKIT_WEB_VIEW(w->priv.webview));
+      webkit_web_view_get_settings(WEBKIT_WEB_VIEW(w->priv.webview));
     webkit_settings_set_enable_write_console_messages_to_stdout(settings, true);
     webkit_settings_set_enable_developer_extras(settings, true);
+
+    // enable firefox/chrome like web developer tools
+    // aka inspector
+    WebKitWebInspector *inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(w->priv.webview));
+    webkit_web_inspector_show(WEBKIT_WEB_INSPECTOR(inspector));
+
   } else {
     g_signal_connect(G_OBJECT(w->priv.webview), "context-menu",
                      G_CALLBACK(webview_context_menu_cb), w);
@@ -1603,6 +1616,7 @@ WEBVIEW_API void webview_print_log(const char *s) { OutputDebugString(s); }
 #define NSWindowStyleMaskTitled 1
 #define NSWindowStyleMaskClosable 2
 #define NSWindowStyleMaskFullScreen (1 << 14)
+#define NSFloatingWindowLevel 5
 #define NSViewWidthSizable 2
 #define NSViewHeightSizable 16
 #define NSBackingStoreBuffered 2
@@ -1862,12 +1876,15 @@ WEBVIEW_API int webview_init(struct webview *w) {
 
   CGRect r = CGRectMake(0, 0, w->width, w->height);
 
-  unsigned int style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
+  unsigned int style = NSWindowStyleMaskClosable |
                        NSWindowStyleMaskMiniaturizable;
   if (w->resizable) {
     style = style | NSWindowStyleMaskResizable;
   }
-
+  
+  if(!w->borderless_window) {
+    style = style | NSWindowStyleMaskTitled;
+  }
   w->priv.window =
       objc_msgSend((id)objc_getClass("NSWindow"), sel_registerName("alloc"));
   objc_msgSend(w->priv.window,
@@ -1880,6 +1897,9 @@ WEBVIEW_API int webview_init(struct webview *w) {
                w->priv.windowDelegate);
   objc_msgSend(w->priv.window, sel_registerName("center"));
 
+  if(w->always_on_top) {
+    objc_msgSend(w->priv.window, sel_registerName("setLevel:"), NSFloatingWindowLevel);
+  }
   Class __WKUIDelegate =
       objc_allocateClassPair(objc_getClass("NSObject"), "__WKUIDelegate", 0);
   class_addProtocol(__WKUIDelegate, objc_getProtocol("WKUIDelegate"));
