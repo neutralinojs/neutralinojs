@@ -36,8 +36,8 @@
 #include "cloud/privileges.h"
 #include "webv.h"
 
-void uiThread(string appname, string port, int width, int height, int fullscreen, bool always_on_top, string iconfile) {
-      web_view(appname.c_str(), ("http://localhost:" + port + "/" + appname).c_str(), width, height, fullscreen, always_on_top, iconfile.c_str());
+void uiThread(string appname, string port, int width, int height, int fullscreen, string title, bool always_on_top, bool borderless, string iconfile) {
+      web_view(title.c_str(), ("http://localhost:" + port + "/" + appname).c_str(), width, height, fullscreen, always_on_top, borderless, iconfile.c_str());
 }
 
 ServerListener::ServerListener(int port, size_t buffer_size) {
@@ -117,7 +117,9 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
         int height = 600;
         int fullscreen = 0;
         bool is_always_on_top = false;
+        bool is_borderless_window = false;
         string iconfile = "neutralino.png";
+        string title = "Neutralino window";
         if(!options["window"].is_null()) {
             json windowProp = options["window"];
             width =  stoi(windowProp["width"].get<std::string>());
@@ -127,11 +129,17 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
             
             if(!windowProp["alwaysontop"].is_null())
                 is_always_on_top = windowProp["alwaysontop"].get<bool>();
+
+            if(!windowProp["borderless"].is_null())
+                is_borderless_window = windowProp["borderless"].get<bool>();
             
             if(!windowProp["iconfile"].is_null())
                 iconfile = windowProp["iconfile"].get<std::string>();
+
+            if(!windowProp["title"].is_null())
+                title = windowProp["title"].get<std::string>();
         }
-        std::thread ren(uiThread, appname, appport, width, height, fullscreen, is_always_on_top, iconfile);
+        std::thread ren(uiThread, appname, appport, width, height, fullscreen, title, is_always_on_top, is_borderless_window, iconfile);
         ren.detach();
     }
     

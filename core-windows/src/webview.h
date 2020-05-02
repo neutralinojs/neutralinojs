@@ -106,6 +106,7 @@ struct webview {
   struct webview_priv priv;
   void *userdata;
   bool always_on_top;
+  bool borderless_window;
   const char *iconfile; 
 };
 
@@ -1256,6 +1257,10 @@ WEBVIEW_API int webview_init(struct webview *w) {
 
   if (w->always_on_top) {
     SetWindowPos( w->priv.hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
+  }
+
+  if (w->borderless_window) {
+    SetWindowLong(w->priv.hwnd, GWL_STYLE, 0);
   }
 
   SetWindowLongPtr(w->priv.hwnd, GWLP_USERDATA, (LONG_PTR)w);
