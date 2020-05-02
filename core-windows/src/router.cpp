@@ -57,10 +57,9 @@ namespace routes {
         return "<html style=\"width: 100%; height: 100%; position: absolute; background-repeat:no-repeat; background-position: center; background-color: black; background-image:url('" + routes::getIcon() + "')\"></html>";
     }
 
-    pair<string, string> handle(string encodedPath, string j, string token) {
+    pair<string, string> handle(string path, string j, string token) {
         json options = settings::getOptions();
         ping::receivePing();
-        string path = functions::decodeUrl(encodedPath);
 
         string appname = options["appname"];
         if(path == "/" +  appname ){
