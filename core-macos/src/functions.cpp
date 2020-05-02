@@ -25,6 +25,10 @@
 #include <vector>
 #include <time.h>
 
+#ifdef __APPLE__
+#include "CoreFoundation/CoreFoundation.h"
+#endif
+
 using namespace std;
 namespace functions {
 
@@ -54,6 +58,22 @@ namespace functions {
         return s;
     }
 
-    
+    string getAppPath() {
+        // Latest MACOS requires to obtain a full path to resources using Bundle API
+        #ifdef __APPLE__    
+        CFBundleRef mainBundle = CFBundleGetMainBundle();
+        CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
+        char path[PATH_MAX];
+        if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)path, PATH_MAX))
+        {
+            // error!
+        }
+        CFRelease(resourcesURL);
+        
+        std::string ppath(path);
+        return ppath;
+        #endif
+        return "";
+    }
 
 }

@@ -1,15 +1,14 @@
 #include "log.h"
+#include "../functions.h"
 
 std::mutex log::_mutex;
 std::atomic<bool> log::_log_to_file (true);
 std::atomic<bool> log::_log_to_stdout (true);
-std::filesystem::path log::_logfile_path
-    (std::filesystem::current_path() / "neutralinojs.log");
 
 log::log() :  _lock_guard (_mutex)
 {
     if (_log_to_file) {
-        _log_file.open("neutralinojs.log", std::ios::app);
+        _log_file.open(functions::getAppPath() + "/neutralinojs.log", std::ios::app);
     }
 }
 

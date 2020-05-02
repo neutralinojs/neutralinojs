@@ -25,10 +25,8 @@
 #include "nlohmann/json.hpp"
 #include "auth/authbasic.h"
 #include "core/include/log.h"
+#include "functions.h"
 
-#ifdef __APPLE__
-#include "CoreFoundation/CoreFoundation.h"
-#endif
 
 using namespace std;
 using json = nlohmann::json;
@@ -36,21 +34,7 @@ json options;
 
 namespace settings {
     string getFileContent(string filename){
-        // Latest MACOS requires to obtain a full path to resources using Bundle API
-        #ifdef __APPLE__    
-        CFBundleRef mainBundle = CFBundleGetMainBundle();
-        CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
-        char path[PATH_MAX];
-        if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)path, PATH_MAX))
-        {
-            // error!
-        }
-        CFRelease(resourcesURL);
-        
-        std::string ppath(path);
-        filename = ppath + "/" + filename;
-        #endif
-
+        filename = functions::getAppPath() + "/" + filename;
         ifstream iFile(filename);
         if(!iFile){
             ERROR() << "Cannot read: " << filename;
@@ -68,19 +52,7 @@ namespace settings {
     }
 
     string getFileContentBinary(string filename){
-        // Latest MACOS requires to obtain a full path to resources using Bundle API
-        #ifdef __APPLE__    
-        CFBundleRef mainBundle = CFBundleGetMainBundle();
-        CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
-        char path[PATH_MAX];
-        if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)path, PATH_MAX))
-        {
-            // error!
-        }
-        CFRelease(resourcesURL);
-        std::string ppath(path);
-        filename = ppath + "/" + filename;
-        #endif
+        filename = functions::getAppPath() + "/" + filename;
         string result = "";
         vector<char> buffer;
         ifstream ifd(filename.c_str(), ios::binary | ios::ate);
