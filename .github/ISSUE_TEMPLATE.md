@@ -14,5 +14,6 @@ Description about how the framework is actually behaving and deviating from the 
 
 **Specifications**  
 * NeutralinoJs Version: [Version number of NeutralinoJs framework]
+* NeutralinoJs CLI version: [neu-cli version]
 * Platform: [Platform specifications] 
 
