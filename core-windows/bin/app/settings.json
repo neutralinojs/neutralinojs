@@ -2,6 +2,7 @@
     "appname" : "myapp",
     "appport" : "5006",
     "mode" : "window",
+    "url" : "/",
     "window" : {
         "title": "My app",
         "width" : "1000",
