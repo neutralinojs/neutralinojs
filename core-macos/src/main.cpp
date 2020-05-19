@@ -40,9 +40,8 @@ using namespace std;
 std::map<int, std::thread> threads;
 
 void runUi(string appname, int port, int width, int height, int fullscreen, 
-            string title, bool always_on_top, bool borderless) {
+            string title, bool always_on_top, bool borderless, string url) {
     struct webview webview;
-    string url = ("http://localhost:" + std::to_string(port) + "/" + appname);
     memset(&webview, 0, sizeof(webview));
     webview.title = title.c_str();
     webview.url = url.c_str();
@@ -84,6 +83,10 @@ int main(int argc, char **argv)
 
     int port = stoi(options["appport"].get<string>());
     string appname = options["appname"].get<std::string>();
+    string navigateUrl = ("http://localhost:" + std::to_string(port) + "/" + appname);
+    if(!options["url"].is_null() && options["url"].get<string>() != "/")
+        navigateUrl = options["url"];
+
     string mode = privileges::getMode();
 
     int listenFd = Socket::createSocket();
@@ -108,7 +111,7 @@ int main(int argc, char **argv)
     Socket::Listen(listenFd);
 
     if(mode == "browser") {
-        system(("open http://localhost:" + std::to_string(port) + "/" + appname).c_str());
+        system(("open " + navigateUrl).c_str());
         runServer(listenFd);
     }
     else if(mode == "window"){
@@ -133,7 +136,7 @@ int main(int argc, char **argv)
         }
         std::thread srv(runServer, listenFd);
         srv.detach();
-        runUi(appname, port, width, height, fullscreen, title, is_always_on_top, is_borderless_window);
+        runUi(appname, port, width, height, fullscreen, title, is_always_on_top, is_borderless_window, navigateUrl);
     }
 
     return 0;
