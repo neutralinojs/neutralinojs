@@ -40,10 +40,9 @@ std::map<int, std::thread> threads;
 
 void uiThread(string appname, int port, int width, int height,
               int fullscreen, string title, bool always_on_top, string iconfile,
-              int enable_inspector, bool borderless_window)
+              int enable_inspector, bool borderless_window, string url)
 {
   struct webview webview;
-  string url = ("http://localhost:" + std::to_string(port) + "/" + appname);
   memset(&webview, 0, sizeof(webview));
   webview.title = title.c_str();
   webview.url = url.c_str();
@@ -76,6 +75,10 @@ int main(int argc, char **argv)
 
   int port = stoi(options["appport"].get<string>());
   string appname = options["appname"].get<std::string>();
+  string navigateUrl = ("http://localhost:" + std::to_string(port) + "/" + appname);
+  if(!options["url"].is_null() && options["url"].get<string>() != "/")
+    navigateUrl = options["url"];
+
   string mode = privileges::getMode();
 
   int listenFd = Socket::createSocket();
@@ -103,7 +106,7 @@ int main(int argc, char **argv)
 
   if (mode == "browser")
   {
-    system(("xdg-open http://localhost:" + std::to_string(port) + "/" + appname).c_str());
+    system(("xdg-open " + navigateUrl).c_str());
   }
   else if (mode == "window")
   {
@@ -140,7 +143,7 @@ int main(int argc, char **argv)
     }
     std::thread ren(uiThread, appname, port, width,
                     height, fullscreen, title, is_always_on_top, iconfile,
-                    enable_inspector, is_borderless_window);
+                    enable_inspector, is_borderless_window, navigateUrl);
     ren.detach();
   }
 
