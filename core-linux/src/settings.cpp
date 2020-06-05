@@ -37,6 +37,8 @@ namespace settings {
     string getFileContent(string filename){
         ifstream t;
         t.open(filename);
+        if(!t.is_open())
+            return "";
         string buffer = "";
         string line;
         while(!t.eof()){
@@ -50,6 +52,8 @@ namespace settings {
     string getFileContentBinary(string filename){
         vector<char> buffer;
         ifstream ifd(filename.c_str(), ios::binary | ios::ate);
+        if(!ifd.is_open())
+            return "";
         int size = ifd.tellg();
         ifd.seekg(0, ios::beg);
         buffer.resize(size);
