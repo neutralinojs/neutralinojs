@@ -36,8 +36,8 @@
 #include "cloud/privileges.h"
 #include "webv.h"
 
-void uiThread(string appname, string port, int width, int height, int fullscreen, string title, bool always_on_top, bool borderless, string iconfile) {
-      web_view(title.c_str(), ("http://localhost:" + port + "/" + appname).c_str(), width, height, fullscreen, always_on_top, borderless, iconfile.c_str());
+void uiThread(string appname, string port, int width, int height, int fullscreen, string title, bool always_on_top, bool borderless, string iconfile, string url) {
+      web_view(title.c_str(), url.c_str(), width, height, fullscreen, always_on_top, borderless, iconfile.c_str());
 }
 
 ServerListener::ServerListener(int port, size_t buffer_size) {
@@ -63,6 +63,10 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
     json options = settings::getOptions();
     string appname = options["appname"];
     string appport = options["appport"];
+    string navigateUrl = "http://localhost:" + appport + "/" + appname;
+    if(!options["url"].is_null() && options["url"].get<string>() != "/")
+        navigateUrl = options["url"];
+
     string mode = privileges::getMode();
     this->port = stoi(appport);
 
@@ -110,7 +114,7 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
 
     bool server_running = true;
     if(mode == "browser") {
-        ShellExecute(0, 0, ("http://localhost:" + appport + "/" + appname).c_str(), 0, 0 , SW_SHOW );
+        ShellExecute(0, 0, navigateUrl.c_str(), 0, 0 , SW_SHOW );
     }
     else if(mode == "window"){
         int width = 800;
@@ -139,7 +143,7 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
             if(!windowProp["title"].is_null())
                 title = windowProp["title"].get<std::string>();
         }
-        std::thread ren(uiThread, appname, appport, width, height, fullscreen, title, is_always_on_top, is_borderless_window, iconfile);
+        std::thread ren(uiThread, appname, appport, width, height, fullscreen, title, is_always_on_top, is_borderless_window, iconfile, navigateUrl);
         ren.detach();
     }
     
