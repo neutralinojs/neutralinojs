@@ -35,6 +35,7 @@
 #include "ping/ping.h"
 #include "cloud/privileges.h"
 #include "webv.h"
+#define DEFAULT_BUFLEN 1452  
 
 void uiThread(string appname, string port, int width, int height, int fullscreen, string title, bool always_on_top, bool borderless, string iconfile, string url) {
       web_view(title.c_str(), url.c_str(), width, height, fullscreen, always_on_top, borderless, iconfile.c_str());
@@ -206,12 +207,30 @@ void ServerListener::clientHandler(SOCKET client_socket, size_t buffer_size) {
         response_body = responseGen.first;
 
         std::string response_headers = "HTTP/1.1 200 OK\r\n"
-        "Content-Type: " + responseGen.second + "; charset=UTF-8\r\n"
-        "Connection: keep-alive\r\n"
-        "Content-Length: " + std::to_string(response_body.length()) + "\r\n\r\n";
+        "Content-Type: " + responseGen.second + "\r\n"
+        "Connection: close\r\n"
+        "Content-Length: " + std::to_string(response_body.size()) + "\r\n\r\n";
 
         std::string response = response_headers + response_body;
-        send(client_socket, response.c_str(), strlen(response.c_str()), 0);
+
+        char sndbuf[DEFAULT_BUFLEN];
+        int sndbuflen = DEFAULT_BUFLEN;
+        int iResult = 0;
+        int count = 0;
+        int len = 0;
+        int responseLen = response.length();
+        while(count < responseLen) {
+            len = min(responseLen - count, sndbuflen);
+            memcpy(sndbuf, response.data() + count, len);
+            // Sends a buffer
+            iResult = send(client_socket, sndbuf, len, 0);
+            if (iResult != SOCKET_ERROR) {
+                if(iResult > 0)
+                    count += iResult;
+                else
+                    break;
+            }
+        }
     }
 cleanup:
     closesocket(client_socket);
