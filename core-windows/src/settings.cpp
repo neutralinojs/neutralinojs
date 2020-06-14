@@ -46,6 +46,8 @@ namespace settings {
     string getFileContent(string filename){
         ifstream t;
         t.open(filename);
+        if(!t.is_open())
+            return "";
         string buffer = "";
         string line;
         while(!t.eof()){
@@ -59,6 +61,8 @@ namespace settings {
     string getFileContentBinary(string filename){
         vector<char> buffer;
         ifstream ifd(filename.c_str(), ios::binary | ios::ate);
+        if(!ifd.is_open())
+            return "";
         int size = ifd.tellg();
         ifd.seekg(0, ios::beg);
         buffer.resize(size);
@@ -94,7 +98,7 @@ namespace settings {
     string getGlobalVars(){
         json settings = getOptions();
         string s = "var NL_OS='Windows';";
-        s += "var NL_VERSION='1.4.0';";
+        s += "var NL_VERSION='1.5.0';";
         s += "var NL_NAME='" + settings["appname"].get<std::string>() + "';"; 
         s += "var NL_PORT=" + settings["appport"].get<std::string>() + ";";
         s += "var NL_MODE='" + settings["mode"].get<std::string>() + "';";
