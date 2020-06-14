@@ -63,10 +63,6 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
     json options = settings::getOptions();
     string appname = options["appname"];
     string appport = options["appport"];
-    string navigateUrl = "http://localhost:" + appport + "/" + appname;
-    if(!options["url"].is_null() && options["url"].get<string>() != "/")
-        navigateUrl = options["url"];
-
     string mode = privileges::getMode();
     this->port = stoi(appport);
 
@@ -104,6 +100,10 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
         settings::setOption("appport", std::to_string(port));
         appport = std::to_string(port);
     }
+    string navigateUrl = "http://localhost:" + appport + "/" + appname;
+    if(!options["url"].is_null() && options["url"].get<string>() != "/")
+        navigateUrl = options["url"];
+
 
     if(listen(listen_socket, SOMAXCONN) == SOCKET_ERROR) {
         closesocket(listen_socket);
