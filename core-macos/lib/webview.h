@@ -88,6 +88,10 @@ struct webview_priv {
 #error "Define one of: WEBVIEW_GTK, WEBVIEW_COCOA or WEBVIEW_WINAPI"
 #endif
 
+#ifdef __APPLE__
+#include "CoreFoundation/CoreFoundation.h"
+#endif
+
 struct webview;
 
 typedef void (*webview_external_invoke_cb_t)(struct webview *w,
@@ -1637,6 +1641,23 @@ static id get_nsstring(const char *c_str) {
                       sel_registerName("stringWithUTF8String:"), c_str);
 }
 
+static void get_appPath(char *path) {
+  // Latest MACOS requires to obtain a full path to resources using Bundle API
+  #ifdef __APPLE__    
+  CFBundleRef mainBundle = CFBundleGetMainBundle();
+  CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(mainBundle);
+  if (!CFURLGetFileSystemRepresentation(resourcesURL, TRUE, (UInt8 *)path, PATH_MAX))
+    {
+      // error!
+    }
+  CFRelease(resourcesURL);
+  //Append / at the end
+  char pathEnd = '/';
+  strncat(path, &pathEnd, 1);
+  #endif
+}
+
+
 static id create_menu_item(id title, const char *action, const char *key) {
   id item =
       objc_msgSend((id)objc_getClass("NSMenuItem"), sel_registerName("alloc"));
@@ -1965,6 +1986,16 @@ WEBVIEW_API int webview_init(struct webview *w) {
   objc_msgSend(objc_msgSend((id)objc_getClass("NSApplication"),
                             sel_registerName("sharedApplication")),
                sel_registerName("activateIgnoringOtherApps:"), 1);
+
+  id icon =
+      objc_msgSend((id)objc_getClass("NSImage"), sel_registerName("alloc"));
+  char iconfile[PATH_MAX];
+  get_appPath(iconfile);
+  strcat(iconfile, w->iconfile);
+  objc_msgSend(icon, sel_registerName("initByReferencingFile:"), get_nsstring(iconfile));
+  objc_msgSend(objc_msgSend((id)objc_getClass("NSApplication"),
+                            sel_registerName("sharedApplication")),
+               sel_registerName("setApplicationIconImage:"), icon);
 
   id menubar =
       objc_msgSend((id)objc_getClass("NSMenu"), sel_registerName("alloc"));

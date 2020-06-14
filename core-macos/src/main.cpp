@@ -40,11 +40,12 @@ using namespace std;
 std::map<int, std::thread> threads;
 
 void runUi(string appname, int port, int width, int height, int fullscreen, 
-            string title, bool always_on_top, bool borderless, string url) {
+            string title, bool always_on_top, bool borderless, string url, string iconfile) {
     struct webview webview;
     memset(&webview, 0, sizeof(webview));
     webview.title = title.c_str();
     webview.url = url.c_str();
+    webview.iconfile = iconfile.c_str();
     webview.width = width;
     webview.height = height;
     webview.resizable = 1;
@@ -121,6 +122,7 @@ int main(int argc, char **argv)
         bool is_always_on_top = false;
         bool is_borderless_window = false;
         string title = "Neutralino window";
+        string iconfile = "neutralino.png";
         if(!options["window"].is_null()) {
             json windowProp = options["window"];
             width =  stoi(windowProp["width"].get<std::string>());
@@ -133,10 +135,12 @@ int main(int argc, char **argv)
                 is_borderless_window = windowProp["borderless"].get<bool>();
             if(!windowProp["title"].is_null())
                 title = windowProp["title"].get<std::string>();
+            if (!windowProp["iconfile"].is_null())
+                iconfile = windowProp["iconfile"].get<std::string>();
         }
         std::thread srv(runServer, listenFd);
         srv.detach();
-        runUi(appname, port, width, height, fullscreen, title, is_always_on_top, is_borderless_window, navigateUrl);
+        runUi(appname, port, width, height, fullscreen, title, is_always_on_top, is_borderless_window, navigateUrl, iconfile);
     }
 
     return 0;
