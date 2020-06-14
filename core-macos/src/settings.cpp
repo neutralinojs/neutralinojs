@@ -35,19 +35,17 @@ json options;
 namespace settings {
     string getFileContent(string filename){
         filename = functions::getAppPath() + "/" + filename;
-        ifstream iFile(filename);
-        if(!iFile){
-            ERROR() << "Cannot read: " << filename;
-            exit(1);
-        }
-        
+        ifstream t;
+        t.open(filename);
+        if(!t.is_open())
+            return "";
         string buffer = "";
         string line;
-        while(!iFile.eof()){
-            getline(iFile, line);
+        while(!t.eof()){
+            getline(t, line);
             buffer += line + "\n";
         }
-        iFile.close();
+        t.close();
         return buffer;
     }
 
@@ -56,6 +54,8 @@ namespace settings {
         string result = "";
         vector<char> buffer;
         ifstream ifd(filename.c_str(), ios::binary | ios::ate);
+        if(!ifd.is_open())
+            return "";
         int size = ifd.tellg();
         ifd.seekg(0, ios::beg);
         buffer.resize(size);

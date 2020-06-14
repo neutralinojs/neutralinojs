@@ -25,6 +25,7 @@
 #include <fstream>
 #include <unistd.h>
 #include <vector>
+#include <regex>
 
 #include "nlohmann/json.hpp"
 
@@ -59,11 +60,33 @@ namespace routes {
         return "<html style=\"width: 100%; height: 100%; position: absolute; background-repeat:no-repeat; background-position: center; background-color: black; background-image:url('" + routes::getIcon() + "')\"></html>";
     }
 
+    pair<string, string> getAsset(string path, bool isBinary = false) {
+        vector<string> split = functions::split(path, '.');
+        string extension = split[split.size() - 1];
+        map<string, string> mimeTypes = {
+            {"js", "text/javascript"},
+            {"css", "text/css"},
+            {"html", "text/html"},
+            {"jpg", "image/jpeg"},
+            {"png", "image/png"},
+            {"svg", "image/svg+xml"},
+            {"gif", "image/gif"},
+            {"ico", "image/x-icon"},
+            {"woff2", "font/woff2"},
+            {"mp3", "audio/mpeg"}
+        };
+        if(isBinary)
+            return make_pair( settings::getFileContentBinary("app" + path), mimeTypes[extension]);
+        else
+            return make_pair( settings::getFileContent("app" + path), mimeTypes[extension]);
+    }
+
    pair<string, string> handle(string path, string j, string token) {
         json options = settings::getOptions();
         ping::receivePing();
         
         string appname = options["appname"];
+        bool isAsset = path.find("/assets") != string::npos;
         if(path == "/" +  appname ){
             return make_pair(settings::getFileContent("app/index.html"), "text/html");
         }
@@ -73,32 +96,14 @@ namespace routes {
         else if(path == "/settings.json"){
             return make_pair(settings::getSettings().dump(), "application/json");
         }
-        else if(path.find("/assets") != string::npos && (path.find(".jpg") != string::npos || path.find(".jpeg") != string::npos)){
-            return make_pair(settings::getFileContentBinary("app" + path), "image/jpeg");
+                else if(isAsset && regex_match(path, regex(".*\\.(js|html|css)$"))) {
+            return getAsset(path); 
         }
-        else if(path.find("/assets") != string::npos && path.find(".png") != string::npos){
-            return make_pair(settings::getFileContentBinary("app" + path), "image/png");
+        else if(isAsset && regex_match(path, regex(".*\\.(jpg|png|svg|gif|ico|woff2|mp3)$"))) {
+            return getAsset(path, true); 
         }
-        else if(path.find("/assets") != string::npos && path.find(".svg") != string::npos){
-            return make_pair(settings::getFileContentBinary("app" + path), "image/svg+xml");
-        }
-        else if(path.find("/assets") != string::npos && path.find(".gif") != string::npos){
-            return make_pair(settings::getFileContentBinary("app" + path), "image/gif");
-        }
-        else if(path.find("/assets") != string::npos && path.find(".ico") != string::npos){
-            return make_pair(settings::getFileContentBinary("app" + path), "image/x-icon");
-        }
-        else if(path.find("/assets") != string::npos && path.find(".woff2") != string::npos){
-            return make_pair(settings::getFileContentBinary("app" + path), "font/woff2");
-        }
-        else if(path.find("/assets") != string::npos && path.find(".js") != string::npos){
-            return make_pair(settings::getFileContent("app" + path), "text/javascript");
-        }
-        else if(path.find("/assets") != string::npos && path.find(".css") != string::npos){
-            return make_pair(settings::getFileContent("app" + path), "text/css");
-        }
-        else if(path.find("/assets") != string::npos && path.find(".html") != string::npos){
-            return make_pair(settings::getFileContent("app" + path), "text/html");
+        else if(isAsset) {
+            return make_pair("{\"error\":\"Unsupported file type!\"}", "application/json");;
         }
         else if(path == "/") {
             return make_pair(routes::getIndex(), "text/html");
@@ -107,8 +112,6 @@ namespace routes {
             vector<string> portions = functions::split(path, '/');
             if(portions.size() == 3) {
                 if(authbasic::verifyToken(token)) {
-
-                    
 
                     string module = portions[1];
                     string func = portions[2];
