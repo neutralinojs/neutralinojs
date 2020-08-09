@@ -112,7 +112,7 @@ int main(int argc, char **argv)
     int height = 600;
     int fullscreen = 0;
     bool is_always_on_top = false;
-    std::string iconfile = "neutralino.png";
+    std::string iconfile = "";
     std::string title = "Neutralino window";
     int enable_inspector = 0;
     bool is_borderless_window = false;

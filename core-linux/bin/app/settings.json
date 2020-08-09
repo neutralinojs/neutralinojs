@@ -1,7 +1,7 @@
 {
     "appname": "myapp",
     "appport": "5006",
-    "mode": "browser",
+    "mode": "window",
     "url": "/",
     "window": {
         "title": "My app",
@@ -9,7 +9,7 @@
         "height": "700",
         "fullscreen": false,
         "alwaysontop": false,
-        "iconfile": "neutralino.png",
+        "iconfile": "neutrlino.png",
         "enableinspector": false,
         "borderless": false
     }
