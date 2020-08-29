@@ -78,7 +78,12 @@ namespace routes {
             return make_pair( settings::getFileContent("app" + path), mimeTypes[extension]);
     }
 
-   pair<string, string> handle(string path, string j, string token) {
+   pair<string, string> handle(string encodedPath, string j, string token) {
+        char *originalPath = (char *) encodedPath.c_str();
+        char *decodedPath = (char *) malloc(strlen(originalPath) + 1);
+        functions::urldecode2(decodedPath, originalPath);
+
+        string path = string(decodedPath);
         json options = settings::getOptions();
         ping::receivePing();
         
