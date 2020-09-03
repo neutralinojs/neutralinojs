@@ -88,8 +88,6 @@ namespace routes {
         json options = settings::getOptions();
         ping::receivePing();
 
-        path = url::url_decode(path);
-        
         string appname = options["appname"];
         bool isAsset = path.find("/assets") != string::npos;
         if(path == "/" +  appname ){
