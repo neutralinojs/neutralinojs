@@ -29,6 +29,7 @@
 
 #include "nlohmann/json.hpp"
 
+#include "url.h"
 #include "functions.h"
 #include "settings.h"
 #include "core/include/filesystem.h"
@@ -75,6 +76,7 @@ namespace routes {
             {"woff2", "font/woff2"},
             {"mp3", "audio/mpeg"}
         };
+
         if(isBinary)
             return make_pair( settings::getFileContentBinary("app" + path), mimeTypes[extension]);
         else
@@ -82,8 +84,11 @@ namespace routes {
     }
 
    pair<string, string> handle(string path, string j, string token) {
+
         json options = settings::getOptions();
         ping::receivePing();
+
+        path = url::url_decode(path);
         
         string appname = options["appname"];
         bool isAsset = path.find("/assets") != string::npos;
@@ -96,11 +101,11 @@ namespace routes {
         else if(path == "/settings.json"){
             return make_pair(settings::getSettings().dump(), "application/json");
         }
-                else if(isAsset && regex_match(path, regex(".*\\.(js|html|css)$"))) {
-            return getAsset(path); 
+        else if(isAsset && regex_match(path, regex(".*\\.(js|html|css)$"))) {
+            return getAsset(url::url_decode(path)); 
         }
         else if(isAsset && regex_match(path, regex(".*\\.(jpg|png|svg|gif|ico|woff2|mp3)$"))) {
-            return getAsset(path, true); 
+            return getAsset(url::url_decode(path), true); 
         }
         else if(isAsset) {
             return make_pair("{\"error\":\"Unsupported file type!\"}", "application/json");;
