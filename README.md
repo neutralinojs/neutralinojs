@@ -72,6 +72,20 @@ To create Neutralino developer environment in your pc, install these tool kits.
 - [Webpack Bundler](https://webpack.js.org/)
 - [WebKitGTK+](https://webkitgtk.org/)
 
+### Installing latest GNU C/C++ compilers
+
+**Linux**
+
+No need for separate installation of compilers because Linux distributions usually have GNU C/C++ compilers installed already.
+
+**Windows**
+
+Latest versions of GNU C/C++ compilers can be easily installed with [MSYS2](https://www.msys2.org/) tools collection. After a successfull installation you can run the following command on MSYS2 console to install GNU C/C++ compilers (64-bit versions).
+
+```bash
+ $ pacman -S mingw-w64-x86_64-gcc  
+```
+
 ### Build Neutralino platform in Windows
 
 ```bash
