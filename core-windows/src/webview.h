@@ -1220,11 +1220,13 @@ WEBVIEW_API int webview_init(struct webview *w) {
   wc.hInstance = hInstance;
   wc.lpfnWndProc = wndproc;
   wc.lpszClassName = classname;
-  wchar_t *iconFile = webview_to_utf16(w->iconfile);
-  Gdiplus::Bitmap* icon = Gdiplus::Bitmap::FromFile(iconFile, TRUE);
-  HICON hIcon;
-  icon->GetHICON(&hIcon);
-  wc.hIcon = hIcon;
+  if (w->iconfile[0] != '\0') {
+    wchar_t *iconFile = webview_to_utf16(w->iconfile);
+    Gdiplus::Bitmap* icon = Gdiplus::Bitmap::FromFile(iconFile, TRUE);
+    HICON hIcon;
+    icon->GetHICON(&hIcon);
+    wc.hIcon = hIcon;
+  }
   RegisterClassEx(&wc);
 
   style = WS_OVERLAPPEDWINDOW;

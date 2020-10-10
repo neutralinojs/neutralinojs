@@ -123,7 +123,7 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
         int fullscreen = 0;
         bool is_always_on_top = false;
         bool is_borderless_window = false;
-        string iconfile = "neutralino.png";
+        string iconfile = "";
         string title = "Neutralino window";
         if(!options["window"].is_null()) {
             json windowProp = options["window"];
