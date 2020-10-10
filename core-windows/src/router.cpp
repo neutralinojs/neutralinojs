@@ -40,7 +40,7 @@
 
 
 using namespace std;
-using namespace filesystem;
+using namespace fs;
 using namespace os;
 using json = nlohmann::json;
 
@@ -124,8 +124,8 @@ namespace routes {
 
                     if(permission) {
 
-                        if(filesystem::funcmap.find(modfunc) != filesystem::funcmap.end() ){
-                            pfunc f = filesystem::funcmap[modfunc];
+                        if(fs::funcmap.find(modfunc) != fs::funcmap.end() ){
+                            pfunc f = fs::funcmap[modfunc];
                             output = (*f)(j); 
                         }
                         else if(os::funcmap.find(modfunc) != os::funcmap.end() ){
