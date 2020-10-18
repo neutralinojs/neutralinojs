@@ -184,10 +184,6 @@ If you like to contribute by funding for sustaining our work, Please visit https
 
 [![Become a Patron](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/shalithasuranga)
 
-### Thanks :heart: 
-
-- Jarred
-
 ## License
 
 [MIT](LICENSE)
