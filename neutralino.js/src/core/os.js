@@ -96,10 +96,30 @@ let dialogSave = function(t, s, e) {
 
 };
 
+let showNotification = function(options, s, e) {
+    $.ajax({
+        url : '/os/showNotification',
+        type : 'POST',
+        data : {
+          summary: options["summary"],
+          body: options["body"]
+        },
+        done : function(data){
+            s(data);
+        },
+        problem : function(error) {
+            e(error);
+        }
+    
+    });
+
+};
+
 
 module.exports = {
     runCommand : runCommand,
     getEnvar : getEnvar,
     dialogOpen : dialogOpen,
-    dialogSave : dialogSave
+    dialogSave : dialogSave,
+    showNotification: showNotification
 }

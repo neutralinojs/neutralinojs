@@ -112,4 +112,24 @@ namespace os {
        
         
     }
+
+    string showNotification(string jso) {
+        json input;
+        json output;
+        try {
+            input = json::parse(jso);
+        }
+        catch(exception e){
+            output["error"] = "JSON parse error is occurred!";
+            return output.dump();
+        }
+        string command = "notify-send \"" + input["summary"].get<string>() + "\" \"" + 
+                            input["body"].get<string>() + "\"";
+        if(system(command.c_str()) == 0)
+            output["message"] = "Notification is pushed to the system";
+        else
+            output["error"] = "An error thrown while sending the notification";
+        return output.dump();
+        
+    }
 }
