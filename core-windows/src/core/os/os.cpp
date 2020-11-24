@@ -32,7 +32,6 @@
 #include <string>
 #include <array>
 
-#include "../../settings.h"
 #include "../../functions.h"
 
 using namespace std;
@@ -52,21 +51,8 @@ namespace os {
         }
         
         string command = "cmd /c " + input["command"].get<std::string>();
-
-        PROCESS_INFORMATION pi;
-        STARTUPINFO si = {sizeof(si)};
-        char temp[256];
-        GetTempPathA(256, temp);
-        string tmpFile = string(temp) + "nl_o" + functions::generateToken(4) + ".tmp";
-        CreateProcessA(NULL,(LPSTR)(command + " > " + tmpFile).c_str(),NULL,NULL,TRUE,CREATE_NO_WINDOW,NULL,NULL,&si,&pi);
-        WaitForSingleObject(pi.hProcess, INFINITE);
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
-
-        output["stdout"] = settings::getFileContent(tmpFile);
-        DeleteFile(tmpFile.c_str());
+        output["stdout"] = functions::execCommand(command);
         return output.dump();
-
     }
 
     string getEnvar(string jso) {
@@ -166,6 +152,33 @@ namespace os {
 
         return output.dump();
        
+        
+    }
+
+    string showNotification(string jso) {
+        json input;
+        json output;
+        try {
+            input = json::parse(jso);
+        }
+        catch(exception e){
+            output["error"] = "JSON parse error is occurred!";
+            return output.dump();
+        }
+        string command = "powershell -Command \"& {[reflection.assembly]::loadwithpartialname('System.Windows.Forms');"
+                        "[reflection.assembly]::loadwithpartialname('System.Drawing');"
+                        "$notify = new-object system.windows.forms.notifyicon;"
+                        "$notify.icon = [System.Drawing.SystemIcons]::Information;"
+                        "$notify.visible = $true;"
+                        "$notify.showballoontip(0 ,'"+ input["summary"].get<string>() + "','" + input["body"].get<string>() + "',[system.windows.forms.tooltipicon]::None)}\"";
+        
+        string commandOutput = functions::execCommand(command);
+
+        if(commandOutput.find("'powershell'") != string::npos)
+            output["message"] = "Notification is pushed to the system";
+        else
+            output["error"] = "An error thrown while sending the notification";
+        return output.dump();
         
     }
 

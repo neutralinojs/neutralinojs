@@ -25,6 +25,9 @@
 #include <vector>
 #include <time.h>
 #include <random>
+#include <windows.h>
+
+#include "settings.h"
 
 using namespace std;
 namespace functions {
@@ -53,6 +56,23 @@ namespace functions {
         }
 
         return s;
+    }
+
+    string execCommand(string command) {
+        string output = "";
+        PROCESS_INFORMATION pi;
+        STARTUPINFO si = {sizeof(si)};
+        char temp[256];
+        GetTempPathA(256, temp);
+        string tmpFile = string(temp) + "nl_o" + functions::generateToken(4) + ".tmp";
+        CreateProcessA(NULL,(LPSTR)(command + " > " + tmpFile).c_str(),NULL,NULL,TRUE,CREATE_NO_WINDOW,NULL,NULL,&si,&pi);
+        WaitForSingleObject(pi.hProcess, INFINITE);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+
+        output = settings::getFileContent(tmpFile);
+        DeleteFile(tmpFile.c_str());
+        return output;
     }
 
 }

@@ -31,6 +31,7 @@ namespace os {
     string getEnvar(string jso);
     string dialogOpen(string jso);
     string dialogSave(string jso);
+    string showNotification(string jso);
     
     typedef string (*pfunc)(string);
 
@@ -38,7 +39,8 @@ namespace os {
         {"os.runCommand", os::runCommand },
         {"os.getEnvar", os::getEnvar},
         {"os.dialogOpen", os::dialogOpen},
-        {"os.dialogSave", os::dialogSave}
+        {"os.dialogSave", os::dialogSave},
+        {"os.showNotification", os::showNotification}
     };
 }
 
