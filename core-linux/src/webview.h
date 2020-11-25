@@ -106,6 +106,7 @@ struct webview {
   const char *iconfile;
   bool always_on_top;
   bool borderless_window;
+  bool maximize;
 };
 
 enum webview_dialog_type {
@@ -306,6 +307,8 @@ WEBVIEW_API int webview_init(struct webview *w) {
     gtk_window_set_icon_from_file(GTK_WINDOW(w->priv.window), w->iconfile, NULL);
   if (w->borderless_window == true)
     gtk_window_set_decorated(GTK_WINDOW(w->priv.window), false);
+  if (w->maximize == true)
+    gtk_window_maximize(GTK_WINDOW(w->priv.window));
     
   gtk_window_set_keep_above(GTK_WINDOW(w->priv.window), w->always_on_top);
 

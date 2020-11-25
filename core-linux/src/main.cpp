@@ -40,7 +40,7 @@ std::map<int, std::thread> threads;
 
 void uiThread(string appname, int port, int width, int height,
               int fullscreen, string title, bool always_on_top, string iconfile,
-              int enable_inspector, bool borderless_window, string url)
+              int enable_inspector, bool borderless_window, bool maximize, string url)
 {
   struct webview webview;
   memset(&webview, 0, sizeof(webview));
@@ -53,6 +53,7 @@ void uiThread(string appname, int port, int width, int height,
   webview.iconfile = iconfile.c_str();
   webview.debug = enable_inspector;
   webview.borderless_window = borderless_window;
+  webview.maximize = maximize;
   int r = webview_init(&webview);
   webview_set_fullscreen(&webview, fullscreen);
   if (r != 0)
@@ -116,6 +117,7 @@ int main(int argc, char **argv)
     std::string title = "Neutralino window";
     int enable_inspector = 0;
     bool is_borderless_window = false;
+    bool maximize = false;
     if (!options["window"].is_null())
     {
       json windowProp = options["window"];
@@ -138,10 +140,13 @@ int main(int argc, char **argv)
 
       if (!windowProp["borderless"].is_null())
         is_borderless_window = windowProp["borderless"].get<bool>();
+
+      if (!windowProp["maximize"].is_null())
+        maximize = windowProp["maximize"].get<bool>();
     }
     std::thread ren(uiThread, appname, port, width,
                     height, fullscreen, title, is_always_on_top, iconfile,
-                    enable_inspector, is_borderless_window, navigateUrl);
+                    enable_inspector, is_borderless_window, maximize, navigateUrl);
     ren.detach();
   }
 

@@ -11,6 +11,7 @@
         "alwaysontop": false,
         "iconfile": "neutrlino.png",
         "enableinspector": false,
-        "borderless": false
+        "borderless": false,
+        "maximize": false
     }
 }
