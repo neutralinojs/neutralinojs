@@ -80,8 +80,8 @@ namespace routes {
 
    pair<string, string> handle(string encodedPath, string j, string token) {
         char *originalPath = (char *) encodedPath.c_str();
-        char *decodedPath = (char *) malloc(strlen(originalPath) + 1);
-        functions::urldecode2(decodedPath, originalPath);
+        char *decodedPath = new char[strlen(originalPath) + 1];
+        functions::urldecode(decodedPath, originalPath);
 
         string path = string(decodedPath);
         json options = settings::getOptions();
@@ -171,6 +171,7 @@ namespace routes {
                 
             }
         }
+        delete []decodedPath; 
         return make_pair("{\"message\":\"Neutralino\"}", "application/json");
     }
 

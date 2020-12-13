@@ -59,7 +59,7 @@ namespace functions {
     /*
     * https://stackoverflow.com/a/14530993 - mini url decoder
     */
-    void urldecode2(char *dst, const char *src) {
+    void urldecode(char *dst, const char *src) {
         char a, b;
         while (*src) {
             if ((*src == '%') &&

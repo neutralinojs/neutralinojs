@@ -27,5 +27,5 @@ using namespace std;
 namespace functions {
     vector<string> split(const string &s, char delim);
     string generateToken();
-    void urldecode2(char *dst, const char *src);
+    void urldecode(char *dst, const char *src);
 }
