@@ -79,7 +79,12 @@ namespace routes {
             return make_pair( settings::getFileContent("app" + path), mimeTypes[extension]);
     }
 
-    pair<string, string> handle(string path, string j, string token) {
+    pair<string, string> handle(string encodedPath, string j, string token) {
+        char *originalPath = (char *) encodedPath.c_str();
+        char *decodedPath = new char[(strlen(originalPath) + 1)];
+        functions::urldecode(decodedPath, originalPath);
+
+        string path = string(decodedPath);
         json options = settings::getOptions();
         ping::receivePing();
 
@@ -170,6 +175,7 @@ namespace routes {
                 
             }
         }
+        delete []decodedPath;
         return make_pair("{\"message\":\"Neutralino\"}", "application/json");
     }
 

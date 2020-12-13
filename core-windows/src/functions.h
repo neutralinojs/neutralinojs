@@ -32,6 +32,7 @@ namespace functions {
     vector<string> split(const string &s, char delim);
     string generateToken(int len = 32);
     string execCommand(string command);
+    void urldecode(char *dst, const char *src);
 }
 
 #endif // end of FUNCTIONS_H
