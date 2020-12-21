@@ -70,7 +70,9 @@ namespace routes {
             {"gif", "image/gif"},
             {"ico", "image/x-icon"},
             {"woff2", "font/woff2"},
-            {"mp3", "audio/mpeg"}
+            {"mp3", "audio/mpeg"},
+            {"xml", "application/xml"},
+            {"json", "application/json"}
         };
         if(isBinary)
             return make_pair( settings::getFileContentBinary("app" + path), mimeTypes[extension]);
@@ -98,7 +100,7 @@ namespace routes {
         else if(path == "/settings.json"){
             return make_pair(settings::getSettings().dump(), "application/json");
         }
-        else if(isAsset && regex_match(path, regex(".*\\.(js|html|css)$"))) {
+        else if(isAsset && regex_match(path, regex(".*\\.(js|html|css|json|xml)$"))) {
             return getAsset(path); 
         }
         else if(isAsset && regex_match(path, regex(".*\\.(jpg|png|svg|gif|ico|woff2|mp3)$"))) {
