@@ -59,12 +59,13 @@ let getEnvar = function(v, s, e) {
 };
 
 
-let dialogOpen = function(t, s, e) {
+let dialogOpen = function(options, s, e) {
     $.ajax({
         url : '/os/dialogOpen',
         type : 'POST',
         data : {
-          title : t
+          title : options["title"],
+          isDirectoryMode : options["isDirectoryMode"]
         },
         done : function(data){
             s(data);

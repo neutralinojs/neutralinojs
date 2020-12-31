@@ -78,15 +78,21 @@ namespace os {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
+        string command = "zenity --file-selection";
+        if(!input["title"].is_null())
+            command += " --title \"" + input["title"].get<std::string>() + "\"";
+        if(!input["isDirectoryMode"].is_null() && input["isDirectoryMode"].get<bool>())
+            command += " --directory";
 
-        char file[1024];
-        FILE *f = popen("zenity --file-selection --title \"Open a file\"", "r");
-        fgets(file, 1024, f);
-
-        output["file"] = file;
-
+        string result;
+        std::array<char, 128> buffer;
+        std::shared_ptr<FILE> pipe(popen(command.c_str(), "r"), pclose);
+        while (!feof(pipe.get())) {
+            if (fgets(buffer.data(), 128, pipe.get()) != nullptr)
+                result += buffer.data();
+        }
+        output["file"] = result;
         return output.dump();
-       
         
     }
 
@@ -101,13 +107,18 @@ namespace os {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
+        string command = "zenity --file-selection --save"; 
+        if(!input["title"].is_null())
+            command += " --title \"" + input["title"].get<std::string>() + "\"";
+        string result;
+        std::array<char, 128> buffer;
+        std::shared_ptr<FILE> pipe(popen(command.c_str(), "r"), pclose);
+        while (!feof(pipe.get())) {
+            if (fgets(buffer.data(), 128, pipe.get()) != nullptr)
+                result += buffer.data();
+        }
 
-        char file[1024];
-        FILE *f = popen("zenity --file-selection --title \"Save a file\" --save", "r");
-        fgets(file, 1024, f);
-
-        output["file"] = file;
-
+        output["file"] = result;
         return output.dump();
        
         
