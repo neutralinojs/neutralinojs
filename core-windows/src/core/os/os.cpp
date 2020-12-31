@@ -24,6 +24,8 @@
 #include <fstream>
 #include "../../../lib/json/json.hpp"
 #include <windows.h>
+#include <shlobj.h>
+#include <shobjidl.h>
 #include <stdlib.h>
 #include <cstdio>
 #include <iostream>
@@ -91,25 +93,48 @@ namespace os {
             return output.dump();
         }
         string title = input["title"];
-        OPENFILENAME ofn;
-        TCHAR szFile[260] = { 0 }; 
+        if(!input["isDirectoryMode"].is_null() && input["isDirectoryMode"].get<bool>()) {
+            TCHAR szDir[MAX_PATH];
+            BROWSEINFO bInfo;
+            ZeroMemory(&bInfo, sizeof(bInfo));
+            bInfo.hwndOwner = NULL;
+            bInfo.pidlRoot = NULL; 
+            bInfo.pszDisplayName = szDir;
+            bInfo.lpszTitle = const_cast<char *>(title.c_str());
+            bInfo.ulFlags = 0 ;
+            bInfo.lpfn = NULL;
+            bInfo.lParam = 0;
+            bInfo.iImage = -1;
 
-        ZeroMemory(&ofn, sizeof(ofn));
-        ofn.lpstrTitle = const_cast<char *>(title.c_str());
-        ofn.lStructSize = sizeof(ofn);
-        ofn.lpstrFile = szFile;
-        ofn.nMaxFile = sizeof(szFile);
-        ofn.nFilterIndex = 1;
-        ofn.lpstrFileTitle = NULL;
-        ofn.nMaxFileTitle = 0;
-        ofn.lpstrInitialDir = NULL;
-        ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-        if (GetOpenFileName(&ofn)) {
-            output["file"] = ofn.lpstrFile;
+            LPITEMIDLIST lpItem = SHBrowseForFolder( &bInfo);
+            if( lpItem != NULL ) {
+                SHGetPathFromIDList(lpItem, szDir );
+                output["file"] = szDir;
+            }
+            else {
+                output["file"] = "";
+            }
         }
         else {
-            output["file"] = "";
+            OPENFILENAME ofn;
+            TCHAR szFile[MAX_PATH] = { 0 }; 
+            ZeroMemory(&ofn, sizeof(ofn));
+            ofn.lpstrTitle = const_cast<char *>(title.c_str());
+            ofn.lStructSize = sizeof(ofn);
+            ofn.lpstrFile = szFile;
+            ofn.nMaxFile = sizeof(szFile);
+            ofn.nFilterIndex = 1;
+            ofn.lpstrFileTitle = NULL;
+            ofn.nMaxFileTitle = 0;
+            ofn.lpstrInitialDir = NULL;
+            ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+            if (GetOpenFileName(&ofn)) {
+                output["file"] = ofn.lpstrFile;
+            }
+            else {
+                output["file"] = "";
+            }
         }
 
         return output.dump();
