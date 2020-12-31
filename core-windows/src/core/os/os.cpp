@@ -111,6 +111,9 @@ namespace os {
                 SHGetPathFromIDList(lpItem, szDir );
                 output["file"] = szDir;
             }
+            else {
+                output["file"] = "";
+            }
         }
         else {
             OPENFILENAME ofn;
