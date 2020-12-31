@@ -31,6 +31,7 @@
 using namespace std;
 using json = nlohmann::json;
 json options;
+json globalArgs;
 
 namespace settings {
 
@@ -96,6 +97,7 @@ namespace settings {
         s += "var NL_MODE='" + settings["mode"].get<std::string>() + "';";
         s += "var NL_TOKEN='" + authbasic::getToken() + "';";   
         s += "var NL_CWD='" + settings::getCurrentDir() + "';";
+        s += "var NL_ARGS=" + globalArgs.dump() + ";";
 
         if(settings["globals"] != NULL) {
             for ( auto it: settings["globals"].items()) {
@@ -103,6 +105,10 @@ namespace settings {
             }
         }
         return s;
+    }
+
+    void setGlobalArgs(json args) {
+        globalArgs = args;
     }
 
 }

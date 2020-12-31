@@ -33,5 +33,6 @@ namespace settings {
     string getFileContentBinary(string filename);
     string getGlobalVars();
     string getCurrentDir();
+    void setGlobalArgs(json args);
 }
 

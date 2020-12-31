@@ -25,6 +25,7 @@
 #include <string>
 #include <thread>
 #include <map>
+#include "../lib/json/json.hpp"
 #include "functions.h"
 #include "settings.h"
 #include "Socket.h"
@@ -35,6 +36,7 @@
 #include "webview.h"
 
 using namespace std;
+using json = nlohmann::json;
 
 std::map<int, std::thread> threads;
 
@@ -68,6 +70,11 @@ void uiThread(string appname, int port, int width, int height,
 
 int main(int argc, char **argv)
 {
+  json args;
+  for(int i = 0; i < argc; i++) {
+    args.push_back(argv[i]);
+  }
+  settings::setGlobalArgs(args);
   json options = settings::getSettings();
   authbasic::generateToken();
   ping::startPingReceiver();
