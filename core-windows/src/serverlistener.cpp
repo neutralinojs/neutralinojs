@@ -35,7 +35,10 @@
 #include "ping/ping.h"
 #include "cloud/privileges.h"
 #include "webv.h"
+#include "../lib/json/json.hpp"
 #define DEFAULT_BUFLEN 1452  
+
+using json = nlohmann::json;
 
 void uiThread(string appname, string port, int width, int height, int fullscreen, string title, bool always_on_top, bool borderless, string iconfile, string url) {
       web_view(title.c_str(), url.c_str(), width, height, fullscreen, always_on_top, borderless, iconfile.c_str());
@@ -54,7 +57,11 @@ ServerListener::ServerListener(int port, size_t buffer_size) {
 }
 
 void ServerListener::run(std::function<void(ClientAcceptationException)> client_acceptation_error_callback) {
-
+    json args;
+    for(int i = 0; i < __argc; i++) {
+        args.push_back(__argv[i]);
+    }
+    settings::setGlobalArgs(args);
     settings::getSettings();
     authbasic::generateToken();
     ping::startPingReceiver();
