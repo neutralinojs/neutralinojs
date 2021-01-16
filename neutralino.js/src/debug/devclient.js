@@ -20,28 +20,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-let ping = require('../ping/ping');
-let devClient = require('../debug/devclient');
+let $ = require('../lib/minAjax.js');
 
-module.exports =  function (options) {
-    let pingSuccessCallback = null;
-    let pingFailCallback = null;
+let devClient = {
 
-    if(options.load) {
-        options.load();
-    }
-    if(options.pingSuccessCallback) {
-        pingSuccessCallback = options.pingSuccessCallback;
-    }
-    if(options.pingFailCallback) {
-        pingFailCallback = options.pingFailCallback;
-    }
-    if(NL_MODE == 'browser')
-        ping.start(pingSuccessCallback, pingFailCallback);
-    for(let i = 0; i < NL_ARGS.length; i++) {
-        if(NL_ARGS[i] == '--debug-mode') {
-            devClient.start();
-            break;
-        }
+    start : function () {
+        setInterval(function () {
+            $.ajax({
+                url : 'http://localhost:8080',
+                type : 'GET',
+                done : function(data){
+                    if(data && data.needsReload) {
+                        location.reload();
+                    }
+                },
+                problem : function () {
+                    console.error('Unable to communicate with neu devServer');
+                }
+            
+            });
+        }, 1000);
     }
 }
+
+module.exports = devClient;

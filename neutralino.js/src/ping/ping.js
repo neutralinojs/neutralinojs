@@ -29,10 +29,10 @@ let ping = {
             $.ajax({
                 url : '/ping',
                 type : 'GET',
-                success : function(data){
+                done : function(data){
                     if(s) s();
                 },
-                errorCallback : function () {
+                problem : function () {
                     if(e) e();
                 }
             
