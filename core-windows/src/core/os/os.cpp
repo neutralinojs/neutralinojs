@@ -190,16 +190,16 @@ namespace os {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
-        string command = "powershell -Command \"& {[reflection.assembly]::loadwithpartialname('System.Windows.Forms');"
-                        "[reflection.assembly]::loadwithpartialname('System.Drawing');"
-                        "$notify = new-object system.windows.forms.notifyicon;"
-                        "$notify.icon = [System.Drawing.SystemIcons]::Information;"
-                        "$notify.visible = $true;"
-                        "$notify.showballoontip(0 ,'"+ input["summary"].get<string>() + "','" + input["body"].get<string>() + "',[system.windows.forms.tooltipicon]::None)}\"";
+        string command = "powershell -Command \"& {Add-Type -AssemblyName System.Windows.Forms;"
+                        "Add-Type -AssemblyName System.Drawing;"
+                        "$notify = New-Object System.Windows.Forms.NotifyIcon;"
+                        "$notify.Icon = [System.Drawing.SystemIcons]::Information;"
+                        "$notify.Visible = $true;"
+                        "$notify.ShowBalloonTip(0 ,'"+ input["summary"].get<string>() + "','" + input["body"].get<string>() + "',[System.Windows.Forms.TooltipIcon]::None)}\"";
         
         string commandOutput = functions::execCommand(command);
 
-        if(commandOutput.find("'powershell'") != string::npos)
+        if(commandOutput.find("'powershell'") == string::npos)
             output["message"] = "Notification is pushed to the system";
         else
             output["error"] = "An error thrown while sending the notification";
