@@ -10,6 +10,7 @@
         "fullscreen" : false,
         "alwaysontop": true,
         "borderless": false,
-        "iconfile": "neutralino.png"
+        "iconfile": "neutralino.png",
+		"maximize": false
     }
 }

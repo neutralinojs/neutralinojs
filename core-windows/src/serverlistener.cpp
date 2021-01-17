@@ -40,8 +40,8 @@
 
 using json = nlohmann::json;
 
-void uiThread(string appname, string port, int width, int height, int fullscreen, string title, bool always_on_top, bool borderless, string iconfile, string url) {
-      web_view(title.c_str(), url.c_str(), width, height, fullscreen, always_on_top, borderless, iconfile.c_str());
+void uiThread(string appname, string port, int width, int height, int fullscreen, string title, bool always_on_top, bool borderless, string iconfile, bool maximize, string url) {
+      web_view(title.c_str(), url.c_str(), width, height, fullscreen, always_on_top, borderless, maximize, iconfile.c_str());
 }
 
 ServerListener::ServerListener(int port, size_t buffer_size) {
@@ -132,6 +132,8 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
         bool is_borderless_window = false;
         string iconfile = "";
         string title = "Neutralino window";
+        bool maximize = false;
+
         if(!options["window"].is_null()) {
             json windowProp = options["window"];
             width =  stoi(windowProp["width"].get<std::string>());
@@ -150,8 +152,11 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
 
             if(!windowProp["title"].is_null())
                 title = windowProp["title"].get<std::string>();
+            
+            if (!windowProp["maximize"].is_null())
+                maximize = windowProp["maximize"].get<bool>();
         }
-        std::thread ren(uiThread, appname, appport, width, height, fullscreen, title, is_always_on_top, is_borderless_window, iconfile, navigateUrl);
+        std::thread ren(uiThread, appname, appport, width, height, fullscreen, title, is_always_on_top, is_borderless_window, iconfile, maximize, navigateUrl);
         ren.detach();
     }
     

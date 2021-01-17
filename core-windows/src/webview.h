@@ -107,6 +107,7 @@ struct webview {
   void *userdata;
   bool always_on_top;
   bool borderless_window;
+  bool maximize;
   const char *iconfile; 
 };
 
@@ -1201,6 +1202,7 @@ WEBVIEW_API int webview_init(struct webview *w) {
   WNDCLASSEX wc;
   HINSTANCE hInstance;
   DWORD style;
+  DWORD showWindowStyle;
   RECT clientRect;
   RECT rect;
 
@@ -1270,7 +1272,11 @@ WEBVIEW_API int webview_init(struct webview *w) {
   DisplayHTMLPage(w);
 
   SetWindowText(w->priv.hwnd, w->title);
-  ShowWindow(w->priv.hwnd, SW_SHOWDEFAULT);
+  showWindowStyle = SW_SHOWDEFAULT;
+  if(w->maximize) {
+    showWindowStyle = SW_SHOWMAXIMIZED;
+  }
+  ShowWindow(w->priv.hwnd, showWindowStyle);
   UpdateWindow(w->priv.hwnd);
   SetFocus(w->priv.hwnd);
 

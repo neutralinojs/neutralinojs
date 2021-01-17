@@ -6,7 +6,7 @@
 extern "C"
 {
 	void web_view(const char *title, const char *url, int width, int height, int fullscreen, bool always_on_top,
-				bool borderless, const char* iconfile)
+				bool borderless, bool maximize, const char* iconfile)
 	{
 		struct webview webview;
 		memset(&webview, 0, sizeof(webview));
@@ -17,6 +17,7 @@ extern "C"
 		webview.resizable = 1;
 		webview.always_on_top = always_on_top;
 		webview.borderless_window = borderless;
+		webview.maximize = maximize;
     	webview.iconfile = iconfile;
 		int r = webview_init(&webview);
 		webview_set_fullscreen(&webview, fullscreen);
