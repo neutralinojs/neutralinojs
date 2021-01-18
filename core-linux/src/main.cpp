@@ -112,7 +112,7 @@ int main(int argc, char **argv)
 
   if (mode == "browser")
   {
-    system(("xdg-open " + navigateUrl).c_str());
+    system(("xdg-open \"" + navigateUrl + "\"").c_str());
   }
   else if (mode == "window")
   {
