@@ -1,6 +1,6 @@
-# MacOS Build
+### Neutralino server for macOS
 
-Neutralino now supports MacOSX
+Forked from [https://github.com/yibo141/Servant](https://github.com/yibo141/Servant).
 
 ## Build Requirenments
 
