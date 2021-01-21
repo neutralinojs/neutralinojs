@@ -61,7 +61,7 @@ Check this [article](https://medium.com/@shalithasuranga/getting-started-with-ne
 - Join our [Google group](https://groups.google.com/forum/#!forum/neutralinojs) for feature proposals and requests.
 - You can help us by writing sample Neutralino apps,by composing or improving documentation or by writing code.
 
-## Developer Guide
+## Framework Developer Guide
 
 ### Required tools 
 
@@ -97,6 +97,9 @@ Latest versions of GNU C/C++ compilers can be easily installed with [MSYS2](http
 Install GTk and webkit libraries
 
 #### On Debian/Ubuntu based OS
+
+If you are using a newer version of Ubuntu, there is no need to run the following commands.
+
 ```bash
 $ sudo apt-get install libgtk-3-dev
 $ sudo add-apt-repository ppa:webkit-team/ppa
