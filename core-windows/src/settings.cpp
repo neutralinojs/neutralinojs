@@ -85,6 +85,8 @@ namespace settings {
     }
 
     json getSettings() {
+        if(!options.is_null())
+            return settings::getOptions();
         json settings;
         try {
             settings = json::parse(getFileContent("app\\settings.json"));
