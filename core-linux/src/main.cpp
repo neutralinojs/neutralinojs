@@ -28,6 +28,7 @@
 #include "../lib/json/json.hpp"
 #include "functions.h"
 #include "settings.h"
+#include "resources.h"
 #include "Socket.h"
 #include "Handler.h"
 #include "auth/authbasic.h"
@@ -75,6 +76,7 @@ int main(int argc, char **argv)
     args.push_back(argv[i]);
   }
   settings::setGlobalArgs(args);
+  resources::makeFileTree();
   json options = settings::getSettings();
   authbasic::generateToken();
   ping::startPingReceiver();
@@ -135,7 +137,7 @@ int main(int argc, char **argv)
 
       if (!windowProp["alwaysontop"].is_null())
         is_always_on_top = windowProp["alwaysontop"].get<bool>();
-      
+
       if (!windowProp["title"].is_null())
         title = windowProp["title"].get<std::string>();
 
