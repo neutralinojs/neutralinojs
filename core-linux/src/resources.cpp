@@ -27,9 +27,10 @@
 #include <unistd.h>
 #include <limits.h>
 #include "../lib/json/json.hpp"
-#include "auth/authbasic.h"
 #include "functions.h"
 #include "log.h"
+
+#define APP_RES_FILE "res.neu"
 
 using namespace std;
 using json = nlohmann::json;
@@ -65,9 +66,10 @@ namespace resources {
         pair<int, string> p = seekFilePos(transformUrl(filename), fileTree, "");
         if(p.first != -1) {
             std::ifstream asarArchive;
-            asarArchive.open("res.neu", std::ios::binary);
+            asarArchive.open(APP_RES_FILE, std::ios::binary);
             if (!asarArchive) {
-                perror("res.neu is missing");
+                ERROR() << "resources::makeFileTree error: " << APP_RES_FILE << " is missing.";
+                return "";
             }
             uint uSize = p.first;
             uint uOffset = std::stoi(p.second);
@@ -85,9 +87,9 @@ namespace resources {
 
     void makeFileTree() {
         std::ifstream asarArchive;
-        asarArchive.open("res.neu", std::ios::binary);
+        asarArchive.open(APP_RES_FILE, std::ios::binary);
         if (!asarArchive) {
-            perror("res.neu is missing");
+            ERROR() << "resources::makeFileTree error: " << APP_RES_FILE << " is missing.";
             return;
         }
 
@@ -107,22 +109,9 @@ namespace resources {
             files = json::parse(headerContent);
         }
         catch(exception e) {
-            // TODO: log to file
+            ERROR() << "resources::makeFileTree error: " << strerror(errno);
         }
         fileTree = files;
-    }
-
-    string getFileContentBinary(string filename){
-        vector<char> buffer;
-        ifstream ifd(filename.c_str(), ios::binary | ios::ate);
-        if(!ifd.is_open())
-            return "";
-        int size = ifd.tellg();
-        ifd.seekg(0, ios::beg);
-        buffer.resize(size);
-        ifd.read(buffer.data(), size);
-        string result(buffer.begin(), buffer.end());
-        return result;
     }
 
 }
