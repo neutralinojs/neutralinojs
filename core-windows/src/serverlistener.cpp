@@ -29,6 +29,7 @@
 #include <sstream>
 #include <fstream>
 #include "settings.h"
+#include "resources.h"
 #include "requestparser.h"
 #include "router.h"
 #include "auth/authbasic.h"
@@ -62,6 +63,7 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
         args.push_back(__argv[i]);
     }
     settings::setGlobalArgs(args);
+    resources::makeFileTree();
     settings::getSettings();
     authbasic::generateToken();
     ping::startPingReceiver();
