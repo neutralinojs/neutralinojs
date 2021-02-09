@@ -35,7 +35,7 @@
 using namespace std;
 using json = nlohmann::json;
 json fileTree = nullptr;
-uint asarHeaderSize;
+unsigned int asarHeaderSize;
 
 namespace resources {
 
@@ -71,8 +71,8 @@ namespace resources {
                 ERROR() << "resources::makeFileTree error: " << APP_RES_FILE << " is missing.";
                 return "";
             }
-            uint uSize = p.first;
-            uint uOffset = std::stoi(p.second);
+            unsigned int uSize = p.first;
+            unsigned int uOffset = std::stoi(p.second);
 
             std::vector<char>fileBuf ( uSize );
             asarArchive.seekg(asarHeaderSize + uOffset);
@@ -95,7 +95,7 @@ namespace resources {
 
         char *sizeBuf = new char[8];
         asarArchive.read(sizeBuf, 8);
-        uint uSize = *(uint *)(sizeBuf + 4) - 8;
+        unsigned int uSize = *(unsigned int *)(sizeBuf + 4) - 8;
 
         delete[] sizeBuf;
 
