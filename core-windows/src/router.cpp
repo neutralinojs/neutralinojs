@@ -47,7 +47,7 @@ using json = nlohmann::json;
 namespace routes {
 
     string getClientJs() {
-        return settings::getFileContent("app\\assets\\neutralino.js");
+        return settings::getFileContent("app//assets//neutralino.js");
     }    
 
     string getIcon() {
@@ -93,7 +93,7 @@ namespace routes {
         string appname = options["appname"];
         bool isAsset = path.find("/assets") != string::npos;
         if(path == "/" +  appname ){
-            return make_pair(settings::getFileContent("app\\index.html"), "text/html");
+            return make_pair(settings::getFileContent("app/index.html"), "text/html");
         }
         else if(path == "/neutralino.js"){
             return make_pair(settings::getGlobalVars() + routes::getClientJs(), "text/javascript");
