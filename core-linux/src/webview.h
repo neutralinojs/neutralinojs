@@ -43,6 +43,8 @@ extern "C" {
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
 
+#include <gdk-pixbuf/gdk-pixbuf.h>
+
 struct webview_priv {
   GtkWidget *window;
   GtkWidget *scroller;
@@ -103,7 +105,7 @@ struct webview {
   webview_external_invoke_cb_t external_invoke_cb;
   struct webview_priv priv;
   void *userdata;
-  const char *iconfile;
+  GdkPixbuf* icon;
   bool always_on_top;
   bool borderless_window;
   bool maximize;
@@ -303,13 +305,13 @@ WEBVIEW_API int webview_init(struct webview *w) {
   w->priv.queue = g_async_queue_new();
   w->priv.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(w->priv.window), w->title);
-  if (w->iconfile[0] != '\0')
-    gtk_window_set_icon_from_file(GTK_WINDOW(w->priv.window), w->iconfile, NULL);
+  if (w->icon)
+    gtk_window_set_icon(GTK_WINDOW(w->priv.window), w->icon);
   if (w->borderless_window == true)
     gtk_window_set_decorated(GTK_WINDOW(w->priv.window), false);
   if (w->maximize == true)
     gtk_window_maximize(GTK_WINDOW(w->priv.window));
-    
+
   gtk_window_set_keep_above(GTK_WINDOW(w->priv.window), w->always_on_top);
 
   if (w->resizable) {
