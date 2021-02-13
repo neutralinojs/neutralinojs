@@ -36,12 +36,14 @@ module.exports =  function (options) {
     if(options.pingFailCallback) {
         pingFailCallback = options.pingFailCallback;
     }
-    if(NL_MODE == 'browser')
+    if(NL_MODE && NL_MODE == 'browser')
         ping.start(pingSuccessCallback, pingFailCallback);
-    for(let i = 0; i < NL_ARGS.length; i++) {
-        if(NL_ARGS[i] == '--debug-mode') {
-            devClient.start();
-            break;
+    if(NL_ARGS) {
+        for(let i = 0; i < NL_ARGS.length; i++) {
+            if(NL_ARGS[i] == '--debug-mode') {
+                devClient.start();
+                break;
+            }
         }
     }
 }
