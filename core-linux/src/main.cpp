@@ -28,12 +28,15 @@
 #include "../lib/json/json.hpp"
 #include "functions.h"
 #include "settings.h"
+#include "resources.h"
 #include "Socket.h"
 #include "Handler.h"
 #include "auth/authbasic.h"
 #include "ping/ping.h"
 #include "cloud/privileges.h"
 #include "webview.h"
+#include <glib.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
 
 using namespace std;
 using json = nlohmann::json;
@@ -41,7 +44,7 @@ using json = nlohmann::json;
 std::map<int, std::thread> threads;
 
 void uiThread(string appname, int port, int width, int height,
-              int fullscreen, string title, bool always_on_top, string iconfile,
+              int fullscreen, string title, bool always_on_top, GdkPixbuf* icon,
               int enable_inspector, bool borderless_window, bool maximize, string url)
 {
   struct webview webview;
@@ -52,7 +55,7 @@ void uiThread(string appname, int port, int width, int height,
   webview.height = height;
   webview.resizable = 1;
   webview.always_on_top = always_on_top;
-  webview.iconfile = iconfile.c_str();
+  webview.icon = icon;
   webview.debug = enable_inspector;
   webview.borderless_window = borderless_window;
   webview.maximize = maximize;
@@ -75,6 +78,7 @@ int main(int argc, char **argv)
     args.push_back(argv[i]);
   }
   settings::setGlobalArgs(args);
+  resources::makeFileTree();
   json options = settings::getSettings();
   authbasic::generateToken();
   ping::startPingReceiver();
@@ -120,7 +124,7 @@ int main(int argc, char **argv)
     int height = 600;
     int fullscreen = 0;
     bool is_always_on_top = false;
-    std::string iconfile = "";
+    GdkPixbuf* icon = nullptr;
     std::string title = "Neutralino window";
     int enable_inspector = 0;
     bool is_borderless_window = false;
@@ -135,12 +139,22 @@ int main(int argc, char **argv)
 
       if (!windowProp["alwaysontop"].is_null())
         is_always_on_top = windowProp["alwaysontop"].get<bool>();
-      
+
       if (!windowProp["title"].is_null())
         title = windowProp["title"].get<std::string>();
 
-      if (!windowProp["iconfile"].is_null())
-        iconfile = windowProp["iconfile"].get<std::string>();
+      if (!windowProp["iconfile"].is_null()) {
+        GdkPixbufLoader *loader;
+        GdkPixbuf *pixbuf;
+        loader = gdk_pixbuf_loader_new ();
+        std::string iconFile = windowProp["iconfile"].get<std::string>();
+        std::string iconDataStr = settings::getFileContent(iconFile);
+
+        const char *iconData = iconDataStr.c_str();
+        unsigned char *uiconData = reinterpret_cast<unsigned char*>(const_cast<char*>(iconData));
+        gdk_pixbuf_loader_write(loader, uiconData, iconDataStr.length(), NULL);
+        icon = gdk_pixbuf_loader_get_pixbuf(loader);
+      }
 
       if (!windowProp["enableinspector"].is_null())
         enable_inspector = windowProp["enableinspector"].get<bool>() ? 1 : 0;
@@ -152,7 +166,7 @@ int main(int argc, char **argv)
         maximize = windowProp["maximize"].get<bool>();
     }
     std::thread ren(uiThread, appname, port, width,
-                    height, fullscreen, title, is_always_on_top, iconfile,
+                    height, fullscreen, title, is_always_on_top, icon,
                     enable_inspector, is_borderless_window, maximize, navigateUrl);
     ren.detach();
   }

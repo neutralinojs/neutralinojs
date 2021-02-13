@@ -24,18 +24,23 @@
 #include <fstream>
 #include <unistd.h>
 #include <limits.h>
+#include <algorithm>
 #include "../lib/json/json.hpp"
 #include "auth/authbasic.h"
+#include "resources.h"
 #include "log.h"
 
 using namespace std;
 using json = nlohmann::json;
 json options;
 json globalArgs;
+bool loadResFromDir = false;
 
 namespace settings {
 
-    string getFileContent(string filename){
+    string getFileContent(string filename) {
+        if(!loadResFromDir)
+            return resources::getFileContent(filename);
         ifstream t;
         t.open(filename);
         if(!t.is_open())
@@ -50,7 +55,9 @@ namespace settings {
         return buffer;
     }
 
-    string getFileContentBinary(string filename){
+    string getFileContentBinary(string filename) {
+        if(!loadResFromDir)
+            return resources::getFileContent(filename);
         vector<char> buffer;
         ifstream ifd(filename.c_str(), ios::binary | ios::ate);
         if(!ifd.is_open())
@@ -93,11 +100,11 @@ namespace settings {
     string getGlobalVars(){
         json settings = getOptions();
         string s = "var NL_OS='Linux';";
-        s += "var NL_VERSION='1.7.0';";
-        s += "var NL_NAME='" + settings["appname"].get<std::string>() + "';"; 
+        s += "var NL_VERSION='1.8.0';";
+        s += "var NL_NAME='" + settings["appname"].get<std::string>() + "';";
         s += "var NL_PORT=" + settings["appport"].get<std::string>() + ";";
         s += "var NL_MODE='" + settings["mode"].get<std::string>() + "';";
-        s += "var NL_TOKEN='" + authbasic::getToken() + "';";   
+        s += "var NL_TOKEN='" + authbasic::getToken() + "';";
         s += "var NL_CWD='" + settings::getCurrentDir() + "';";
         s += "var NL_ARGS=" + globalArgs.dump() + ";";
 
@@ -111,6 +118,7 @@ namespace settings {
 
     void setGlobalArgs(json args) {
         globalArgs = args;
+        loadResFromDir = std::find(globalArgs.begin(), globalArgs.end(), "--load-dir-res") != globalArgs.end();
     }
 
 }

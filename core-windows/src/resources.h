@@ -20,30 +20,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-let ping = require('../ping/ping');
-let devClient = require('../debug/devclient');
+#include "../lib/json/json.hpp"
 
-module.exports =  function (options) {
-    let pingSuccessCallback = null;
-    let pingFailCallback = null;
+using namespace std;
+using json = nlohmann::json;
 
-    if(options.load) {
-        options.load();
-    }
-    if(options.pingSuccessCallback) {
-        pingSuccessCallback = options.pingSuccessCallback;
-    }
-    if(options.pingFailCallback) {
-        pingFailCallback = options.pingFailCallback;
-    }
-    if(NL_MODE && NL_MODE == 'browser')
-        ping.start(pingSuccessCallback, pingFailCallback);
-    if(NL_ARGS) {
-        for(let i = 0; i < NL_ARGS.length; i++) {
-            if(NL_ARGS[i] == '--debug-mode') {
-                devClient.start();
-                break;
-            }
-        }
-    }
+namespace resources {
+    pair<int, string> seekFilePos(string path);
+    void makeFileTree();
+    string getFileContent(string filename);
+    string getFileContentBinary(string filename);
 }

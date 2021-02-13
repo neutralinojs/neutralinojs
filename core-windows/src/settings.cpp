@@ -35,16 +35,20 @@
 #endif
 #include "../lib/json/json.hpp"
 #include "auth/authbasic.h"
+#include "resources.h"
 #include "log.h"
 
 using namespace std;
 using json = nlohmann::json;
 json options;
 json globalArgs;
+bool loadResFromDir = false;
 
 namespace settings {
 
-    string getFileContent(string filename){
+    string getFileContent(string filename) {
+        if(!loadResFromDir)
+            return resources::getFileContent(filename);
         ifstream t;
         t.open(filename);
         if(!t.is_open())
@@ -60,6 +64,8 @@ namespace settings {
     }
 
     string getFileContentBinary(string filename){
+        if(!loadResFromDir)
+            return resources::getFileContent(filename);
         vector<char> buffer;
         ifstream ifd(filename.c_str(), ios::binary | ios::ate);
         if(!ifd.is_open())
@@ -89,7 +95,7 @@ namespace settings {
             return settings::getOptions();
         json settings;
         try {
-            settings = json::parse(getFileContent("app\\settings.json"));
+            settings = json::parse(getFileContent("app/settings.json"));
         }
         catch(exception e){
             ERROR() << e.what();
@@ -101,7 +107,7 @@ namespace settings {
     string getGlobalVars(){
         json settings = getOptions();
         string s = "var NL_OS='Windows';";
-        s += "var NL_VERSION='1.7.0';";
+        s += "var NL_VERSION='1.8.0';";
         s += "var NL_NAME='" + settings["appname"].get<std::string>() + "';"; 
         s += "var NL_PORT=" + settings["appport"].get<std::string>() + ";";
         s += "var NL_MODE='" + settings["mode"].get<std::string>() + "';";
@@ -119,6 +125,7 @@ namespace settings {
 
     void setGlobalArgs(json args) {
         globalArgs = args;
+        loadResFromDir = std::find(globalArgs.begin(), globalArgs.end(), "--load-dir-res") != globalArgs.end();
     }
 
 }
