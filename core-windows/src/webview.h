@@ -108,7 +108,7 @@ struct webview {
   bool always_on_top;
   bool borderless_window;
   bool maximize;
-  const char *iconfile; 
+  HICON icon; 
 };
 
 enum webview_dialog_type {
@@ -1222,12 +1222,8 @@ WEBVIEW_API int webview_init(struct webview *w) {
   wc.hInstance = hInstance;
   wc.lpfnWndProc = wndproc;
   wc.lpszClassName = classname;
-  if (w->iconfile[0] != '\0') {
-    wchar_t *iconFile = webview_to_utf16(w->iconfile);
-    Gdiplus::Bitmap* icon = Gdiplus::Bitmap::FromFile(iconFile, TRUE);
-    HICON hIcon;
-    icon->GetHICON(&hIcon);
-    wc.hIcon = hIcon;
+  if (w->icon) {
+    wc.hIcon = w->icon;
   }
   RegisterClassEx(&wc);
 
