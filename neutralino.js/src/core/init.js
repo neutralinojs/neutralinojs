@@ -38,7 +38,7 @@ module.exports =  function (options) {
     }
     if(NL_MODE && NL_MODE == 'browser')
         ping.start(pingSuccessCallback, pingFailCallback);
-    if(NL_ARGS) {
+    if(typeof NL_ARGS != "undefined") {
         for(let i = 0; i < NL_ARGS.length; i++) {
             if(NL_ARGS[i] == '--debug-mode') {
                 devClient.start();
