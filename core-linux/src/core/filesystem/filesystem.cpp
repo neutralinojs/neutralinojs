@@ -24,7 +24,7 @@ namespace filesystem {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
-        string filename = input["name"];
+        string filename = input["dir"];
         if(mkdir(filename.c_str(), 0700) == 0){
             output["success"] = true;
         }
@@ -32,8 +32,8 @@ namespace filesystem {
             output["error"] = "Cannot create " + filename;
         }
         return output.dump();
-       
-        
+
+
     }
 
     string removeDirectory(string jso) {
@@ -52,7 +52,7 @@ namespace filesystem {
         }
         else{
             output["error"] = "Cannot remove " + dir;
-        }   
+        }
         return output.dump();
     }
 
@@ -88,7 +88,7 @@ namespace filesystem {
         t.close();
         output["success"] = true;
         return output.dump();
-    }   
+    }
 
     string removeFile(string jso) {
         json input;
@@ -106,7 +106,7 @@ namespace filesystem {
         }
         else{
             output["error"] = "Cannot remove " + filename;
-        }   
+        }
         return output.dump();
     }
 
@@ -121,7 +121,7 @@ namespace filesystem {
             return output.dump();
         }
         string path = input["path"];
-            
+
         DIR *dirp;
         struct dirent *directory;
 

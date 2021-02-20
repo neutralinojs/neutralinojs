@@ -34,5 +34,6 @@ namespace settings {
     string getGlobalVars();
     string getCurrentDir();
     void setGlobalArgs(json args);
+    string joinAppPath(string filename);
 }
 
