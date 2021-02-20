@@ -78,7 +78,8 @@ int main(int argc, char **argv)
     args.push_back(argv[i]);
   }
   settings::setGlobalArgs(args);
-  resources::makeFileTree();
+  if(!loadResFromDir)
+    resources::makeFileTree();
   json options = settings::getSettings();
   authbasic::generateToken();
   ping::startPingReceiver();

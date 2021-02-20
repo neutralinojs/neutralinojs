@@ -67,7 +67,18 @@ namespace filesystem {
             return output.dump();
         }
         string filename = input["filename"];
-        output["content"] = settings::getFileContent(filename);
+        ifstream t;
+        t.open(filename);
+        if(!t.is_open())
+            return "";
+        string buffer = "";
+        string line;
+        while(!t.eof()){
+            getline(t, line);
+            buffer += line + "\n";
+        }
+        t.close();
+        output["content"] = buffer;
         return output.dump();
     }
 

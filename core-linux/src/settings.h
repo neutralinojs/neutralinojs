@@ -24,6 +24,7 @@
 
 using namespace std;
 using json = nlohmann::json;
+extern bool loadResFromDir;
 
 namespace settings {
     json getSettings();
