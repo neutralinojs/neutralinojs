@@ -19,7 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-
+#include <Shlwapi.h>
 #include <iostream>
 #include <fstream>
 #ifndef __has_include
@@ -43,12 +43,18 @@ using json = nlohmann::json;
 json options;
 json globalArgs;
 bool loadResFromDir = false;
+string appPath;
 
 namespace settings {
+
+    string joinAppPath(string filename) {
+        return appPath + filename;
+    }
 
     string getFileContent(string filename) {
         if(!loadResFromDir)
             return resources::getFileContent(filename);
+        filename = settings::joinAppPath(filename);
         ifstream t;
         t.open(filename);
         if(!t.is_open())
@@ -66,6 +72,7 @@ namespace settings {
     string getFileContentBinary(string filename){
         if(!loadResFromDir)
             return resources::getFileContent(filename);
+        filename = settings::joinAppPath(filename);
         vector<char> buffer;
         ifstream ifd(filename.c_str(), ios::binary | ios::ate);
         if(!ifd.is_open())
@@ -114,6 +121,7 @@ namespace settings {
         s += "var NL_TOKEN='" + authbasic::getToken() + "';";  
         s += "var NL_CWD='" + settings::getCurrentDir() + "';";
         s += "var NL_ARGS=" + globalArgs.dump() + ";";
+        s += "var NL_PATH='" + appPath + "';";
 
         if(settings["globals"] != NULL) {
             for ( auto it: settings["globals"].items()) {
@@ -124,6 +132,12 @@ namespace settings {
     }
 
     void setGlobalArgs(json args) {
+        appPath = args[0].get<std::string>();
+        LPSTR pathToReplace = const_cast<char *>(appPath.c_str());
+        PathRemoveFileSpecA(pathToReplace);
+        appPath = std::string(pathToReplace);
+        std::replace(appPath.begin(), appPath.end(), '\\', '/');;
+        appPath += "/";
         globalArgs = args;
         loadResFromDir = std::find(globalArgs.begin(), globalArgs.end(), "--load-dir-res") != globalArgs.end();
     }

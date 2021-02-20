@@ -24,6 +24,7 @@
 
 using namespace std;
 using json = nlohmann::json;
+extern bool loadResFromDir;
 
 namespace settings {
     json getSettings();
@@ -34,5 +35,6 @@ namespace settings {
     string getGlobalVars();
     string getCurrentDir();
     void setGlobalArgs(json args);
+    string joinAppPath(string filename);
 }
 

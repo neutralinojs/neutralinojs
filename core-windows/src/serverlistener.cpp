@@ -65,7 +65,8 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
         args.push_back(__argv[i]);
     }
     settings::setGlobalArgs(args);
-    resources::makeFileTree();
+    if(!loadResFromDir)
+        resources::makeFileTree();
     settings::getSettings();
     authbasic::generateToken();
     ping::startPingReceiver();

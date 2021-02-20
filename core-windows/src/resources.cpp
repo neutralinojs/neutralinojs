@@ -27,6 +27,7 @@
 #include <limits.h>
 #include "../lib/json/json.hpp"
 #include "functions.h"
+#include "settings.h"
 #include "log.h"
 
 #define APP_RES_FILE "res.neu"
@@ -65,7 +66,9 @@ namespace resources {
         pair<int, string> p = seekFilePos(transformUrl(filename), fileTree, "");
         if(p.first != -1) {
             std::ifstream asarArchive;
-            asarArchive.open(APP_RES_FILE, std::ios::binary);
+            std::string resFileName = APP_RES_FILE;
+            resFileName = settings::joinAppPath(resFileName);
+            asarArchive.open(resFileName, std::ios::binary);
             if (!asarArchive) {
                 ERROR() << "resources::makeFileTree error: " << APP_RES_FILE << " is missing.";
                 return "";
@@ -86,7 +89,9 @@ namespace resources {
 
     void makeFileTree() {
         std::ifstream asarArchive;
-        asarArchive.open(APP_RES_FILE, std::ios::binary);
+        std::string resFileName = APP_RES_FILE;
+        resFileName = settings::joinAppPath(resFileName);
+        asarArchive.open(resFileName, std::ios::binary);
         if (!asarArchive) {
             ERROR() << "resources::makeFileTree error: " << APP_RES_FILE << " is missing.";
             return;
