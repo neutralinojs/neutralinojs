@@ -22,6 +22,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sys/stat.h>
 #include "../../../lib/json/json.hpp"
 #include "../../settings.h"
 
@@ -39,8 +40,23 @@ namespace storage {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
-        string filename = "storage/" + input["bucket"].get<std::string>() + ".json";
-        output["content"] = settings::getFileContent(filename);
+        string bucket = input["bucket"].get<std::string>();
+        string bucketPath = settings::joinAppPath("storage");
+        string filename = bucketPath + "/" + bucket + ".json";
+        ifstream t;
+        t.open(filename);
+        if(!t.is_open()) {
+            output["error"] = "Unable to open storage bucket: " + bucket;
+            return output.dump();
+        }
+        string buffer = "";
+        string line;
+        while(!t.eof()){
+            getline(t, line);
+            buffer += line + "\n";
+        }
+        t.close();
+        output["content"] = buffer;
         return output.dump();
     }
 
@@ -54,14 +70,21 @@ namespace storage {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
-        
-        string filename = "storage/" + input["bucket"].get<std::string>() + ".json";
+
+        string bucket = input["bucket"].get<std::string>();
+        string bucketPath = settings::joinAppPath("storage");
+        mkdir(bucketPath.c_str(), 0700);
+        string filename = bucketPath + "/" + bucket + ".json";
         string content = input["content"].dump();
         ofstream t(filename);
+        if(!t.is_open()) {
+            output["error"] = "Unable to write storage bucket: " + bucket;
+            return output.dump();
+        }
         t << content;
         t.close();
-        
+
         return output.dump();
-    } 
+    }
 
 }

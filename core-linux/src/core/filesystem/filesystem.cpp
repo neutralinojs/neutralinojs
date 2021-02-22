@@ -12,8 +12,6 @@ using json = nlohmann::json;
 
 namespace filesystem {
 
-
-
     string createDirectory(string jso) {
         json input;
         json output;
@@ -69,8 +67,10 @@ namespace filesystem {
         string filename = input["filename"];
         ifstream t;
         t.open(filename);
-        if(!t.is_open())
-            return "";
+        if(!t.is_open()) {
+            output["error"] = "Unable to open " + filename;
+            return output.dump();
+        }
         string buffer = "";
         string line;
         while(!t.eof()){
