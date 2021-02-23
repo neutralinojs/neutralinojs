@@ -20,24 +20,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <string>
-#include <vector>
-#include "../functions.h"
+#include "lib/json.hpp"
 
 using namespace std;
-string token = "";
-namespace authbasic {
-    
-    void generateToken() {
-        token = functions::generateToken();
-    }
+using json = nlohmann::json;
 
-    string getToken() {
-        return token;
-    }
-
-    bool verifyToken(string resToken) {
-        vector<string> tokenparts = functions::split(resToken,  ' '); 
-        return token == tokenparts[1];
-    }
+namespace resources {
+    pair<int, string> seekFilePos(string path);
+    void makeFileTree();
+    string getFileContent(string filename);
+    string getFileContentBinary(string filename);
 }

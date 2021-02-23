@@ -20,12 +20,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <string>
 #include <vector>
+#include "helpers.h"
 
 using namespace std;
+string token = "";
+namespace authbasic {
 
-namespace functions {
-    vector<string> split(const string &s, char delim);
-    string generateToken();
-    void urldecode(char *dst, const char *src);
+    void generateToken() {
+        token = helpers::generateToken();
+    }
+
+    string getToken() {
+        return token;
+    }
+
+    bool verifyToken(string resToken) {
+        vector<string> tokenparts = helpers::split(resToken,  ' ');
+        return token == tokenparts[1];
+    }
 }

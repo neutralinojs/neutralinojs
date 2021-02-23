@@ -20,15 +20,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <iostream>
-#include <sstream>
 #include <vector>
+#include <string>
+#include <sstream>
 #include <time.h>
-#include <stdlib.h>
 #include <ctype.h>
 
 using namespace std;
-namespace functions {
+namespace helpers {
 
     vector<string> split(const string &s, char delim) {
         stringstream ss(s);
@@ -42,7 +41,7 @@ namespace functions {
 
     string generateToken() {
         srand (time(NULL));
-        
+
         string s = "";
         static const char alphanum[] =
             "0123456789"

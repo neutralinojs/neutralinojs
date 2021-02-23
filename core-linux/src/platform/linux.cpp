@@ -20,52 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <iostream>
-#include <chrono>
-#include <thread>
-#include <vector>
-#include "../cloud/privileges.h"
-
+#include <string>
+#include <libgen.h>
 
 using namespace std;
 
-bool isActive = true;
-bool firstPing = false;
-
-void setInterval(auto function,int interval) {
-    thread th([&]() {
-        while(true) {
-            std::this_thread::sleep_for(5s);
-            function();
-        }
-    });
-    th.detach();
-}
-
-
-namespace ping {
-    
-    void receivePing() {
-        isActive = true;
-        if(!firstPing) {
-            firstPing = true;
-        }
+namespace linux {
+    string getDirectoryName(string filename){
+        return dirname((char*)filename.c_str());
     }
-
-    void pingTick() {
-        if(!isActive && firstPing) {
-            std::exit(0);
-        }
-        isActive = false;
-    }
-
-    void startPingReceiver() {
-        if(privileges::getMode() == "browser") {
-            setInterval([]() {
-                pingTick();
-            },
-            10000);
-        }
-    }
-
 }

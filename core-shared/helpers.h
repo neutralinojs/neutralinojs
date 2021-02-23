@@ -20,11 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <vector>
+#include <string>
 
 using namespace std;
 
-namespace privileges {
-    vector<string> getBlacklist();
-    string getMode();
-    bool checkPermission(string func);
+namespace helpers {
+    vector<string> split(const string &s, char delim);
+    string generateToken();
+    void urldecode(char *dst, const char *src);
 }

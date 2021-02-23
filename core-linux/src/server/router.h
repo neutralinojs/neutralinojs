@@ -20,14 +20,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "../lib/json/json.hpp"
+#include <string>
 
 using namespace std;
-using json = nlohmann::json;
 
-namespace resources {
-    pair<int, string> seekFilePos(string path);
-    void makeFileTree();
-    string getFileContent(string filename);
-    string getFileContentBinary(string filename);
+namespace routes {
+    string getFile(string file);
+    string getClientJs();
+    string getIndex();
+    pair<string, string> handle(string path, string j, string token);
 }

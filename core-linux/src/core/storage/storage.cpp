@@ -23,8 +23,8 @@
 #include <iostream>
 #include <fstream>
 #include <sys/stat.h>
-#include "../../../lib/json/json.hpp"
-#include "../../settings.h"
+#include "lib/json.hpp"
+#include "settings.h"
 
 using namespace std;
 using json = nlohmann::json;

@@ -25,16 +25,16 @@
 #include <string>
 #include <thread>
 #include <map>
-#include "../lib/json/json.hpp"
-#include "functions.h"
+#include "lib/json.hpp"
+#include "helpers.h"
 #include "settings.h"
 #include "resources.h"
-#include "Socket.h"
-#include "Handler.h"
+#include "server/Socket.h"
+#include "server/Handler.h"
 #include "auth/authbasic.h"
 #include "ping/ping.h"
 #include "cloud/privileges.h"
-#include "webview.h"
+#include "webview/webview.h"
 #include <glib.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
@@ -83,12 +83,11 @@ int main(int argc, char **argv)
   json options = settings::getSettings();
   authbasic::generateToken();
   ping::startPingReceiver();
-  privileges::getMode();
   privileges::getBlacklist();
 
   int port = stoi(options["appport"].get<string>());
   string appname = options["appname"].get<std::string>();
-  string mode = privileges::getMode();
+  string mode = settings::getMode();
 
   int listenFd = Socket::createSocket();
   Socket::setReuseAddr(listenFd, true);

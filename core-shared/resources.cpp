@@ -24,10 +24,9 @@
 #include <fstream>
 #include <regex>
 #include <vector>
-#include <unistd.h>
 #include <limits.h>
-#include "../lib/json/json.hpp"
-#include "functions.h"
+#include "lib/json.hpp"
+#include "helpers.h"
 #include "settings.h"
 #include "log.h"
 
@@ -41,7 +40,7 @@ unsigned int asarHeaderSize;
 namespace resources {
 
     pair<int, string> seekFilePos(string path, json node, string curpath) {
-        vector <string> pathSegments = functions::split(path, '/');
+        vector <string> pathSegments = helpers::split(path, '/');
         string filename = pathSegments[pathSegments.size() - 1];
         json json = node;
         for(auto pathSegment: pathSegments) {

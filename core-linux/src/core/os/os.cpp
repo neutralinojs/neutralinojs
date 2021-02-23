@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include "../../../lib/json/json.hpp"
+#include "lib/json.hpp"
 #include <stdlib.h>
 #include <cstdio>
 #include <iostream>
@@ -40,8 +40,8 @@ namespace os {
             output["stdout"] = result;
         }
         return output.dump();
-       
-        
+
+
     }
 
     string getEnvar(string jso) {
@@ -63,8 +63,8 @@ namespace os {
         else {
             output["value"] = o;
         }
-        return output.dump();       
-        
+        return output.dump();
+
     }
 
 
@@ -93,7 +93,7 @@ namespace os {
         }
         output["file"] = result;
         return output.dump();
-        
+
     }
 
 
@@ -107,7 +107,7 @@ namespace os {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
-        string command = "zenity --file-selection --save"; 
+        string command = "zenity --file-selection --save";
         if(!input["title"].is_null())
             command += " --title \"" + input["title"].get<std::string>() + "\"";
         string result;
@@ -120,8 +120,8 @@ namespace os {
 
         output["file"] = result;
         return output.dump();
-       
-        
+
+
     }
 
     string showNotification(string jso) {
@@ -134,13 +134,13 @@ namespace os {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
-        string command = "notify-send \"" + input["summary"].get<string>() + "\" \"" + 
+        string command = "notify-send \"" + input["summary"].get<string>() + "\" \"" +
                             input["body"].get<string>() + "\"";
         if(system(command.c_str()) == 0)
             output["message"] = "Notification is pushed to the system";
         else
             output["error"] = "An error thrown while sending the notification";
         return output.dump();
-        
+
     }
 }

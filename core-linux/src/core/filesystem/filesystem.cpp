@@ -4,14 +4,13 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "../../../lib/json/json.hpp"
-#include "../../settings.h"
+#include "lib/json.hpp"
+#include "settings.h"
 
 using namespace std;
 using json = nlohmann::json;
 
 namespace filesystem {
-
     string createDirectory(string jso) {
         json input;
         json output;

@@ -24,7 +24,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <sys/sysinfo.h>
-#include "../../../lib/json/json.hpp"
+#include "lib/json.hpp"
 
 using namespace std;
 using json = nlohmann::json;
@@ -42,7 +42,7 @@ namespace computer {
         };
 
         return output.dump();
-       
-        
+
+
     }
 }

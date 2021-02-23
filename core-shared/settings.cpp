@@ -22,14 +22,27 @@
 
 #include <iostream>
 #include <fstream>
-#include <unistd.h>
-#include <libgen.h>
-#include <limits.h>
 #include <algorithm>
-#include "../lib/json/json.hpp"
+#include "lib/json.hpp"
 #include "auth/authbasic.h"
 #include "resources.h"
 #include "log.h"
+#ifndef __has_include
+  static_assert(false, "__has_include not supported");
+#else
+#  if __has_include(<filesystem>)
+#    include <filesystem>
+     namespace fs = std::filesystem;
+#  elif __has_include(<experimental/filesystem>)
+#    include <experimental/filesystem>
+     namespace fs = std::experimental::filesystem;
+#  endif
+#endif
+
+#ifdef __linux__
+#include "../core-linux/src/platform/linux.h"
+#define OS_NAME "Linux"
+#endif
 
 using namespace std;
 using json = nlohmann::json;
@@ -79,8 +92,7 @@ namespace settings {
     }
 
     string getCurrentDir() {
-        char cwd[PATH_MAX];
-        return getcwd(cwd, sizeof(cwd));
+        return fs::current_path().generic_string();
     }
 
     json getOptions(){
@@ -107,7 +119,7 @@ namespace settings {
 
     string getGlobalVars(){
         json settings = getOptions();
-        string s = "var NL_OS='Linux';";
+        string s = "var NL_OS='" + std::string(OS_NAME) + "';";
         s += "var NL_VERSION='1.8.0';";
         s += "var NL_NAME='" + settings["appname"].get<std::string>() + "';";
         s += "var NL_PORT=" + settings["appport"].get<std::string>() + ";";
@@ -126,10 +138,15 @@ namespace settings {
     }
 
     void setGlobalArgs(json args) {
-        appPath = dirname((char*)args[0].get<std::string>().c_str());
+        appPath = linux::getDirectoryName(args[0].get<std::string>());
         appPath += "/";
         globalArgs = args;
         loadResFromDir = std::find(globalArgs.begin(), globalArgs.end(), "--load-dir-res") != globalArgs.end();
+    }
+
+    string getMode() {
+        json mode = settings::getOptions()["mode"];
+        return mode;
     }
 
 }

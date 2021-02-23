@@ -26,15 +26,15 @@
 #include <unistd.h>
 #include <regex>
 #include <vector>
-#include "functions.h"
+#include "helpers.h"
 #include "settings.h"
-#include "core/filesystem/filesystem.h"
-#include "core/os/os.h"
-#include "core/computer/computer.h"
-#include "core/storage/storage.h"
-#include "core/debug/debug.h"
-#include "core/app/app.h"
-#include "../lib/json/json.hpp"
+#include "../core/filesystem/filesystem.h"
+#include "../core/os/os.h"
+#include "../core/computer/computer.h"
+#include "../core/storage/storage.h"
+#include "../core/debug/debug.h"
+#include "../core/app/app.h"
+#include "lib/json.hpp"
 #include "auth/authbasic.h"
 #include "ping/ping.h"
 #include "cloud/privileges.h"
@@ -58,7 +58,7 @@ namespace routes {
     }
 
     pair<string, string> getAsset(string path, bool isBinary = false) {
-        vector<string> split = functions::split(path, '.');
+        vector<string> split = helpers::split(path, '.');
         string extension = split[split.size() - 1];
         map<string, string> mimeTypes = {
             {"js", "text/javascript"},
@@ -83,7 +83,7 @@ namespace routes {
    pair<string, string> handle(string encodedPath, string j, string token) {
         char *originalPath = (char *) encodedPath.c_str();
         char *decodedPath = new char[strlen(originalPath) + 1];
-        functions::urldecode(decodedPath, originalPath);
+        helpers::urldecode(decodedPath, originalPath);
 
         string path = string(decodedPath);
         json options = settings::getOptions();
@@ -113,7 +113,7 @@ namespace routes {
             return make_pair(routes::getIndex(), "text/html");
         }
         else {
-            vector<string> portions = functions::split(path, '/');
+            vector<string> portions = helpers::split(path, '/');
             if(portions.size() == 3) {
                 if(authbasic::verifyToken(token)) {
                     string module = portions[1];
@@ -123,7 +123,7 @@ namespace routes {
 
                     bool permission = true;
 
-                    if(privileges::getMode() == "cloud") {
+                    if(settings::getMode() == "cloud") {
                         if(!privileges::checkPermission(modfunc)) permission = false;
                     }
 

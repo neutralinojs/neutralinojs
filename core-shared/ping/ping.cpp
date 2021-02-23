@@ -24,54 +24,48 @@
 #include <chrono>
 #include <thread>
 #include <vector>
-#include "../../lib/json/json.hpp"
-#include "../settings.h"
+#include "cloud/privileges.h"
+#include "settings.h"
 
 using namespace std;
-using json = nlohmann::json;
 
+bool isActive = true;
+bool firstPing = false;
 
-
-
-
-namespace privileges {
-
-    string mode = "";
-    vector <string> blacklist;
-
-    
-    string getMode() {
-        if(mode != "") {
-            return mode;
+void setInterval(auto function,int interval) {
+    thread th([&]() {
+        while(true) {
+            std::this_thread::sleep_for(5s);
+            function();
         }
-        else {
-            json options = settings::getOptions()["mode"];
-            return options;
-        }
+    });
+    th.detach();
+}
 
-    }
-    
-    vector<string> getBlacklist() {
-        if(blacklist.size() != 0 || privileges::getMode() == "browser") {
-            return blacklist;
+
+namespace ping {
+
+    void receivePing() {
+        isActive = true;
+        if(!firstPing) {
+            firstPing = true;
         }
-        else if(privileges::getMode() == "cloud") {
-            json options = settings::getOptions()["cloud"]["blacklist"];
-            vector<string> s = options;
-            blacklist = s;
-            return blacklist;
-        }
-        return vector<string>();
     }
 
-
-    bool checkPermission(string func) {
-        for(int i = 0; i < blacklist.size(); i++) {
-            if(blacklist[i] == func) return false;
+    void pingTick() {
+        if(!isActive && firstPing) {
+            std::exit(0);
         }
-        return true;
+        isActive = false;
     }
 
-
+    void startPingReceiver() {
+        if(settings::getMode() == "browser") {
+            setInterval([]() {
+                pingTick();
+            },
+            10000);
+        }
+    }
 
 }

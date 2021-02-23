@@ -1,0 +1,6 @@
+ERROR [src/resources.cpp:makeFileTree] resources::makeFileTree error: res.neu is missing.
+ERROR [src/settings.cpp:getSettings] std::exception
+ERROR [src/resources.cpp:makeFileTree] resources::makeFileTree error: res.neu is missing.
+ERROR [src/settings.cpp:getSettings] std::exception
+ERROR [src/resources.cpp:makeFileTree] resources::makeFileTree error: res.neu is missing.
+ERROR [src/settings.cpp:getSettings] std::exception

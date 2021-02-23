@@ -20,17 +20,36 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <string>
+#include <iostream>
+#include <chrono>
+#include <thread>
+#include <vector>
+#include "lib/json.hpp"
+#include "settings.h"
 
 using namespace std;
+using json = nlohmann::json;
 
-namespace routes {
+namespace privileges {
+    vector <string> blacklist;
 
-    string getFile(string file);
+    vector<string> getBlacklist() {
+        if(blacklist.size() != 0 || settings::getMode() == "browser") {
+            return blacklist;
+        }
+        else if(settings::getMode() == "cloud") {
+            json options = settings::getOptions()["cloud"]["blacklist"];
+            vector<string> s = options;
+            blacklist = s;
+            return blacklist;
+        }
+        return vector<string>();
+    }
 
-    string getClientJs();
-
-    string getIndex();
-
-    pair<string, string> handle(string path, string j, string token);
+    bool checkPermission(string func) {
+        for(int i = 0; i < blacklist.size(); i++) {
+            if(blacklist[i] == func) return false;
+        }
+        return true;
+    }
 }
