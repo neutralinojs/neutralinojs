@@ -11,6 +11,7 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace filesystem {
+
     string createDirectory(string jso) {
         json input;
         json output;
@@ -29,8 +30,6 @@ namespace filesystem {
             output["error"] = "Cannot create " + filename;
         }
         return output.dump();
-
-
     }
 
     string removeDirectory(string jso) {
@@ -151,7 +150,6 @@ namespace filesystem {
             }
             closedir(dirp);
         }
-
         return output.dump();
     }
 }

@@ -40,8 +40,6 @@ namespace os {
             output["stdout"] = result;
         }
         return output.dump();
-
-
     }
 
     string getEnvar(string jso) {
@@ -93,7 +91,6 @@ namespace os {
         }
         output["file"] = result;
         return output.dump();
-
     }
 
 
@@ -120,8 +117,6 @@ namespace os {
 
         output["file"] = result;
         return output.dump();
-
-
     }
 
     string showNotification(string jso) {
@@ -141,6 +136,5 @@ namespace os {
         else
             output["error"] = "An error thrown while sending the notification";
         return output.dump();
-
     }
 }

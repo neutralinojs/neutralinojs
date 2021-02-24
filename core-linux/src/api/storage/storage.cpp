@@ -83,7 +83,6 @@ namespace storage {
         }
         t << content;
         t.close();
-
         return output.dump();
     }
 

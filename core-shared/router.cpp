@@ -28,16 +28,19 @@
 #include <vector>
 #include "helpers.h"
 #include "settings.h"
-#include "../core/filesystem/filesystem.h"
-#include "../core/os/os.h"
-#include "../core/computer/computer.h"
-#include "../core/storage/storage.h"
-#include "../core/debug/debug.h"
-#include "../core/app/app.h"
 #include "lib/json.hpp"
 #include "auth/authbasic.h"
 #include "ping/ping.h"
 #include "cloud/privileges.h"
+
+#ifdef __linux__
+#include "../core-linux/src/api/filesystem/filesystem.h"
+#include "../core-linux/src/api/os/os.h"
+#include "../core-linux/src/api/computer/computer.h"
+#include "../core-linux/src/api/storage/storage.h"
+#include "../core-linux/src/api/debug/debug.h"
+#include "../core-linux/src/api/app/app.h"
+#endif
 
 using namespace std;
 using namespace filesystem;
@@ -120,13 +123,11 @@ namespace routes {
                     string func = portions[2];
                     string modfunc = module + "." + func;
                     string output = "";
-
                     bool permission = true;
 
                     if(settings::getMode() == "cloud") {
                         if(!privileges::checkPermission(modfunc)) permission = false;
                     }
-
                     if(permission) {
 
                         if(filesystem::funcmap.find(modfunc) != filesystem::funcmap.end() ){
@@ -154,7 +155,7 @@ namespace routes {
                             output = (*f)(j);
                         }
                         else {
-                            json o = {{"error", modfunc + " is not supported"}};
+                            json o = {{"error", modfunc + " is not implement in the Neutralinojs server."}};
                             output = o.dump();
                         }
 
@@ -162,12 +163,12 @@ namespace routes {
                     }
 
                     else {
-                         return make_pair("{\"error\":\"Cloud permission error!\"}", "application/json");
+                         return make_pair("{\"error\":\"Missing permission! Blocked action in cloud mode\"}", "application/json");
                     }
 
                 }
                 else {
-                    return make_pair("{\"error\":\"Authentication error!\"}", "application/json");
+                    return make_pair("{\"error\":\"Invalid or expired NL_TOKEN value from client.\"}", "application/json");
                 }
 
 
