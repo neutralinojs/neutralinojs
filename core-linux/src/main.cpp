@@ -44,8 +44,8 @@ using json = nlohmann::json;
 std::map < int, std::thread > threads;
 
 void uiThread(string appname, int port, int width, int height,
-    int fullscreen, string title, bool always_on_top, GdkPixbuf * icon,
-    int enable_inspector, bool borderless_window, bool maximize, string url) {
+    bool fullscreen, string title, bool always_on_top, void* icon,
+    bool enable_inspector, bool borderless_window, bool maximize, string url) {
     struct webview webview;
     memset( & webview, 0, sizeof(webview));
     webview.title = title.c_str();
@@ -111,11 +111,11 @@ int main(int argc, char ** argv) {
     } else if (mode == "window") {
         int width = 800;
         int height = 600;
-        int fullscreen = 0;
+        bool fullscreen = false;
         bool is_always_on_top = false;
         GdkPixbuf * icon = nullptr;
         std::string title = "Neutralino window";
-        int enable_inspector = 0;
+        bool enable_inspector = 0;
         bool is_borderless_window = false;
         bool maximize = false;
         if (!options["window"].is_null()) {

@@ -305,7 +305,7 @@ WEBVIEW_API int webview_init(struct webview *w) {
   w->priv.window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   gtk_window_set_title(GTK_WINDOW(w->priv.window), w->title);
   if (w->icon)
-    gtk_window_set_icon(GTK_WINDOW(w->priv.window), w->icon);
+    gtk_window_set_icon(GTK_WINDOW(w->priv.window), (GdkPixbuf*) w->icon);
   if (w->borderless_window == true)
     gtk_window_set_decorated(GTK_WINDOW(w->priv.window), false);
   if (w->maximize == true)
