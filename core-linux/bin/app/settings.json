@@ -9,7 +9,7 @@
         "height": "700",
         "fullscreen": false,
         "alwaysontop": false,
-        "iconfile": "neutrlino.png",
+        "iconfile": "app/assets/neutralino.png",
         "enableinspector": false,
         "borderless": false,
         "maximize": false

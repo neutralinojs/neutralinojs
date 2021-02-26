@@ -72,6 +72,17 @@
         "vector": "cpp",
         "hash_map": "cpp",
         "condition_variable": "cpp",
-        "deque": "cpp"
+        "deque": "cpp",
+        "*.rh": "cpp",
+        "bit": "cpp",
+        "codecvt": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "memory_resource": "cpp",
+        "random": "cpp",
+        "regex": "cpp",
+        "ranges": "cpp",
+        "shared_mutex": "cpp",
+        "stop_token": "cpp"
     }
 }
