@@ -20,52 +20,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <iostream>
-#include <chrono>
-#include <thread>
-#include <vector>
-#include "../cloud/privileges.h"
+#include <map>
+#ifndef FILESYSTEM_H
+#define FILESYSTEM_H
 
+namespace fs {
 
-using namespace std;
+    string createDirectory(string jso);
+    string removeDirectory(string jso);
+    string writeFile(string jso);
+    string readFile(string jso);
+    string removeFile(string jso);
+    string readDirectory(string jso);
+    typedef string (*pfunc)(string);
 
-bool isActive = true;
-bool firstPing = false;
-
-void setInterval(auto function,int interval) {
-    thread th([&]() {
-        while(true) {
-            std::this_thread::sleep_for(5s);
-            function();
-        }
-    });
-    th.detach();
+    map <string, pfunc> funcmap = {
+        {"filesystem.createDirectory", fs::createDirectory},
+        {"filesystem.removeDirectory", fs::removeDirectory},
+        {"filesystem.readFile", fs::readFile},
+        {"filesystem.writeFile", fs::writeFile},
+        {"filesystem.removeFile", fs::removeFile},
+        {"filesystem.readDirectory", fs::readDirectory}
+    };
 }
 
-
-namespace ping {
-    
-    void receivePing() {
-        isActive = true;
-        if(!firstPing) {
-            firstPing = true;
-        }
-    }
-
-    void pingTick() {
-        if(!isActive && firstPing) {
-            std::exit(0);
-        }
-        isActive = false;
-    }
-
-    void startPingReceiver() {
-        if(privileges::getMode() == "browser") {
-            setInterval([]() {
-                pingTick();
-            },
-            10000);
-        }
-    }
-
-}
+#endif

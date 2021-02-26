@@ -33,19 +33,26 @@
 #include "ping/ping.h"
 #include "cloud/privileges.h"
 
-#ifdef __linux__
+#if defined(__linux__)
 #include "../core-linux/src/api/filesystem/filesystem.h"
 #include "../core-linux/src/api/os/os.h"
 #include "../core-linux/src/api/computer/computer.h"
 #include "../core-linux/src/api/storage/storage.h"
 #include "../core-linux/src/api/debug/debug.h"
 #include "../core-linux/src/api/app/app.h"
+
+#elif defined(_WIN32)
+#include "../core-windows/src/api/filesystem/filesystem.h"
+#include "../core-windows/src/api/os/os.h"
+#include "../core-windows/src/api/computer/computer.h"
+#include "../core-windows/src/api/storage/storage.h"
+#include "../core-windows/src/api/debug/debug.h"
+#include "../core-windows/src/api/app/app.h"
 #endif
 
 using namespace std;
-using namespace filesystem;
 using json = nlohmann::json;
-
+typedef string (*pfunc)(string);
 namespace routes {
 
     string getClientJs() {
@@ -130,8 +137,8 @@ namespace routes {
                     }
                     if(permission) {
 
-                        if(filesystem::funcmap.find(modfunc) != filesystem::funcmap.end() ){
-                            pfunc f = filesystem::funcmap[modfunc];
+                        if(fs::funcmap.find(modfunc) != fs::funcmap.end() ){
+                            pfunc f = fs::funcmap[modfunc];
                             output = (*f)(j);
                         }
                         else if(os::funcmap.find(modfunc) != os::funcmap.end() ){

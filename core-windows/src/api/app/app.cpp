@@ -21,7 +21,7 @@
 // SOFTWARE.
 
 #include <windows.h>
-#include "../../../lib/json/json.hpp"
+#include "lib/json.hpp"
 
 using namespace std;
 using json = nlohmann::json;

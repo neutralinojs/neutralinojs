@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "../lib/json/json.hpp"
+#include "lib/json.hpp"
 
 using namespace std;
 using json = nlohmann::json;

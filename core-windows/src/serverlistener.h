@@ -34,9 +34,7 @@
 
 #include <winsock2.h>
 #include <ws2tcpip.h>
-
 #include "serverexceptions.h"
-#include "functions.h"
 
 /**
  * @brief Creates an HTTP server instance and awaits requests
@@ -64,7 +62,7 @@ public:
      * @param port Port on which the server will be listening for connections
      * @param buffer_size Size of the buffer used to retrieve data from sockets
      */
-    ServerListener(int port=DEFAULT_PORT, size_t buffer_size=255);
+    ServerListener(int port=8080, size_t buffer_size=255);
 
     /**
       * Start listening for connections.

@@ -38,7 +38,7 @@
 #include "ping/ping.h"
 #include "cloud/privileges.h"
 #include "webv.h"
-#include "../lib/json/json.hpp"
+#include "lib/json.hpp"
 #define DEFAULT_BUFLEN 1452  
 
 using json = nlohmann::json;
@@ -70,13 +70,12 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
     settings::getSettings();
     authbasic::generateToken();
     ping::startPingReceiver();
-    privileges::getMode();
     privileges::getBlacklist();
     
     json options = settings::getOptions();
     string appname = options["appname"];
     string appport = options["appport"];
-    string mode = privileges::getMode();
+    string mode = settings::getMode();
     this->port = stoi(appport);
 
     std::shared_ptr<addrinfo> socket_props(nullptr, [](addrinfo* ai) { freeaddrinfo(ai); });

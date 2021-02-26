@@ -22,7 +22,7 @@
 
 #include <iostream>
 #include <fstream>
-#include "../../../lib/json/json.hpp"
+#include "lib/json.hpp"
 #include <windows.h>
 #include <shlobj.h>
 #include <shobjidl.h>
@@ -33,8 +33,8 @@
 #include <stdexcept>
 #include <string>
 #include <array>
-
-#include "../../functions.h"
+#include "helpers.h"
+#include "../../platform/windows.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -53,7 +53,7 @@ namespace os {
         }
         
         string command = "cmd /c " + input["command"].get<std::string>();
-        output["stdout"] = functions::execCommand(command);
+        output["stdout"] = windows::execCommand(command);
         return output.dump();
     }
 
@@ -197,7 +197,7 @@ namespace os {
                         "$notify.Visible = $true;"
                         "$notify.ShowBalloonTip(0 ,'"+ input["summary"].get<string>() + "','" + input["body"].get<string>() + "',[System.Windows.Forms.TooltipIcon]::None)}\"";
         
-        string commandOutput = functions::execCommand(command);
+        string commandOutput = windows::execCommand(command);
 
         if(commandOutput.find("'powershell'") == string::npos)
             output["message"] = "Notification is pushed to the system";

@@ -39,9 +39,14 @@
 #  endif
 #endif
 
-#ifdef __linux__
+#if defined(__linux__)
 #include "../core-linux/src/platform/linux.h"
 #define OS_NAME "Linux"
+#define PLATFORM_NS linux
+#elif defined(_WIN32)
+#include "../core-windows/src/platform/windows.h"
+#define OS_NAME "Windows"
+#define PLATFORM_NS windows
 #endif
 
 using namespace std;
@@ -138,7 +143,7 @@ namespace settings {
     }
 
     void setGlobalArgs(json args) {
-        appPath = linux::getDirectoryName(args[0].get<std::string>());
+        appPath = PLATFORM_NS::getDirectoryName(args[0].get<std::string>());
         appPath += "/";
         globalArgs = args;
         loadResFromDir = std::find(globalArgs.begin(), globalArgs.end(), "--load-dir-res") != globalArgs.end();

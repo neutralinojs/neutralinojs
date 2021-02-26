@@ -20,58 +20,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <string>
 #include <iostream>
-#include <chrono>
-#include <thread>
-#include <vector>
-#include "../../lib/json/json.hpp"
-#include "../settings.h"
+#include <fstream>
+#include <windows.h>
+#include <shlwapi.h>
+#include "helpers.h"
 
 using namespace std;
-using json = nlohmann::json;
 
-
-
-
-
-namespace privileges {
-
-    string mode = "";
-    vector <string> blacklist;
-
-    
-    string getMode() {
-        if(mode != "") {
-            return mode;
-        }
-        else {
-            json options = settings::getOptions()["mode"];
-            return options;
-        }
-
+namespace windows {
+    string getDirectoryName(string filename){
+        LPSTR pathToReplace = const_cast<char *>(filename.c_str());
+        PathRemoveFileSpecA(pathToReplace);
+        return std::string(pathToReplace);
     }
     
-    vector<string> getBlacklist() {
-        if(blacklist.size() != 0 || privileges::getMode() == "browser") {
-            return blacklist;
+    string execCommand(string command) {
+        string output = "";
+        PROCESS_INFORMATION pi;
+        STARTUPINFO si = {sizeof(si)};
+        char temp[256];
+        GetTempPathA(256, temp);
+        string tmpFile = string(temp) + "nl_o" + helpers::generateToken() + ".tmp";
+        CreateProcessA(NULL,(LPSTR)(command + " > " + tmpFile).c_str(),NULL,NULL,TRUE,CREATE_NO_WINDOW,NULL,NULL,&si,&pi);
+        WaitForSingleObject(pi.hProcess, INFINITE);
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+        ifstream t;
+        t.open(tmpFile);
+        if(!t.is_open())
+            return "";
+        string buffer = "";
+        string line;
+        while(!t.eof()){
+            getline(t, line);
+            buffer += line + "\n";
         }
-        else if(privileges::getMode() == "cloud") {
-            json options = settings::getOptions()["cloud"]["blacklist"];
-            vector<string> s = options;
-            blacklist = s;
-            return blacklist;
-        }
-        return vector<string>();
+        t.close();
+        output = buffer;
+        DeleteFile(tmpFile.c_str());
+        return output;
     }
-
-
-    bool checkPermission(string func) {
-        for(int i = 0; i < blacklist.size(); i++) {
-            if(blacklist[i] == func) return false;
-        }
-        return true;
-    }
-
-
-
 }

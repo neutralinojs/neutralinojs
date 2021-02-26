@@ -22,7 +22,7 @@
 
 #include <iostream>
 #include <fstream>
-#include "../../../lib/json/json.hpp"
+#include "lib/json.hpp"
 #include <windows.h>
 
 using namespace std;

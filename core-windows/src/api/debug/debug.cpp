@@ -20,17 +20,40 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <string>
+#include <iostream>
+#include <fstream>
+#include "lib/json.hpp"
+#include "settings.h"
+#include "log.h"
 
 using namespace std;
+using json = nlohmann::json;
 
-namespace routes {
+namespace debug {
+    string log(string jso) {
+        json input;
+        json output;
+        try {
+            input = json::parse(jso);
+        }
+        catch(exception e){
+            output["error"] = "JSON parse error is occurred!";
+            return output.dump();
+        }
+        string type = input["type"].get<std::string>();
+        string message = input["message"].get<std::string>();
 
-    string getFile(string file);
+        if(type == "INFO")
+            INFO() << message;
+        else if(type == "ERROR")
+            ERROR() << message;
+        else if(type == "WARN")
+            WARN() << message;
+        else
+            DEBUG() << message;
 
-    string getClientJs();
+        output["message"] = "Wrote to log file neutralino.log";
+        return output.dump();
+    }
 
-    string getIndex();
-
-    pair<string, string> handle(string path, string j, string token);
 }
