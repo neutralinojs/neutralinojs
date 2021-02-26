@@ -23,6 +23,7 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 #include <windows.h>
 #include <shlwapi.h>
 #include "helpers.h"
@@ -33,7 +34,9 @@ namespace windows {
     string getDirectoryName(string filename){
         LPSTR pathToReplace = const_cast<char *>(filename.c_str());
         PathRemoveFileSpecA(pathToReplace);
-        return std::string(pathToReplace);
+        std::string directory(pathToReplace);
+        std::replace(directory.begin(), directory.end(), '\\', '/');;
+        return directory;
     }
     
     string execCommand(string command) {

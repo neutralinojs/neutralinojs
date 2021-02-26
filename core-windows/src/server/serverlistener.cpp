@@ -28,24 +28,10 @@
 #include <thread>
 #include <sstream>
 #include <fstream>
-#include <gdiplus.h>
-#include <Shlwapi.h>
-#include "settings.h"
-#include "resources.h"
 #include "requestparser.h"
 #include "router.h"
-#include "auth/authbasic.h"
-#include "ping/ping.h"
-#include "cloud/privileges.h"
-#include "webv.h"
-#include "lib/json.hpp"
 #define DEFAULT_BUFLEN 1452  
 
-using json = nlohmann::json;
-
-void uiThread(string appname, string port, int width, int height, int fullscreen, string title, bool always_on_top, bool borderless, HICON icon, bool maximize, string url) {
-      web_view(title.c_str(), url.c_str(), width, height, fullscreen, always_on_top, borderless, maximize, icon);
-}
 
 ServerListener::ServerListener(int port, size_t buffer_size) {
     this->port = port;
@@ -59,25 +45,7 @@ ServerListener::ServerListener(int port, size_t buffer_size) {
     }
 }
 
-void ServerListener::run(std::function<void(ClientAcceptationException)> client_acceptation_error_callback) {
-    json args;
-    for(int i = 0; i < __argc; i++) {
-        args.push_back(__argv[i]);
-    }
-    settings::setGlobalArgs(args);
-    if(!loadResFromDir)
-        resources::makeFileTree();
-    settings::getSettings();
-    authbasic::generateToken();
-    ping::startPingReceiver();
-    privileges::getBlacklist();
-    
-    json options = settings::getOptions();
-    string appname = options["appname"];
-    string appport = options["appport"];
-    string mode = settings::getMode();
-    this->port = stoi(appport);
-
+void ServerListener::init() {
     std::shared_ptr<addrinfo> socket_props(nullptr, [](addrinfo* ai) { freeaddrinfo(ai); });
     addrinfo hints;
     ZeroMemory(&hints, sizeof(hints));
@@ -102,76 +70,15 @@ void ServerListener::run(std::function<void(ClientAcceptationException)> client_
         throw SocketBindingException(WSAGetLastError());
     }
 
-    struct sockaddr_in sin;
-    socklen_t len = sizeof(sin);
-    if (getsockname(listen_socket, (struct sockaddr *)&sin, &len) == -1) {
-        perror("getsockname");
-    }
-    else {
-        port = ntohs(sin.sin_port);
-        settings::setOption("appport", std::to_string(port));
-        appport = std::to_string(port);
-    }
-    string navigateUrl = "http://localhost:" + appport + "/" + appname;
-    if(!options["url"].is_null() && options["url"].get<string>() != "/")
-        navigateUrl = options["url"];
-
-
     if(listen(listen_socket, SOMAXCONN) == SOCKET_ERROR) {
         closesocket(listen_socket);
         throw ListenException(WSAGetLastError());
     }
+}
 
+void ServerListener::run(std::function<void(ClientAcceptationException)> client_acceptation_error_callback) {
     std::map<SOCKET, std::thread> threads;
-
     bool server_running = true;
-    if(mode == "browser") {
-        ShellExecute(0, 0, navigateUrl.c_str(), 0, 0 , SW_SHOW );
-    }
-    else if(mode == "window"){
-        int width = 800;
-        int height = 600;
-        int fullscreen = 0;
-        bool is_always_on_top = false;
-        bool is_borderless_window = false;
-        HICON icon = nullptr; 
-        string title = "Neutralino window";
-        bool maximize = false;
-
-        if(!options["window"].is_null()) {
-            json windowProp = options["window"];
-            width =  stoi(windowProp["width"].get<std::string>());
-            height =  stoi(windowProp["height"].get<std::string>());
-            if(!windowProp["fullscreen"].is_null())
-                fullscreen =  windowProp["fullscreen"].get<bool>() ? 1 : 0;
-            
-            if(!windowProp["alwaysontop"].is_null())
-                is_always_on_top = windowProp["alwaysontop"].get<bool>();
-
-            if(!windowProp["borderless"].is_null())
-                is_borderless_window = windowProp["borderless"].get<bool>();
-            
-            if(!windowProp["iconfile"].is_null()) {
-                string iconfile = windowProp["iconfile"].get<std::string>();
-                string iconDataStr = settings::getFileContent(iconfile);
-                const char *iconData = iconDataStr.c_str();
-                unsigned char *uiconData = reinterpret_cast<unsigned char*>(const_cast<char*>(iconData));
-                IStream *pStream = SHCreateMemStream((BYTE *) uiconData, iconDataStr.length());
-                Gdiplus::Bitmap* bitmap = Gdiplus::Bitmap::FromStream(pStream);
-                bitmap->GetHICON(&icon);
-                pStream->Release();
-            }
-
-            if(!windowProp["title"].is_null())
-                title = windowProp["title"].get<std::string>();
-            
-            if (!windowProp["maximize"].is_null())
-                maximize = windowProp["maximize"].get<bool>();
-        }
-        std::thread ren(uiThread, appname, appport, width, height, fullscreen, title, is_always_on_top, is_borderless_window, icon, maximize, navigateUrl);
-        ren.detach();
-    }
-    
     while(server_running) {
         SOCKET client_socket;
         try {

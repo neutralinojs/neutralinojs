@@ -49,12 +49,12 @@
 class ServerListener {
     int port;
     size_t buffer_size;
-    SOCKET listen_socket = INVALID_SOCKET;
     bool server_running;
 
     static void clientHandler(SOCKET client_socket, size_t buffer_size);
 
 public:
+    SOCKET listen_socket = INVALID_SOCKET;
 
     /**
      * Initialize a new server instance.
@@ -63,6 +63,8 @@ public:
      * @param buffer_size Size of the buffer used to retrieve data from sockets
      */
     ServerListener(int port=8080, size_t buffer_size=255);
+
+    void init();
 
     /**
       * Start listening for connections.

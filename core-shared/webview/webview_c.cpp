@@ -1,12 +1,12 @@
-#include "webv.h"
+#include "webview_c.h"
 
 #define WEBVIEW_IMPLEMENTATION
-#include "webview.h"
+#include "webview/webview.h"
 
 extern "C"
 {
 	void web_view(const char *title, const char *url, int width, int height, int fullscreen, bool always_on_top,
-				bool borderless, bool maximize, HICON icon)
+				bool borderless, bool maximize, void *icon)
 	{
 		struct webview webview;
 		memset(&webview, 0, sizeof(webview));
@@ -14,7 +14,7 @@ extern "C"
 		webview.url = url;
 		webview.width = width;
 		webview.height = height;
-		webview.resizable = 1;
+		webview.resizable = true;
 		webview.always_on_top = always_on_top;
 		webview.borderless_window = borderless;
 		webview.maximize = maximize;

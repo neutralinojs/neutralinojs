@@ -58,7 +58,6 @@ struct webview_priv {
 #elif defined(WEBVIEW_WINAPI)
 #define CINTERFACE
 #include <windows.h>
-
 #include <commctrl.h>
 #include <exdisp.h>
 #include <mshtmhst.h>
@@ -100,12 +99,12 @@ struct webview {
   const char *title;
   int width;
   int height;
-  int resizable;
-  int debug;
+  bool resizable;
+  bool debug;
   webview_external_invoke_cb_t external_invoke_cb;
   struct webview_priv priv;
   void *userdata;
-  GdkPixbuf* icon;
+  void* icon;
   bool always_on_top;
   bool borderless_window;
   bool maximize;
@@ -156,7 +155,7 @@ static const char *webview_check_url(const char *url) {
 }
 
 WEBVIEW_API int webview(const char *title, const char *url, int width,
-                        int height, int resizable);
+                        int height, bool resizable);
 
 WEBVIEW_API int webview_init(struct webview *w);
 WEBVIEW_API int webview_loop(struct webview *w, int blocking);
@@ -181,7 +180,7 @@ WEBVIEW_API void webview_print_log(const char *s);
 #undef WEBVIEW_IMPLEMENTATION
 
 WEBVIEW_API int webview(const char *title, const char *url, int width,
-                        int height, int resizable) {
+                        int height, bool resizable) {
   struct webview webview;
   memset(&webview, 0, sizeof(webview));
   webview.title = title;
@@ -1218,6 +1217,7 @@ WEBVIEW_API int webview_init(struct webview *w) {
   WNDCLASSEX wc;
   HINSTANCE hInstance;
   DWORD style;
+  DWORD showWindowStyle;
   RECT clientRect;
   RECT rect;
 
@@ -1237,6 +1237,9 @@ WEBVIEW_API int webview_init(struct webview *w) {
   wc.hInstance = hInstance;
   wc.lpfnWndProc = wndproc;
   wc.lpszClassName = classname;
+  if (w->icon) {
+    wc.hIcon = (HICON)w->icon;
+  }
   RegisterClassEx(&wc);
 
   style = WS_OVERLAPPEDWINDOW;
@@ -1266,13 +1269,22 @@ WEBVIEW_API int webview_init(struct webview *w) {
     OleUninitialize();
     return -1;
   }
-
+	if (w->always_on_top) {
+    SetWindowPos( w->priv.hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
+  }
+  if (w->borderless_window) {
+    SetWindowLong(w->priv.hwnd, GWL_STYLE, 0);
+  }
   SetWindowLongPtr(w->priv.hwnd, GWLP_USERDATA, (LONG_PTR)w);
 
   DisplayHTMLPage(w);
 
   SetWindowText(w->priv.hwnd, w->title);
-  ShowWindow(w->priv.hwnd, SW_SHOWDEFAULT);
+	showWindowStyle = SW_SHOWDEFAULT;
+  if(w->maximize) {
+    showWindowStyle = SW_SHOWMAXIMIZED;
+  }
+  ShowWindow(w->priv.hwnd, showWindowStyle);
   UpdateWindow(w->priv.hwnd);
   SetFocus(w->priv.hwnd);
 
@@ -1288,6 +1300,7 @@ WEBVIEW_API int webview_loop(struct webview *w, int blocking) {
   }
   switch (msg.message) {
   case WM_QUIT:
+    std::exit(0);
     return -1;
   case WM_COMMAND:
   case WM_KEYDOWN:
