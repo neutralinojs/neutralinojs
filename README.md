@@ -15,10 +15,12 @@ Neutralino is a lightweight and portable application development framework. It l
 
 [Neutralinojs vs Electron vs NW.js](https://github.com/neutralinojs/evaluation)
 
+Get started with CLI.
 
-<div align="center">
-  <img src="media/demo_njs.gif"/>
-</div>
+```bash
+ $ npm i -g @neutralinojs/neu
+ $ neu create hello-world
+```
  
 ## Why Neutralinojs? 
 
