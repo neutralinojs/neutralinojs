@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <string>
 #include <array>
+#include <map>
 #include <gtk/gtk.h>
 
 using namespace std;
@@ -135,6 +136,39 @@ namespace os {
             output["message"] = "Notification is pushed to the system";
         else
             output["error"] = "An error thrown while sending the notification";
+        return output.dump();
+    }
+
+    string showMessageBox(string jso) {
+        json input;
+        json output;
+        map <string, string> messageTypes = {{"INFO", "info"}, {"WARN", "warning"},
+                                            {"ERROR", "error"}, {"QUESTION", "question"}};
+        string messageType;
+        try {
+            input = json::parse(jso);
+        }
+        catch(exception e){
+            output["error"] = "JSON parse error is occurred!";
+            return output.dump();
+        }
+        messageType = input["type"].get<string>();
+        if(messageTypes.find(messageType) == messageTypes.end()) {
+            output["error"] = "Invalid message type: " + messageType + "' provided";
+            return output.dump();
+        }
+        string command = "zenity --" + messageTypes[messageType] + " --title=\"" +
+                            input["title"].get<string>() + "\" --text=\"" +
+                            input["content"].get<string>() + "\" && echo $?";
+        string result;
+        std::array<char, 128> buffer;
+        std::shared_ptr<FILE> pipe(popen(command.c_str(), "r"), pclose);
+        while (!feof(pipe.get())) {
+            if (fgets(buffer.data(), 128, pipe.get()) != nullptr)
+                result += buffer.data();
+        }
+        if(messageType == "QUESTION")
+            output["yesClicked"] = result.find("0") != std::string::npos;
         return output.dump();
     }
 }

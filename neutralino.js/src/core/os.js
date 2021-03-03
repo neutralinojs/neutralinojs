@@ -35,7 +35,7 @@ let runCommand = function(cmd, s, e) {
         problem : function (error) {
             e(error);
         }
-    
+
     });
 
 };
@@ -53,7 +53,7 @@ let getEnvar = function(v, s, e) {
         problem : function(error) {
             e(error);
         }
-    
+
     });
 
 };
@@ -73,7 +73,7 @@ let dialogOpen = function(options, s, e) {
         problem : function(error) {
             e(error);
         }
-    
+
     });
 
 };
@@ -92,7 +92,7 @@ let dialogSave = function(t, s, e) {
         problem : function(error) {
             e(error);
         }
-    
+
     });
 
 };
@@ -101,26 +101,39 @@ let showNotification = function(options, s, e) {
     $.ajax({
         url : '/os/showNotification',
         type : 'POST',
-        data : {
-          summary: options["summary"],
-          body: options["body"]
-        },
+        data : options,
         done : function(data){
             s(data);
         },
         problem : function(error) {
             e(error);
         }
-    
+
     });
 
 };
 
+let showMessageBox = function(options, s, e) {
+    $.ajax({
+        url : '/os/showMessageBox',
+        type : 'POST',
+        data : options,
+        done : function(data){
+            s(data);
+        },
+        problem : function(error) {
+            e(error);
+        }
+
+    });
+
+};
 
 module.exports = {
     runCommand : runCommand,
     getEnvar : getEnvar,
     dialogOpen : dialogOpen,
     dialogSave : dialogSave,
-    showNotification: showNotification
+    showNotification: showNotification,
+    showMessageBox: showMessageBox
 }
