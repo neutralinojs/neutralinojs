@@ -32,15 +32,17 @@ namespace os {
     string dialogOpen(string jso);
     string dialogSave(string jso);
     string showNotification(string jso);
+    string showMessageBox(string jso);
     
     typedef string (*pfunc)(string);
 
     map <string, pfunc> funcmap = {
-        {"os.runCommand", os::runCommand },
+        {"os.runCommand", os::runCommand},
         {"os.getEnvar", os::getEnvar},
         {"os.dialogOpen", os::dialogOpen},
         {"os.dialogSave", os::dialogSave},
-        {"os.showNotification", os::showNotification}
+        {"os.showNotification", os::showNotification},
+        {"os.showMessageBox", os::showMessageBox}
     };
 }
 

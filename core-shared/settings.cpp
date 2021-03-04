@@ -125,7 +125,7 @@ namespace settings {
     string getGlobalVars(){
         json settings = getOptions();
         string s = "var NL_OS='" + std::string(OS_NAME) + "';";
-        s += "var NL_VERSION='1.8.0';";
+        s += "var NL_VERSION='1.9.0';";
         s += "var NL_NAME='" + settings["appname"].get<std::string>() + "';";
         s += "var NL_PORT=" + settings["appport"].get<std::string>() + ";";
         s += "var NL_MODE='" + settings["mode"].get<std::string>() + "';";

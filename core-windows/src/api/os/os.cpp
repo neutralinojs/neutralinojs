@@ -190,7 +190,7 @@ namespace os {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
-        string command = "powershell -Command \"& {Add-Type -AssemblyName System.Windows.Forms;"
+        string command = "cmd /c powershell -Command \"& {Add-Type -AssemblyName System.Windows.Forms;"
                         "Add-Type -AssemblyName System.Drawing;"
                         "$notify = New-Object System.Windows.Forms.NotifyIcon;"
                         "$notify.Icon = [System.Drawing.SystemIcons]::Information;"
@@ -207,5 +207,36 @@ namespace os {
         
     }
 
-    
+    string showMessageBox(string jso) {
+        json input;
+        json output;
+        map <string, string> messageTypes = {
+            {"INFO", "[System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information"}, 
+            {"WARN", "[System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning"},
+            {"ERROR", "[System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error"}, 
+            {"QUESTION", "[System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question"}
+        };
+        string messageType;
+        try {
+            input = json::parse(jso);
+        }
+        catch(exception e){
+            output["error"] = "JSON parse error is occurred!";
+            return output.dump();
+        }
+        messageType = input["type"].get<string>();
+        if(messageTypes.find(messageType) == messageTypes.end()) {
+            output["error"] = "Invalid message type: '" + messageType + "' provided";
+            return output.dump();
+        }
+        string command = "cmd /c powershell -Command \"& {Add-Type -AssemblyName System.Windows.Forms;"
+                        "[System.Windows.Forms.MessageBox]::Show('" + input["content"].get<string>() + 
+                        "', '" + input["title"].get<string>() + "', " + 
+                        messageTypes[messageType] + ");}\"";
+        
+        string result = windows::execCommand(command);
+        if(messageType == "QUESTION")
+            output["yesClicked"] = result.find("Yes") != std::string::npos;
+        return output.dump();
+    }
 }
