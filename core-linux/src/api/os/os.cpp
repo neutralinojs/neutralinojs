@@ -10,6 +10,7 @@
 #include <array>
 #include <map>
 #include <gtk/gtk.h>
+#include "../../platform/linux.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -27,19 +28,7 @@ namespace os {
             return output.dump();
         }
         string command = input["command"];
-        std::array<char, 128> buffer;
-        std::string result;
-        std::shared_ptr<FILE> pipe(popen(command.c_str(), "r"), pclose);
-        if (!pipe) {
-            output["error"] = "Pipe open failed";
-        }
-        else {
-            while (!feof(pipe.get())) {
-                if (fgets(buffer.data(), 128, pipe.get()) != nullptr)
-                    result += buffer.data();
-            }
-            output["stdout"] = result;
-        }
+        output["stdout"] = linux::execCommand(command);
         return output.dump();
     }
 
@@ -82,15 +71,7 @@ namespace os {
             command += " --title \"" + input["title"].get<std::string>() + "\"";
         if(!input["isDirectoryMode"].is_null() && input["isDirectoryMode"].get<bool>())
             command += " --directory";
-
-        string result;
-        std::array<char, 128> buffer;
-        std::shared_ptr<FILE> pipe(popen(command.c_str(), "r"), pclose);
-        while (!feof(pipe.get())) {
-            if (fgets(buffer.data(), 128, pipe.get()) != nullptr)
-                result += buffer.data();
-        }
-        output["file"] = result;
+        output["file"] = linux::execCommand(command);
         return output.dump();
     }
 
@@ -108,15 +89,7 @@ namespace os {
         string command = "zenity --file-selection --save";
         if(!input["title"].is_null())
             command += " --title \"" + input["title"].get<std::string>() + "\"";
-        string result;
-        std::array<char, 128> buffer;
-        std::shared_ptr<FILE> pipe(popen(command.c_str(), "r"), pclose);
-        while (!feof(pipe.get())) {
-            if (fgets(buffer.data(), 128, pipe.get()) != nullptr)
-                result += buffer.data();
-        }
-
-        output["file"] = result;
+        output["file"] = linux::execCommand(command);
         return output.dump();
     }
 
@@ -160,15 +133,8 @@ namespace os {
         string command = "zenity --" + messageTypes[messageType] + " --title=\"" +
                             input["title"].get<string>() + "\" --text=\"" +
                             input["content"].get<string>() + "\" && echo $?";
-        string result;
-        std::array<char, 128> buffer;
-        std::shared_ptr<FILE> pipe(popen(command.c_str(), "r"), pclose);
-        while (!feof(pipe.get())) {
-            if (fgets(buffer.data(), 128, pipe.get()) != nullptr)
-                result += buffer.data();
-        }
         if(messageType == "QUESTION")
-            output["yesClicked"] = result.find("0") != std::string::npos;
+            output["yesClicked"] = linux::execCommand(command).find("0") != std::string::npos;
         return output.dump();
     }
 }
