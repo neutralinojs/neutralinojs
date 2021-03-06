@@ -112,7 +112,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
             
             if(!windowProp["iconfile"].is_null()) {
                 string iconfile = windowProp["iconfile"].get<std::string>();
-                string iconDataStr = settings::getFileContent(iconfile);
+                string iconDataStr = settings::getFileContentBinary(iconfile);
                 const char *iconData = iconDataStr.c_str();
                 unsigned char *uiconData = reinterpret_cast<unsigned char*>(const_cast<char*>(iconData));
                 IStream *pStream = SHCreateMemStream((BYTE *) uiconData, iconDataStr.length());

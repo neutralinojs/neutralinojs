@@ -144,7 +144,8 @@ namespace settings {
 
     void setGlobalArgs(json args) {
         appPath = PLATFORM_NS::getDirectoryName(args[0].get<std::string>());
-        appPath += "/";
+        if(appPath != "")
+            appPath += "/";
         globalArgs = args;
         loadResFromDir = std::find(globalArgs.begin(), globalArgs.end(), "--load-dir-res") != globalArgs.end();
     }

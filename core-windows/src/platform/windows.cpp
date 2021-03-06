@@ -35,7 +35,7 @@ namespace windows {
         LPSTR pathToReplace = const_cast<char *>(filename.c_str());
         PathRemoveFileSpecA(pathToReplace);
         std::string directory(pathToReplace);
-        std::replace(directory.begin(), directory.end(), '\\', '/');;
+        std::replace(directory.begin(), directory.end(), '\\', '/');
         return directory;
     }
     
