@@ -136,7 +136,7 @@ int main(int argc, char ** argv) {
                 GdkPixbuf * pixbuf;
                 loader = gdk_pixbuf_loader_new();
                 std::string iconFile = windowProp["iconfile"].get < std::string > ();
-                std::string iconDataStr = settings::getFileContent(iconFile);
+                std::string iconDataStr = settings::getFileContentBinary(iconFile);
 
                 const char * iconData = iconDataStr.c_str();
                 unsigned char * uiconData = reinterpret_cast < unsigned char * > (const_cast < char * > (iconData));
