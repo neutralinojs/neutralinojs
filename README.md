@@ -7,7 +7,7 @@ We are planning for a [v2-release](https://github.com/neutralinojs/neutralinojs/
 - Adding error-code system. [#282](https://github.com/neutralinojs/neutralinojs/issues/282)
 - Refactoring the JavaScript API. (using objects instead of multiple parameters) [#388](https://github.com/neutralinojs/neutralinojs/issues/388)
 
-We really appreciate it if you would like to contribute [#310](https://github.com/neutralinojs/neutralinojs/issues/310) :heart:
+We really appreciate it if you would like to contribute [#310](https://github.com/neutralinojs/neutralinojs/issues/310) :heart:. Checkout design documentation of v2 from [here](https://github.com/neutralinojs/drafts).
 
 
 <div align="center">
