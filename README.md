@@ -1,3 +1,14 @@
+### Notice
+
+We are planning for a [v2-release](https://github.com/neutralinojs/neutralinojs/milestone/11) that will contain the following things.
+
+- Improved application configuration file (`neutralino.config.json`) #387
+- Add all missing features to the macOS version. #310
+- Adding error-code system. #282
+- Refactoring the JavaScript API. (using objects instead of multiple parameters) #388
+
+We really appreciate it if you would like to contribute #310 :heart:
+
 
 <div align="center">
   <img src="https://cdn.rawgit.com/neutralinojs/neutralinojs.github.io/b667f2c2/docs/nllogo.png" style="width:300px;"/>
