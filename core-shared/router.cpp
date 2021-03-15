@@ -91,7 +91,7 @@ namespace routes {
             output = (*f)(postData);
         }
         else {
-            json defaultOutput = {{"error", modfunc + " is not implement in the Neutralinojs server."}};
+            json defaultOutput = {{"error", modfunc + " is not implemented in the Neutralinojs server."}};
             output = defaultOutput.dump();
         }
 
