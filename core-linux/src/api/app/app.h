@@ -29,12 +29,14 @@ using namespace std;
 
 namespace app {
 
-    string exit(string jso); 
+    string exit(string jso);
+    string keepAlive(string jso);
 
     typedef string (*pfunc)(string);
 
     map <string, pfunc> funcmap = {
-        {"app.exit", app::exit}
+        {"app.exit", app::exit},
+        {"app.keepAlive", app::keepAlive}
     };
 }
 

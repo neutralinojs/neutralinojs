@@ -1,0 +1,5 @@
+ERROR [../core-shared/settings.cpp:getSettings] std::exception
+ERROR [../core-shared/resources.cpp:makeFileTree] resources::makeFileTree error: ./binres.neu is missing.
+ERROR [../core-shared/settings.cpp:getSettings] std::exception
+ERROR [../core-shared/resources.cpp:makeFileTree] resources::makeFileTree error: ./binres.neu is missing.
+ERROR [../core-shared/settings.cpp:getSettings] std::exception

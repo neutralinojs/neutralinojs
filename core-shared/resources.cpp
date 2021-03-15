@@ -30,7 +30,7 @@
 #include "settings.h"
 #include "log.h"
 
-#define APP_RES_FILE "res.neu"
+#define APP_RES_FILE "/res.neu"
 
 using namespace std;
 using json = nlohmann::json;
@@ -51,19 +51,10 @@ namespace resources {
         if(!json.is_null())
             return make_pair<int, string>(json["size"].get<int>(), json["offset"].get<std::string>());
         return make_pair<int, string>(-1, "");
-     }
-
-    string transformUrl(string url) {
-        if(regex_search(url, regex("^app/")))
-            return regex_replace(url, regex("^app/"), "");
-        else if(url == "/neutralino.js")
-            return "/assets/neutralino.js";
-        else
-            return url;
     }
 
     string getFileContent(string filename) {
-        pair<int, string> p = seekFilePos(transformUrl(filename), fileTree, "");
+        pair<int, string> p = seekFilePos(filename, fileTree, "");
         if(p.first != -1) {
             std::ifstream asarArchive;
             std::string resFileName = APP_RES_FILE;

@@ -113,7 +113,7 @@ namespace settings {
             return settings::getOptions();
         json settings;
         try {
-            settings = json::parse(getFileContent("app/settings.json"));
+            settings = json::parse(getFileContent("/settings.json"));
         }
         catch(exception e){
             ERROR() << e.what();
@@ -144,8 +144,6 @@ namespace settings {
 
     void setGlobalArgs(json args) {
         appPath = PLATFORM_NS::getDirectoryName(args[0].get<std::string>());
-        if(appPath != "")
-            appPath += "/";
         globalArgs = args;
         loadResFromDir = std::find(globalArgs.begin(), globalArgs.end(), "--load-dir-res") != globalArgs.end();
     }

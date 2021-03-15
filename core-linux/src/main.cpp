@@ -82,6 +82,7 @@ int main(int argc, char ** argv) {
 
     int port = stoi(options["appport"].get < string > ());
     string appname = options["appname"].get < std::string > ();
+    string entryPath = options["entryPath"].get < std::string > ();
     string mode = settings::getMode();
 
     int listenFd = Socket::createSocket();
@@ -101,7 +102,7 @@ int main(int argc, char ** argv) {
         port = ntohs(sin.sin_port);
         settings::setOption("appport", std::to_string(port));
     }
-    string navigateUrl = ("http://localhost:" + std::to_string(port) + "/" + appname);
+    string navigateUrl = "http://localhost:" + std::to_string(port) + "/" + entryPath;
     if (!options["url"].is_null() && options["url"].get < string > () != "/")
         navigateUrl = options["url"];
     Socket::Listen(listenFd);
