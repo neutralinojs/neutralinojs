@@ -28,12 +28,7 @@
 using namespace std;
 
 namespace debug {
-    string log(string jso); 
-    typedef string (*pfunc)(string);
-
-    map <string, pfunc> funcmap = {
-        {"debug.log", debug::log}
-    };
+    string log(string jso);
 }
 
 #endif

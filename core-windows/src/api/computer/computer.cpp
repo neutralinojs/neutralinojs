@@ -32,18 +32,13 @@ namespace computer {
     string getRamUsage(string jso) {
         json output;
         MEMORYSTATUSEX statex;
-
         statex.dwLength = sizeof (statex);
 
         GlobalMemoryStatusEx (&statex);
-
         output["ram"] = {
             {"total", statex.ullTotalPhys / DIV },
             {"available", statex.ullAvailPhys / DIV },
         };
-
         return output.dump();
-       
-        
     }
 }

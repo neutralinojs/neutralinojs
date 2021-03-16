@@ -32,7 +32,7 @@ using json = nlohmann::json;
 namespace app {
 
     string exit(string jso) {
-        kill(getpid(),SIGINT); // Experimental: TODO: check further
+        kill(getpid(),SIGINT);
         return "";
     }
 

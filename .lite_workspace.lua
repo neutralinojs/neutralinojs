@@ -1,0 +1,1 @@
+return {["active_view"]=3,["views"]={[1]={["module"]="core.logview",["active"]=false,["type"]="view"},[2]={["module"]="core.logview",["active"]=false,["type"]="view"},[3]={["selection"]={[1]=1,[2]=1,[3]=1,[4]=1},["type"]="doc",["scroll"]={["y"]=500,["x"]=0},["text"]=false,["active"]=true,["filename"]="core-windows/src/api/app/app.cpp"}},["type"]="leaf"}
