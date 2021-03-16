@@ -65,6 +65,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     json options = settings::getOptions();
     string appname = options["appname"];
     string appport = options["appport"];
+    string entryPath = options["entryPath"];
     string mode = settings::getMode();
     ServerListener serverListener(stoi(appport));
 
@@ -80,7 +81,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
         settings::setOption("appport", std::to_string(port));
         appport = std::to_string(port);
     }
-    string navigateUrl = "http://localhost:" + appport + "/" + appname;
+    string navigateUrl = "http://localhost:" + appport + "/" + entryPath;
     if(!options["url"].is_null() && options["url"].get<string>() != "/")
         navigateUrl = options["url"];
 
@@ -112,7 +113,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
             
             if(!windowProp["iconfile"].is_null()) {
                 string iconfile = windowProp["iconfile"].get<std::string>();
-                string iconDataStr = settings::getFileContentBinary(iconfile);
+                string iconDataStr = settings::getFileContent(iconfile);
                 const char *iconData = iconDataStr.c_str();
                 unsigned char *uiconData = reinterpret_cast<unsigned char*>(const_cast<char*>(iconData));
                 IStream *pStream = SHCreateMemStream((BYTE *) uiconData, iconDataStr.length());

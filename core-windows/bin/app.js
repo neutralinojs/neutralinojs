@@ -20,28 +20,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "lib/json.hpp"
-#include <windows.h>
+let myapp = {
+    myfunction : function () { document.getElementById('info').innerHTML = NL_NAME + " is running on port " +
+                    NL_PORT + " inside " + NL_OS + "<br/><br/>" + "<span>v" + NL_VERSION + "</span>"; }
+};
+    
 
-using namespace std;
-using json = nlohmann::json;
+Neutralino.init({
+    load: function() {
+        myapp.myfunction();
+    },
+    pingSuccessCallback : function() {
 
-#define DIV 1024
+    },
+    pingFailCallback : function() {
 
-namespace computer {
-    string getRamUsage(string jso) {
-        json output;
-        MEMORYSTATUSEX statex;
-
-        statex.dwLength = sizeof (statex);
-
-        GlobalMemoryStatusEx (&statex);
-
-        output["ram"] = {
-            {"total", statex.ullTotalPhys / DIV },
-            {"available", statex.ullAvailPhys / DIV },
-        };
-        output["success"] = true;
-        return output.dump();
     }
-}
+});

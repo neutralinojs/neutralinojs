@@ -67,18 +67,17 @@ namespace os {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
-        string i = input["name"];
-        char *o;
-        o = getenv(i.c_str());
-        if(o == NULL) {
-            output["error"] =  i + " is not defined";
+        string varKey = input["key"];
+        char *varValue;
+        varValue = getenv(varKey.c_str());
+        if(varValue == NULL) {
+            output["error"] =  varKey + " is not defined";
         }
         else {
-            output["value"] = o;
+            output["value"] = varValue;
+            output["success"] = true;
         }
         return output.dump();
-       
-        
     }
 
 
@@ -109,10 +108,10 @@ namespace os {
             LPITEMIDLIST lpItem = SHBrowseForFolder( &bInfo);
             if( lpItem != NULL ) {
                 SHGetPathFromIDList(lpItem, szDir );
-                output["file"] = szDir;
+                output["selectedEntry"] = szDir;
             }
             else {
-                output["file"] = "";
+                output["selectedEntry"] = nullptr;
             }
         }
         else {
@@ -130,16 +129,14 @@ namespace os {
             ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
             if (GetOpenFileName(&ofn)) {
-                output["file"] = ofn.lpstrFile;
+                output["selectedEntry"] = ofn.lpstrFile;
             }
             else {
-                output["file"] = "";
+                output["selectedEntry"] = nullptr;
             }
         }
-
+        output["success"] = true;
         return output.dump();
-       
-        
     }
 
 
@@ -169,15 +166,12 @@ namespace os {
         ofn.Flags = OFN_PATHMUSTEXIST;
 
         if (GetSaveFileName(&ofn)) {
-            output["file"] = ofn.lpstrFile;
+            output["selectedEntry"] = ofn.lpstrFile;
         }
         else {
-            output["file"] = "";
+            output["selectedEntry"] = NULL;
         }
-
         return output.dump();
-       
-        
     }
 
     string showNotification(string jso) {
@@ -199,12 +193,13 @@ namespace os {
         
         string commandOutput = windows::execCommand(command);
 
-        if(commandOutput.find("'powershell'") == string::npos)
-            output["message"] = "Notification is pushed to the system";
+        if(commandOutput.find("'powershell'") == string::npos) {
+            output["success"] = true;
+            output["message"] = "Notification was sent to the system";
+        }
         else
             output["error"] = "An error thrown while sending the notification";
-        return output.dump();
-        
+        return output.dump();   
     }
 
     string showMessageBox(string jso) {
@@ -234,9 +229,14 @@ namespace os {
                         "', '" + input["title"].get<string>() + "', " + 
                         messageTypes[messageType] + ");}\"";
         
-        string result = windows::execCommand(command);
-        if(messageType == "QUESTION")
-            output["yesClicked"] = result.find("Yes") != std::string::npos;
+        string commandOutput = windows::execCommand(command);
+        if(commandOutput.find("'powershell'") == string::npos) {
+            output["success"] = true;
+            if(messageType == "QUESTION")
+                output["yesButtonClicked"] = commandOutput.find("Yes") != std::string::npos;
+        }
+        else
+            output["error"] = "An error thrown while sending the notification";
         return output.dump();
     }
 }
