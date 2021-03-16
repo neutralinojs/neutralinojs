@@ -40,8 +40,7 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace os {
-
-    string runCommand(string jso) {
+    string execCommand(string jso) {
         json input;
         json output;
         try {

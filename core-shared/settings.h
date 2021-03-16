@@ -31,7 +31,6 @@ namespace settings {
     json getOptions();
     void setOption(string key, string value);
     string getFileContent(string filename);
-    string getFileContentBinary(string filename);
     string getGlobalVars();
     string getCurrentDir();
     void setGlobalArgs(json args);

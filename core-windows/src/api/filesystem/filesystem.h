@@ -25,23 +25,12 @@
 #define FILESYSTEM_H
 
 namespace fs {
-
     string createDirectory(string jso);
     string removeDirectory(string jso);
     string writeFile(string jso);
     string readFile(string jso);
     string removeFile(string jso);
     string readDirectory(string jso);
-    typedef string (*pfunc)(string);
-
-    map <string, pfunc> funcmap = {
-        {"filesystem.createDirectory", fs::createDirectory},
-        {"filesystem.removeDirectory", fs::removeDirectory},
-        {"filesystem.readFile", fs::readFile},
-        {"filesystem.writeFile", fs::writeFile},
-        {"filesystem.removeFile", fs::removeFile},
-        {"filesystem.readDirectory", fs::readDirectory}
-    };
 }
 
 #endif
