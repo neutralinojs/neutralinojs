@@ -40,8 +40,7 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace os {
-
-    string runCommand(string jso) {
+    string execCommand(string jso) {
         json input;
         json output;
         try {
@@ -51,9 +50,10 @@ namespace os {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
-        
+
         string command = "cmd /c " + input["command"].get<std::string>();
         output["stdout"] = windows::execCommand(command);
+        output["success"] = true;
         return output.dump();
     }
 
@@ -67,18 +67,17 @@ namespace os {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
-        string i = input["name"];
-        char *o;
-        o = getenv(i.c_str());
-        if(o == NULL) {
-            output["error"] =  i + " is not defined";
+        string varKey = input["key"];
+        char *varValue;
+        varValue = getenv(varKey.c_str());
+        if(varValue == NULL) {
+            output["error"] =  varKey + " is not defined";
         }
         else {
-            output["value"] = o;
+            output["value"] = varValue;
+            output["success"] = true;
         }
         return output.dump();
-       
-        
     }
 
 
@@ -98,7 +97,7 @@ namespace os {
             BROWSEINFO bInfo;
             ZeroMemory(&bInfo, sizeof(bInfo));
             bInfo.hwndOwner = NULL;
-            bInfo.pidlRoot = NULL; 
+            bInfo.pidlRoot = NULL;
             bInfo.pszDisplayName = szDir;
             bInfo.lpszTitle = const_cast<char *>(title.c_str());
             bInfo.ulFlags = 0 ;
@@ -109,15 +108,15 @@ namespace os {
             LPITEMIDLIST lpItem = SHBrowseForFolder( &bInfo);
             if( lpItem != NULL ) {
                 SHGetPathFromIDList(lpItem, szDir );
-                output["file"] = szDir;
+                output["selectedEntry"] = szDir;
             }
             else {
-                output["file"] = "";
+                output["selectedEntry"] = nullptr;
             }
         }
         else {
             OPENFILENAME ofn;
-            TCHAR szFile[MAX_PATH] = { 0 }; 
+            TCHAR szFile[MAX_PATH] = { 0 };
             ZeroMemory(&ofn, sizeof(ofn));
             ofn.lpstrTitle = const_cast<char *>(title.c_str());
             ofn.lStructSize = sizeof(ofn);
@@ -130,16 +129,14 @@ namespace os {
             ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
             if (GetOpenFileName(&ofn)) {
-                output["file"] = ofn.lpstrFile;
+                output["selectedEntry"] = ofn.lpstrFile;
             }
             else {
-                output["file"] = "";
+                output["selectedEntry"] = nullptr;
             }
         }
-
+        output["success"] = true;
         return output.dump();
-       
-        
     }
 
 
@@ -155,7 +152,7 @@ namespace os {
         }
         string title = input["title"];
         OPENFILENAME ofn;
-        TCHAR szFile[260] = { 0 }; 
+        TCHAR szFile[260] = { 0 };
 
         ZeroMemory(&ofn, sizeof(ofn));
         ofn.lpstrTitle = const_cast<char *>(title.c_str());
@@ -169,15 +166,12 @@ namespace os {
         ofn.Flags = OFN_PATHMUSTEXIST;
 
         if (GetSaveFileName(&ofn)) {
-            output["file"] = ofn.lpstrFile;
+            output["selectedEntry"] = ofn.lpstrFile;
         }
         else {
-            output["file"] = "";
+            output["selectedEntry"] = NULL;
         }
-
         return output.dump();
-       
-        
     }
 
     string showNotification(string jso) {
@@ -196,24 +190,25 @@ namespace os {
                         "$notify.Icon = [System.Drawing.SystemIcons]::Information;"
                         "$notify.Visible = $true;"
                         "$notify.ShowBalloonTip(0 ,'"+ input["summary"].get<string>() + "','" + input["body"].get<string>() + "',[System.Windows.Forms.TooltipIcon]::None)}\"";
-        
+
         string commandOutput = windows::execCommand(command);
 
-        if(commandOutput.find("'powershell'") == string::npos)
-            output["message"] = "Notification is pushed to the system";
+        if(commandOutput.find("'powershell'") == string::npos) {
+            output["success"] = true;
+            output["message"] = "Notification was sent to the system";
+        }
         else
             output["error"] = "An error thrown while sending the notification";
         return output.dump();
-        
     }
 
     string showMessageBox(string jso) {
         json input;
         json output;
         map <string, string> messageTypes = {
-            {"INFO", "[System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information"}, 
+            {"INFO", "[System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information"},
             {"WARN", "[System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning"},
-            {"ERROR", "[System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error"}, 
+            {"ERROR", "[System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error"},
             {"QUESTION", "[System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question"}
         };
         string messageType;
@@ -230,13 +225,18 @@ namespace os {
             return output.dump();
         }
         string command = "cmd /c powershell -Command \"& {Add-Type -AssemblyName System.Windows.Forms;"
-                        "[System.Windows.Forms.MessageBox]::Show('" + input["content"].get<string>() + 
-                        "', '" + input["title"].get<string>() + "', " + 
+                        "[System.Windows.Forms.MessageBox]::Show('" + input["content"].get<string>() +
+                        "', '" + input["title"].get<string>() + "', " +
                         messageTypes[messageType] + ");}\"";
-        
-        string result = windows::execCommand(command);
-        if(messageType == "QUESTION")
-            output["yesClicked"] = result.find("Yes") != std::string::npos;
+
+        string commandOutput = windows::execCommand(command);
+        if(commandOutput.find("'powershell'") == string::npos) {
+            output["success"] = true;
+            if(messageType == "QUESTION")
+                output["yesButtonClicked"] = commandOutput.find("Yes") != std::string::npos;
+        }
+        else
+            output["error"] = "An error thrown while sending the notification";
         return output.dump();
     }
 }

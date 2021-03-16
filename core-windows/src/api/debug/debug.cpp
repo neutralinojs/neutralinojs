@@ -52,7 +52,8 @@ namespace debug {
         else
             DEBUG() << message;
 
-        output["message"] = "Wrote to log file neutralino.log";
+        output["message"] = "Wrote to the log file: neutralino.log";
+        output["success"] = true;
         return output.dump();
     }
 

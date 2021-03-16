@@ -22,6 +22,7 @@
 
 #include <windows.h>
 #include "lib/json.hpp"
+#include "ping/ping.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -33,6 +34,14 @@ namespace app {
         HANDLE hnd = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, TRUE, pid);
         TerminateProcess(hnd, 0);
         return "";
+    }
+
+    string keepAlive(string jso) {
+        json output;
+        ping::receivePing();
+        output["message"] = "Keep alive call was successful. Server will not be terminated automatically.";
+        output["success"] = true;
+        return output.dump();
     }
 
 }

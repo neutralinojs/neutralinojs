@@ -27,7 +27,7 @@ let myapp = {
     
 
 Neutralino.init({
-    load: function() {
+    onSuccess: function() {
         myapp.myfunction();
     },
     pingSuccessCallback : function() {

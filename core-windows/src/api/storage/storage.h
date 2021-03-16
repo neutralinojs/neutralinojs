@@ -29,13 +29,6 @@ using namespace std;
 namespace storage {
     string putData(string jso); 
     string getData(string jso);
-
-    typedef string (*pfunc)(string);
-
-    map <string, pfunc> funcmap = {
-        {"storage.putData", storage::putData},
-        {"storage.getData", storage::getData}
-    };
 }
 
 #endif

@@ -19,17 +19,21 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#ifndef AP_H
-#define AP_H
 
-#include <iostream>
-#include <map>
+let myapp = {
+    myfunction : function () { document.getElementById('info').innerHTML = NL_NAME + " is running on port " +
+                    NL_PORT + " inside " + NL_OS + "<br/><br/>" + "<span>v" + NL_VERSION + "</span>"; }
+};
+    
 
-using namespace std;
+Neutralino.init({
+    load: function() {
+        myapp.myfunction();
+    },
+    pingSuccessCallback : function() {
 
-namespace app {
-    string exit(string jso);
-    string keepAlive(string jso);
-}
+    },
+    pingFailCallback : function() {
 
-#endif
+    }
+});

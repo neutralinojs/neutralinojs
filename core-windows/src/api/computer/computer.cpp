@@ -39,6 +39,7 @@ namespace computer {
             {"total", statex.ullTotalPhys / DIV },
             {"available", statex.ullAvailPhys / DIV },
         };
+        output["success"] = true;
         return output.dump();
     }
 }

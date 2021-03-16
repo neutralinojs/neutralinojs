@@ -22,12 +22,13 @@ namespace fs {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
-        string filename = input["dir"];
-        if(mkdir(filename.c_str(), 0700) == 0){
+        string path = input["path"];
+        if(mkdir(path.c_str(), 0700) == 0){
             output["success"] = true;
+            output["message"] = "Directory " + path + " was created";
         }
         else{
-            output["error"] = "Cannot create " + filename;
+            output["error"] = "Cannot create a directory in " + path;
         }
         return output.dump();
     }
@@ -42,12 +43,13 @@ namespace fs {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
-        string dir = input["dir"];
-        if(rmdir(dir.c_str()) == 0){
+        string path = input["path"];
+        if(rmdir(path.c_str()) == 0){
             output["success"] = true;
+            output["message"] = "Directory " + path + " was removed";
         }
         else{
-            output["error"] = "Cannot remove " + dir;
+            output["error"] = "Cannot remove " + path;
         }
         return output.dump();
     }
@@ -62,7 +64,7 @@ namespace fs {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
-        string filename = input["filename"];
+        string filename = input["fileName"];
         ifstream t;
         t.open(filename);
         if(!t.is_open()) {
@@ -90,10 +92,10 @@ namespace fs {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
-        string filename = input["filename"];
-        string content = input["content"];
+        string filename = input["fileName"];
+        string data = input["data"];
         ofstream t(filename);
-        t << content;
+        t << data;
         t.close();
         output["success"] = true;
         return output.dump();
@@ -109,9 +111,10 @@ namespace fs {
             output["error"] = "JSON parse error is occurred!";
             return output.dump();
         }
-        string filename = input["filename"];
+        string filename = input["fileName"];
         if(remove(filename.c_str()) == 0){
             output["success"] = true;
+            output["message"] = filename + " was deleted";
         }
         else{
             output["error"] = "Cannot remove " + filename;
@@ -137,18 +140,19 @@ namespace fs {
         dirp = opendir(path.c_str());
         if (dirp) {
             while ((directory = readdir(dirp)) != NULL) {
-                string type = "other";
+                string type = "OTHER";
                 if(directory->d_type == DT_DIR)
-                    type = "directory";
+                    type = "DIRECTORY";
                 else if(directory->d_type == DT_REG)
-                    type = "file";
+                    type = "FILE";
                 json file = {
-                    {"name", directory->d_name},
+                    {"entry", directory->d_name},
                     {"type", type},
                 };
-                output["files"].push_back(file);
+                output["entries"].push_back(file);
             }
             closedir(dirp);
+            output["success"] = true;
         }
         return output.dump();
     }

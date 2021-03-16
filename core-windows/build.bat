@@ -23,7 +23,7 @@ REM OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN TH
 REM SOFTWARE.
 
 @echo off
-echo Neutralino is being built...
+echo Neutralino is being build...
 
 if EXIST bin\neutralino.exe (
     del /f bin\neutralino.exe 

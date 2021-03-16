@@ -40,6 +40,7 @@ namespace app {
         json output;
         ping::receivePing();
         output["message"] = "Keep alive call was successful. Server will not be terminated automatically.";
+        output["success"] = true;
         return output.dump();
     }
 

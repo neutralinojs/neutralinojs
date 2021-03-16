@@ -51,7 +51,7 @@
 
 using namespace std;
 using json = nlohmann::json;
-typedef string (*pfunc)(string);
+typedef string (*NativeMethod)(string);
 
 namespace routes {
 
@@ -65,30 +65,31 @@ namespace routes {
             if(!privileges::checkPermission(modfunc))
                 return make_pair("{\"error\":\"Missing permission! Blocked action in cloud mode\"}", "application/json");
         }
-        // TODO: Try to make the following code dynamic
-        if(fs::funcmap.find(modfunc) != fs::funcmap.end() ){
-            pfunc f = fs::funcmap[modfunc];
-            output = (*f)(postData);
-        }
-        else if(os::funcmap.find(modfunc) != os::funcmap.end() ){
-            pfunc f = os::funcmap[modfunc];
-            output = (*f)(postData);
-        }
-        else if(computer::funcmap.find(modfunc) != computer::funcmap.end() ){
-            pfunc f = computer::funcmap[modfunc];
-            output = (*f)(postData);
-        }
-        else if(storage::funcmap.find(modfunc) != storage::funcmap.end() ){
-            pfunc f = storage::funcmap[modfunc];
-            output = (*f)(postData);
-        }
-        else if(debug::funcmap.find(modfunc) != debug::funcmap.end() ){
-            pfunc f = debug::funcmap[modfunc];
-            output = (*f)(postData);
-        }
-        else if(app::funcmap.find(modfunc) != app::funcmap.end() ){
-            pfunc f = app::funcmap[modfunc];
-            output = (*f)(postData);
+
+        map <string, NativeMethod> methodMap = {
+            {"app.exit", app::exit},
+            {"app.keepAlive", app::keepAlive},
+            {"computer.getRamUsage", computer::getRamUsage},
+            {"debug.log", debug::log},
+            {"filesystem.createDirectory", fs::createDirectory},
+            {"filesystem.removeDirectory", fs::removeDirectory},
+            {"filesystem.readFile", fs::readFile},
+            {"filesystem.writeFile", fs::writeFile},
+            {"filesystem.removeFile", fs::removeFile},
+            {"filesystem.readDirectory", fs::readDirectory},
+            {"os.execCommand", os::execCommand},
+            {"os.getEnvar", os::getEnvar},
+            {"os.dialogOpen", os::dialogOpen},
+            {"os.dialogSave", os::dialogSave},
+            {"os.showNotification", os::showNotification},
+            {"os.showMessageBox", os::showMessageBox},
+            {"storage.putData", storage::putData},
+            {"storage.getData", storage::getData}
+        };
+
+        if(methodMap.find(modfunc) != methodMap.end() ){
+            NativeMethod nativeMethod = methodMap[modfunc];
+            output = (*nativeMethod)(postData);
         }
         else {
             json defaultOutput = {{"error", modfunc + " is not implemented in the Neutralinojs server."}};
@@ -120,7 +121,7 @@ namespace routes {
             {"xml", "application/xml"},
             {"json", "application/json"}
         };
-        string fileData = settings::getFileContentBinary(path);
+        string fileData = settings::getFileContent(path);
         if(prependData != "")
             fileData = prependData + fileData;
         return make_pair(fileData, mimeTypes[extension]);

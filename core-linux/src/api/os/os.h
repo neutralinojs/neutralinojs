@@ -26,7 +26,7 @@
 #include <map>
 
 namespace os {
-    string runCommand(string jso);
+    string execCommand(string jso);
     string getEnvar(string jso);
     string dialogOpen(string jso);
     string dialogSave(string jso);
