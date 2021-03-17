@@ -105,8 +105,8 @@ struct webview {
   struct webview_priv priv;
   void *userdata;
   void* icon;
-  bool always_on_top;
-  bool borderless_window;
+  bool alwaysOnTop;
+  bool borderless;
   bool maximize;
 };
 
@@ -306,12 +306,12 @@ WEBVIEW_API int webview_init(struct webview *w) {
   gtk_window_set_title(GTK_WINDOW(w->priv.window), w->title);
   if (w->icon)
     gtk_window_set_icon(GTK_WINDOW(w->priv.window), (GdkPixbuf*) w->icon);
-  if (w->borderless_window == true)
+  if (w->borderless == true)
     gtk_window_set_decorated(GTK_WINDOW(w->priv.window), false);
   if (w->maximize == true)
     gtk_window_maximize(GTK_WINDOW(w->priv.window));
 
-  gtk_window_set_keep_above(GTK_WINDOW(w->priv.window), w->always_on_top);
+  gtk_window_set_keep_above(GTK_WINDOW(w->priv.window), w->alwaysOnTop);
 
   if (w->resizable) {
     gtk_window_set_default_size(GTK_WINDOW(w->priv.window), w->width,

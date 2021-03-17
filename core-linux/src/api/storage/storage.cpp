@@ -30,16 +30,8 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace storage {
-    string getData(string jso) {
-        json input;
+    string getData(json input) {
         json output;
-        try {
-            input = json::parse(jso);
-        }
-        catch(exception e){
-            output["error"] = "JSON parse error is occurred!";
-            return output.dump();
-        }
         string bucket = input["bucket"].get<std::string>();
         string bucketPath = settings::joinAppPath("storage");
         string filename = bucketPath + "/" + bucket + ".json";
@@ -60,17 +52,8 @@ namespace storage {
         return output.dump();
     }
 
-    string putData(string jso) {
-        json input;
+    string putData(json input) {
         json output;
-        try {
-            input = json::parse(jso);
-        }
-        catch(exception e){
-            output["error"] = "JSON parse error is occurred!";
-            return output.dump();
-        }
-
         string bucket = input["bucket"].get<std::string>();
         string bucketPath = settings::joinAppPath("storage");
         mkdir(bucketPath.c_str(), 0700);

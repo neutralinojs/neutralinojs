@@ -19,14 +19,12 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#define WEBVIEW_IMPLEMENTATION
 #include <iostream>
 #include <cstdlib>
 #include <string>
 #include <thread>
+#include <regex>
 #include <map>
-#include <glib.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
 #include "lib/json.hpp"
 #include "helpers.h"
 #include "settings.h"
@@ -35,37 +33,13 @@
 #include "server/Handler.h"
 #include "auth/authbasic.h"
 #include "ping/ping.h"
-#include "cloud/privileges.h"
-#include "webview/webview.h"
+#include "permission.h"
+#include "api/app/app.h"
 
 using namespace std;
 using json = nlohmann::json;
 
-std::map < int, std::thread > threads;
-
-void uiThread(string appname, int port, int width, int height,
-    bool fullscreen, string title, bool always_on_top, void* icon,
-    bool enable_inspector, bool borderless_window, bool maximize, string url) {
-    struct webview webview;
-    memset( & webview, 0, sizeof(webview));
-    webview.title = title.c_str();
-    webview.url = url.c_str();
-    webview.width = width;
-    webview.height = height;
-    webview.resizable = 1;
-    webview.always_on_top = always_on_top;
-    webview.icon = icon;
-    webview.debug = enable_inspector;
-    webview.borderless_window = borderless_window;
-    webview.maximize = maximize;
-    int r = webview_init( & webview);
-    webview_set_fullscreen( & webview, fullscreen);
-    if (r != 0) {
-        return;
-    }
-    while (webview_loop( & webview, 1) == 0) {}
-    webview_exit( & webview);
-}
+map < int, thread > threads;
 
 int main(int argc, char ** argv) {
     json args;
@@ -75,14 +49,12 @@ int main(int argc, char ** argv) {
     settings::setGlobalArgs(args);
     if (!loadResFromDir)
         resources::makeFileTree();
-    json options = settings::getSettings();
+    json options = settings::getConfig();
     authbasic::generateToken();
     ping::startPingReceiver();
-    privileges::getBlacklist();
+    permission::registerBlockList();
 
-    int port = stoi(options["appport"].get < string > ());
-    string appname = options["appname"].get < std::string > ();
-    string entryPath = options["entryPath"].get < std::string > ();
+    int port = options["port"];
     string mode = settings::getMode();
 
     int listenFd = Socket::createSocket();
@@ -98,66 +70,29 @@ int main(int argc, char ** argv) {
     socklen_t len = sizeof(sin);
     if (getsockname(listenFd, (struct sockaddr * ) & sin, & len) == -1) {
         perror("getsockname");
-    } else {
-        port = ntohs(sin.sin_port);
-        settings::setOption("appport", std::to_string(port));
     }
-    string navigateUrl = "http://localhost:" + std::to_string(port) + "/" + entryPath;
-    if (!options["url"].is_null() && options["url"].get < string > () != "/")
-        navigateUrl = options["url"];
+    else {
+        port = ntohs(sin.sin_port);
+    }
+    string navigationUrl = "http://localhost:" + std::to_string(port);
+    if(!options["url"].is_null()) {
+        string url = options["url"];
+        if (regex_match(url, regex("^/.*")))
+            navigationUrl += url;
+        else
+            navigationUrl = url;
+    }
     Socket::Listen(listenFd);
 
-    if (mode == "browser") {
-        system(("xdg-open \"" + navigateUrl + "\"").c_str());
-    } else if (mode == "window") {
-        int width = 800;
-        int height = 600;
-        bool fullscreen = false;
-        bool is_always_on_top = false;
-        GdkPixbuf * icon = nullptr;
-        std::string title = "Neutralino window";
-        bool enable_inspector = 0;
-        bool is_borderless_window = false;
-        bool maximize = false;
-        if (!options["window"].is_null()) {
-            json windowProp = options["window"];
-            width = stoi(windowProp["width"].get < std::string > ());
-            height = stoi(windowProp["height"].get < std::string > ());
-            if (!windowProp["fullscreen"].is_null())
-                fullscreen = windowProp["fullscreen"].get < bool > () ? 1 : 0;
-
-            if (!windowProp["alwaysontop"].is_null())
-                is_always_on_top = windowProp["alwaysontop"].get < bool > ();
-
-            if (!windowProp["title"].is_null())
-                title = windowProp["title"].get < std::string > ();
-
-            if (!windowProp["iconfile"].is_null()) {
-                GdkPixbufLoader * loader;
-                GdkPixbuf * pixbuf;
-                loader = gdk_pixbuf_loader_new();
-                std::string iconFile = windowProp["iconfile"].get < std::string > ();
-                std::string iconDataStr = settings::getFileContent(iconFile);
-
-                const char * iconData = iconDataStr.c_str();
-                unsigned char * uiconData = reinterpret_cast < unsigned char * > (const_cast < char * > (iconData));
-                gdk_pixbuf_loader_write(loader, uiconData, iconDataStr.length(), NULL);
-                icon = gdk_pixbuf_loader_get_pixbuf(loader);
-            }
-
-            if (!windowProp["enableinspector"].is_null())
-                enable_inspector = windowProp["enableinspector"].get < bool > () ? 1 : 0;
-
-            if (!windowProp["borderless"].is_null())
-                is_borderless_window = windowProp["borderless"].get < bool > ();
-
-            if (!windowProp["maximize"].is_null())
-                maximize = windowProp["maximize"].get < bool > ();
-        }
-        std::thread ren(uiThread, appname, port, width,
-            height, fullscreen, title, is_always_on_top, icon,
-            enable_inspector, is_borderless_window, maximize, navigateUrl);
-        ren.detach();
+    if(mode == "browser") {
+        json browserOptions = options["modes"]["browser"];
+        browserOptions["url"] = navigationUrl;
+        app::open(browserOptions);
+    }
+    else if(mode == "window") {
+        json windowOptions = options["modes"]["window"];
+        windowOptions["url"] = navigationUrl;
+        app::showWindow(windowOptions);
     }
 
     while (true) {

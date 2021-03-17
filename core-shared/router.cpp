@@ -30,7 +30,7 @@
 #include "settings.h"
 #include "lib/json.hpp"
 #include "auth/authbasic.h"
-#include "cloud/privileges.h"
+#include "permission.h"
 
 #if defined(__linux__)
 #include "../core-linux/src/api/filesystem/filesystem.h"
@@ -51,7 +51,7 @@
 
 using namespace std;
 using json = nlohmann::json;
-typedef string (*NativeMethod)(string);
+typedef string (*NativeMethod)(json);
 
 namespace routes {
 
@@ -61,10 +61,8 @@ namespace routes {
 
         if(!authbasic::verifyToken(token))
             return make_pair("{\"error\":\"Invalid or expired NL_TOKEN value from client.\"}", "application/json");
-        if(settings::getMode() == "cloud") {
-            if(!privileges::checkPermission(modfunc))
-                return make_pair("{\"error\":\"Missing permission! Blocked action in cloud mode\"}", "application/json");
-        }
+        if(!permission::hasAccess(modfunc))
+            return make_pair("{\"error\":\"Missing permission! Blocked action in cloud mode\"}", "application/json");
 
         map <string, NativeMethod> methodMap = {
             {"app.exit", app::exit},
@@ -88,11 +86,19 @@ namespace routes {
         };
 
         if(methodMap.find(modfunc) != methodMap.end() ){
-            NativeMethod nativeMethod = methodMap[modfunc];
-            output = (*nativeMethod)(postData);
+            json inputPayload;
+            try {
+                inputPayload = json::parse(postData);
+                NativeMethod nativeMethod = methodMap[modfunc];
+                output = (*nativeMethod)(inputPayload);
+            }
+            catch(exception e){
+                json parserOutput = {{"error", "JSON parse error. Please check whether your request payload"}};
+                output = parserOutput.dump();
+            }
         }
         else {
-            json defaultOutput = {{"error", modfunc + " is not implemented in the Neutralinojs server."}};
+            json defaultOutput = {{"error", modfunc + " is not implemented in the Neutralinojs server"}};
             output = defaultOutput.dump();
         }
 

@@ -83,42 +83,33 @@ namespace settings {
         return fs::current_path().generic_string();
     }
 
-    json getOptions(){
-        return options;
-    }
-
-    void setOption(string key, string value) {
-        options[key] = value;
-    }
-
-    json getSettings() {
+    json getConfig() {
         if(!options.is_null())
-            return settings::getOptions();
-        json settings;
+            return options;
+        json config;
         try {
-            settings = json::parse(settings::getFileContent(APP_CONFIG_FILE));
+            config = json::parse(settings::getFileContent(APP_CONFIG_FILE));
         }
         catch(exception e){
             ERROR() << e.what();
         }
-        options = settings;
+        options = config;
         return options;
     }
 
     string getGlobalVars(){
-        json settings = getOptions();
         string jsSnippet = "var NL_OS='" + std::string(OS_NAME) + "';";
         jsSnippet += "var NL_VERSION='1.9.0';";
-        jsSnippet += "var NL_NAME='" + settings["appname"].get<std::string>() + "';";
-        jsSnippet += "var NL_PORT=" + settings["appport"].get<std::string>() + ";";
-        jsSnippet += "var NL_MODE='" + settings["mode"].get<std::string>() + "';";
+        jsSnippet += "var NL_APPID='" + options["applicationId"].get<std::string>() + "';";
+        jsSnippet += "var NL_PORT=" + std::to_string(options["port"].get<int>()) + ";";
+        jsSnippet += "var NL_MODE='" + options["defaultMode"].get<std::string>() + "';";
         jsSnippet += "var NL_TOKEN='" + authbasic::getToken() + "';";
         jsSnippet += "var NL_CWD='" + settings::getCurrentDir() + "';";
         jsSnippet += "var NL_ARGS=" + globalArgs.dump() + ";";
         jsSnippet += "var NL_PATH='" + appPath + "';";
 
-        if(settings["globals"] != NULL) {
-            for ( auto it: settings["globals"].items()) {
+        if(!options["globalVariables"].is_null()) {
+            for ( auto it: options["globalVariables"].items()) {
                 jsSnippet += "var NL_" + it.key() +  "='" + it.value().get<std::string>() + "';";
             }
         }
@@ -134,8 +125,7 @@ namespace settings {
     }
 
     string getMode() {
-        json mode = settings::getOptions()["mode"];
-        return mode;
+        return options["defaultMode"].get<std::string>();
     }
 
 }

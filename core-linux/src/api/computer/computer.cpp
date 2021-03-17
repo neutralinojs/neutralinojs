@@ -32,7 +32,7 @@ using json = nlohmann::json;
 #define DIV 1024
 
 namespace computer {
-    string getRamUsage(string jso) {
+    string getRamUsage(json input) {
         json output;
         struct sysinfo sys_info;
         sysinfo(&sys_info);

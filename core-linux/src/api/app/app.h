@@ -28,8 +28,10 @@
 using namespace std;
 
 namespace app {
-    string exit(string jso);
-    string keepAlive(string jso);
+    string exit(json input);
+    string showWindow(json input);
+    string open(json input);
+    string keepAlive(json input);
 }
 
 #endif

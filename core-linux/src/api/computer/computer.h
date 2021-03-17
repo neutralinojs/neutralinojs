@@ -26,7 +26,7 @@
 #include <map>
 
 namespace computer {
-    string getRamUsage(string json);
+    string getRamUsage(json input);
 }
 
 #endif

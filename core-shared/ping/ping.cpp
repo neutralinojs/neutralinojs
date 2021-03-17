@@ -24,7 +24,6 @@
 #include <chrono>
 #include <thread>
 #include <vector>
-#include "cloud/privileges.h"
 #include "settings.h"
 
 #if defined(__linux__)
@@ -61,7 +60,7 @@ namespace ping {
 
     void pingTick() {
         if(!isActive && firstPingReceived) {
-            app::exit("");
+            app::exit(nullptr);
         }
         isActive = false;
     }

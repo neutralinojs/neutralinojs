@@ -28,7 +28,7 @@
 using namespace std;
 
 namespace debug {
-    string log(string jso);
+    string log(json input);
 }
 
 #endif
