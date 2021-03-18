@@ -153,11 +153,11 @@ next_iter:
             }
         }
 
-        prev_char = c; 
+        prev_char = c;
 
         /* --- / end extended code for body parser --- */
     }
-    
+
 
 }
 
@@ -182,7 +182,9 @@ std::string RequestParser::getProtocol() {
 }
 
 std::string RequestParser::getBody() {
-    return body;
+    if(getMethod() == "POST")
+        return body;
+    return "";
 }
 
 bool RequestParser::isParsingDone() {

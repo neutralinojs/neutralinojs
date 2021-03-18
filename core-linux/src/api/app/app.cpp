@@ -74,6 +74,13 @@ namespace app {
         return output.dump();
     }
 
+    string getConfig(json input) {
+        json output;
+        output["config"] = settings::getConfig();
+        output["success"] = true;
+        return output.dump();
+    }
+
     // NOTEXPOSED: This is not exposed to the client.
     // Second time it crashes the process.
     // Check with the latest version of webview lib.

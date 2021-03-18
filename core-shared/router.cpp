@@ -66,6 +66,7 @@ namespace routes {
 
         map <string, NativeMethod> methodMap = {
             {"app.exit", app::exit},
+            {"app.getConfig", app::getConfig},
             {"app.keepAlive", app::keepAlive},
             {"app.open", app::open},
             {"computer.getRamUsage", computer::getRamUsage},
@@ -89,7 +90,8 @@ namespace routes {
         if(methodMap.find(modfunc) != methodMap.end() ){
             json inputPayload;
             try {
-                inputPayload = json::parse(postData);
+                if(postData != "")
+                    inputPayload = json::parse(postData);
                 NativeMethod nativeMethod = methodMap[modfunc];
                 output = (*nativeMethod)(inputPayload);
             }

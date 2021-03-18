@@ -1,7 +1,7 @@
 {
     "applicationId": "com.neutralino.sample",
     "port": 5006,
-    "defaultMode": "cloud",
+    "defaultMode": "window",
     "url": "/app",
     "nativeBlockList": ["app.open"],
     "modes": {

@@ -32,6 +32,7 @@ namespace app {
     string showWindow(json input);
     string open(json input);
     string keepAlive(json input);
+    string getConfig(json input);
 }
 
 #endif
