@@ -128,4 +128,8 @@ namespace settings {
         return options["defaultMode"].get<std::string>();
     }
 
+    void setPort(int port) {
+      options["port"] = port;
+    }
+
 }

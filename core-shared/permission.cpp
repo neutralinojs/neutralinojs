@@ -34,7 +34,7 @@ namespace permission {
     vector <string> blockList;
 
     void registerBlockList() {
-        if(blockList.size() != 0 || settings::getConfig()["nativeBlockList"].is_null())
+        if(settings::getConfig()["nativeBlockList"].is_null())
             return;
         json blockListOptions = settings::getConfig()["nativeBlockList"];
         vector<string> blockListVector = blockListOptions;

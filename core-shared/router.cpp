@@ -60,13 +60,14 @@ namespace routes {
         string output = "";
 
         if(!authbasic::verifyToken(token))
-            return make_pair("{\"error\":\"Invalid or expired NL_TOKEN value from client.\"}", "application/json");
+            return make_pair("{\"error\":\"Invalid or expired NL_TOKEN value from client\"}", "application/json");
         if(!permission::hasAccess(modfunc))
-            return make_pair("{\"error\":\"Missing permission! Blocked action in cloud mode\"}", "application/json");
+            return make_pair("{\"error\":\"Missing permission to execute the native method\"}", "application/json");
 
         map <string, NativeMethod> methodMap = {
             {"app.exit", app::exit},
             {"app.keepAlive", app::keepAlive},
+            {"app.open", app::open},
             {"computer.getRamUsage", computer::getRamUsage},
             {"debug.log", debug::log},
             {"filesystem.createDirectory", fs::createDirectory},

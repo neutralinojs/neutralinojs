@@ -34,5 +34,6 @@ namespace settings {
     void setGlobalArgs(json args);
     string joinAppPath(string filename);
     string getMode();
+    void setPort(int port);
 }
 

@@ -74,6 +74,9 @@ namespace app {
         return output.dump();
     }
 
+    // NOTEXPOSED: This is not exposed to the client.
+    // Second time it crashes the process.
+    // Check with the latest version of webview lib.
     string showWindow(json input) {
         int width = 800;
         int height = 600;
@@ -100,10 +103,10 @@ namespace app {
             alwaysOnTop = input["alwaysOnTop"];
 
         if(!input["title"].is_null())
-            title = input["title"].get<std::string>();
+            title = input["title"];
 
         if(!input["url"].is_null())
-            url = input["url"].get<std::string>();
+            url = input["url"];
 
         if(!input["icon"].is_null()) {
             GdkPixbufLoader *loader;

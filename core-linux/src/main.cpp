@@ -62,7 +62,10 @@ int main(int argc, char ** argv) {
     struct sockaddr_in servAddr;
     memset( & servAddr, 0, sizeof(servAddr));
     servAddr.sin_family = AF_INET;
-    servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    if(mode == "cloud")
+        servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    else
+        servAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
     servAddr.sin_port = htons(port);
     Socket::Bind(listenFd, servAddr);
 
@@ -73,6 +76,7 @@ int main(int argc, char ** argv) {
     }
     else {
         port = ntohs(sin.sin_port);
+        settings::setPort(port);
     }
     string navigationUrl = "http://localhost:" + std::to_string(port);
     if(!options["url"].is_null()) {
