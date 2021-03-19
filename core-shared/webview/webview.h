@@ -1269,10 +1269,10 @@ WEBVIEW_API int webview_init(struct webview *w) {
     OleUninitialize();
     return -1;
   }
-	if (w->always_on_top) {
+	if (w->alwaysOnTop) {
     SetWindowPos( w->priv.hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
   }
-  if (w->borderless_window) {
+  if (w->borderless) {
     SetWindowLong(w->priv.hwnd, GWL_STYLE, 0);
   }
   SetWindowLongPtr(w->priv.hwnd, GWLP_USERDATA, (LONG_PTR)w);

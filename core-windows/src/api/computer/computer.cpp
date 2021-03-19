@@ -29,7 +29,7 @@ using json = nlohmann::json;
 #define DIV 1024
 
 namespace computer {
-    string getRamUsage(string jso) {
+    string getRamUsage(json input) {
         json output;
         MEMORYSTATUSEX statex;
         statex.dwLength = sizeof (statex);

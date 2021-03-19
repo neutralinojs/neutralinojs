@@ -30,16 +30,8 @@ using json = nlohmann::json;
 
 namespace fs {
 
-    string createDirectory(string jso) {
-        json input;
+    string createDirectory(json input) {
         json output;
-        try {
-            input = json::parse(jso);
-        }
-        catch(exception e){
-            output["error"] = "JSON parse error is occurred!";
-            return output.dump();
-        }
         string path = input["path"];
         if(CreateDirectory(path.c_str(), NULL)) {
             output["success"] = true;
@@ -51,16 +43,8 @@ namespace fs {
         return output.dump();
     }
 
-    string removeDirectory(string jso) {
-        json input;
+    string removeDirectory(json input) {
         json output;
-        try {
-            input = json::parse(jso);
-        }
-        catch(exception e){
-            output["error"] = "JSON parse error is occurred!";
-            return output.dump();
-        }
         string path = input["path"];
         if(RemoveDirectory(path.c_str())){
             output["success"] = true;
@@ -72,16 +56,8 @@ namespace fs {
         return output.dump();
     }
 
-    string readFile(string jso) {
-        json input;
+    string readFile(json input) {
         json output;
-        try {
-            input = json::parse(jso);
-        }
-        catch(exception e){
-            output["error"] = "JSON parse error is occurred!";
-            return output.dump();
-        }
         string filename = input["fileName"];
         ifstream t;
         t.open(filename);
@@ -101,16 +77,8 @@ namespace fs {
         return output.dump();
     }
 
-     string writeFile(string jso) {
-        json input;
+     string writeFile(json input) {
         json output;
-        try {
-            input = json::parse(jso);
-        }
-        catch(exception e){
-            output["error"] = "JSON parse error is occurred!";
-            return output.dump();
-        }
         string filename = input["fileName"];
         string data = input["data"];
         ofstream t(filename);
@@ -120,16 +88,8 @@ namespace fs {
         return output.dump();
     }
 
-    string removeFile(string jso) {
-        json input;
+    string removeFile(json input) {
         json output;
-        try {
-            input = json::parse(jso);
-        }
-        catch(exception e){
-            output["error"] = "JSON parse error is occurred!";
-            return output.dump();
-        }
         string filename = input["fileName"];
         if(DeleteFile(filename.c_str())){
             output["success"] = true;
@@ -141,16 +101,8 @@ namespace fs {
         return output.dump();
     }
 
-    string readDirectory(string jso) {
-        json input;
+    string readDirectory(json input) {
         json output;
-        try {
-            input = json::parse(jso);
-        }
-        catch(exception e){
-            output["error"] = "JSON parse error is occurred!";
-            return output.dump();
-        }
         string path = input["path"];
         string search_path = path + "/*.*";
         WIN32_FIND_DATA fd;

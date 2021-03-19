@@ -27,8 +27,8 @@
 using namespace std;
 
 namespace storage {
-    string putData(string jso); 
-    string getData(string jso);
+    string putData(json input); 
+    string getData(json input);
 }
 
 #endif

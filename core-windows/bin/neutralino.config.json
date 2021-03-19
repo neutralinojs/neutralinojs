@@ -1,18 +1,22 @@
 {
-    "appname": "myapp",
-    "appport": "5006",
-    "mode": "browser",
-    "entryPath": "app",
-    "url": "/",
-    "window": {
-        "title": "My app",
-        "width": "1000",
-        "height": "700",
-        "fullscreen": false,
-        "alwaysontop": false,
-        "iconfile": "app/assets/neutralino.png",
-        "enableinspector": false,
-        "borderless": false,
-        "maximize": false
+    "applicationId": "com.neutralino.sample",
+    "port": 5006,
+    "defaultMode": "window",
+    "url": "/app",
+    "nativeBlockList": ["app.open"],
+    "modes": {
+        "window": {
+            "title": "My app",
+            "width": 800,
+            "height": 500,
+            "fullScreen": false,
+            "alwaysOnTop": false,
+            "icon": "/app/assets/neutralino.png",
+            "enableInspector": true,
+            "borderless": false,
+            "maximize": false
+        },
+        "browser": {},
+        "cloud": {}
     }
 }

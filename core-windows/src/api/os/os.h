@@ -26,12 +26,12 @@
 #include <map>
 
 namespace os {
-    string execCommand(string jso);
-    string getEnvar(string jso);
-    string dialogOpen(string jso);
-    string dialogSave(string jso);
-    string showNotification(string jso);
-    string showMessageBox(string jso);
+    string execCommand(json input);
+    string getEnvar(json input);
+    string dialogOpen(json input);
+    string dialogSave(json input);
+    string showNotification(json input);
+    string showMessageBox(json input);
 }
 
 #endif
