@@ -1,6 +1,6 @@
 ### Notice 🔔
 
-Neutralino v2 is ready on Linux/macOS. You can try this [pre-release](https://github.com/neutralinojs/neutralinojs/releases/tag/v2.0.0).
+Neutralino v2 is ready for Linux/macOS. You can try this [pre-release](https://github.com/neutralinojs/neutralinojs/releases/tag/v2.0.0).
 Please notice that the macOS version is not yet supporting v2 implementaton (still in v1.5.0). If you are interested, you can help ❤️ us to implement v2-spec for macOS.
 
 
