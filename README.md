@@ -1,13 +1,7 @@
-### Notice
+### Notice 🔔
 
-We are planning for a [v2-release](https://github.com/neutralinojs/neutralinojs/milestone/11) that will contain the following things.
-
-- Improved application configuration file (`neutralino.config.json`) [#387](https://github.com/neutralinojs/neutralinojs/issues/387)
-- Add all missing features to the macOS version. [#310](https://github.com/neutralinojs/neutralinojs/issues/310)
-- Adding error-code system. [#282](https://github.com/neutralinojs/neutralinojs/issues/282)
-- Refactoring the JavaScript API. (using objects instead of multiple parameters) [#388](https://github.com/neutralinojs/neutralinojs/issues/388)
-
-We really appreciate it if you would like to contribute [#310](https://github.com/neutralinojs/neutralinojs/issues/310) :heart:. Checkout design documentations of v2 from [here](https://github.com/neutralinojs/drafts).
+Neutralino v2 is ready on Linux/macOS. You can try this [pre-release](https://github.com/neutralinojs/neutralinojs/releases/tag/v2.0.0).
+Please notice that the macOS version is not yet supporting v2 implementaton (still in v1.5.0). If you are interested, you can help ❤️ us to implement v2-spec for macOS.
 
 
 <div align="center">
