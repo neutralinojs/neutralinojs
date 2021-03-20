@@ -37,7 +37,7 @@ namespace linux {
         std::string result = "";
         std::shared_ptr<FILE> pipe(popen(command.c_str(), "r"), pclose);
         if (!pipe) {
-            WARN() << "linux::execCommand: Pipe open faild.";
+            WARN() << "linux::execCommand: Pipe open failed.";
         }
         else {
             while (!feof(pipe.get())) {

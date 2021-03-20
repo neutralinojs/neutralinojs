@@ -25,8 +25,7 @@
 using namespace std;
 
 namespace routes {
-    string getFile(string file);
-    string getClientJs();
-    string getIndex();
     pair<string, string> handle(string path, string j, string token);
+    pair<string, string> executeNativeMethod(string path, string postData, string token);
+    pair<string, string> getAsset(string path, string prependData = "");
 }

@@ -23,13 +23,13 @@ REM OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN TH
 REM SOFTWARE.
 
 @echo off
-echo Neutralino is being built...
+echo Neutralino is being build...
 
 if EXIST bin\neutralino.exe (
     del /f bin\neutralino.exe 
 )
 
-g++  -std=gnu++17 -lstdc++fs -fconcepts -I ../core-shared ../core-shared/log.cpp src/main.cpp ../core-shared/settings.cpp ../core-shared/resources.cpp src/server/requestparser.cpp src/server/serverlistener.cpp ../core-shared/helpers.cpp src/api/computer/computer.cpp src/api/filesystem/filesystem.cpp src/api/os/os.cpp ../core-shared/router.cpp ../core-shared/auth/authbasic.cpp ../core-shared/ping/ping.cpp src/api/storage/storage.cpp src/api/debug/debug.cpp src/api/app/app.cpp ../core-shared/cloud/privileges.cpp src/platform/windows.cpp ../core-shared/webview/webview_c.cpp -lws2_32 -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic -mwindows -Wconversion-null -DWEBVIEW_WINAPI=1 -lole32 -lcomctl32 -loleaut32 -luuid -lgdiplus -mwindows -lshlwapi -o bin/neutralino
+g++  -std=gnu++17 -lstdc++fs -fconcepts -I ../core-shared ../core-shared/log.cpp src/main.cpp ../core-shared/settings.cpp ../core-shared/resources.cpp src/server/requestparser.cpp src/server/serverlistener.cpp ../core-shared/helpers.cpp src/api/computer/computer.cpp src/api/filesystem/filesystem.cpp src/api/os/os.cpp ../core-shared/router.cpp ../core-shared/auth/authbasic.cpp ../core-shared/ping/ping.cpp src/api/storage/storage.cpp src/api/debug/debug.cpp src/api/app/app.cpp ../core-shared/permission.cpp src/platform/windows.cpp ../core-shared/webview/webview_c.cpp -lws2_32 -static-libgcc -static-libstdc++ -Wl,-Bstatic -lstdc++ -lpthread -Wl,-Bdynamic -mwindows -Wconversion-null -DWEBVIEW_WINAPI=1 -lole32 -lcomctl32 -loleaut32 -luuid -lgdiplus -mwindows -lshlwapi -o bin/neutralino
 
 if EXIST bin\neutralino.exe (
     echo Neutralino binary is compiled in to bin/netralino.exe

@@ -30,12 +30,5 @@ fi
 cd "core-$USER_PLATFORM" || exit
 bash build.sh
 
-echo "Building neutralino.js"
-cd ../neutralino.js || exit
-
-test ! -d node_modules/ && npm install
-npm run build
-cp dist/neutralino.js ../"core-$USER_PLATFORM"/bin/app/assets/neutralino.js
-
 cd .. || exit
 cp -r "core-$USER_PLATFORM"/bin/* dist/

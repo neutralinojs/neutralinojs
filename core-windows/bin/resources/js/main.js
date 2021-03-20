@@ -20,27 +20,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-let $ = require('../lib/minAjax.js');
+let myapp = {
+    myfunction : function () { document.getElementById('info').innerHTML = NL_APPID + " is running on port " +
+                    NL_PORT + " inside " + NL_OS + "<br/><br/>" + "<span>v" + NL_VERSION + "</span>"; }
+};
 
-let devClient = {
 
-    start : function () {
-        setInterval(function () {
-            $.ajax({
-                url : 'http://localhost:8080',
-                type : 'GET',
-                done : function(data){
-                    if(data && data.needsReload) {
-                        location.reload();
-                    }
-                },
-                problem : function () {
-                    console.error('Unable to communicate with neu devServer');
-                }
-            
-            });
-        }, 1000);
+Neutralino.init({
+    onSuccess: function() {
+        myapp.myfunction();
+    },
+    pingSuccessCallback : function() {
+
+    },
+    pingFailCallback : function() {
+
     }
-}
-
-module.exports = devClient;
+});

@@ -24,22 +24,28 @@
 #include <chrono>
 #include <thread>
 #include <vector>
-#include "cloud/privileges.h"
 #include "settings.h"
+
+#if defined(__linux__)
+#include "../../core-linux/src/api/app/app.h"
+
+#elif defined(_WIN32)
+#include "../../core-windows/src/api/app/app.h"
+#endif
 
 using namespace std;
 
 bool isActive = true;
-bool firstPing = false;
+bool firstPingReceived = false;
 
 void setInterval(auto function,int interval) {
-    thread th([&]() {
+    thread pingThread([&]() {
         while(true) {
             std::this_thread::sleep_for(5s);
             function();
         }
     });
-    th.detach();
+    pingThread.detach();
 }
 
 
@@ -47,14 +53,14 @@ namespace ping {
 
     void receivePing() {
         isActive = true;
-        if(!firstPing) {
-            firstPing = true;
+        if(!firstPingReceived) {
+            firstPingReceived = true;
         }
     }
 
     void pingTick() {
-        if(!isActive && firstPing) {
-            std::exit(0);
+        if(!isActive && firstPingReceived) {
+            app::exit(nullptr);
         }
         isActive = false;
     }

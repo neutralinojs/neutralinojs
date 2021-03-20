@@ -48,6 +48,7 @@
 #define OS_NAME "Windows"
 #define PLATFORM_NS windows
 #endif
+#define APP_CONFIG_FILE "/neutralino.config.json"
 
 using namespace std;
 using json = nlohmann::json;
@@ -63,24 +64,6 @@ namespace settings {
     }
 
     string getFileContent(string filename) {
-        if(!loadResFromDir)
-            return resources::getFileContent(filename);
-        filename = settings::joinAppPath(filename);
-        ifstream t;
-        t.open(filename);
-        if(!t.is_open())
-            return "";
-        string buffer = "";
-        string line;
-        while(!t.eof()){
-            getline(t, line);
-            buffer += line + "\n";
-        }
-        t.close();
-        return buffer;
-    }
-
-    string getFileContentBinary(string filename) {
         if(!loadResFromDir)
             return resources::getFileContent(filename);
         filename = settings::joinAppPath(filename);
@@ -100,59 +83,53 @@ namespace settings {
         return fs::current_path().generic_string();
     }
 
-    json getOptions(){
-        return options;
-    }
-
-    void setOption(string key, string value) {
-        options[key] = value;
-    }
-
-    json getSettings() {
+    json getConfig() {
         if(!options.is_null())
-            return settings::getOptions();
-        json settings;
+            return options;
+        json config;
         try {
-            settings = json::parse(getFileContent("app/settings.json"));
+            config = json::parse(settings::getFileContent(APP_CONFIG_FILE));
         }
         catch(exception e){
             ERROR() << e.what();
         }
-        options = settings;
+        options = config;
         return options;
     }
 
     string getGlobalVars(){
-        json settings = getOptions();
-        string s = "var NL_OS='" + std::string(OS_NAME) + "';";
-        s += "var NL_VERSION='1.9.0';";
-        s += "var NL_NAME='" + settings["appname"].get<std::string>() + "';";
-        s += "var NL_PORT=" + settings["appport"].get<std::string>() + ";";
-        s += "var NL_MODE='" + settings["mode"].get<std::string>() + "';";
-        s += "var NL_TOKEN='" + authbasic::getToken() + "';";
-        s += "var NL_CWD='" + settings::getCurrentDir() + "';";
-        s += "var NL_ARGS=" + globalArgs.dump() + ";";
-        s += "var NL_PATH='" + appPath + "';";
+        string jsSnippet = "var NL_OS='" + std::string(OS_NAME) + "';";
+        jsSnippet += "var NL_VERSION='2.0.0';";
+        jsSnippet += "var NL_APPID='" + options["applicationId"].get<std::string>() + "';";
+        jsSnippet += "var NL_PORT=" + std::to_string(options["port"].get<int>()) + ";";
+        jsSnippet += "var NL_MODE='" + options["defaultMode"].get<std::string>() + "';";
+        jsSnippet += "var NL_TOKEN='" + authbasic::getToken() + "';";
+        jsSnippet += "var NL_CWD='" + settings::getCurrentDir() + "';";
+        jsSnippet += "var NL_ARGS=" + globalArgs.dump() + ";";
+        jsSnippet += "var NL_PATH='" + appPath + "';";
 
-        if(settings["globals"] != NULL) {
-            for ( auto it: settings["globals"].items()) {
-                s += "var NL_" + it.key() +  "='" + it.value().get<std::string>() + "';";
+        if(!options["globalVariables"].is_null()) {
+            for ( auto it: options["globalVariables"].items()) {
+                jsSnippet += "var NL_" + it.key() +  "='" + it.value().get<std::string>() + "';";
             }
         }
-        return s;
+        return jsSnippet;
     }
 
     void setGlobalArgs(json args) {
         appPath = PLATFORM_NS::getDirectoryName(args[0].get<std::string>());
-        if(appPath != "")
-            appPath += "/";
+        if(appPath == "")
+            appPath = settings::getCurrentDir();
         globalArgs = args;
         loadResFromDir = std::find(globalArgs.begin(), globalArgs.end(), "--load-dir-res") != globalArgs.end();
     }
 
     string getMode() {
-        json mode = settings::getOptions()["mode"];
-        return mode;
+        return options["defaultMode"].get<std::string>();
+    }
+
+    void setPort(int port) {
+      options["port"] = port;
     }
 
 }

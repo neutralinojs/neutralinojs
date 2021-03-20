@@ -24,10 +24,6 @@ REM SOFTWARE.
 
 cd core-windows
 cmd /c build.bat
-echo Building neutralino.js
-cd ..\neutralino.js
-cmd /c npm run build
-xcopy /y dist\neutralino.js ..\core-windows\bin\app\assets\neutralino.js
 cd ..
 xcopy /s /y core-windows\bin dist
 

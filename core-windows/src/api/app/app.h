@@ -28,14 +28,11 @@
 using namespace std;
 
 namespace app {
-
-    string exit(string jso); 
-
-    typedef string (*pfunc)(string);
-
-    map <string, pfunc> funcmap = {
-        {"app.exit", app::exit}
-    };
+    string exit(json input);
+    string keepAlive(json input);
+    string showWindow(json input);
+    string open(json input);
+    string getConfig(json input);
 }
 
 #endif

@@ -30,16 +30,8 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace debug {
-    string log(string jso) {
-        json input;
+    string log(json input) {
         json output;
-        try {
-            input = json::parse(jso);
-        }
-        catch(exception e){
-            output["error"] = "JSON parse error is occurred!";
-            return output.dump();
-        }
         string type = input["type"].get<std::string>();
         string message = input["message"].get<std::string>();
 
@@ -52,7 +44,8 @@ namespace debug {
         else
             DEBUG() << message;
 
-        output["message"] = "Wrote to log file neutralino.log";
+        output["message"] = "Wrote to the log file: neutralino.log";
+        output["success"] = true;
         return output.dump();
     }
 

@@ -105,8 +105,8 @@ struct webview {
   struct webview_priv priv;
   void *userdata;
   void* icon;
-  bool always_on_top;
-  bool borderless_window;
+  bool alwaysOnTop;
+  bool borderless;
   bool maximize;
 };
 
@@ -306,12 +306,12 @@ WEBVIEW_API int webview_init(struct webview *w) {
   gtk_window_set_title(GTK_WINDOW(w->priv.window), w->title);
   if (w->icon)
     gtk_window_set_icon(GTK_WINDOW(w->priv.window), (GdkPixbuf*) w->icon);
-  if (w->borderless_window == true)
+  if (w->borderless == true)
     gtk_window_set_decorated(GTK_WINDOW(w->priv.window), false);
   if (w->maximize == true)
     gtk_window_maximize(GTK_WINDOW(w->priv.window));
 
-  gtk_window_set_keep_above(GTK_WINDOW(w->priv.window), w->always_on_top);
+  gtk_window_set_keep_above(GTK_WINDOW(w->priv.window), w->alwaysOnTop);
 
   if (w->resizable) {
     gtk_window_set_default_size(GTK_WINDOW(w->priv.window), w->width,
@@ -1237,9 +1237,6 @@ WEBVIEW_API int webview_init(struct webview *w) {
   wc.hInstance = hInstance;
   wc.lpfnWndProc = wndproc;
   wc.lpszClassName = classname;
-  if (w->icon) {
-    wc.hIcon = (HICON)w->icon;
-  }
   RegisterClassEx(&wc);
 
   style = WS_OVERLAPPEDWINDOW;
@@ -1269,10 +1266,14 @@ WEBVIEW_API int webview_init(struct webview *w) {
     OleUninitialize();
     return -1;
   }
-	if (w->always_on_top) {
+  if(w->icon) {
+    SendMessage(w->priv.hwnd, WM_SETICON, ICON_SMALL, (LPARAM)w->icon);
+    SendMessage(w->priv.hwnd, WM_SETICON, ICON_BIG, (LPARAM)w->icon);
+  }
+	if (w->alwaysOnTop) {
     SetWindowPos( w->priv.hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
   }
-  if (w->borderless_window) {
+  if (w->borderless) {
     SetWindowLong(w->priv.hwnd, GWL_STYLE, 0);
   }
   SetWindowLongPtr(w->priv.hwnd, GWLP_USERDATA, (LONG_PTR)w);

@@ -1,0 +1,22 @@
+{
+    "applicationId": "com.neutralino.sample",
+    "port": 5006,
+    "defaultMode": "window",
+    "url": "/app",
+    "nativeBlockList": ["app.open"],
+    "modes": {
+        "window": {
+            "title": "My app",
+            "width": 800,
+            "height": 500,
+            "fullScreen": false,
+            "alwaysOnTop": false,
+            "icon": "/app/assets/neutralino.png",
+            "enableInspector": true,
+            "borderless": false,
+            "maximize": false
+        },
+        "browser": {},
+        "cloud": {}
+    }
+}
