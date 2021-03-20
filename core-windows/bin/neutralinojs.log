@@ -1,5 +1,0 @@
-ERROR [../core-shared/settings.cpp:getSettings] std::exception
-ERROR [../core-shared/resources.cpp:makeFileTree] resources::makeFileTree error: /res.neu is missing.
-ERROR [../core-shared/settings.cpp:getSettings] std::exception
-ERROR [../core-shared/resources.cpp:makeFileTree] resources::makeFileTree error: /res.neu is missing.
-ERROR [../core-shared/settings.cpp:getSettings] std::exception

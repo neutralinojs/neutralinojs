@@ -7,4 +7,5 @@ dist/neutralino
 dist/*.exe
 .DS_Store
 .vscode
-
+*.log
+.vscode
