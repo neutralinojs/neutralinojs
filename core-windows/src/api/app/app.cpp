@@ -27,7 +27,12 @@
 #include "lib/json.hpp"
 #include "ping/ping.h"
 #include "settings.h"
-#include "webview/webview_c.h"
+#include "webview/webview.h"
+
+#pragma comment (lib,"Gdiplus.lib")
+#pragma comment (lib,"Shell32.lib")
+#pragma comment(lib, "WebView2Loader.dll.lib")
+
 
 using namespace std;
 using namespace Gdiplus;
@@ -38,8 +43,11 @@ namespace app {
     void __showWindow(int height, int width,
         bool fullScreen, string title, bool alwaysOnTop, void* icon,
         bool enableInspector, bool borderless, bool maximize, string url) {
-        web_view(title.c_str(), url.c_str(), width, height, fullScreen, alwaysOnTop,
-                borderless, maximize, icon);
+        webview::webview w(true, nullptr);
+        w.set_title(title);
+        w.set_size(480, 320, WEBVIEW_HINT_NONE);
+        w.navigate(url);
+        w.run();
     }
 
     string exit(json input) {

@@ -1,2 +1,5 @@
-INFO [src/serverlistener.cpp:run] "C:\Users\Shalitha Suranga\Desktop\Projects\neutralinojs\core-windows\bin\neutralino.exe" 
-INFO [src/serverlistener.cpp:run] "C:\Users\Shalitha Suranga\Desktop\Projects\neutralinojs\core-windows\bin\neutralino.exe" ar -sf "s sdf"
+ERROR [../core-shared/settings.cpp:getSettings] std::exception
+ERROR [../core-shared/resources.cpp:makeFileTree] resources::makeFileTree error: /res.neu is missing.
+ERROR [../core-shared/settings.cpp:getSettings] std::exception
+ERROR [../core-shared/resources.cpp:makeFileTree] resources::makeFileTree error: /res.neu is missing.
+ERROR [../core-shared/settings.cpp:getSettings] std::exception

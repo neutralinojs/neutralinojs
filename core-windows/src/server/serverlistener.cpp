@@ -65,7 +65,7 @@ void ServerListener::init() {
         throw SocketCreationException(WSAGetLastError());
     }
 
-    if(bind(listen_socket, socket_props->ai_addr, (int)socket_props->ai_addrlen) == SOCKET_ERROR) {
+    if(::bind(listen_socket, socket_props->ai_addr, (int)socket_props->ai_addrlen) == SOCKET_ERROR) {
         closesocket(listen_socket);
         throw SocketBindingException(WSAGetLastError());
     }
@@ -105,7 +105,7 @@ void ServerListener::stop() {
 
 void ServerListener::clientHandler(SOCKET client_socket, size_t buffer_size) {
     int recvbuflen = buffer_size;
-    char recvbuf[recvbuflen];
+    char *recvbuf = new char[recvbuflen];
     int bytes_received;
     RequestParser parser;
 
@@ -133,6 +133,7 @@ void ServerListener::clientHandler(SOCKET client_socket, size_t buffer_size) {
                 goto cleanup;
             }
         }
+        delete[] recvbuf;
         std::string response_body = "";
         pair<string, string> responseGen =  routes::handle(parser.getPath(), parser.getBody(), parser.getHeader("Authorization"));
         response_body = responseGen.first;

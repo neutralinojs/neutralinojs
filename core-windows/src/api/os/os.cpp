@@ -36,6 +36,9 @@
 #include "helpers.h"
 #include "../../platform/windows.h"
 
+#pragma comment(lib, "Comdlg32.lib")
+#pragma comment(lib, "Shell32.lib")
+
 using namespace std;
 using json = nlohmann::json;
 

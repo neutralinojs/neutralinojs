@@ -20,58 +20,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <iostream>
-#include <chrono>
-#include <thread>
-#include <vector>
-#include "settings.h"
-
-#if defined(__linux__)
-#include "../../core-linux/src/api/app/app.h"
-
-#elif defined(_WIN32)
-#include "../../core-windows/src/api/app/app.h"
-#endif
-
-using namespace std;
-
-bool isActive = true;
-bool firstPingReceived = false;
-
-// void setInterval(auto function,int interval) {
-//     thread pingThread([&]() {
-//         while(true) {
-//             std::this_thread::sleep_for(5s);
-//             function();
-//         }
-//     });
-//     pingThread.detach();
-// }
+let myapp = {
+    myfunction : function () { document.getElementById('info').innerHTML = NL_APPID + " is running on port " +
+                    NL_PORT + " inside " + NL_OS + "<br/><br/>" + "<span>v" + NL_VERSION + "</span>"; }
+};
 
 
-namespace ping {
+Neutralino.init({
+    onSuccess: function() {
+        myapp.myfunction();
+    },
+    pingSuccessCallback : function() {
 
-    void receivePing() {
-        isActive = true;
-        if(!firstPingReceived) {
-            firstPingReceived = true;
-        }
+    },
+    pingFailCallback : function() {
+
     }
-
-    void pingTick() {
-        if(!isActive && firstPingReceived) {
-            app::exit(nullptr);
-        }
-        isActive = false;
-    }
-
-    void startPingReceiver() {
-        // if(settings::getMode() == "browser") {
-        //     setInterval([]() {
-        //         pingTick();
-        //     },
-        //     10000);
-        // }
-    }
-
-}
+});
