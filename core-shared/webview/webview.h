@@ -138,6 +138,27 @@ WEBVIEW_API void webview_return(webview_t w, const char *seq, int status,
 namespace webview {
 using dispatch_fn_t = std::function<void()>;
 
+// Convert ASCII hex digit to a nibble (four bits, 0 - 15).
+//
+// Use unsigned to avoid signed overflow UB.
+static inline unsigned char hex2nibble(unsigned char c) {
+  if (c >= '0' && c <= '9') {
+    return c - '0';
+  } else if (c >= 'a' && c <= 'f') {
+    return 10 + (c - 'a');
+  } else if (c >= 'A' && c <= 'F') {
+    return 10 + (c - 'A');
+  }
+  return 0;
+}
+
+// Convert ASCII hex string (two characters) to byte.
+//
+// E.g., "0B" => 0x0B, "af" => 0xAF.
+static inline char hex2char(const char *p) {
+  return hex2nibble(p[0]) * 16 + hex2nibble(p[1]);
+}
+
 inline std::string url_encode(const std::string s) {
   std::string encoded;
   for (unsigned int i = 0; i < s.length(); i++) {
@@ -153,18 +174,18 @@ inline std::string url_encode(const std::string s) {
   return encoded;
 }
 
-inline std::string url_decode(const std::string s) {
+inline std::string url_decode(const std::string st) {
   std::string decoded;
-  for (unsigned int i = 0; i < s.length(); i++) {
+  const char *s = st.c_str();
+  size_t length = strlen(s);
+  for (unsigned int i = 0; i < length; i++) {
     if (s[i] == '%') {
-      int n;
-      n = std::stoul(s.substr(i + 1, 2), nullptr, 16);
-      decoded = decoded + static_cast<char>(n);
+      decoded.push_back(hex2char(s + i + 1));
       i = i + 2;
     } else if (s[i] == '+') {
-      decoded = decoded + ' ';
+      decoded.push_back(' ');
     } else {
-      decoded = decoded + s[i];
+      decoded.push_back(s[i]);
     }
   }
   return decoded;
@@ -526,21 +547,10 @@ public:
                      WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START, NULL, NULL));
   }
 
-<<<<<<< HEAD
-  WebKitSettings *settings =
-      webkit_web_view_get_settings(WEBKIT_WEB_VIEW(w->priv.webview));
-
-  webkit_settings_set_javascript_can_access_clipboard (settings, true);
-
-  if (w->debug) {
-    webkit_settings_set_enable_write_console_messages_to_stdout(settings, true);
-    webkit_settings_set_enable_developer_extras(settings, true);
-=======
   void eval(const std::string js) {
     webkit_web_view_run_javascript(WEBKIT_WEB_VIEW(m_webview), js.c_str(), NULL,
                                    NULL, NULL);
   }
->>>>>>> experiment/webview-edge-win
 
 private:
   virtual void on_message(const std::string msg) = 0;
@@ -1119,98 +1129,6 @@ public:
     UpdateWindow(m_window);
     SetFocus(m_window);
 
-<<<<<<< HEAD
-static int webview_fix_ie_compat_mode() {
-  HKEY hKey;
-  DWORD ie_version = 11000;
-  TCHAR appname[MAX_PATH + 1];
-  TCHAR *p;
-  if (GetModuleFileName(NULL, appname, MAX_PATH + 1) == 0) {
-    return -1;
-  }
-  for (p = &appname[strlen(appname) - 1]; p != appname && *p != '\\'; p--) {
-  }
-  p++;
-  if (RegCreateKey(HKEY_CURRENT_USER, WEBVIEW_KEY_FEATURE_BROWSER_EMULATION,
-                   &hKey) != ERROR_SUCCESS) {
-    return -1;
-  }
-  if (RegSetValueEx(hKey, p, 0, REG_DWORD, (BYTE *)&ie_version,
-                    sizeof(ie_version)) != ERROR_SUCCESS) {
-    RegCloseKey(hKey);
-    return -1;
-  }
-  RegCloseKey(hKey);
-  return 0;
-}
-
-WEBVIEW_API int webview_init(struct webview *w) {
-  WNDCLASSEX wc;
-  HINSTANCE hInstance;
-  DWORD style;
-  DWORD showWindowStyle;
-  RECT clientRect;
-  RECT rect;
-
-  if (webview_fix_ie_compat_mode() < 0) {
-    return -1;
-  }
-
-  hInstance = GetModuleHandle(NULL);
-  if (hInstance == NULL) {
-    return -1;
-  }
-  if (OleInitialize(NULL) != S_OK) {
-    return -1;
-  }
-  ZeroMemory(&wc, sizeof(WNDCLASSEX));
-  wc.cbSize = sizeof(WNDCLASSEX);
-  wc.hInstance = hInstance;
-  wc.lpfnWndProc = wndproc;
-  wc.lpszClassName = classname;
-  RegisterClassEx(&wc);
-
-  style = WS_OVERLAPPEDWINDOW;
-  if (!w->resizable) {
-    style = WS_OVERLAPPED | WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU;
-  }
-
-  rect.left = 0;
-  rect.top = 0;
-  rect.right = w->width;
-  rect.bottom = w->height;
-  AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, 0);
-
-  GetClientRect(GetDesktopWindow(), &clientRect);
-  int left = (clientRect.right / 2) - ((rect.right - rect.left) / 2);
-  int top = (clientRect.bottom / 2) - ((rect.bottom - rect.top) / 2);
-  rect.right = rect.right - rect.left + left;
-  rect.left = left;
-  rect.bottom = rect.bottom - rect.top + top;
-  rect.top = top;
-
-  w->priv.hwnd =
-      CreateWindowEx(0, classname, w->title, style, rect.left, rect.top,
-                     rect.right - rect.left, rect.bottom - rect.top,
-                     HWND_DESKTOP, NULL, hInstance, (void *)w);
-  if (w->priv.hwnd == 0) {
-    OleUninitialize();
-    return -1;
-  }
-  if(w->icon) {
-    SendMessage(w->priv.hwnd, WM_SETICON, ICON_SMALL, (LPARAM)w->icon);
-    SendMessage(w->priv.hwnd, WM_SETICON, ICON_BIG, (LPARAM)w->icon);
-  }
-	if (w->alwaysOnTop) {
-    SetWindowPos( w->priv.hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
-  }
-  if (w->borderless) {
-    SetWindowLong(w->priv.hwnd, GWL_STYLE, 0);
-  }
-  SetWindowLongPtr(w->priv.hwnd, GWLP_USERDATA, (LONG_PTR)w);
-
-  DisplayHTMLPage(w);
-=======
     auto cb =
         std::bind(&win32_edge_engine::on_message, this, std::placeholders::_1);
 
@@ -1218,7 +1136,6 @@ WEBVIEW_API int webview_init(struct webview *w) {
       m_browser = std::make_unique<webview::edge_html>();
       m_browser->embed(m_window, debug, cb);
     }
->>>>>>> experiment/webview-edge-win
 
     m_browser->resize(m_window);
   }
