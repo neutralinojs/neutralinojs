@@ -1,19 +1,18 @@
 {
-    "applicationId": "js.neutralino.sample",
+    "applicationId": "com.neutralino.sample",
     "port": 5006,
     "defaultMode": "window",
-    "url": "/resources/",
-    "nativeBlockList": [],
-    "globalVariables": [],
+    "url": "/app",
+    "nativeBlockList": ["app.open"],
     "modes": {
         "window": {
-            "title": "Neutralinojs app",
+            "title": "My app",
             "width": 800,
             "height": 500,
             "fullScreen": false,
             "alwaysOnTop": false,
             "icon": "/app/assets/neutralino.png",
-            "enableInspector": false,
+            "enableInspector": true,
             "borderless": false,
             "maximize": false
         },

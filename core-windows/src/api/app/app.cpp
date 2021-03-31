@@ -27,7 +27,12 @@
 #include "lib/json.hpp"
 #include "ping/ping.h"
 #include "settings.h"
-#include "webview/webview_c.h"
+#include "webview/webview.h"
+
+#pragma comment (lib,"Gdiplus.lib")
+#pragma comment (lib,"Shell32.lib")
+#pragma comment(lib, "WebView2Loader.dll.lib")
+
 
 using namespace std;
 using namespace Gdiplus;
@@ -38,8 +43,56 @@ namespace app {
     void __showWindow(int height, int width,
         bool fullScreen, string title, bool alwaysOnTop, void* icon,
         bool enableInspector, bool borderless, bool maximize, string url) {
-        web_view(title.c_str(), url.c_str(), width, height, fullScreen, alwaysOnTop,
-                borderless, maximize, icon);
+
+        webview::webview nativeWindow(enableInspector, nullptr);
+        nativeWindow.set_title(title);
+        nativeWindow.set_size(width, height, WEBVIEW_HINT_NONE);
+        HWND windowHandle = (HWND) nativeWindow.window();
+        DWORD currentStyle = GetWindowLong(windowHandle, GWL_STYLE);
+        DWORD currentStyleX = GetWindowLong(windowHandle, GWL_EXSTYLE);
+
+        // Window properties/modes
+        if(fullScreen) {
+            MONITORINFO monitor_info;
+            currentStyle &= ~(WS_CAPTION | WS_THICKFRAME);
+            currentStyleX &= ~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE |
+                                WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
+            SetWindowLong(windowHandle, GWL_STYLE, currentStyle);
+            SetWindowLong(windowHandle, GWL_EXSTYLE, currentStyleX);
+            monitor_info.cbSize = sizeof(monitor_info);
+            GetMonitorInfo(MonitorFromWindow(windowHandle, MONITOR_DEFAULTTONEAREST),
+                        &monitor_info);
+            RECT r;
+            r.left = monitor_info.rcMonitor.left;
+            r.top = monitor_info.rcMonitor.top;
+            r.right = monitor_info.rcMonitor.right;
+            r.bottom = monitor_info.rcMonitor.bottom;
+            SetWindowPos(windowHandle, NULL, r.left, r.top, r.right - r.left,
+                        r.bottom - r.top,
+                        SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+        }
+
+        if(alwaysOnTop) {
+            SetWindowPos(windowHandle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
+        }
+
+        if(maximize) {
+            ShowWindow(windowHandle, SW_MAXIMIZE);     
+        }
+
+        if(borderless) {
+            currentStyle &= ~(WS_CAPTION | WS_THICKFRAME);
+            SetWindowLong(windowHandle, GWL_STYLE, currentStyle);
+            SetWindowPos(windowHandle, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | 
+                            SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+        }
+
+        if(icon) {
+            SendMessage(windowHandle, WM_SETICON, ICON_SMALL, (LPARAM)icon);
+            SendMessage(windowHandle, WM_SETICON, ICON_BIG, (LPARAM)icon);
+        }
+        nativeWindow.navigate(url);
+        nativeWindow.run();
     }
 
     string exit(json input) {
