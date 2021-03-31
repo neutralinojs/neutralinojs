@@ -10,11 +10,11 @@
             "width": 800,
             "height": 500,
             "fullScreen": false,
-            "alwaysOnTop": true,
+            "alwaysOnTop": false,
             "icon": "/app/assets/neutralino.png",
             "enableInspector": false,
-            "borderless": true,
-            "maximize": true
+            "borderless": false,
+            "maximize": false
         },
         "browser": {},
         "cloud": {}

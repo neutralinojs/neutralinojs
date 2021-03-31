@@ -927,6 +927,8 @@ public:
                                    m_controller = controller;
                                    m_controller->get_CoreWebView2(&m_webview);
                                    m_webview->AddRef();
+                                   if(debug)
+                                    m_webview->OpenDevToolsWindow();
                                    flag.clear();
                                  }));
     if (res != S_OK) {
@@ -1131,6 +1133,7 @@ public:
         (*f)();
         delete f;
       } else if (msg.message == WM_QUIT) {
+        std::exit(0);
         return;
       }
     }

@@ -44,8 +44,7 @@ namespace app {
         bool fullScreen, string title, bool alwaysOnTop, void* icon,
         bool enableInspector, bool borderless, bool maximize, string url) {
 
-        std::this_thread::sleep_for(0.5s); // TODO: Get rid of manual timeout to wait for server.
-        webview::webview nativeWindow(false, nullptr);
+        webview::webview nativeWindow(enableInspector, nullptr);
         nativeWindow.set_title(title);
         nativeWindow.set_size(width, height, WEBVIEW_HINT_NONE);
         HWND windowHandle = (HWND) nativeWindow.window();
@@ -55,12 +54,11 @@ namespace app {
         // Window properties/modes
         if(fullScreen) {
             MONITORINFO monitor_info;
-
-            SetWindowLong(windowHandle, GWL_STYLE,
-                        currentStyle & ~(WS_CAPTION | WS_THICKFRAME));
-            SetWindowLong(windowHandle, GWL_EXSTYLE,
-                            currentStyleX && ~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE |
-                                WS_EX_CLIENTEDGE | WS_EX_STATICEDGE));
+            currentStyle &= ~(WS_CAPTION | WS_THICKFRAME);
+            currentStyleX &= ~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE |
+                                WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
+            SetWindowLong(windowHandle, GWL_STYLE, currentStyle);
+            SetWindowLong(windowHandle, GWL_EXSTYLE, currentStyleX);
             monitor_info.cbSize = sizeof(monitor_info);
             GetMonitorInfo(MonitorFromWindow(windowHandle, MONITOR_DEFAULTTONEAREST),
                         &monitor_info);
@@ -72,8 +70,6 @@ namespace app {
             SetWindowPos(windowHandle, NULL, r.left, r.top, r.right - r.left,
                         r.bottom - r.top,
                         SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-            currentStyle = GetWindowLong(windowHandle, GWL_STYLE);
-            currentStyleX = GetWindowLong(windowHandle, GWL_EXSTYLE);
         }
 
         if(alwaysOnTop) {
@@ -81,14 +77,20 @@ namespace app {
         }
 
         if(maximize) {
-            PostMessage(windowHandle, WM_SYSCOMMAND, SC_MAXIMIZE, 0);
+            ShowWindow(windowHandle, SW_MAXIMIZE);     
+        }
+
+        if(borderless) {
+            currentStyle &= ~(WS_CAPTION | WS_THICKFRAME);
+            SetWindowLong(windowHandle, GWL_STYLE, currentStyle);
+            SetWindowPos(windowHandle, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | 
+                            SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
         }
 
         if(icon) {
             SendMessage(windowHandle, WM_SETICON, ICON_SMALL, (LPARAM)icon);
             SendMessage(windowHandle, WM_SETICON, ICON_BIG, (LPARAM)icon);
         }
-
         nativeWindow.navigate(url);
         nativeWindow.run();
     }
