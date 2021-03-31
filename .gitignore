@@ -7,4 +7,4 @@ dist/neutralino
 dist/*.exe
 .DS_Store
 .vscode
-
+*.obj
