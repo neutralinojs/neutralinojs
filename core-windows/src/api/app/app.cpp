@@ -77,13 +77,13 @@ namespace app {
         }
 
         if(maximize) {
-            ShowWindow(windowHandle, SW_MAXIMIZE);     
+            ShowWindow(windowHandle, SW_MAXIMIZE);
         }
 
         if(borderless) {
             currentStyle &= ~(WS_CAPTION | WS_THICKFRAME);
             SetWindowLong(windowHandle, GWL_STYLE, currentStyle);
-            SetWindowPos(windowHandle, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | 
+            SetWindowPos(windowHandle, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |
                             SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
         }
 

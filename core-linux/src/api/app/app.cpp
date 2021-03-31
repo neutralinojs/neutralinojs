@@ -24,6 +24,7 @@
 #include <thread>
 #include <signal.h>
 #include <unistd.h>
+#include <gtk/gtk.h>
 #include <glib.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include "lib/json.hpp"
@@ -40,25 +41,27 @@ namespace app {
     void __showWindow(int height, int width,
         bool fullScreen, string title, bool alwaysOnTop, void* icon,
         bool enableInspector, bool borderless, bool maximize, string url) {
-        struct webview webview;
-        memset( & webview, 0, sizeof(webview));
-        webview.title = title.c_str();
-        webview.url = url.c_str();
-        webview.width = width;
-        webview.height = height;
-        webview.resizable = 1;
-        webview.alwaysOnTop = alwaysOnTop;
-        webview.icon = icon;
-        webview.debug = enableInspector;
-        webview.borderless= borderless;
-        webview.maximize = maximize;
-        int r = webview_init( & webview);
-        webview_set_fullscreen( & webview, fullScreen);
-        if (r != 0) {
-            return;
+        webview::webview nativeWindow(enableInspector, nullptr);
+        nativeWindow.set_title(title);
+        nativeWindow.set_size(width, height, WEBVIEW_HINT_NONE);
+        GtkWidget* windowHandle = (GtkWidget*) nativeWindow.window();
+
+        // Window properties/modes
+        if(fullScreen) {
+            gtk_window_fullscreen(GTK_WINDOW(windowHandle));
         }
-        while (webview_loop( & webview, 1) == 0) {}
-        webview_exit( & webview);
+        gtk_window_set_keep_above(GTK_WINDOW(windowHandle), alwaysOnTop);
+
+        if(maximize) {
+            gtk_window_maximize(GTK_WINDOW(windowHandle));
+        }
+        gtk_window_set_decorated(GTK_WINDOW(windowHandle), !borderless);
+
+        if(icon) {
+            gtk_window_set_icon(GTK_WINDOW(windowHandle), (GdkPixbuf*)icon);
+        }
+        nativeWindow.navigate(url);
+        nativeWindow.run();
     }
 
     string exit(json input) {

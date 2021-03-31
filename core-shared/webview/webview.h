@@ -454,6 +454,7 @@ public:
     g_signal_connect(G_OBJECT(m_window), "destroy",
                      G_CALLBACK(+[](GtkWidget *, gpointer arg) {
                        static_cast<gtk_webkit_engine *>(arg)->terminate();
+                       std::exit(0);
                      }),
                      this);
     // Initialize webview widget
@@ -497,6 +498,8 @@ public:
       webkit_settings_set_enable_write_console_messages_to_stdout(settings,
                                                                   true);
       webkit_settings_set_enable_developer_extras(settings, true);
+      WebKitWebInspector *inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(m_webview));
+      webkit_web_inspector_show(WEBKIT_WEB_INSPECTOR(inspector));
     }
 
     gtk_widget_show_all(m_window);
