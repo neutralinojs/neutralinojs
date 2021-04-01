@@ -52,7 +52,7 @@ Help Neutralino!
 
 ### Neutralinojs cloud
 
-This experimental mode can be used to expose native functions for clients
+This mode can be used to expose native functions for clients. In fact, you can restrict native calls as you wish.
 
 ```bash
 ./neutralino  /dev/null 2>&1 &
@@ -69,6 +69,8 @@ Check this [article](https://medium.com/@shalithasuranga/getting-started-with-ne
 - You can help us by writing sample Neutralino apps,by composing or improving documentation or by writing code.
 
 ## Framework Developer Guide
+
+This guide is for contributors. If you are interested only in application development. Please check [this](https://neutralino.js.org/docs) guide.
 
 ### Required tools 
 
