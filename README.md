@@ -72,15 +72,6 @@ Check this [article](https://medium.com/@shalithasuranga/getting-started-with-ne
 
 This guide is for contributors. If you are interested only in application development. Please check [this](https://neutralino.js.org/docs) guide.
 
-### Required tools 
-
-To create Neutralino developer environment in your pc, install these tool kits.
-
-- [MinGW Compiler for C++](http://mingw.org/)
-- [NodeJs](https://nodejs.org/en/download/)
-- [Webpack Bundler](https://webpack.js.org/)
-- [WebKitGTK+](https://webkitgtk.org/)
-
 ### Installing latest GNU C/C++ compilers
 
 **Linux**
@@ -89,19 +80,16 @@ No need for separate installation of compilers because Linux distributions usual
 
 **Windows**
 
-Latest versions of GNU C/C++ compilers can be easily installed with [MSYS2](https://www.msys2.org/) tools collection. After a successfull installation you can run the following command on MSYS2 console to install GNU C/C++ compilers (64-bit versions).
+Install the latest Visual Studio IDE. Neutralinojs compilation on windows will use MSVC (aka `cl.exe`) C++ compiler. 
+
+
+### Building Neutralino platform on Windows
 
 ```bash
- $ pacman -S mingw-w64-x86_64-gcc  
+> build.bat
 ```
 
-### Build Neutralino platform in Windows
-
-```bash
-> build
-```
-
-### Build Neutralino platform in Linux
+### Building Neutralino platform on Linux
 
 Install GTk and webkit libraries
 
@@ -121,14 +109,14 @@ $ bash build.sh linux
 ```
 Neutralino platform components will be assembled in `/dist`
 
-### Build Neutralino server in Windows
+### Building Neutralino server on Windows
 
 ```bash
 > cd core-windows
 > build
 ```
 
-### Build Neutralino server in Linux
+### Building Neutralino server on Linux
 
 ```bash
 $ cd core-linux
@@ -137,9 +125,7 @@ $ bash build.sh
 
 Neutralino server will be compiled in `/bin`
 
-### MacOS Build
-
-Neutralino now supports MacOSX
+###  Building Neutralino server on MacOS
 
 #### Build Requirenments
 
@@ -180,15 +166,6 @@ The resulting binary will be placed in **release** directory
 To install resulting binary to `bin` directory use
 
 - `make install`
-
-
-### Build Neutralino.js with webpack
-
-```bash
-$ cd neutralino.js
-$ npm install
-$ npm run build
-```
 
 ## Become a Backer
 
