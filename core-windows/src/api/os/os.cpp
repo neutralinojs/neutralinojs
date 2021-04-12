@@ -137,6 +137,7 @@ namespace os {
 
         if (GetSaveFileName(&ofn)) {
             output["selectedEntry"] = ofn.lpstrFile;
+            output["success"] = true;
         }
         else {
             output["selectedEntry"] = NULL;

@@ -26,6 +26,8 @@
 #include "lib/json.hpp"
 #include "settings.h"
 
+#define STORAGE_DIR "/.storage"
+
 using namespace std;
 using json = nlohmann::json;
 
@@ -33,7 +35,7 @@ namespace storage {
     string getData(json input) {
         json output;
         string bucket = input["bucket"].get<std::string>();
-        string bucketPath = settings::joinAppPath("storage");
+        string bucketPath = settings::joinAppPath(STORAGE_DIR);
         string filename = bucketPath + "/" + bucket + ".json";
         ifstream t;
         t.open(filename);
@@ -56,10 +58,10 @@ namespace storage {
     string putData(json input) {
         json output;
         string bucket = input["bucket"].get<std::string>();
-        string bucketPath = settings::joinAppPath("storage");
+        string bucketPath = settings::joinAppPath(STORAGE_DIR);
         CreateDirectory(bucketPath.c_str(), NULL);
         string filename = bucketPath + "/" + bucket + ".json";
-        string content = input["content"].dump();
+        string content = input["data"];
         ofstream t(filename);
         if(!t.is_open()) {
             output["error"] = "Unable to write storage bucket: " + bucket;

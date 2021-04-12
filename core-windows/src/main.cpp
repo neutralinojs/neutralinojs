@@ -51,7 +51,9 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     ping::startPingReceiver();
     permission::registerBlockList();
 
-    int port = options["port"];
+    int port = 0;
+    if(!options["port"].is_null())
+        port = options["port"];
     string mode = settings::getMode();
     ServerListener serverListener(port);
 

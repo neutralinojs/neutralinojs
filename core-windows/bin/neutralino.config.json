@@ -1,10 +1,11 @@
 {
     "applicationId": "js.neutralino.sample",
-    "port": 5006,
     "defaultMode": "window",
     "url": "/resources/",
     "nativeBlockList": [],
-    "globalVariables": [],
+    "globalVariables": {
+        "TEST": "Test Value"
+    },
     "modes": {
         "window": {
             "title": "Neutralinojs app",
@@ -12,12 +13,17 @@
             "height": 500,
             "fullScreen": false,
             "alwaysOnTop": false,
-            "icon": "/app/assets/neutralino.png",
+            "icon": "/resources/icons/appIcon.png",
             "enableInspector": false,
             "borderless": false,
             "maximize": false
         },
         "browser": {},
         "cloud": {}
+    },
+    "cli": {
+        "binaryName": "neutralino",
+        "resourcesPath": "/resources/",
+        "clientLibrary": "/resources/js/neutralino.js"
     }
 }
