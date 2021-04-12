@@ -40,6 +40,7 @@ namespace computer {
             { "total", (sys_info.totalram * sys_info.mem_unit) / DIV },
             { "available", (sys_info.freeram * sys_info.mem_unit) / DIV }
         };
+        output["success"] = true;
         return output.dump();
     }
 }

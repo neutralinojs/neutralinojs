@@ -32,8 +32,8 @@ using json = nlohmann::json;
 namespace debug {
     string log(json input) {
         json output;
-        string type = input["type"].get<std::string>();
-        string message = input["message"].get<std::string>();
+        string type = input["type"];
+        string message = input["message"];
 
         if(type == "INFO")
             INFO() << message;

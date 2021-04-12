@@ -91,8 +91,9 @@ namespace os {
         string command = "zenity --" + messageTypes[messageType] + " --title=\"" +
                             input["title"].get<string>() + "\" --text=\"" +
                             input["content"].get<string>() + "\" && echo $?";
+        string response = linux::execCommand(command);
         if(messageType == "QUESTION")
-            output["yesButtonClicked"] = linux::execCommand(command).find("0") != std::string::npos;
+            output["yesButtonClicked"] =  response.find("0") != std::string::npos;
         output["success"] = true;
         return output.dump();
     }
