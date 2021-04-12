@@ -61,7 +61,7 @@ namespace storage {
         string bucketPath = settings::joinAppPath(STORAGE_DIR);
         mkdir(bucketPath.c_str(), 0700);
         string filename = bucketPath + "/" + bucket + ".json";
-        string content = input["content"].dump();
+        string content = input["data"];
         ofstream t(filename);
         if(!t.is_open()) {
             output["error"] = "Unable to write storage bucket: " + bucket;
