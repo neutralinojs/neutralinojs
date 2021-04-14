@@ -1,6 +1,6 @@
 {
     "applicationId": "js.neutralino.sample",
-    "defaultMode": "window",
+    "defaultMode": "browser",
     "url": "/resources/",
     "nativeBlockList": [],
     "globalVariables": {
