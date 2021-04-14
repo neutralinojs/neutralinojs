@@ -35,31 +35,13 @@ In Electron and NWjs, you have to install NodeJs and hundreds of dependency libr
 
 Ask questions on Stackoverflow using tag [neutralinojs](https://stackoverflow.com/questions/tagged/neutralinojs)
 
-See how it [works](https://www.99xtechnology.com/blog/research/neutralinojs-internals/)
-
-### How it works?
-
-<div align="center">
-  <img src="media/architecture.png">
-</div>
-
 ## Contribution
 
 Help Neutralino!
 
 - Give us a star :star:
-- Fork and Clone! Awesome
 - Select existing [issues](https://github.com/neutralinojs/neutralinojs/issues) or create a [new issue](https://github.com/neutralinojs/neutralinojs/issues/new) and give us a PR with your bugfix or improvement after. We love it ❤️
-- Refer to this [guide](https://github.com/neutralinojs/neutralinojs/blob/master/CONTRIBUTING.md) for Contribution Procedures and Standards.
-
-### Neutralinojs cloud
-
-This mode can be used to expose native functions for clients. In fact, you can restrict native calls as you wish.
-
-```bash
-./neutralino  /dev/null 2>&1 &
-```
-Check this [article](https://medium.com/@shalithasuranga/getting-started-with-neutralinojs-cloud-preview-version-aws-ec2-6e618d8a2ddb)
+- Refer to this [guide](https://github.com/neutralinojs/neutralinojs/blob/master/CONTRIBUTING.md) for contribution guidelines.
 
 ### Realtime Chat Room - Slack
 
@@ -68,7 +50,7 @@ Check this [article](https://medium.com/@shalithasuranga/getting-started-with-ne
 ### Mailing List - Google Group
 
 - Join our [Google group](https://groups.google.com/forum/#!forum/neutralinojs) for feature proposals and requests.
-- You can help us by writing sample Neutralino apps,by composing or improving documentation or by writing code.
+- You can help us by writing sample Neutralino apps, by composing or improving documentation or by writing code.
 
 ## Framework Developer Guide
 
