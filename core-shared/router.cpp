@@ -95,7 +95,7 @@ namespace routes {
                 output = (*nativeMethod)(inputPayload);
             }
             catch(exception e){
-                json parserOutput = {{"error", "JSON parse error. Please check whether your request payload"}};
+                json parserOutput = {{"error", "JSON parse error. Please check whether your request payload is correct"}};
                 output = parserOutput.dump();
             }
         }
