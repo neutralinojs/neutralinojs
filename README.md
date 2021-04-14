@@ -26,6 +26,8 @@ Get started with CLI.
  $ npm i -g @neutralinojs/neu
  $ neu create hello-world
 ```
+
+This documentation is for contributors. If you would like to learn Neutralinojs application development, please check [this](https://neutralino.js.org/docs) documentation.
  
 ## Why Neutralinojs? 
 
