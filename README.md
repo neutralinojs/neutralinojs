@@ -31,23 +31,20 @@ This documentation is for contributors. If you would like to learn Neutralinojs 
  
 ## Why Neutralinojs? 
 
-In Electron and NWjs, you have to install NodeJs and hundreds of dependency libraries. Embedded Chromium and Node creates large overhead and makes even simple apps like “hello world” considerable in size. Neutralino offers a lightweight and portable SDK which is an alternative for Electron and NW.js also with many advantages.
+In Electron and NWjs, you have to install NodeJs and hundreds of dependency libraries. Embedded Chromium and Node make simple apps bloaty. Neutralinojs offers a lightweight and portable SDK which is an alternative for Electron and NW.js also with many advantages.
 
 Ask questions on Stackoverflow using tag [neutralinojs](https://stackoverflow.com/questions/tagged/neutralinojs)
 
 ## Contribution
 
-Help Neutralino!
-
-- Give us a star :star:
 - Select existing [issues](https://github.com/neutralinojs/neutralinojs/issues) or create a [new issue](https://github.com/neutralinojs/neutralinojs/issues/new) and give us a PR with your bugfix or improvement after. We love it ❤️
 - Refer to this [guide](https://github.com/neutralinojs/neutralinojs/blob/master/CONTRIBUTING.md) for contribution guidelines.
 
-### Realtime Chat Room - Slack
+### Realtime Chat
 
 - We use Slack for quick discussions. [get your invite](https://join.slack.com/t/neutralinojs/shared_invite/zt-b7mbivj5-pKpO6U5drmeT68vKD_pc6w)
 
-### Mailing List - Google Group
+### Mailing List
 
 - Join our [Google group](https://groups.google.com/forum/#!forum/neutralinojs) for feature proposals and requests.
 - You can help us by writing sample Neutralino apps, by composing or improving documentation or by writing code.
@@ -70,7 +67,7 @@ Install the latest Visual Studio IDE. Neutralinojs compilation on windows will u
 ### Building Neutralino platform on Windows
 
 ```bash
-> build.bat
+ build.bat
 ```
 
 ### Building Neutralino platform on Linux
@@ -91,7 +88,7 @@ $ sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev
 ```bash
 $ bash build.sh linux
 ```
-Neutralino platform components will be assembled in `/dist`
+Neutralino platform components will be assembled into `/dist`
 
 ### Building Neutralino server on Windows
 
@@ -107,34 +104,13 @@ $ cd core-linux
 $ bash build.sh
 ```
 
-Neutralino server will be compiled in `/bin`
-
 ###  Building Neutralino server on MacOS
-
-#### Build Requirenments
-
-- Xcode Command Line Tools
-- CMake 3.15+
 
 ```bash
 $ bash build.sh macos
 ```
 
-#### Debug Builds
-
-Debug builds are unoptimized fat binaries containing debug information. This is the type you should use for any debugging purpose.
-
-##### Automatically
-- `cd core-macos`
-- `bash build.sh`
-
-##### Manually
-- `mkdir build`
-- `cd build`
-- `cmake ..`
-- `make -j "$(sysctl -n hw.physicalcpu)"`
-
-The resulting binary will be placed in **build** directory
+__We are planning to change the build mechanism as Linux version_
 
 #### Release Builds
 
@@ -151,11 +127,11 @@ To install resulting binary to `bin` directory use
 
 - `make install`
 
-## Become a Backer
+## Make a donation
 
-If you like to contribute by funding for sustaining our work, Please visit https://opencollective.com/neutralinojs
+If you like to contribute by funding for sustaining our work, you can donate Neutralinojs via Patreon.
 
-[![Become a Patron](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/shalithasuranga)
+[![Become a Patreon](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/shalithasuranga)
 
 ## License
 
