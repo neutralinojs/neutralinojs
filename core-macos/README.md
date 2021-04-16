@@ -1,7 +1,3 @@
-### Neutralino server for macOS
-
-Forked from [https://github.com/yibo141/Servant](https://github.com/yibo141/Servant).
-
 ## Build Requirenments
 
 - Xcode Command Line Tools
