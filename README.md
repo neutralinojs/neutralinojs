@@ -85,11 +85,6 @@ $ sudo apt-get update
 $ sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev
 ```
 
-```bash
-$ bash build.sh linux
-```
-Neutralino platform components will be assembled into `/dist`
-
 ### Building Neutralino server on Windows
 
 ```bash
@@ -110,7 +105,7 @@ $ bash build.sh
 $ cd core-macos
 $ bash build.sh
 ```
-__We are planning to change the build mechanism as Linux version_
+__We are planning to change the build mechanism as Linux version__
 
 
 ## Make a donation
