@@ -9,7 +9,7 @@
 #include "ping/ping.h"
 #include "settings.h"
 #define WEBVIEW_IMPLEMENTATION
-#include "webview/webview.h"
+#include "lib/webview/webview.h"
 
 using namespace std;
 using json = nlohmann::json;
