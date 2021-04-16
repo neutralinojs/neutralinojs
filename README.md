@@ -115,7 +115,7 @@ If you like to contribute by funding for sustaining our work, you can donate Neu
 
 ## Licenses and Copyrights
 
-- Neutralinojs core: MIT
+- Neutralinojs core: GPL-3.0
 - HTTP server on Linux and macOS: GPL-3.0 from [yibo141/Servant](https://github.com/yibo141/Servant). Copyright (c) Broglie <yibo141@outlook.com>.
 - HTTP server on Windows: MIT from [hckr/SimpleHTTP](https://github.com/hckr/SimpleHTTP). Copyright (c) Jakub Młokosiewicz.
 - JSON parser library: MIT from [nlohmann/json](https://github.com/nlohmann/json). Copyright (c) Niels Lohmann.
