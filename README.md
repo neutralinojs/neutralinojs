@@ -104,7 +104,8 @@ $ bash build.sh
 $ cd core-macos
 $ bash build.sh
 ```
-__We are planning to change the build mechanism as Linux version__
+
+_We are planning to change the build mechanism as Linux version_
 
 
 ## Make a donation
