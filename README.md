@@ -107,25 +107,11 @@ $ bash build.sh
 ###  Building Neutralino server on MacOS
 
 ```bash
-$ bash build.sh macos
+$ cd core-macos
+$ bash build.sh
 ```
-
 __We are planning to change the build mechanism as Linux version_
 
-#### Release Builds
-
-Release builds are optimized binaries with a very small footprint. Suitable for distributions
-
-- `mkdir release`
-- `cd release`
-- `cmake .. -DCMAKE_BUILD_TYPE=Release`
-- `make -j "$(sysctl -n hw.physicalcpu)"`
-
-The resulting binary will be placed in **release** directory
-
-To install resulting binary to `bin` directory use
-
-- `make install`
 
 ## Make a donation
 
