@@ -5,7 +5,7 @@
 #include "lib/json.hpp"
 #include "ping/ping.h"
 #include "settings.h"
-#include "webview/webview.h"
+#include "lib/webview/webview.h"
 
 #pragma comment (lib,"Gdiplus.lib")
 #pragma comment (lib,"Shell32.lib")
