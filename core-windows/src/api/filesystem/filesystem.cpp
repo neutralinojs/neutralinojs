@@ -90,7 +90,7 @@ namespace fs {
                 string type = "OTHER";
                 if((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
                     type = "DIRECTORY";
-                else if((fd.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE) == FILE_ATTRIBUTE_ARCHIVE)
+                else
                     type = "FILE";
 
                 json file = {
