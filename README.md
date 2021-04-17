@@ -8,10 +8,8 @@ Please notice that the macOS version is not yet supporting v2 implementaton (sti
   <img src="https://cdn.rawgit.com/neutralinojs/neutralinojs.github.io/b667f2c2/docs/nllogo.png" style="width:300px;"/>
 </div>
 
-[![GitHub license](https://img.shields.io/github/license/neutralinojs/neutralinojs.svg)](https://github.com/neutralinojs/neutralinojs/blob/master/LICENSE)
- [![GitHub (pre-)release](https://img.shields.io/github/release/neutralinojs/neutralinojs/all.svg)](https://github.com/neutralinojs/neutralinojs/releases)
-  [![GitHub last commit](https://img.shields.io/github/last-commit/neutralinojs/neutralinojs.svg)](https://github.com/neutralinojs/neutralinojs/commits/master)
-[![HitCount](http://hits.dwyl.io/neutralinojs/neutralinojs.svg)](http://hits.dwyl.io/neutralinojs/neutralinojs)
+[![GitHub (pre-)release](https://img.shields.io/github/release/neutralinojs/neutralinojs/all.svg)](https://github.com/neutralinojs/neutralinojs/releases)
+[![GitHub last commit](https://img.shields.io/github/last-commit/neutralinojs/neutralinojs.svg)](https://github.com/neutralinojs/neutralinojs/commits/master)
 [![Twitter](https://img.shields.io/twitter/url/https/github.com/neutralinojs/neutralinojs.svg?style=social)](https://twitter.com/intent/tweet?text=NeutralinoJs%20is%20a%20portable%20and%20lightweight%20framework%20which%20lets%20you%20to%20develop%20apps%20with%20native%20functions%20that%20can%20run%20inside%20web%20browsers.%20Check%20it%20out:&url=https%3A%2F%2Fgithub.com%2Fneutralinojs%2Fneutralinojs)
 [![OpenCollective](https://opencollective.com/neutralinojs/backers/badge.svg)](#backers) 
 <a href="https://opencollective.com/neutralinojs"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
@@ -85,11 +83,6 @@ $ sudo apt-get update
 $ sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev
 ```
 
-```bash
-$ bash build.sh linux
-```
-Neutralino platform components will be assembled into `/dist`
-
 ### Building Neutralino server on Windows
 
 ```bash
@@ -107,25 +100,12 @@ $ bash build.sh
 ###  Building Neutralino server on MacOS
 
 ```bash
-$ bash build.sh macos
+$ cd core-macos
+$ bash build.sh
 ```
 
-__We are planning to change the build mechanism as Linux version_
+_We are planning to change the build mechanism as Linux version_
 
-#### Release Builds
-
-Release builds are optimized binaries with a very small footprint. Suitable for distributions
-
-- `mkdir release`
-- `cd release`
-- `cmake .. -DCMAKE_BUILD_TYPE=Release`
-- `make -j "$(sysctl -n hw.physicalcpu)"`
-
-The resulting binary will be placed in **release** directory
-
-To install resulting binary to `bin` directory use
-
-- `make install`
 
 ## Make a donation
 
@@ -133,9 +113,15 @@ If you like to contribute by funding for sustaining our work, you can donate Neu
 
 [![Become a Patreon](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/shalithasuranga)
 
-## License
+## Licenses and Copyrights
 
-[MIT](LICENSE)
+- Neutralinojs core: GPL-3.0
+- HTTP server on Linux and macOS: GPL-3.0 from [yibo141/Servant](https://github.com/yibo141/Servant). Copyright (c) Broglie <yibo141@outlook.com>.
+- HTTP server on Windows: MIT from [hckr/SimpleHTTP](https://github.com/hckr/SimpleHTTP). Copyright (c) Jakub Młokosiewicz.
+- JSON parser library: MIT from [nlohmann/json](https://github.com/nlohmann/json). Copyright (c) Niels Lohmann.
+- Cross-platform webview library: MIT from [webview/webview](https://github.com/webview/webview). Copyright (c) Serge Zaitsev. 
+
+Please check all licenses from [this](LICENSE) link.
 
 ## Contributors
 
