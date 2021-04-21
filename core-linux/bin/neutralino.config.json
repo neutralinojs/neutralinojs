@@ -2,6 +2,8 @@
     "applicationId": "js.neutralino.sample",
     "defaultMode": "browser",
     "url": "/resources/",
+    "enableHTTPServer": true,
+    "enableNativeAPI": true,
     "nativeBlockList": [],
     "globalVariables": {
         "TEST": "Test Value"

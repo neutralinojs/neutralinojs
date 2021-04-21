@@ -40,6 +40,8 @@ namespace routes {
             return make_pair("{\"error\":\"Invalid or expired NL_TOKEN value from client\"}", "application/json");
         if(!permission::hasAccess(modfunc))
             return make_pair("{\"error\":\"Missing permission to execute the native method\"}", "application/json");
+        if(!permission::hasAPIAccess(modfunc) && modfunc != "app.keepAlive")
+            return make_pair("{\"error\":\"Missing permission to access Native API\"}", "application/json");
 
         map <string, NativeMethod> methodMap = {
             {"app.exit", app::exit},

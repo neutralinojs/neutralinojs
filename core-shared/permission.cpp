@@ -26,4 +26,10 @@ namespace permission {
         }
         return true;
     }
+
+    bool hasAPIAccess(string nativeMethod) {
+        if(!settings::getConfig()["enableNativeAPI"].is_null())
+            return settings::getConfig()["enableNativeAPI"].get<bool>();
+        return false;
+    }
 }
