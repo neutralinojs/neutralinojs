@@ -25,7 +25,6 @@
  * @todo Give the opportunity to handle client requests to the user (some kind of routing)
  */
 class ServerListener {
-    int port;
     size_t buffer_size;
     bool server_running;
 
@@ -37,12 +36,11 @@ public:
     /**
      * Initialize a new server instance.
      *
-     * @param port Port on which the server will be listening for connections
      * @param buffer_size Size of the buffer used to retrieve data from sockets
      */
-    ServerListener(int port=8080, size_t buffer_size=255);
+    ServerListener(size_t buffer_size=255);
 
-    void init();
+    std::string init();
 
     /**
       * Start listening for connections.

@@ -18,6 +18,7 @@ int main(int argc, char ** argv) {
     for (int i = 0; i < argc; i++) {
         args.push_back(argv[i]);
     }
+
     settings::setGlobalArgs(args);
     if (!loadResFromDir)
         resources::makeFileTree();
@@ -25,6 +26,7 @@ int main(int argc, char ** argv) {
     authbasic::generateToken();
     ping::startPingReceiver();
     permission::registerBlockList();
+
     ServerListener serverListener;
     if(!options["enableHTTPServer"].is_null())
         enableHTTPServer = options["enableHTTPServer"];
@@ -44,9 +46,10 @@ int main(int argc, char ** argv) {
         windowOptions["url"] = navigationUrl;
         app::showWindow(windowOptions);
     }
+
     if(enableHTTPServer)
         serverListener.run();
     else
-        while(1);
+        while(true);
     return 0;
 }

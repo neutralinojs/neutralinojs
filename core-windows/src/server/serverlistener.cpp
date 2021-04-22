@@ -1,6 +1,9 @@
+#include <winsock2.h>
 #include "serverlistener.h"
 #include <iostream>
+#include <regex>
 #include <cstdlib>
+#include <string>
 #include <list>
 #include <future>
 #include <chrono>
@@ -9,11 +12,12 @@
 #include <fstream>
 #include "requestparser.h"
 #include "router.h"
+#include "lib/json.hpp"
+#include "settings.h"
 #define DEFAULT_BUFLEN 1452
 
 
-ServerListener::ServerListener(int port, size_t buffer_size) {
-    this->port = port;
+ServerListener::ServerListener(size_t buffer_size) {
     this->buffer_size = buffer_size;
     this->server_running = false;
     this->listen_socket = INVALID_SOCKET;
@@ -24,7 +28,7 @@ ServerListener::ServerListener(int port, size_t buffer_size) {
     }
 }
 
-void ServerListener::init() {
+std::string ServerListener::init() {
     std::shared_ptr<addrinfo> socket_props(nullptr, [](addrinfo* ai) { freeaddrinfo(ai); });
     addrinfo hints;
     ZeroMemory(&hints, sizeof(hints));
@@ -33,6 +37,12 @@ void ServerListener::init() {
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
     hints.ai_flags = AI_PASSIVE;
+
+    int port = 0;
+    json options = settings::getConfig();
+    if(!options["port"].is_null())
+        port = options["port"];
+    string mode = settings::getMode();
 
     int addrinfo_status = getaddrinfo(NULL, std::to_string(port).c_str(), &hints, (addrinfo**)&socket_props);
     if(addrinfo_status != 0) {
@@ -49,10 +59,29 @@ void ServerListener::init() {
         throw SocketBindingException(WSAGetLastError());
     }
 
+    struct sockaddr_in sin;
+    socklen_t len = sizeof(sin);
+    if (getsockname(this->listen_socket, (struct sockaddr *)&sin, &len) == -1) {
+        perror("getsockname");
+    }
+    else {
+        port = ntohs(sin.sin_port);
+        settings::setPort(port);
+    }
+    string navigationUrl = "http://localhost:" + std::to_string(port);
+    if(!options["url"].is_null()) {
+        string url = options["url"];
+        if (regex_match(url, regex("^/.*")))
+            navigationUrl += url;
+        else
+            navigationUrl = url;
+    }
+
     if(listen(listen_socket, SOMAXCONN) == SOCKET_ERROR) {
         closesocket(listen_socket);
         throw ListenException(WSAGetLastError());
     }
+    return navigationUrl;
 }
 
 void ServerListener::run(std::function<void(ClientAcceptationException)> client_acceptation_error_callback) {

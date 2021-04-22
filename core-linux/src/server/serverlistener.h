@@ -6,7 +6,7 @@
 class ServerListener {
     int listenFd;
 public:
-    string init();
+    std::string init();
     void run();
     void stop();
 };

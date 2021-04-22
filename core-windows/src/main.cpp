@@ -18,9 +18,11 @@ int APIENTRY WinMain(HINSTANCE hInstance,
                      int       nCmdShow) {
 
     json args;
+    bool enableHTTPServer = false;
     for(int i = 0; i < __argc; i++) {
         args.push_back(__argv[i]);
     }
+
     settings::setGlobalArgs(args);
     if(!loadResFromDir)
         resources::makeFileTree();
@@ -28,37 +30,16 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     authbasic::generateToken();
     ping::startPingReceiver();
     permission::registerBlockList();
+ 
+    ServerListener serverListener;
+    if(!options["enableHTTPServer"].is_null())
+        enableHTTPServer = options["enableHTTPServer"];
 
-    int port = 0;
-    if(!options["port"].is_null())
-        port = options["port"];
+    string navigationUrl = options["url"];
+    if(enableHTTPServer)
+        navigationUrl = serverListener.init();
+
     string mode = settings::getMode();
-    ServerListener serverListener(port);
-
-    serverListener.init();
-
-    struct sockaddr_in sin;
-    socklen_t len = sizeof(sin);
-    if(mode == "cloud")
-        sin.sin_addr.s_addr = htonl(INADDR_ANY);
-    else
-        sin.sin_addr.s_addr = inet_addr("127.0.0.1");
-    if (getsockname(serverListener.listen_socket, (struct sockaddr *)&sin, &len) == -1) {
-        perror("getsockname");
-    }
-    else {
-        port = ntohs(sin.sin_port);
-        settings::setPort(port);
-    }
-    string navigationUrl = "http://localhost:" + std::to_string(port);
-    if(!options["url"].is_null()) {
-        string url = options["url"];
-        if (regex_match(url, regex("^/.*")))
-            navigationUrl += url;
-        else
-            navigationUrl = url;
-    }
-
     if(mode == "browser") {
         json browserOptions = options["modes"]["browser"];
         browserOptions["url"] = navigationUrl;
@@ -69,7 +50,11 @@ int APIENTRY WinMain(HINSTANCE hInstance,
         windowOptions["url"] = navigationUrl;
         app::showWindow(windowOptions);
     }
-    serverListener.run();
+
+    if(enableHTTPServer)
+        serverListener.run();
+    else
+        while(true);
     return 0;
 }
 

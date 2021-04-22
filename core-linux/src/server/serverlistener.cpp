@@ -15,7 +15,7 @@
 #include "ping/ping.h"
 #include "permission.h"
 
-string ServerListener::init() {
+std::string ServerListener::init() {
     int port = 0;
     json options = settings::getConfig();
     if(!options["port"].is_null())
