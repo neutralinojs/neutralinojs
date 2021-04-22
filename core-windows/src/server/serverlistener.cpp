@@ -29,32 +29,26 @@ ServerListener::ServerListener(size_t buffer_size) {
 }
 
 std::string ServerListener::init() {
-    std::shared_ptr<addrinfo> socket_props(nullptr, [](addrinfo* ai) { freeaddrinfo(ai); });
-    addrinfo hints;
-    ZeroMemory(&hints, sizeof(hints));
-
-    hints.ai_family = AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    hints.ai_protocol = IPPROTO_TCP;
-    hints.ai_flags = AI_PASSIVE;
-
     int port = 0;
     json options = settings::getConfig();
     if(!options["port"].is_null())
         port = options["port"];
     string mode = settings::getMode();
 
-    int addrinfo_status = getaddrinfo(NULL, std::to_string(port).c_str(), &hints, (addrinfo**)&socket_props);
-    if(addrinfo_status != 0) {
-        throw AddrinfoException(addrinfo_status);
-    }
-
-    listen_socket = socket(socket_props->ai_family, socket_props->ai_socktype, socket_props->ai_protocol);
+    listen_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if(listen_socket == INVALID_SOCKET) {
         throw SocketCreationException(WSAGetLastError());
     }
+    struct sockaddr_in servAddr;
+    memset( & servAddr, 0, sizeof(servAddr));
+    servAddr.sin_family = AF_INET;
+    if(mode == "cloud")
+        servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    else
+        servAddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    servAddr.sin_port = htons(port);
 
-    if(::bind(listen_socket, socket_props->ai_addr, (int)socket_props->ai_addrlen) == SOCKET_ERROR) {
+    if(::bind(listen_socket, (struct sockaddr*)(&servAddr), sizeof(servAddr)) == SOCKET_ERROR) {
         closesocket(listen_socket);
         throw SocketBindingException(WSAGetLastError());
     }
