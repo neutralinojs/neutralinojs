@@ -13,7 +13,7 @@ namespace linux {
     string execCommand(string command){
         std::array<char, 128> buffer;
         std::string result = "";
-        std::shared_ptr<FILE> pipe(popen(command.c_str(), "r"), pclose);
+        std::shared_ptr<FILE> pipe(popen((command + " 2>&1").c_str(), "r"), pclose);
         if (!pipe) {
             WARN() << "linux::execCommand: Pipe open failed.";
         }

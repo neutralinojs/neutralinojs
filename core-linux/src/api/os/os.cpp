@@ -20,7 +20,7 @@ namespace os {
     string execCommand(json input) {
         json output;
         string command = input["command"];
-        output["stdout"] = linux::execCommand(command);
+        output["output"] = linux::execCommand(command);
         output["success"] = true;
         return output.dump();
     }
