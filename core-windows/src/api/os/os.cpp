@@ -24,7 +24,7 @@ namespace os {
     string execCommand(json input) {
         json output;
         string command = "cmd /c " + input["command"].get<std::string>();
-        output["stdout"] = windows::execCommand(command);
+        output["output"] = windows::execCommand(command);
         output["success"] = true;
         return output.dump();
     }
@@ -125,7 +125,7 @@ namespace os {
 
     string showNotification(json input) {
         json output;
-        string command = "cmd /c powershell -Command \"& {Add-Type -AssemblyName System.Windows.Forms;"
+        string command = "powershell -Command \"& {Add-Type -AssemblyName System.Windows.Forms;"
                         "Add-Type -AssemblyName System.Drawing;"
                         "$notify = New-Object System.Windows.Forms.NotifyIcon;"
                         "$notify.Icon = [System.Drawing.SystemIcons]::Information;"
@@ -157,7 +157,7 @@ namespace os {
             output["error"] = "Invalid message type: '" + messageType + "' provided";
             return output.dump();
         }
-        string command = "cmd /c powershell -Command \"& {Add-Type -AssemblyName System.Windows.Forms;"
+        string command = "powershell -Command \"& {Add-Type -AssemblyName System.Windows.Forms;"
                         "[System.Windows.Forms.MessageBox]::Show('" + input["content"].get<string>() +
                         "', '" + input["title"].get<string>() + "', " +
                         messageTypes[messageType] + ");}\"";
