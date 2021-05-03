@@ -1,6 +1,6 @@
 {
     "applicationId": "js.neutralino.sample",
-    "defaultMode": "browser",
+    "defaultMode": "window",
     "url": "/resources/",
     "enableHTTPServer": true,
     "enableNativeAPI": true,
@@ -18,7 +18,8 @@
             "icon": "/resources/icons/appIcon.png",
             "enableInspector": false,
             "borderless": false,
-            "maximize": false
+            "maximize": false,
+            "hidden": true
         },
         "browser": {},
         "cloud": {}

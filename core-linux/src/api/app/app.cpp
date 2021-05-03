@@ -18,26 +18,27 @@ namespace app {
 
     void __showWindow(int height, int width,
         bool fullScreen, string title, bool alwaysOnTop, void* icon,
-        bool enableInspector, bool borderless, bool maximize, string url) {
+        bool enableInspector, bool borderless, bool maximize, bool hidden, string url) {
         webview::webview nativeWindow(enableInspector, nullptr);
         nativeWindow.set_title(title);
         nativeWindow.set_size(width, height, WEBVIEW_HINT_NONE);
         GtkWidget* windowHandle = (GtkWidget*) nativeWindow.window();
 
         // Window properties/modes
-        if(fullScreen) {
+        if(fullScreen)
             gtk_window_fullscreen(GTK_WINDOW(windowHandle));
-        }
+
         gtk_window_set_keep_above(GTK_WINDOW(windowHandle), alwaysOnTop);
 
-        if(maximize) {
+        if(maximize)
             gtk_window_maximize(GTK_WINDOW(windowHandle));
-        }
+        if(hidden)
+            gtk_widget_hide(windowHandle);
+
         gtk_window_set_decorated(GTK_WINDOW(windowHandle), !borderless);
 
-        if(icon) {
+        if(icon)
             gtk_window_set_icon(GTK_WINDOW(windowHandle), (GdkPixbuf*)icon);
-        }
         nativeWindow.navigate(url);
         nativeWindow.run();
     }
@@ -73,6 +74,7 @@ namespace app {
         bool enableInspector = false;
         bool borderless= false;
         bool maximize = false;
+        bool hidden = false;
         GdkPixbuf *icon = nullptr;
         string title = "Neutralinojs window";
         string url = "https://neutralino.js.org";
@@ -118,9 +120,12 @@ namespace app {
         if (!input["maximize"].is_null())
             maximize = input["maximize"];
 
+        if (!input["hidden"].is_null())
+            hidden = input["hidden"];
+
         thread uiThread(__showWindow, height, width,
             fullScreen, title, alwaysOnTop, icon,
-            enableInspector, borderless, maximize, url);
+            enableInspector, borderless, maximize, hidden, url);
         uiThread.detach();
         output["success"] = true;
         return output.dump();

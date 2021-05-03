@@ -50,17 +50,14 @@ namespace app {
                         SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
         }
 
-        if(alwaysOnTop) {
+        if(alwaysOnTop)
             SetWindowPos(windowHandle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
-        }
 
-        if(maximize) {
+        if(maximize)
             ShowWindow(windowHandle, SW_MAXIMIZE);
-        }
 
-        if(hidden) {
+        if(hidden)
             ShowWindow(windowHandle, SW_HIDE);
-        }
 
         if(borderless) {
             currentStyle &= ~(WS_CAPTION | WS_THICKFRAME);
