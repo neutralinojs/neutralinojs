@@ -951,8 +951,16 @@ public:
                                    m_controller = controller;
                                    m_controller->get_CoreWebView2(&m_webview);
                                    m_webview->AddRef();
-                                   if(debug)
-                                    m_webview->OpenDevToolsWindow();
+
+                                   ICoreWebView2Settings *m_settings;
+                                   m_webview->get_Settings(&m_settings);
+                                   if(debug) {
+                                      m_settings->put_AreDevToolsEnabled(TRUE); 
+                                      m_webview->OpenDevToolsWindow();
+                                   }
+                                   else {
+                                      m_settings->put_AreDevToolsEnabled(FALSE);
+                                   }
                                    flag.clear();
                                  }));
     if (res != S_OK) {
