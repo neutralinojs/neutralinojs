@@ -20,7 +20,7 @@ namespace app {
 
     void __showWindow(int height, int width,
         bool fullScreen, string title, bool alwaysOnTop, void* icon,
-        bool enableInspector, bool borderless, bool maximize, string url) {
+        bool enableInspector, bool borderless, bool maximize, bool hidden, string url) {
 
         webview::webview nativeWindow(enableInspector, nullptr);
         nativeWindow.set_title(title);
@@ -56,6 +56,10 @@ namespace app {
 
         if(maximize) {
             ShowWindow(windowHandle, SW_MAXIMIZE);
+        }
+
+        if(hidden) {
+            ShowWindow(windowHandle, SW_HIDE);
         }
 
         if(borderless) {
@@ -109,6 +113,7 @@ namespace app {
         bool enableInspector = false;
         bool borderless= false;
         bool maximize = false;
+        bool hidden = false;
         HICON icon = nullptr;
         string title = "Neutralinojs window";
         string url = "https://neutralino.js.org";
@@ -152,9 +157,12 @@ namespace app {
         if (!input["maximize"].is_null())
             maximize = input["maximize"];
 
+        if (!input["hidden"].is_null())
+            hidden = input["hidden"];
+
         thread uiThread(__showWindow, height, width,
             fullScreen, title, alwaysOnTop, icon,
-            enableInspector, borderless, maximize, url);
+            enableInspector, borderless, maximize, hidden, url);
         uiThread.detach();
         GdiplusShutdown(gdiplusToken);
         output["success"] = true;

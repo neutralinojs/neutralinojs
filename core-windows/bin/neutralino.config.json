@@ -18,7 +18,8 @@
             "icon": "/resources/icons/appIcon.png",
             "enableInspector": false,
             "borderless": false,
-            "maximize": false
+            "maximize": false,
+            "hidden": false
         },
         "browser": {},
         "cloud": {}
