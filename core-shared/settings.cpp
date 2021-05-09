@@ -1,10 +1,10 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include "lib/easylogging/easylogging++.h"
 #include "lib/json.hpp"
 #include "auth/authbasic.h"
 #include "resources.h"
-#include "lib/easylogging/easylogging++.h"
 #ifndef __has_include
   static_assert(false, "__has_include not supported");
 #else

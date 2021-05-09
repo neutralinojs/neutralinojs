@@ -3,10 +3,10 @@
 #include <regex>
 #include <vector>
 #include <limits.h>
+#include "lib/easylogging/easylogging++.h"
 #include "lib/json.hpp"
 #include "helpers.h"
 #include "settings.h"
-#include "lib/easylogging/easylogging++.h"
 
 #define APP_RES_FILE "/res.neu"
 
