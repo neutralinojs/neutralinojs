@@ -2,9 +2,9 @@
  * Author: Broglie
  * E-mail: yibo141@outlook.com
  */
- 
+
 #include "Socket.h"
-#include "log.h"
+#include "lib/easylogging/easylogging++.h"
 
 void Socket::setReuseAddr(const int fd, bool on)
 {
@@ -24,7 +24,7 @@ int Socket::createSocket()
     int sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if(sockfd < 0)
     {
-        ERROR() << "Socket::createNonblock error: " << strerror(errno);
+        LOG(ERROR) << "Socke createNonblock error: " << strerror(errno);
         exit(1);
     }
     return sockfd;
@@ -35,7 +35,7 @@ void Socket::Bind(const int sockfd, const struct sockaddr_in &addr)
     int ret = bind(sockfd, (struct sockaddr*)(&addr), sizeof(addr));
     if(ret < 0)
     {
-        ERROR() << "Socket::bind error: " << strerror(errno);
+        LOG(ERROR) << "Socket bind error: " << strerror(errno);
         exit(1);
     }
 }
@@ -44,7 +44,7 @@ void Socket::Listen(const int sockfd)
 {
     if(listen(sockfd, 5) < 0)
     {
-        ERROR() << "Socket::listen error: " << strerror(errno);
+        LOG(ERROR) << "Socket listen error: " << strerror(errno);
         exit(1);
     }
 }
@@ -67,11 +67,11 @@ int Socket::Accept(const int sockfd, struct sockaddr_in *addr)
             case EINVAL:
             case ENFILE:
             case ENOMEM:
-                ERROR() << "Socket::accept error: " << strerror(errno);
+                LOG(ERROR) << "Socket accept error: " << strerror(errno);
                 exit(1);
                 break;
             default:
-                ERROR() << "Socket::accept error: " << strerror(errno);
+                LOG(ERROR) << "Socket accept error: " << strerror(errno);
                 exit(1);
                 break;
         }
@@ -83,7 +83,7 @@ void Socket::Close(const int sockfd)
 {
     if(close(sockfd) < 0)
     {
-        ERROR() << "Socket::close error: " << strerror(errno);
+        LOG(ERROR) << "Socket close error: " << strerror(errno);
         exit(1);
     }
 }

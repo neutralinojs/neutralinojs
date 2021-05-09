@@ -1,8 +1,8 @@
 #include <iostream>
 #include <fstream>
+#include "lib/easylogging/easylogging++.h"
 #include "lib/json.hpp"
 #include "settings.h"
-#include "log.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -10,17 +10,17 @@ using json = nlohmann::json;
 namespace debug {
     string log(json input) {
         json output;
-        string type = input["type"].get<std::string>();
-        string message = input["message"].get<std::string>();
+        string type = input["type"];
+        string message = input["message"];
 
         if(type == "INFO")
-            INFO() << message;
+            LOG(INFO) << message;
         else if(type == "ERROR")
-            ERROR() << message;
+            LOG(ERROR) << message;
         else if(type == "WARN")
-            WARN() << message;
+            LOG(WARNING) << message;
         else
-            DEBUG() << message;
+            LOG(DEBUG) << message;
 
         output["message"] = "Wrote to the log file: neutralino.log";
         output["success"] = true;

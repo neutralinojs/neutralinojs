@@ -3,10 +3,10 @@
 #include <regex>
 #include <vector>
 #include <limits.h>
+#include "lib/easylogging/easylogging++.h"
 #include "lib/json.hpp"
 #include "helpers.h"
 #include "settings.h"
-#include "log.h"
 
 #define APP_RES_FILE "/res.neu"
 
@@ -39,7 +39,7 @@ namespace resources {
             resFileName = settings::joinAppPath(resFileName);
             asarArchive.open(resFileName, std::ios::binary);
             if (!asarArchive) {
-                ERROR() << "resources::makeFileTree error: " << resFileName << " is missing.";
+                LOG(ERROR) << "Resource file tree generation error: " << resFileName << " is missing.";
                 return "";
             }
             unsigned int uSize = p.first;
@@ -62,7 +62,7 @@ namespace resources {
         resFileName = settings::joinAppPath(resFileName);
         asarArchive.open(resFileName, std::ios::binary);
         if (!asarArchive) {
-            ERROR() << "resources::makeFileTree error: " << resFileName << " is missing.";
+            LOG(ERROR) << "Resource file tree generation error: " << resFileName << " is missing.";
             return;
         }
 
@@ -82,7 +82,7 @@ namespace resources {
             files = json::parse(headerContent);
         }
         catch(exception e) {
-            ERROR() << "resources::makeFileTree error: " << strerror(errno);
+            LOG(ERROR) << e.what();
         }
         fileTree = files;
     }
