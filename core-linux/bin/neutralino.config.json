@@ -16,10 +16,10 @@
             "fullScreen": false,
             "alwaysOnTop": false,
             "icon": "/resources/icons/appIcon.png",
-            "enableInspector": false,
+            "enableInspector": true,
             "borderless": false,
             "maximize": false,
-            "hidden": true
+            "hidden": false
         },
         "browser": {},
         "cloud": {}

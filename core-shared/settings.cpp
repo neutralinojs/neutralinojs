@@ -4,7 +4,7 @@
 #include "lib/json.hpp"
 #include "auth/authbasic.h"
 #include "resources.h"
-#include "log.h"
+#include "lib/easylogging/easylogging++.h"
 #ifndef __has_include
   static_assert(false, "__has_include not supported");
 #else
@@ -69,7 +69,7 @@ namespace settings {
             config = json::parse(settings::getFileContent(APP_CONFIG_FILE));
         }
         catch(exception e){
-            ERROR() << e.what();
+            LOG(ERROR) << e.what();
         }
         options = config;
         return options;

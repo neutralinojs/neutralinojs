@@ -8,6 +8,10 @@
 #include "permission.h"
 #include "api/app/app.h"
 #include "server/serverlistener.h"
+#include "lib/easylogging/easylogging++.h"
+
+#define APP_LOG_FILE "/neutralinojs.log"
+INITIALIZE_EASYLOGGINGPP
 
 using namespace std;
 using json = nlohmann::json;
@@ -26,6 +30,12 @@ int main(int argc, char ** argv) {
     authbasic::generateToken();
     ping::startPingReceiver();
     permission::registerBlockList();
+
+    el::Configurations defaultConf;
+    defaultConf.setToDefault();
+    defaultConf.setGlobally(
+            el::ConfigurationType::Filename, settings::joinAppPath(APP_LOG_FILE));
+    el::Loggers::reconfigureLogger("default", defaultConf);
 
     ServerListener serverListener;
     if(!options["enableHTTPServer"].is_null())
