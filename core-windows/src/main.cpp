@@ -11,6 +11,7 @@
 #include "lib/easylogging/easylogging++.h"
 
 #define APP_LOG_FILE "/neutralinojs.log"
+#define APP_LOG_FORMAT "%level %datetime %msg %loc %user@%host"
 INITIALIZE_EASYLOGGINGPP
 
 using namespace std;
@@ -39,6 +40,10 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     defaultConf.setToDefault();
     defaultConf.setGlobally(
             el::ConfigurationType::Filename, settings::joinAppPath(APP_LOG_FILE));
+    defaultConf.setGlobally(
+            el::ConfigurationType::Format, APP_LOG_FORMAT);
+    defaultConf.setGlobally(
+            el::ConfigurationType::ToFile, "TRUE");
     el::Loggers::reconfigureLogger("default", defaultConf);
  
     ServerListener serverListener;

@@ -15,7 +15,7 @@ namespace linux {
         std::string result = "";
         std::shared_ptr<FILE> pipe(popen((command + " 2>&1").c_str(), "r"), pclose);
         if (!pipe) {
-            LOG(DEBUG) << "Pipe open failed.";
+            LOG(ERROR) << "Pipe open failed.";
         }
         else {
             while (!feof(pipe.get())) {
