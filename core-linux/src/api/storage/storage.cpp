@@ -30,7 +30,7 @@ namespace storage {
             buffer += line + "\n";
         }
         t.close();
-        output["content"] = buffer;
+        output["data"] = buffer;
         output["success"] = true;
         return output.dump();
     }
