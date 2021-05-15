@@ -16,6 +16,7 @@
 #include "../core-linux/src/api/storage/storage.h"
 #include "../core-linux/src/api/debug/debug.h"
 #include "../core-linux/src/api/app/app.h"
+#include "../core-linux/src/api/window/window.h"
 
 #elif defined(_WIN32)
 #include "../core-windows/src/api/filesystem/filesystem.h"
@@ -24,6 +25,7 @@
 #include "../core-windows/src/api/storage/storage.h"
 #include "../core-windows/src/api/debug/debug.h"
 #include "../core-windows/src/api/app/app.h"
+#include "../core-windows/src/api/window/window.h"
 #endif
 
 using namespace std;
@@ -48,6 +50,7 @@ namespace routes {
             {"app.getConfig", app::getConfig},
             {"app.keepAlive", app::keepAlive},
             {"app.open", app::open},
+            {"window.setTitle", window::setTitle},
             {"computer.getRamUsage", computer::getRamUsage},
             {"debug.log", debug::log},
             {"filesystem.createDirectory", fs::createDirectory},

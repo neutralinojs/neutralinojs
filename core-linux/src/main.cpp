@@ -7,6 +7,7 @@
 #include "ping/ping.h"
 #include "permission.h"
 #include "api/app/app.h"
+#include "api/window/window.h"
 #include "server/serverlistener.h"
 #include "lib/easylogging/easylogging++.h"
 
@@ -59,7 +60,7 @@ int main(int argc, char ** argv) {
     else if(mode == "window") {
         json windowOptions = options["modes"]["window"];
         windowOptions["url"] = navigationUrl;
-        app::showWindow(windowOptions);
+        window::show(windowOptions);
     }
 
     if(enableHTTPServer)
