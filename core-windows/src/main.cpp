@@ -8,6 +8,7 @@
 #include "lib/json.hpp"
 #include "server/serverlistener.h"
 #include "api/app/app.h"
+#include "api/window/window.h"
 #include "lib/easylogging/easylogging++.h"
 
 #define APP_LOG_FILE "/neutralinojs.log"
@@ -63,7 +64,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     else if(mode == "window") {
         json windowOptions = options["modes"]["window"];
         windowOptions["url"] = navigationUrl;
-        app::showWindow(windowOptions);
+        window::show(windowOptions);
     }
 
     if(enableHTTPServer)
