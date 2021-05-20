@@ -109,9 +109,23 @@ _We are planning to change the build mechanism as Linux version_
 
 ## Make a donation
 
-If you like to contribute by funding for sustaining our work, you can donate Neutralinojs via Patreon.
+If you like to contribute by funding for sustaining our work, you can donate Neutralinojs via [Patreon](https://www.patreon.com/shalithasuranga).
 
 [![Become a Patreon](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/shalithasuranga)
+
+
+## Sponsors 
+
+[![MacStadium](https://assets-global.website-files.com/5ac3c046c82724970fc60918/5ac3c046c82724204dc6094e_macstadium-logo-white.png)](https://www.macstadium.com)
+
+MacStadium offered us a free remotely-accessed physical mac-mini for Neutralinojs-mac development.
+
+The following members are supporting us financially on [Patreon](https://www.patreon.com/shalithasuranga).
+
+- Just Epic
+- Brian McGonagill
+- Brian
+- Mortarwork Studios
 
 ## Licenses and Copyrights
 
