@@ -26,6 +26,15 @@
 #include "../core-windows/src/api/debug/debug.h"
 #include "../core-windows/src/api/app/app.h"
 #include "../core-windows/src/api/window/window.h"
+
+#elif defined(__APPLE__)
+#include "../core-macos/src/api/filesystem/filesystem.h"
+#include "../core-macos/src/api/os/os.h"
+#include "../core-macos/src/api/computer/computer.h"
+#include "../core-macos/src/api/storage/storage.h"
+#include "../core-macos/src/api/debug/debug.h"
+#include "../core-macos/src/api/app/app.h"
+#include "../core-macos/src/api/window/window.h"
 #endif
 
 using namespace std;

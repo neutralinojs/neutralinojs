@@ -9,6 +9,9 @@
 
 #elif defined(_WIN32)
 #include "../../core-windows/src/api/app/app.h"
+
+#elif defined(__APPLE__)
+#include "../../core-macos/src/api/app/app.h"
 #endif
 
 using namespace std;
