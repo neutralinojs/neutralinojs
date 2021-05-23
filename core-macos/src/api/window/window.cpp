@@ -1,6 +1,7 @@
 #include <iostream>
 #include <signal.h>
 #include <unistd.h>
+#include <dispatch/dispatch.h>
 #include "lib/json.hpp"
 #include "ping/ping.h"
 #include "settings.h"
@@ -72,7 +73,9 @@ namespace window {
         string title = "";
         if(!input["title"].is_null())
             title = input["title"];
-        nativeWindow->set_title(title);
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            nativeWindow->set_title(title);
+        });
         output["success"] = true;
         return output.dump();
     }

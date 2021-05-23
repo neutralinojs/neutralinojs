@@ -26,7 +26,8 @@ c++ -I ../core-shared -std=c++17 \
     src/api/app/app.cpp \
     src/api/window/window.cpp \
     ../core-shared/permission.cpp \
-    -pthread -framework WebKit -DELPP_NO_DEFAULT_LOG_FILE=1 -DWEBVIEW_COCOA=1 -o bin/neutralino 
+    ../core-shared/lib/boxer/boxer_osx.mm \
+    -pthread -framework WebKit -framework Cocoa -DELPP_NO_DEFAULT_LOG_FILE=1 -DWEBVIEW_COCOA=1 -o bin/neutralino 
 
 if [ -e bin/neutralino ]; then
     echo "Neutralino binary is compiled in to bin/neutralino"

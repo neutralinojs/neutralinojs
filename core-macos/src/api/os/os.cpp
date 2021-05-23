@@ -9,7 +9,9 @@
 #include <string>
 #include <array>
 #include <map>
+#include <dispatch/dispatch.h>
 #include "../../platform/macos.h"
+#include <lib/boxer/boxer.h>
 
 using namespace std;
 using json = nlohmann::json;
@@ -40,7 +42,6 @@ namespace os {
 
     }
 
-
     string dialogOpen(json input) {
         json output;
         string command = "zenity --file-selection";
@@ -52,7 +53,6 @@ namespace os {
         output["success"] = true;
         return output.dump();
     }
-
 
     string dialogSave(json input) {
         json output;
@@ -78,22 +78,29 @@ namespace os {
     }
 
     string showMessageBox(json input) {
-        json output;
-        map <string, string> messageTypes = {{"INFO", "info"}, {"WARN", "warning"},
-                                            {"ERROR", "error"}, {"QUESTION", "question"}};
-        string messageType;
-        messageType = input["type"].get<string>();
-        if(messageTypes.find(messageType) == messageTypes.end()) {
-            output["error"] = "Invalid message type: " + messageType + "' provided";
-            return output.dump();
-        }
-        string command = "zenity --" + messageTypes[messageType] + " --title=\"" +
-                            input["title"].get<string>() + "\" --text=\"" +
-                            input["content"].get<string>() + "\" && echo $?";
-        string response = macos::execCommand(command);
-        if(messageType == "QUESTION")
-            output["yesButtonClicked"] =  response.find("0") != std::string::npos;
-        output["success"] = true;
+        __block json output;
+        __block boxer::Selection msgSel;
+        string title = input["title"];
+        string content = input["content"];
+        string type = input["type"];
+
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            if(type == "INFO")
+                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Info);
+            else if(type == "WARN")
+                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Warning);
+            else if(type == "ERROR")
+                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Error);
+            else if(type == "QUESTION") {
+                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Question,
+                                    boxer::Buttons::YesNo);
+                output["yesButtonClicked"] =  msgSel == boxer::Selection::Yes;
+            }
+            else 
+                output["error"] = "Invalid message type: '" + type + "' provided";
+        });
+        if(output["error"].is_null())
+            output["success"] = true;
         return output.dump();
     }
 }
