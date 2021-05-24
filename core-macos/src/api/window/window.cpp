@@ -7,19 +7,14 @@
 #include "settings.h"
 #define WEBVIEW_IMPLEMENTATION
 #include "lib/webview/webview.h"
+#include "../../platform/macos.h"
+#include <objc/objc-runtime.h>
 
 #define NSFloatingWindowLevel 5
 
 using namespace std;
 using json = nlohmann::json;
 
-// Helpers to avoid too much typing
-id operator"" _cls(const char *s, std::size_t) { return (id)objc_getClass(s); }
-SEL operator"" _sel(const char *s, std::size_t) { return sel_registerName(s); }
-id operator"" _str(const char *s, std::size_t) {
-  return ((id(*)(id, SEL, const char *))objc_msgSend)(
-      "NSString"_cls, "stringWithUTF8String:"_sel, s);
-}
 
 webview::webview *nativeWindow;
 id windowHandle;
@@ -37,31 +32,31 @@ namespace window {
         // Window properties/modes
         if(fullScreen)
             ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
-                    sel_registerName("toggleFullScreen:"), NULL);
+                    "toggleFullScreen:"_sel, NULL);
         
         if(alwaysOnTop)
             ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle, 
-                    sel_registerName("setLevel:"), NSFloatingWindowLevel);
+                    "setLevel:"_sel, NSFloatingWindowLevel);
 
         if(borderless) {
             unsigned long windowStyleMask = ((unsigned long (*)(id, SEL))objc_msgSend)(
-                (id) windowHandle, sel_registerName("styleMask"));
+                (id) windowHandle, "styleMask"_sel);
             windowStyleMask &= ~NSWindowStyleMaskTitled;
             ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle, 
-                    sel_registerName("setStyleMask:"), windowStyleMask);
+                    "setStyleMask:"_sel, windowStyleMask);
         }
 
         if(maximize)
             ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
-                    sel_registerName("zoom:"), NULL);
+                    "zoom:"_sel, NULL);
         
         ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
-                    sel_registerName("setIsVisible:"), !hidden);
+                    "setIsVisible:"_sel, !hidden);
         
         if(icon) {
-            ((void (*)(id, SEL, id))objc_msgSend)(((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSApplication"),
-                                        sel_registerName("sharedApplication")),
-                        sel_registerName("setApplicationIconImage:"), icon);
+            ((void (*)(id, SEL, id))objc_msgSend)(((id (*)(id, SEL))objc_msgSend)("NSApplication"_cls,
+                                        "sharedApplication"_sel),
+                        "setApplicationIconImage:"_sel, icon);
         }
         
         nativeWindow->navigate(url);
@@ -117,12 +112,12 @@ namespace window {
             string iconDataStr = settings::getFileContent(iconfile);
             const char *iconData = iconDataStr.c_str();
             icon =
-                ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSImage"), sel_registerName("alloc"));
+                ((id (*)(id, SEL))objc_msgSend)("NSImage"_cls, "alloc"_sel);
             
-            id nsIconData = ((id (*)(id, SEL, const char*, int))objc_msgSend)((id)objc_getClass("NSData"),
-                      sel_registerName("dataWithBytes:length:"), iconData, iconDataStr.length());
+            id nsIconData = ((id (*)(id, SEL, const char*, int))objc_msgSend)("NSData"_cls,
+                      "dataWithBytes:length:"_sel, iconData, iconDataStr.length());
 
-            ((void (*)(id, SEL, id))objc_msgSend)(icon, sel_registerName("initWithData:"), nsIconData);
+            ((void (*)(id, SEL, id))objc_msgSend)(icon, "initWithData:"_sel, nsIconData);
         }
 
         if (!input["enableInspector"].is_null())

@@ -12,9 +12,11 @@
 #include <dispatch/dispatch.h>
 #include "../../platform/macos.h"
 #include <lib/boxer/boxer.h>
+#include <objc/objc-runtime.h>
 
 using namespace std;
 using json = nlohmann::json;
+
 
 namespace os {
 
@@ -44,11 +46,14 @@ namespace os {
 
     string dialogOpen(json input) {
         json output;
-        string command = "zenity --file-selection";
-        if(!input["title"].is_null())
-            command += " --title \"" + input["title"].get<std::string>() + "\"";
+        string command = "osascript -e 'POSIX path of (choose ";
         if(!input["isDirectoryMode"].is_null() && input["isDirectoryMode"].get<bool>())
-            command += " --directory";
+            command += "folder";
+        else
+            command += "file";
+        if(!input["title"].is_null())
+            command += " with prompt \"" + input["title"].get<std::string>() + "\"";
+        command += ")'";
         output["selectedEntry"] = macos::execCommand(command);
         output["success"] = true;
         return output.dump();
@@ -56,9 +61,10 @@ namespace os {
 
     string dialogSave(json input) {
         json output;
-        string command = "zenity --file-selection --save";
+        string command = "osascript -e 'POSIX path of (choose file name";
         if(!input["title"].is_null())
-            command += " --title \"" + input["title"].get<std::string>() + "\"";
+            command += " with prompt \"" + input["title"].get<std::string>() + "\"";
+        command += ")'";
         output["selectedEntry"] = macos::execCommand(command);
         output["success"] = true;
         return output.dump();
@@ -66,14 +72,13 @@ namespace os {
 
     string showNotification(json input) {
         json output;
-        string command = "notify-send \"" + input["summary"].get<string>() + "\" \"" +
-                            input["body"].get<string>() + "\"";
-        if(system(command.c_str()) == 0) {
-            output["success"] = true;
-            output["message"] = "Notification was sent to the system";
-        }
-        else
-            output["error"] = "An error thrown while sending the notification";
+        string command = "osascript -e 'display notification \"" + 
+        input["body"].get<std::string>() + "\"";
+        if(!input["summary"].is_null())
+            command += " with title \"" + input["summary"].get<std::string>() + "\"";
+        command += "'";
+        macos::execCommand(command);
+        output["success"] = true;
         return output.dump();
     }
 
