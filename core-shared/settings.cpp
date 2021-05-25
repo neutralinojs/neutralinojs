@@ -21,11 +21,18 @@
 #include "../core-linux/src/platform/linux.h"
 #define OS_NAME "Linux"
 #define PLATFORM_NS linux
+
 #elif defined(_WIN32)
 #include "../core-windows/src/platform/windows.h"
 #define OS_NAME "Windows"
 #define PLATFORM_NS windows
+
+#elif defined(__APPLE__)
+#include "../core-macos/src/platform/macos.h"
+#define OS_NAME "Darwin"
+#define PLATFORM_NS macos
 #endif
+
 #define APP_CONFIG_FILE "/neutralino.config.json"
 
 using namespace std;
