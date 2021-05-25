@@ -1,4 +1,4 @@
-#include <boxer/boxer.h>
+#include <lib/boxer/boxer.h>
 #include <gtk/gtk.h>
 
 namespace boxer {

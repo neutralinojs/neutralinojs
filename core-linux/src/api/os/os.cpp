@@ -85,7 +85,7 @@ namespace os {
         string messageType;
         messageType = input["type"].get<string>();
         if(messageTypes.find(messageType) == messageTypes.end()) {
-            output["error"] = "Invalid message type: " + messageType + "' provided";
+            output["error"] = "Invalid message type: '" + messageType + "' provided";
             return output.dump();
         }
         string command = "zenity --" + messageTypes[messageType] + " --title=\"" +

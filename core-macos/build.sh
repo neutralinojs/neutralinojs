@@ -4,29 +4,29 @@ if [ -e bin/neutralino ]; then
     rm bin/neutralino
 fi
 
-c++ ../core-shared/lib/easylogging/easylogging++.cc \
-    ../core-shared/resources.cpp \
+c++ ../core-shared/resources.cpp \
+    ../core-shared/router.cpp \
+    ../core-shared/permission.cpp \
+    ../core-shared/main.cpp \
+    ../core-shared/helpers.cpp \
+    ../core-shared/settings.cpp \
+    ../core-shared/auth/authbasic.cpp \
+    ../core-shared/ping/ping.cpp \
+    ../core-shared/lib/boxer/boxer_osx.mm \
+    ../core-shared/lib/easylogging/easylogging++.cc \
     src/server/serverlistener.cpp \
     src/server/Buffer.cpp \
     src/server/Handler.cpp \
     src/server/requestparser.cpp \
     src/server/Socket.cpp \
-    ../core-shared/helpers.cpp \
-    src/main.cpp \
-    ../core-shared/router.cpp \
-    src/api/filesystem/filesystem.cpp \
     src/platform/macos.cpp \
-    ../core-shared/settings.cpp \
+    src/api/filesystem/filesystem.cpp \
     src/api/os/os.cpp \
     src/api/computer/computer.cpp \
     src/api/debug/debug.cpp \
-    ../core-shared/auth/authbasic.cpp \
-    ../core-shared/ping/ping.cpp \
     src/api/storage/storage.cpp \
     src/api/app/app.cpp \
     src/api/window/window.cpp \
-    ../core-shared/permission.cpp \
-    ../core-shared/lib/boxer/boxer_osx.mm \
     -I ../core-shared \
     -std=c++17 \
     -pthread \
@@ -39,5 +39,5 @@ c++ ../core-shared/lib/easylogging/easylogging++.cc \
 if [ -e bin/neutralino ]; then
     echo "OK: Neutralino binary is compiled in to bin/neutralino"
 else
-    echo "ERR : Neutralino binary is not compiled"
+    echo "ERR: Neutralino binary is not compiled"
 fi

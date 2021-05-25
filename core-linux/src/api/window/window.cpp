@@ -1,5 +1,4 @@
 #include <iostream>
-#include <thread>
 #include <signal.h>
 #include <unistd.h>
 #include <gtk/gtk.h>
@@ -113,10 +112,9 @@ namespace window {
         if (!input["hidden"].is_null())
             hidden = input["hidden"];
 
-        thread uiThread(__createWindow, height, width,
+        __createWindow(height, width,
             fullScreen, title, alwaysOnTop, icon,
             enableInspector, borderless, maximize, hidden, url);
-        uiThread.detach();
         output["success"] = true;
         return output.dump();
     }

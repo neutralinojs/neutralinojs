@@ -1,15 +1,29 @@
 #include <cstdlib>
 #include <string>
+#include <thread>
 #include "lib/json.hpp"
+#include "lib/easylogging/easylogging++.h"
 #include "settings.h"
 #include "resources.h"
 #include "auth/authbasic.h"
 #include "ping/ping.h"
 #include "permission.h"
-#include "api/app/app.h"
-#include "api/window/window.h"
-#include "server/serverlistener.h"
-#include "lib/easylogging/easylogging++.h"
+
+#if defined(__linux__)
+#include "../core-linux/src/api/app/app.h"
+#include "../core-linux/src/api/window/window.h"
+#include "../core-linux/src/server/serverlistener.h"
+
+#elif defined(_WIN32)
+#include "../core-windows/src/api/app/app.h"
+#include "../core-windows/src/api/window/window.h"
+#include "../core-windows/src/server/serverlistener.h"
+
+#elif defined(__APPLE__)
+#include "../core-macos/src/api/app/app.h"
+#include "../core-macos/src/api/window/window.h"
+#include "../core-macos/src/server/serverlistener.h"
+#endif
 
 #define APP_LOG_FILE "/neutralinojs.log"
 #define APP_LOG_FORMAT "%level %datetime %msg %loc %user@%host"
@@ -33,6 +47,16 @@ int main(int argc, char ** argv) {
     ping::startPingReceiver();
     permission::registerBlockList();
 
+    ServerListener *serverListener = new ServerListener();
+    string navigationUrl = options["url"];
+    if(!options["enableHTTPServer"].is_null())
+        enableHTTPServer = options["enableHTTPServer"];
+    if(enableHTTPServer) {
+        navigationUrl = serverListener->init();
+        std::thread serverThread(&ServerListener::run, serverListener);
+        serverThread.detach();
+    }
+
     el::Configurations defaultConf;
     defaultConf.setToDefault();
     defaultConf.setGlobally(
@@ -42,14 +66,6 @@ int main(int argc, char ** argv) {
     defaultConf.setGlobally(
             el::ConfigurationType::ToFile, "TRUE");
     el::Loggers::reconfigureLogger("default", defaultConf);
-
-    ServerListener serverListener;
-    if(!options["enableHTTPServer"].is_null())
-        enableHTTPServer = options["enableHTTPServer"];
-
-    string navigationUrl = options["url"];
-    if(enableHTTPServer)
-        navigationUrl = serverListener.init();
 
     string mode = settings::getMode();
     if(mode == "browser") {
@@ -62,10 +78,12 @@ int main(int argc, char ** argv) {
         windowOptions["url"] = navigationUrl;
         window::show(windowOptions);
     }
-
-    if(enableHTTPServer)
-        serverListener.run();
-    else
+    else if(mode == "cloud") {
+        if(enableHTTPServer)
+            LOG(INFO) << options["applicationId"].get<std::string>() <<
+                     " is available at " << navigationUrl;
         while(true);
+    }
+    delete serverListener;
     return 0;
 }
