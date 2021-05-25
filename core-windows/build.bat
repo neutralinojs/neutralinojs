@@ -24,7 +24,7 @@ echo Found %vc_dir%
 
 call "%vc_dir%\Common7\Tools\vsdevcmd.bat" -arch=x64 -host_arch=x64
 
-echo Neutralino is being built...
+echo Compiling Neutralinojs...
 
 if EXIST bin\neutralino.exe (
     del /f bin\neutralino.exe

@@ -1,5 +1,7 @@
 #include <cstdlib>
+#if defined(_WIN32)
 #include <winsock2.h>
+#endif
 #include <string>
 #include <thread>
 #include "lib/json.hpp"

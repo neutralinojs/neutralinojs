@@ -151,21 +151,20 @@ namespace os {
         string content = input["content"];
         string type = input["type"];
 
-        //dispatch_sync(dispatch_get_main_queue(), ^{
-            if(type == "INFO")
-                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Info);
-            else if(type == "WARN")
-                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Warning);
-            else if(type == "ERROR")
-                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Error);
-            else if(type == "QUESTION") {
-                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Question,
-                                    boxer::Buttons::YesNo);
-                output["yesButtonClicked"] =  msgSel == boxer::Selection::Yes;
-            }
-            else 
-                output["error"] = "Invalid message type: '" + type + "' provided";
-        //});
+        if(type == "INFO")
+            msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Info);
+        else if(type == "WARN")
+            msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Warning);
+        else if(type == "ERROR")
+            msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Error);
+        else if(type == "QUESTION") {
+            msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Question,
+                                boxer::Buttons::YesNo);
+            output["yesButtonClicked"] =  msgSel == boxer::Selection::Yes;
+        }
+        else 
+            output["error"] = "Invalid message type: '" + type + "' provided";
+                
         if(output["error"].is_null())
             output["success"] = true;
         return output.dump();
