@@ -1,9 +1,3 @@
-### Notice 🔔
-
-Neutralino v2 is ready for Linux/Windows. You can try this [pre-release](https://github.com/neutralinojs/neutralinojs/releases/tag/v2.0.0).
-Please notice that the macOS version is not yet supporting v2 implementaton (still in v1.5.0).
-
-
 <div align="center">
   <img src="https://cdn.rawgit.com/neutralinojs/neutralinojs.github.io/b667f2c2/docs/nllogo.png" style="width:300px;"/>
 </div>
@@ -51,28 +45,13 @@ Ask questions on Stackoverflow using tag [neutralinojs](https://stackoverflow.co
 
 This guide is for contributors. If you are interested only in application development. Please check [this](https://neutralino.js.org/docs) guide.
 
-### Installing latest GNU C/C++ compilers
+### Setup and compilation
 
 **Linux**
 
 No need for separate installation of compilers because Linux distributions usually have GNU C/C++ compilers installed already.
 
-**Windows**
-
-Install the latest Visual Studio IDE. Neutralinojs compilation on windows will use MSVC (aka `cl.exe`) C++ compiler. 
-
-
-### Building Neutralino platform on Windows
-
-```bash
- build.bat
-```
-
-### Building Neutralino platform on Linux
-
 Install GTk and webkit libraries
-
-#### On Debian/Ubuntu based OS
 
 If you are using a newer version of Ubuntu, there is no need to run the following commands.
 
@@ -83,29 +62,34 @@ $ sudo apt-get update
 $ sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev
 ```
 
-### Building Neutralino server on Windows
-
-```bash
-> cd core-windows
-> build
-```
-
-### Building Neutralino server on Linux
+Compiling Neutralino server on Linux
 
 ```bash
 $ cd core-linux
 $ bash build.sh
 ```
 
-###  Building Neutralino server on MacOS
+**Windows**
+
+Install the latest Visual Studio IDE. Neutralinojs compilation on windows will use MSVC (aka `cl.exe`) C++ compiler. 
+
+Compiling Neutralino server on Windows
+
+```bash
+> cd core-windows
+> build
+```
+
+**macOS**
+
+Install Xcode Command Line Tools.
+
+Compiling Neutralino server on MacOS
 
 ```bash
 $ cd core-macos
 $ bash build.sh
 ```
-
-_We are planning to change the build mechanism as Linux version_
-
 
 ## Make a donation
 
