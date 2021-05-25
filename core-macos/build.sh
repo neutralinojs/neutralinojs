@@ -34,6 +34,7 @@ c++ ../core-shared/resources.cpp \
     -framework Cocoa \
     -DELPP_NO_DEFAULT_LOG_FILE=1 \
     -DWEBVIEW_COCOA=1 \
+    -Os \
     -o bin/neutralino 
 
 if [ -e bin/neutralino ]; then
