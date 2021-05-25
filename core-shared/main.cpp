@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <winsock2.h>
 #include <string>
 #include <thread>
 #include "lib/json.hpp"
@@ -32,13 +33,24 @@ INITIALIZE_EASYLOGGINGPP
 using namespace std;
 using json = nlohmann::json;
 
+#if defined(_WIN32)
+int APIENTRY WinMain(HINSTANCE hInstance,
+                     HINSTANCE hPrevInstance,
+                     LPTSTR    lpCmdLine,
+                     int       nCmdShow) {
+
+    json args;
+    for(int i = 0; i < __argc; i++) {
+        args.push_back(__argv[i]);
+    }
+#else
 int main(int argc, char ** argv) {
     json args;
-    bool enableHTTPServer = false;
     for (int i = 0; i < argc; i++) {
         args.push_back(argv[i]);
     }
-
+#endif
+    bool enableHTTPServer = false;
     settings::setGlobalArgs(args);
     if (!loadResFromDir)
         resources::makeFileTree();
@@ -53,7 +65,7 @@ int main(int argc, char ** argv) {
         enableHTTPServer = options["enableHTTPServer"];
     if(enableHTTPServer) {
         navigationUrl = serverListener->init();
-        std::thread serverThread(&ServerListener::run, serverListener);
+        std::thread serverThread([&](){ serverListener->run(); });
         serverThread.detach();
     }
 

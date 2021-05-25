@@ -1,4 +1,3 @@
-#include <thread>
 #include <windows.h>
 #include <gdiplus.h>
 #include "lib/json.hpp"
@@ -8,7 +7,6 @@
 
 #pragma comment (lib,"Gdiplus.lib")
 #pragma comment(lib, "WebView2Loader.dll.lib")
-
 
 using namespace std;
 using namespace Gdiplus;
@@ -143,10 +141,9 @@ namespace window {
         if (!input["hidden"].is_null())
             hidden = input["hidden"];
 
-        thread uiThread(__showWindow, height, width,
+        __showWindow(height, width,
             fullScreen, title, alwaysOnTop, icon,
             enableInspector, borderless, maximize, hidden, url);
-        uiThread.detach();
         GdiplusShutdown(gdiplusToken);
         output["success"] = true;
         return output.dump();

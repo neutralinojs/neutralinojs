@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <string>
 #include <array>
+#include <lib/boxer/boxer.h>
 #include "helpers.h"
 #include "../../platform/windows.h"
 
@@ -145,31 +146,28 @@ namespace os {
 
     string showMessageBox(json input) {
         json output;
-        map <string, string> messageTypes = {
-            {"INFO", "[System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Information"},
-            {"WARN", "[System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Warning"},
-            {"ERROR", "[System.Windows.Forms.MessageBoxButtons]::OK, [System.Windows.Forms.MessageBoxIcon]::Error"},
-            {"QUESTION", "[System.Windows.Forms.MessageBoxButtons]::YesNo, [System.Windows.Forms.MessageBoxIcon]::Question"}
-        };
-        string messageType;
-        messageType = input["type"].get<string>();
-        if(messageTypes.find(messageType) == messageTypes.end()) {
-            output["error"] = "Invalid message type: '" + messageType + "' provided";
-            return output.dump();
-        }
-        string command = "powershell -Command \"& {Add-Type -AssemblyName System.Windows.Forms;"
-                        "[System.Windows.Forms.MessageBox]::Show('" + input["content"].get<string>() +
-                        "', '" + input["title"].get<string>() + "', " +
-                        messageTypes[messageType] + ");}\"";
+        boxer::Selection msgSel;
+        string title = input["title"];
+        string content = input["content"];
+        string type = input["type"];
 
-        string commandOutput = windows::execCommand(command);
-        if(commandOutput.find("'powershell'") == string::npos) {
+        //dispatch_sync(dispatch_get_main_queue(), ^{
+            if(type == "INFO")
+                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Info);
+            else if(type == "WARN")
+                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Warning);
+            else if(type == "ERROR")
+                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Error);
+            else if(type == "QUESTION") {
+                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Question,
+                                    boxer::Buttons::YesNo);
+                output["yesButtonClicked"] =  msgSel == boxer::Selection::Yes;
+            }
+            else 
+                output["error"] = "Invalid message type: '" + type + "' provided";
+        //});
+        if(output["error"].is_null())
             output["success"] = true;
-            if(messageType == "QUESTION")
-                output["yesButtonClicked"] = commandOutput.find("Yes") != std::string::npos;
-        }
-        else
-            output["error"] = "An error thrown while sending the notification";
         return output.dump();
     }
 }

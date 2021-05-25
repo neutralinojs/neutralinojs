@@ -1,4 +1,4 @@
-#include <boxer/boxer.h>
+#include <lib/boxer/boxer.h>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
@@ -53,7 +53,7 @@ Selection getSelection(int response, Buttons buttons) {
 } // namespace
 
 Selection show(const char *message, const char *title, Style style, Buttons buttons) {
-   UINT flags = MB_TASKMODAL;
+   UINT flags = MB_SYSTEMMODAL;
 
    flags |= getIcon(style);
    flags |= getButtons(buttons);
