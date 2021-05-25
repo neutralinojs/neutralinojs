@@ -4,7 +4,7 @@ if [ -e bin/neutralino ]; then
     rm bin/neutralino
 fi
 
-c++ ../core-shared/resources.cpp \
+c++ -arch x86_64 ../core-shared/resources.cpp \
     ../core-shared/router.cpp \
     ../core-shared/permission.cpp \
     ../core-shared/main.cpp \
