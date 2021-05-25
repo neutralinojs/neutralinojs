@@ -17,7 +17,6 @@
 using namespace std;
 using json = nlohmann::json;
 
-
 namespace os {
 
     string execCommand(json input) {

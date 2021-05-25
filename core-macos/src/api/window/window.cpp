@@ -30,6 +30,9 @@ namespace window {
         windowHandle = (id) nativeWindow->window();
 
         // Window properties/modes
+        ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
+                    "setHasShadow:"_sel, true);
+
         if(fullScreen)
             ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
                     "toggleFullScreen:"_sel, NULL);

@@ -66,7 +66,9 @@ int main(int argc, char ** argv) {
         window::show(windowOptions);
     }
     else if(mode == "cloud") {
-        LOG(INFO) << "Neutralino is accepting requests from " << navigationUrl;
+        if(enableHTTPServer)
+            LOG(INFO) << options["applicationId"].get<std::string>() <<
+                     " is available at " << navigationUrl;
         while(true);
     }
     delete serverListener;

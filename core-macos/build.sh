@@ -1,10 +1,10 @@
-echo "Neutralino is being built.."
+echo "Compiling Neutralinojs..."
+
 if [ -e bin/neutralino ]; then
     rm bin/neutralino
 fi
 
-c++ -I ../core-shared -std=c++17 \
-    ../core-shared/lib/easylogging/easylogging++.cc \
+c++ ../core-shared/lib/easylogging/easylogging++.cc \
     ../core-shared/resources.cpp \
     src/server/serverlistener.cpp \
     src/server/Buffer.cpp \
@@ -27,10 +27,17 @@ c++ -I ../core-shared -std=c++17 \
     src/api/window/window.cpp \
     ../core-shared/permission.cpp \
     ../core-shared/lib/boxer/boxer_osx.mm \
-    -pthread -framework WebKit -framework Cocoa -DELPP_NO_DEFAULT_LOG_FILE=1 -DWEBVIEW_COCOA=1 -o bin/neutralino 
+    -I ../core-shared \
+    -std=c++17 \
+    -pthread \
+    -framework WebKit \
+    -framework Cocoa \
+    -DELPP_NO_DEFAULT_LOG_FILE=1 \
+    -DWEBVIEW_COCOA=1 \
+    -o bin/neutralino 
 
 if [ -e bin/neutralino ]; then
-    echo "Neutralino binary is compiled in to bin/neutralino"
+    echo "OK: Neutralino binary is compiled in to bin/neutralino"
 else
     echo "ERR : Neutralino binary is not compiled"
 fi
