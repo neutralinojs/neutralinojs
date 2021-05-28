@@ -90,6 +90,7 @@ $ bash build.sh
 ## Sponsors 
 
 [![MacStadium](https://assets-global.website-files.com/5ac3c046c82724970fc60918/5ac3c046c82724204dc6094e_macstadium-logo-white.png)](https://www.macstadium.com)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fneutralinojs%2Fneutralinojs.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fneutralinojs%2Fneutralinojs?ref=badge_shield)
 
 MacStadium offered us a free remotely-accessed physical mac-mini for Neutralinojs-mac development.
 
@@ -113,6 +114,9 @@ If you like to support our work, you can donate to Neutralinojs via [Patreon](ht
 - Cross-platfrom message box library: MIT from [aaronmjacobs/Boxer](https://github.com/aaronmjacobs/Boxer). Copyright (c) 2014 Aaron Jacobs.
 
 Please check all licenses from [this](LICENSE) link.
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fneutralinojs%2Fneutralinojs.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fneutralinojs%2Fneutralinojs?ref=badge_large)
 
 ## Contributors
 
