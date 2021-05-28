@@ -42,11 +42,10 @@ cl /std:c++17 ^
 ../core-shared/ping/ping.cpp ^
 ../core-shared/helpers.cpp ^
 ../core-shared/permission.cpp ^
+../core-shared/server/neuserver.cpp ^
 ../core-shared/lib/easylogging/easylogging++.cc ^
 ../core-shared/lib/boxer/boxer_win.cpp ^
 src/platform/windows.cpp ^
-src/server/requestparser.cpp ^
-src/server/serverlistener.cpp ^
 src/api/computer/computer.cpp ^
 src/api/filesystem/filesystem.cpp ^
 src/api/os/os.cpp ^
