@@ -12,13 +12,9 @@ c++ -arch x86_64 ../core-shared/resources.cpp \
     ../core-shared/settings.cpp \
     ../core-shared/auth/authbasic.cpp \
     ../core-shared/ping/ping.cpp \
+    ../core-shared/server/neuserver.cpp \
     ../core-shared/lib/boxer/boxer_osx.mm \
     ../core-shared/lib/easylogging/easylogging++.cc \
-    src/server/serverlistener.cpp \
-    src/server/Buffer.cpp \
-    src/server/Handler.cpp \
-    src/server/requestparser.cpp \
-    src/server/Socket.cpp \
     src/platform/macos.cpp \
     src/api/filesystem/filesystem.cpp \
     src/api/os/os.cpp \
