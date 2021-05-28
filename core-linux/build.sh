@@ -13,11 +13,7 @@ g++ ../core-shared/resources.cpp \
     ../core-shared/permission.cpp \
     ../core-shared/lib/boxer/boxer_linux.cpp \
     ../core-shared/lib/easylogging/easylogging++.cc \
-    src/server/serverlistener.cpp \
-    src/server/Buffer.cpp \
-    src/server/Handler.cpp \
-    src/server/requestparser.cpp \
-    src/server/Socket.cpp \
+    ../core-shared/server/neuserver.cpp \
     src/platform/linux.cpp \
     src/api/filesystem/filesystem.cpp \
     src/api/os/os.cpp \

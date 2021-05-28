@@ -11,21 +11,19 @@
 #include "auth/authbasic.h"
 #include "ping/ping.h"
 #include "permission.h"
+#include "server/neuserver.h"
 
 #if defined(__linux__)
 #include "../core-linux/src/api/app/app.h"
 #include "../core-linux/src/api/window/window.h"
-#include "../core-linux/src/server/serverlistener.h"
 
 #elif defined(_WIN32)
 #include "../core-windows/src/api/app/app.h"
 #include "../core-windows/src/api/window/window.h"
-#include "../core-windows/src/server/serverlistener.h"
 
 #elif defined(__APPLE__)
 #include "../core-macos/src/api/app/app.h"
 #include "../core-macos/src/api/window/window.h"
-#include "../core-macos/src/server/serverlistener.h"
 #endif
 
 #define APP_LOG_FILE "/neutralinojs.log"
@@ -61,13 +59,13 @@ int main(int argc, char ** argv) {
     ping::startPingReceiver();
     permission::registerBlockList();
 
-    ServerListener *serverListener = new ServerListener();
+    NeuServer *server = new NeuServer();
     string navigationUrl = options["url"];
     if(!options["enableHTTPServer"].is_null())
         enableHTTPServer = options["enableHTTPServer"];
     if(enableHTTPServer) {
-        navigationUrl = serverListener->init();
-        std::thread serverThread([&](){ serverListener->run(); });
+        navigationUrl = server->init();
+        std::thread serverThread([&](){ server->run(); });
         serverThread.detach();
     }
 
@@ -98,6 +96,6 @@ int main(int argc, char ** argv) {
                      " is available at " << navigationUrl;
         while(true);
     }
-    delete serverListener;
+    delete server;
     return 0;
 }
