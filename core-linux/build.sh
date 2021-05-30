@@ -29,7 +29,6 @@ g++ ../core-shared/resources.cpp \
     `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0 glib-2.0` \
     -o bin/neutralino \
     -no-pie \
-    -lstdc++fs \
      -I ../core-shared
 
 if [ -e bin/neutralino ]; then

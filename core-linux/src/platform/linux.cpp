@@ -1,6 +1,7 @@
 #include <string>
 #include <libgen.h>
 #include <stdio.h>
+#include <unistd.h>
 #include "lib/easylogging/easylogging++.h"
 
 using namespace std;
@@ -24,5 +25,9 @@ namespace linux {
             }
         }
         return result;
+    }
+    
+    string getCurrentDirectory() {
+        return getcwd(NULL, 0);
     }
 }

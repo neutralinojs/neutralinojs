@@ -5,17 +5,6 @@
 #include "lib/json.hpp"
 #include "auth/authbasic.h"
 #include "resources.h"
-#ifndef __has_include
-  static_assert(false, "__has_include not supported");
-#else
-#  if __has_include(<filesystem>)
-#    include <filesystem>
-     namespace fs = std::filesystem;
-#  elif __has_include(<experimental/filesystem>)
-#    include <experimental/filesystem>
-     namespace fs = std::experimental::filesystem;
-#  endif
-#endif
 
 #if defined(__linux__)
 #include "../core-linux/src/platform/linux.h"
@@ -64,10 +53,6 @@ namespace settings {
         return result;
     }
 
-    string getCurrentDir() {
-        return fs::current_path().generic_string();
-    }
-
     json getConfig() {
         if(!options.is_null())
             return options;
@@ -89,7 +74,7 @@ namespace settings {
         jsSnippet += "var NL_PORT=" + std::to_string(options["port"].get<int>()) + ";";
         jsSnippet += "var NL_MODE='" + options["defaultMode"].get<std::string>() + "';";
         jsSnippet += "var NL_TOKEN='" + authbasic::getToken() + "';";
-        jsSnippet += "var NL_CWD='" + settings::getCurrentDir() + "';";
+        jsSnippet += "var NL_CWD='" + PLATFORM_NS::getCurrentDirectory() + "';";
         jsSnippet += "var NL_ARGS=" + globalArgs.dump() + ";";
         jsSnippet += "var NL_PATH='" + appPath + "';";
 
@@ -104,7 +89,7 @@ namespace settings {
     void setGlobalArgs(json args) {
         appPath = PLATFORM_NS::getDirectoryName(args[0].get<std::string>());
         if(appPath == "")
-            appPath = settings::getCurrentDir();
+            appPath = PLATFORM_NS::getCurrentDirectory();
         globalArgs = args;
         loadResFromDir = std::find(globalArgs.begin(), globalArgs.end(), "--load-dir-res") != globalArgs.end();
     }

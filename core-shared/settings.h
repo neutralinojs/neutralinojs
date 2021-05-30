@@ -8,7 +8,6 @@ namespace settings {
     json getConfig();
     string getFileContent(string filename);
     string getGlobalVars();
-    string getCurrentDir();
     void setGlobalArgs(json args);
     string joinAppPath(string filename);
     string getMode();
