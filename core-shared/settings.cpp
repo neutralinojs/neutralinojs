@@ -69,7 +69,7 @@ namespace settings {
 
     string getGlobalVars(){
         string jsSnippet = "var NL_OS='" + std::string(OS_NAME) + "';";
-        jsSnippet += "var NL_VERSION='2.1.0';";
+        jsSnippet += "var NL_VERSION='2.1.1';";
         jsSnippet += "var NL_APPID='" + options["applicationId"].get<std::string>() + "';";
         jsSnippet += "var NL_PORT=" + std::to_string(options["port"].get<int>()) + ";";
         jsSnippet += "var NL_MODE='" + options["defaultMode"].get<std::string>() + "';";
