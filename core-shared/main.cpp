@@ -84,6 +84,7 @@ int main(int argc, char ** argv) {
         json browserOptions = options["modes"]["browser"];
         browserOptions["url"] = navigationUrl;
         app::open(browserOptions);
+        while(true);
     }
     else if(mode == "window") {
         json windowOptions = options["modes"]["window"];
