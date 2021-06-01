@@ -2,6 +2,7 @@
 #include <libgen.h>
 #include <stdio.h>
 #include <array>
+#include <unistd.h>
 #include "lib/easylogging/easylogging++.h"
 
 using namespace std;
@@ -25,5 +26,9 @@ namespace macos {
             }
         }
         return result;
+    }
+
+    string getCurrentDirectory() {
+        return getcwd(NULL, 0);
     }
 }

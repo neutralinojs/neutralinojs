@@ -79,4 +79,12 @@ namespace windows {
         // close handles explicitly.
         return output;
     }
+
+    string getCurrentDirectory() {
+        TCHAR currentDir[MAX_PATH];
+        GetCurrentDirectory(MAX_PATH, currentDir);   
+        std::string currentDirStr(currentDir);
+        std::replace(currentDirStr.begin(), currentDirStr.end(), '\\', '/');     
+        return currentDirStr;
+    }
 }

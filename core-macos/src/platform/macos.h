@@ -13,4 +13,5 @@ inline id operator"" _str(const char *s, std::size_t) {
 namespace macos {
     string getDirectoryName(string filename);
     string execCommand(string command);
+    string getCurrentDirectory();
 }
