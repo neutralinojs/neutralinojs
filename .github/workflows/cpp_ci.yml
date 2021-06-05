@@ -10,18 +10,18 @@ jobs:
     - name: configure
       run: sudo apt-get install libgtk-3-dev -y && sudo apt-get update && sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev
     - name: build
-      run: bash build.sh linux
+      run: bash build_linux.sh
 
   build-windows:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
     - name: build
-      run: ./build
+      run: ./build_windows.bat
 
   build-osx:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Configure & Build
-      run: bash build.sh macos
+    - name: build
+      run: bash build_macos.sh
