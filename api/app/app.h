@@ -1,9 +1,6 @@
 #ifndef AP_H
 #define AP_H
 
-#include <iostream>
-#include <map>
-
 using namespace std;
 
 namespace app {

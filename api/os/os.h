@@ -1,8 +1,6 @@
 #ifndef OS_H
 #define OS_H
 
-#include <map>
-
 namespace os {
     string execCommand(json input);
     string getEnvar(json input);

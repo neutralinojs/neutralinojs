@@ -18,6 +18,7 @@
 #elif defined(__APPLE__)
 #define OS_NAME "Darwin"
 #endif
+#define NL_VERSION "2.2.0"
 
 #define APP_CONFIG_FILE "/neutralino.config.json"
 
@@ -66,7 +67,7 @@ namespace settings {
 
     string getGlobalVars(){
         string jsSnippet = "var NL_OS='" + std::string(OS_NAME) + "';";
-        jsSnippet += "var NL_VERSION='2.1.1';";
+        jsSnippet += "var NL_VERSION='" + std::string(NL_VERSION) + "';";
         jsSnippet += "var NL_APPID='" + options["applicationId"].get<std::string>() + "';";
         jsSnippet += "var NL_PORT=" + std::to_string(options["port"].get<int>()) + ";";
         jsSnippet += "var NL_MODE='" + options["defaultMode"].get<std::string>() + "';";

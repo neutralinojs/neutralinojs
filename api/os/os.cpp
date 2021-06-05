@@ -9,7 +9,6 @@
 #include <string>
 #include <array>
 #include <map>
-#include "platform/platform.h"
 
 #if defined(__APPLE__)
 #include <dispatch/dispatch.h>
@@ -17,11 +16,16 @@
 #include <objc/objc-runtime.h>
 
 #elif defined(_WIN32)
+#include <windows.h>
+#include <shlobj.h>
+#include <shobjidl.h>
 #include <lib/boxer/boxer.h>
 
 #pragma comment(lib, "Comdlg32.lib")
 #pragma comment(lib, "Shell32.lib")
 #endif
+
+#include "platform/platform.h"
 
 
 
@@ -210,8 +214,8 @@ namespace os {
     }
 
     string showMessageBox(json input) {
-        json output;
         #if defined(__linux__)
+        json output;
         map <string, string> messageTypes = {{"INFO", "info"}, {"WARN", "warning"},
                                             {"ERROR", "error"}, {"QUESTION", "question"}};
         string messageType;
@@ -229,31 +233,34 @@ namespace os {
         output["success"] = true;
         
         #elif defined(__APPLE__) || defined(_WIN32)
-            
+            string title = input["title"];
+            string content = input["content"];
+            string type = input["type"];
+
             #if defined(__APPLE__)
-                __block json output;
-                __block boxer::Selection msgSel;
+            __block json output;
+            __block boxer::Selection msgSel;
             #elif defined(_WIN32)
-                json output;
-                boxer::Selection msgSel;
+            json output;
+            boxer::Selection msgSel;
             #endif
             
             #if defined(__APPLE__)
             dispatch_sync(dispatch_get_main_queue(), ^{
             #endif
-                if(type == "INFO")
-                    msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Info);
-                else if(type == "WARN")
-                    msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Warning);
-                else if(type == "ERROR")
-                    msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Error);
-                else if(type == "QUESTION") {
-                    msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Question,
-                                        boxer::Buttons::YesNo);
-                    output["yesButtonClicked"] =  msgSel == boxer::Selection::Yes;
-                }
-                else 
-                    output["error"] = "Invalid message type: '" + type + "' provided";
+            if(type == "INFO")
+                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Info);
+            else if(type == "WARN")
+                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Warning);
+            else if(type == "ERROR")
+                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Error);
+            else if(type == "QUESTION") {
+                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Question,
+                                    boxer::Buttons::YesNo);
+                output["yesButtonClicked"] =  msgSel == boxer::Selection::Yes;
+            }
+            else 
+                output["error"] = "Invalid message type: '" + type + "' provided";
             #if defined(__APPLE__)
             });
             #endif

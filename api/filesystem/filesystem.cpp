@@ -24,7 +24,7 @@ namespace fs {
         string path = input["path"];
         #if defined(__linux__) || defined(__APPLE__)
         if(mkdir(path.c_str(), 0700) == 0) {
-        #elif defined(_WIN32
+        #elif defined(_WIN32)
         if(CreateDirectory(path.c_str(), NULL)) {
         #endif
             output["success"] = true;

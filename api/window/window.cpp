@@ -24,6 +24,9 @@
 
 using namespace std;
 using json = nlohmann::json;
+#if defined(_WIN32)
+using namespace Gdiplus;
+#endif
 
 webview::webview *nativeWindow;
 #if defined(__linux__)
@@ -109,7 +112,7 @@ namespace window {
         nativeWindow->run();
     }
     #elif defined(_WIN32)
-    void __showWindow(int height, int width,
+    void __createWindow(int height, int width,
         bool fullScreen, string title, bool alwaysOnTop, void* icon,
         bool enableInspector, bool borderless, bool maximize, bool hidden, string url) {
 

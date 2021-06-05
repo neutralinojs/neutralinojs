@@ -31,30 +31,30 @@ if EXIST bin\neutralino.exe (
 )
 
 cl /std:c++17 ^
-/I ../core-shared ^
-/I src/platform/webview2 ^
+/I . ^
+/I platform/windows/webview2 ^
 /EHsc ^
-../core-shared/main.cpp ^
-../core-shared/settings.cpp ^
-../core-shared/resources.cpp ^
-../core-shared/router.cpp ^
-../core-shared/auth/authbasic.cpp ^
-../core-shared/ping/ping.cpp ^
-../core-shared/helpers.cpp ^
-../core-shared/permission.cpp ^
-../core-shared/server/neuserver.cpp ^
-../core-shared/lib/easylogging/easylogging++.cc ^
-../core-shared/lib/boxer/boxer_win.cpp ^
-src/platform/windows.cpp ^
-src/api/computer/computer.cpp ^
-src/api/filesystem/filesystem.cpp ^
-src/api/os/os.cpp ^
-src/api/storage/storage.cpp ^
-src/api/debug/debug.cpp ^
-src/api/app/app.cpp ^
-src/api/window/window.cpp ^
+main.cpp ^
+settings.cpp ^
+resources.cpp ^
+server/neuserver.cpp ^
+server/router.cpp ^
+auth/authbasic.cpp ^
+auth/permission.cpp ^
+server/ping.cpp ^
+helpers.cpp ^
+lib/easylogging/easylogging++.cc ^
+lib/boxer/boxer_win.cpp ^
+platform/windows/platform.cpp ^
+api/computer/computer.cpp ^
+api/filesystem/filesystem.cpp ^
+api/os/os.cpp ^
+api/storage/storage.cpp ^
+api/debug/debug.cpp ^
+api/app/app.cpp ^
+api/window/window.cpp ^
 /DELPP_NO_DEFAULT_LOG_FILE ^
-/link dll/WebView2Loader.dll.lib "/OUT:bin\neutralino.exe"
+/link platform/windows/webview2/WebView2Loader.dll.lib "/OUT:bin\neutralino.exe"
 
 if EXIST bin\neutralino.exe (
     echo Neutralino binary is compiled in to bin/netralino.exe

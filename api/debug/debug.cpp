@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include "lib/json.hpp"
-#include "settings.h"
 #include "lib/easylogging/easylogging++.h"
 
 using namespace std;
