@@ -62,8 +62,7 @@ $ sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev
 Compiling Neutralino server on Linux
 
 ```bash
-$ cd core-linux
-$ bash build.sh
+$ bash build_linux.sh
 ```
 
 **Windows**
@@ -73,8 +72,7 @@ Install the latest Visual Studio IDE. Neutralinojs compilation on Windows will u
 Compiling Neutralino server on Windows
 
 ```bash
-> cd core-windows
-> build
+$ ./build_windows.bat
 ```
 
 **macOS**
@@ -84,8 +82,7 @@ Install Xcode Command Line Tools.
 Compiling Neutralino server on MacOS
 
 ```bash
-$ cd core-macos
-$ bash build.sh
+$ bash build_macos.sh
 ```
 
 ## Sponsors 
