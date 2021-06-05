@@ -1,10 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <regex>
 #include "lib/easylogging/easylogging++.h"
 #include "lib/json.hpp"
 #include "auth/authbasic.h"
 #include "resources.h"
+#include "helpers.h"
 
 #if defined(__linux__)
 #include "../core-linux/src/platform/linux.h"
@@ -87,11 +89,29 @@ namespace settings {
     }
 
     void setGlobalArgs(json args) {
-        appPath = PLATFORM_NS::getDirectoryName(args[0].get<std::string>());
-        if(appPath == "")
-            appPath = PLATFORM_NS::getCurrentDirectory();
-        globalArgs = args;
-        loadResFromDir = std::find(globalArgs.begin(), globalArgs.end(), "--load-dir-res") != globalArgs.end();
+        int argIndex = 0;
+        for(string arg : args) {
+            // -- Set default path
+            if(argIndex == 0) {
+                appPath = PLATFORM_NS::getDirectoryName(args[argIndex].get<std::string>());
+                if(appPath == "")
+                    appPath = PLATFORM_NS::getCurrentDirectory();
+                globalArgs = args;
+            }
+            
+            // Resources read mode (res.neu or from directory)
+            if(arg == "--load-dir-res") {
+                loadResFromDir = true;
+            }
+            
+            // Override default path
+            if(regex_match(arg, regex("--path=.*"))) {
+                vector <string> pathArgParts = helpers::split(arg, '=');
+                if(pathArgParts.size() == 2 && pathArgParts[1].length() > 0)
+                    appPath = pathArgParts[1];
+            }
+            argIndex++;
+        }
     }
 
     string getMode() {

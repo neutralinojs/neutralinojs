@@ -34,22 +34,22 @@ using namespace std;
 using json = nlohmann::json;
 
 #if defined(_WIN32)
+#define ARG_C __argc
+#define ARG_V __argv 
 int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPTSTR    lpCmdLine,
-                     int       nCmdShow) {
-
-    json args;
-    for(int i = 0; i < __argc; i++) {
-        args.push_back(__argv[i]);
-    }
+                     int       nCmdShow)
 #else
-int main(int argc, char ** argv) {
-    json args;
-    for (int i = 0; i < argc; i++) {
-        args.push_back(argv[i]);
-    }
+#define ARG_C argc
+#define ARG_V argv 
+int main(int argc, char ** argv)
 #endif
+                                {
+    json args;
+    for (int i = 0; i < ARG_C; i++) {
+        args.push_back(ARG_V[i]);
+    }
     bool enableHTTPServer = false;
     settings::setGlobalArgs(args);
     if (!loadResFromDir)
