@@ -76,7 +76,7 @@ namespace os {
         if(!input["title"].is_null())
             command += " with prompt \"" + input["title"].get<std::string>() + "\"";
         command += ")'";
-        output["selectedEntry"] = macos::execCommand(command);
+        output["selectedEntry"] = platform::execCommand(command);
         
         #elif defined(_WIN32)
         string title = input["title"];
