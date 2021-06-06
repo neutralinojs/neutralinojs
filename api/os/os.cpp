@@ -36,6 +36,9 @@ namespace os {
     string execCommand(json input) {
         json output;
         string command = input["command"];
+        #if defined(_WIN32)
+        command = "cmd /c " + command;
+        #endif
         output["output"] = platform::execCommand(command);
         output["success"] = true;
         return output.dump();
