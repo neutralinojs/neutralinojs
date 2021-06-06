@@ -112,13 +112,12 @@ namespace settings {
             // Override default mode
             if(regex_match(arg, regex("--mode=.*"))) {
                 vector <string> modeArgParts = helpers::split(arg, '=');
-                if(modeArgParts.size() == 2 && modeArgParts[1].length() > 0)
-                    if(modeArgParts[1] == "browser" || modeArgParts[1] == "window" || modeArgParts[1] == "cloud") {
-                        configOverrides.push_back(make_pair("defaultMode", modeArgParts[1])); 
-                    }
-                    else {
+                if(modeArgParts.size() == 2 && modeArgParts[1].length() > 0) {
+                    if(modeArgParts[1] == "browser" || modeArgParts[1] == "window" || modeArgParts[1] == "cloud")
+                        configOverrides.push_back(make_pair("defaultMode", modeArgParts[1]));
+                    else
                         LOG(ERROR) << "Unsupported mode: '" << modeArgParts[1] << "'. The default mode is selected.";
-                    }
+                }
             }
             
             // Override default path
