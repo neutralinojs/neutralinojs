@@ -9,7 +9,7 @@
 [![OpenCollective](https://opencollective.com/neutralinojs/backers/badge.svg)](#backers) 
 <a href="https://opencollective.com/neutralinojs"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
 
-Neutralino is a lightweight and portable desktop application development framework. It lets you develop cross-platform desktop applications using JavaScript, HTML and CSS.
+Neutralinojs is a lightweight and portable desktop application development framework. It lets you develop lightweight cross-platform desktop applications using JavaScript, HTML and CSS. Apps built with Neutralinojs can run on Linux, macOS, Windows, and Web.
 
 [Neutralinojs vs Electron vs NW.js](https://github.com/neutralinojs/evaluation)
 
@@ -121,4 +121,4 @@ Please check all licenses from [this](LICENSE) link.
   <img src="https://contributors-img.firebaseapp.com/image?repo=neutralinojs/neutralinojs" />
 </a>
 
-The above contribution image was generated with [contributors-img](https://contributors-img.firebaseapp.com).
+The above image was generated with [contributors-img](https://contributors-img.firebaseapp.com).
