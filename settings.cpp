@@ -24,10 +24,14 @@
 
 using namespace std;
 using json = nlohmann::json;
+
+
 json options;
 json globalArgs;
 bool loadResFromDir = false;
 string appPath;
+
+vector <pair<string, string>> configOverrides;
 
 namespace settings {
 
@@ -57,11 +61,16 @@ namespace settings {
         json config;
         try {
             config = json::parse(settings::getFileContent(APP_CONFIG_FILE));
+            options = config;
+            // overrides
+            for(auto override: configOverrides) {
+                if(override.first == "defaultMode")
+                    options["defaultMode"] = override.second;
+            }
         }
         catch(exception e){
-            LOG(ERROR) << e.what();
+            LOG(ERROR) << "Unable to load: " << APP_CONFIG_FILE;
         }
-        options = config;
         return options;
     }
 
@@ -87,7 +96,7 @@ namespace settings {
     void setGlobalArgs(json args) {
         int argIndex = 0;
         for(string arg : args) {
-            // -- Set default path
+            // Set default path
             if(argIndex == 0) {
                 appPath = platform::getDirectoryName(args[argIndex].get<std::string>());
                 if(appPath == "")
@@ -98,6 +107,18 @@ namespace settings {
             // Resources read mode (res.neu or from directory)
             if(arg == "--load-dir-res") {
                 loadResFromDir = true;
+            }
+            
+            // Override default mode
+            if(regex_match(arg, regex("--mode=.*"))) {
+                vector <string> modeArgParts = helpers::split(arg, '=');
+                if(modeArgParts.size() == 2 && modeArgParts[1].length() > 0)
+                    if(modeArgParts[1] == "browser" || modeArgParts[1] == "window" || modeArgParts[1] == "cloud") {
+                        configOverrides.push_back(make_pair("defaultMode", modeArgParts[1])); 
+                    }
+                    else {
+                        LOG(ERROR) << "Unsupported mode: '" << modeArgParts[1] << "'. The default mode is selected.";
+                    }
             }
             
             // Override default path

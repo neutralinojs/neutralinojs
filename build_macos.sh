@@ -1,7 +1,7 @@
 echo "Compiling Neutralinojs..."
 
-if [ -e bin/neutralino ]; then
-    rm bin/neutralino
+if [ -e bin/neutralino-mac ]; then
+    rm bin/neutralino-mac
 fi
 
 c++ -arch x86_64 resources.cpp \
@@ -31,10 +31,10 @@ c++ -arch x86_64 resources.cpp \
     -DELPP_NO_DEFAULT_LOG_FILE=1 \
     -DWEBVIEW_COCOA=1 \
     -Os \
-    -o bin/neutralino 
+    -o bin/neutralino-mac 
 
-if [ -e bin/neutralino ]; then
-    echo "OK: Neutralino binary is compiled in to bin/neutralino"
+if [ -e bin/neutralino-mac ]; then
+    echo "OK: Neutralino binary is compiled in to bin/neutralino-mac"
 else
     echo "ERR: Neutralino binary is not compiled"
 fi

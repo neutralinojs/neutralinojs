@@ -27,7 +27,7 @@ call "%vc_dir%\Common7\Tools\vsdevcmd.bat" -arch=x64 -host_arch=x64
 echo Compiling Neutralinojs...
 
 if EXIST bin\neutralino.exe (
-    del /f bin\neutralino.exe
+    del /f bin\neutralino-win.exe
 )
 
 cl /std:c++17 ^
@@ -54,12 +54,12 @@ api/debug/debug.cpp ^
 api/app/app.cpp ^
 api/window/window.cpp ^
 /DELPP_NO_DEFAULT_LOG_FILE ^
-/link platform/windows/webview2/WebView2Loader.dll.lib "/OUT:bin\neutralino.exe"
+/link platform/windows/webview2/WebView2Loader.dll.lib "/OUT:bin\neutralino-win.exe"
 
-if EXIST bin\neutralino.exe (
-    echo Neutralino binary is compiled in to bin/netralino.exe
+if EXIST bin\neutralino-win.exe (
+    echo OK: Neutralino binary is compiled in to bin/netralino-win.exe
 )
 
-if NOT EXIST bin\neutralino.exe (
-    echo ERR : Neutralino binary is not compiled
+if NOT EXIST bin\neutralino-win.exe (
+    echo ERR: Neutralino binary is not compiled
 )

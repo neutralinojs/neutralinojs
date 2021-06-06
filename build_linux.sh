@@ -1,6 +1,6 @@
 echo "Compiling Neutralinojs..."
-if [ -e bin/neutralino ]; then
-    rm bin/neutralino
+if [ -e bin/neutralino-linux ]; then
+    rm bin/neutralino-linux
 fi
 
 g++ resources.cpp \
@@ -27,12 +27,12 @@ g++ resources.cpp \
     -DELPP_NO_DEFAULT_LOG_FILE=1 \
     -DWEBVIEW_GTK=1 \
     `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0 glib-2.0` \
-    -o bin/neutralino \
+    -o bin/neutralino-linux \
     -no-pie \
      -I .
 
-if [ -e bin/neutralino ]; then
-    echo "OK: Neutralino binary is compiled in to bin/neutralino"
+if [ -e bin/neutralino-linux ]; then
+    echo "OK: Neutralino binary is compiled in to bin/neutralino-linux"
 else
     echo "ERR: Neutralino binary is not compiled"
 fi
