@@ -87,7 +87,7 @@ namespace os {
             TCHAR szDir[MAX_PATH];
             BROWSEINFO bInfo;
             ZeroMemory(&bInfo, sizeof(bInfo));
-            bInfo.hwndOwner = NULL;
+            bInfo.hwndOwner = GetForegroundWindow();
             bInfo.pidlRoot = NULL;
             bInfo.pszDisplayName = szDir;
             bInfo.lpszTitle = const_cast<char *>(title.c_str());
@@ -109,6 +109,7 @@ namespace os {
             OPENFILENAME ofn;
             TCHAR szFile[MAX_PATH] = { 0 };
             ZeroMemory(&ofn, sizeof(ofn));
+            ofn.hwndOwner = GetForegroundWindow();
             ofn.lpstrTitle = const_cast<char *>(title.c_str());
             ofn.lStructSize = sizeof(ofn);
             ofn.lpstrFile = szFile;
@@ -154,6 +155,7 @@ namespace os {
         TCHAR szFile[260] = { 0 };
 
         ZeroMemory(&ofn, sizeof(ofn));
+        ofn.hwndOwner = GetForegroundWindow();
         ofn.lpstrTitle = const_cast<char *>(title.c_str());
         ofn.lStructSize = sizeof(ofn);
         ofn.lpstrFile = szFile;
