@@ -56,14 +56,14 @@ namespace resources {
        }
     }
 
-    void makeFileTree() {
+    bool makeFileTree() {
         std::ifstream asarArchive;
         std::string resFileName = APP_RES_FILE;
         resFileName = settings::joinAppPath(resFileName);
         asarArchive.open(resFileName, std::ios::binary);
         if (!asarArchive) {
             LOG(ERROR) << "Resource file tree generation error: " << resFileName << " is missing.";
-            return;
+            return false;
         }
 
         char *sizeBuf = new char[8];
@@ -85,6 +85,7 @@ namespace resources {
             LOG(ERROR) << e.what();
         }
         fileTree = files;
+        return fileTree != nullptr;
     }
 
 }

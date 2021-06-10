@@ -229,7 +229,7 @@ namespace os {
             output["error"] = "Invalid message type: '" + messageType + "' provided";
             return output.dump();
         }
-        string command = "zenity --" + messageTypes[messageType] + " --title=\"" +
+        string command = "zenity --no-wrap --" + messageTypes[messageType] + " --title=\"" +
                             input["title"].get<string>() + "\" --text=\"" +
                             input["content"].get<string>() + "\" && echo $?";
         string response = platform::execCommand(command);
