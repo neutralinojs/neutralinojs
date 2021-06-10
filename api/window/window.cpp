@@ -6,7 +6,6 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
 #elif defined(__APPLE__)
-#include <dispatch/dispatch.h>
 #include <objc/objc-runtime.h>
 #include "platform/platform.h"
 #define NSFloatingWindowLevel 5
@@ -175,13 +174,7 @@ namespace window {
         string title = "";
         if(!input["title"].is_null())
             title = input["title"];
-        #if defined(__APPLE__)
-        dispatch_sync(dispatch_get_main_queue(), ^{
-        #endif
         nativeWindow->set_title(title);
-        #if defined(__APPLE__)
-        });
-        #endif
         output["success"] = true;
         return output.dump();
     }
