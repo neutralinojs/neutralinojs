@@ -13,7 +13,7 @@ Neutralinojs is a lightweight and portable desktop application development frame
 
 [Neutralinojs vs Electron vs NW.js](https://github.com/neutralinojs/evaluation)
 
-Get started with CLI.
+Get started with the neu CLI.
 
 ```bash
  $ npm i -g @neutralinojs/neu
