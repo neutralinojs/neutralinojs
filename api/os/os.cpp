@@ -11,9 +11,7 @@
 #include <map>
 
 #if defined(__APPLE__)
-#include <dispatch/dispatch.h>
 #include <lib/boxer/boxer.h>
-#include <objc/objc-runtime.h>
 
 #elif defined(_WIN32)
 #include <windows.h>
@@ -229,7 +227,7 @@ namespace os {
             output["error"] = "Invalid message type: '" + messageType + "' provided";
             return output.dump();
         }
-        string command = "zenity --" + messageTypes[messageType] + " --title=\"" +
+        string command = "zenity --no-wrap --" + messageTypes[messageType] + " --title=\"" +
                             input["title"].get<string>() + "\" --text=\"" +
                             input["content"].get<string>() + "\" && echo $?";
         string response = platform::execCommand(command);
@@ -242,17 +240,9 @@ namespace os {
             string content = input["content"];
             string type = input["type"];
 
-            #if defined(__APPLE__)
-            __block json output;
-            __block boxer::Selection msgSel;
-            #elif defined(_WIN32)
             json output;
             boxer::Selection msgSel;
-            #endif
-            
-            #if defined(__APPLE__)
-            dispatch_sync(dispatch_get_main_queue(), ^{
-            #endif
+
             if(type == "INFO")
                 msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Info);
             else if(type == "WARN")
@@ -266,9 +256,7 @@ namespace os {
             }
             else 
                 output["error"] = "Invalid message type: '" + type + "' provided";
-            #if defined(__APPLE__)
-            });
-            #endif
+
             if(output["error"].is_null())
                 output["success"] = true;
         

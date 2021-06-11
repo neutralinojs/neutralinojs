@@ -16,6 +16,9 @@
 #include "api/app/app.h"
 #include "api/window/window.h"
 
+#if defined(__APPLE__)
+#include <dispatch/dispatch.h>
+#endif
 
 using namespace std;
 using json = nlohmann::json;
@@ -24,7 +27,14 @@ typedef string (*NativeMethod)(json);
 namespace routes {
     pair<string, string> executeNativeMethod(string path, string postData, string token) {
         string modfunc = regex_replace(path, std::regex("/__nativeMethod_"), "");
+
+        #if (__APPLE__)
+        __block string output = "";
+        __block json inputPayload;
+        #else
         string output = "";
+        json inputPayload;
+        #endif
 
         if(!authbasic::verifyToken(token))
             return make_pair("{\"error\":\"Invalid or expired NL_TOKEN value from client\"}", "application/json");
@@ -58,12 +68,23 @@ namespace routes {
         };
 
         if(methodMap.find(modfunc) != methodMap.end() ){
-            json inputPayload;
             try {
                 if(postData != "")
                     inputPayload = json::parse(postData);
                 NativeMethod nativeMethod = methodMap[modfunc];
-                output = (*nativeMethod)(inputPayload);
+                #if defined(__APPLE__)
+                // In macos, child threads cannot run UI logic
+                if(modfunc == "os.showMessageBox" || modfunc == "window.setTitle") {
+                    dispatch_sync(dispatch_get_main_queue(), ^{
+                        output = (*nativeMethod)(inputPayload);
+                    });
+                }
+                else {
+                    output = (*nativeMethod)(inputPayload);
+                }
+                #else
+                    output = (*nativeMethod)(inputPayload);
+                #endif
             }
             catch(exception e){
                 json parserOutput = {{"error", "JSON parse error. Please check whether your request payload is correct"}};

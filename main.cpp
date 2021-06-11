@@ -14,6 +14,7 @@
 #include "server/neuserver.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
+#include "api/os/os.h"
 
 #define APP_LOG_FILE "/neutralinojs.log"
 #define APP_LOG_FORMAT "%level %datetime %msg %loc %user@%host"
@@ -41,9 +42,22 @@ int main(int argc, char ** argv)
     }
     bool enableHTTPServer = false;
     settings::setGlobalArgs(args);
-    if (!loadResFromDir)
-        resources::makeFileTree();
+    if (!loadResFromDir) {
+        bool resourceLoaderStatus = resources::makeFileTree();
+        if(!resourceLoaderStatus)
+            loadResFromDir = true;
+    }
+
     json options = settings::getConfig();
+    if(options.is_null()) {
+        json msgBoxParams;
+        msgBoxParams["type"] = "ERROR";
+        msgBoxParams["title"] = "Unable to load app configuration";
+        msgBoxParams["content"] = "neutralino.config.json file is missing or corrupted.";
+        os::showMessageBox(msgBoxParams);
+        app::exit(nullptr);
+    }
+
     authbasic::generateToken();
     ping::startPingReceiver();
     permission::registerBlockList();

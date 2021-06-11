@@ -5,7 +5,7 @@ using json = nlohmann::json;
 
 namespace resources {
     pair<int, string> seekFilePos(string path);
-    void makeFileTree();
+    bool makeFileTree();
     string getFileContent(string filename);
     string getFileContentBinary(string filename);
 }
