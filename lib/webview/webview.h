@@ -520,21 +520,30 @@ public:
     gtk_window_set_title(GTK_WINDOW(m_window), title.c_str());
   }
 
-  void set_size(int width, int height, int hints) {
-    gtk_window_set_resizable(GTK_WINDOW(m_window), hints != WEBVIEW_HINT_FIXED);
-    if (hints == WEBVIEW_HINT_NONE) {
-      gtk_window_resize(GTK_WINDOW(m_window), width, height);
-    } else if (hints == WEBVIEW_HINT_FIXED) {
-      gtk_widget_set_size_request(m_window, width, height);
-    } else {
+  void set_size(int width, int height, int minWidth, int minHeight, 
+  int maxWidth, int maxHeight, bool resizable) {
+    if(minWidth != -1 || minHeight != -1 || maxWidth != -1 || maxHeight != -1) {
       GdkGeometry g;
-      g.min_width = g.max_width = width;
-      g.min_height = g.max_height = height;
-      GdkWindowHints h =
-          (hints == WEBVIEW_HINT_MIN ? GDK_HINT_MIN_SIZE : GDK_HINT_MAX_SIZE);
-      // This defines either MIN_SIZE, or MAX_SIZE, but not both:
+      GdkWindowHints h;
+
+      if((minWidth != -1 || minHeight != -1) && (maxWidth != -1 || maxHeight != -1))
+        h = (GdkWindowHints)(GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE);
+      else if(maxWidth != -1 || maxHeight != -1)
+        h = GDK_HINT_MAX_SIZE;
+      else 
+        h = GDK_HINT_MIN_SIZE;
+        
+      g.min_width = minWidth;
+      g.min_height = minHeight;
+      g.max_width = maxWidth;
+      g.max_height = maxHeight;
       gtk_window_set_geometry_hints(GTK_WINDOW(m_window), nullptr, &g, h);
     }
+    gtk_window_set_resizable(GTK_WINDOW(m_window), resizable);
+    if(resizable)
+      gtk_window_resize(GTK_WINDOW(m_window), width, height);
+    else
+      gtk_widget_set_size_request(m_window, width, height);
   }
 
   void navigate(const std::string url) {
@@ -740,26 +749,27 @@ public:
         ((id(*)(id, SEL, const char *))objc_msgSend)(
             "NSString"_cls, "stringWithUTF8String:"_sel, title.c_str()));
   }
-  void set_size(int width, int height, int hints) {
+  void set_size(int width, int height, int minWidth, int minHeight, 
+                int maxWidth, int maxHeight, bool resizable) {
     auto style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
                  NSWindowStyleMaskMiniaturizable;
-    if (hints != WEBVIEW_HINT_FIXED) {
+    if (resizable) {
       style = style | NSWindowStyleMaskResizable;
     }
     ((void (*)(id, SEL, unsigned long))objc_msgSend)(
         m_window, "setStyleMask:"_sel, style);
 
-    if (hints == WEBVIEW_HINT_MIN) {
+    if (minWidth != -1 || minHeight != -1) {
       ((void (*)(id, SEL, CGSize))objc_msgSend)(
-          m_window, "setContentMinSize:"_sel, CGSizeMake(width, height));
-    } else if (hints == WEBVIEW_HINT_MAX) {
-      ((void (*)(id, SEL, CGSize))objc_msgSend)(
-          m_window, "setContentMaxSize:"_sel, CGSizeMake(width, height));
-    } else {
-      ((void (*)(id, SEL, CGRect, BOOL, BOOL))objc_msgSend)(
-          m_window, "setFrame:display:animate:"_sel,
-          CGRectMake(0, 0, width, height), 1, 0);
+          m_window, "setContentMinSize:"_sel, CGSizeMake(minWidth, minHeight));
     }
+    if (maxWidth != -1 || maxHeight != -1) {
+      ((void (*)(id, SEL, CGSize))objc_msgSend)(
+          m_window, "setContentMaxSize:"_sel, CGSizeMake(maxWidth, maxHeight));
+    }
+    ((void (*)(id, SEL, CGRect, BOOL, BOOL))objc_msgSend)(
+        m_window, "setFrame:display:animate:"_sel,
+        CGRectMake(0, 0, width, height), 1, 0);
     ((void (*)(id, SEL))objc_msgSend)(m_window, "center"_sel);
   }
   void navigate(const std::string url) {
@@ -1180,32 +1190,33 @@ public:
     SetWindowText(m_window, title.c_str());
   }
 
-  void set_size(int width, int height, int hints) {
+  void set_size(int width, int height, int minWidth, int minHeight, 
+                int maxWidth, int maxHeight, bool resizable) {
     auto style = GetWindowLong(m_window, GWL_STYLE);
-    if (hints == WEBVIEW_HINT_FIXED) {
+    if (!resizable) {
       style &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX);
     } else {
       style |= (WS_THICKFRAME | WS_MAXIMIZEBOX);
     }
     SetWindowLong(m_window, GWL_STYLE, style);
 
-    if (hints == WEBVIEW_HINT_MAX) {
-      m_maxsz.x = width;
-      m_maxsz.y = height;
-    } else if (hints == WEBVIEW_HINT_MIN) {
-      m_minsz.x = width;
-      m_minsz.y = height;
-    } else {
-      RECT r;
-      r.left = r.top = 0;
-      r.right = width;
-      r.bottom = height;
-      AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, 0);
-      SetWindowPos(
-          m_window, NULL, r.left, r.top, r.right - r.left, r.bottom - r.top,
-          SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_FRAMECHANGED);
-      m_browser->resize(m_window);
+    if (maxWidth != -1 || maxHeight != -1) {
+      m_maxsz.x = maxWidth;
+      m_maxsz.y = maxHeight;
+    } 
+    if (minWidth != -1 || minHeight != -1) {
+      m_minsz.x = minWidth;
+      m_minsz.y = minHeight;
     }
+    RECT r;
+    r.left = r.top = 0;
+    r.right = width;
+    r.bottom = height;
+    AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, 0);
+    SetWindowPos(
+        m_window, NULL, r.left, r.top, r.right - r.left, r.bottom - r.top,
+        SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_FRAMECHANGED);
+    m_browser->resize(m_window);
   }
 
   void navigate(const std::string url) { m_browser->navigate(url); }
@@ -1345,8 +1356,8 @@ WEBVIEW_API void webview_set_title(webview_t w, const char *title) {
 }
 
 WEBVIEW_API void webview_set_size(webview_t w, int width, int height,
-                                  int hints) {
-  static_cast<webview::webview *>(w)->set_size(width, height, hints);
+                                  int minWidth, int minHeight, int maxWidth, int maxHeight, bool resizable) {
+  static_cast<webview::webview *>(w)->set_size(width, height, minWidth, minHeight, maxWidth, maxHeight, resizable);
 }
 
 WEBVIEW_API void webview_navigate(webview_t w, const char *url) {

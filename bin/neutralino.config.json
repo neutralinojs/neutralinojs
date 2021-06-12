@@ -14,13 +14,16 @@
             "title": "Neutralinojs app",
             "width": 800,
             "height": 500,
+            "minWidth": 400,
+            "minHeight": 200,
             "fullScreen": false,
             "alwaysOnTop": false,
             "icon": "/resources/icons/appIcon.png",
-            "enableInspector": true,
+            "enableInspector": false,
             "borderless": false,
             "maximize": false,
-            "hidden": false
+            "hidden": false,
+            "resizable": true
         },
         "browser": {},
         "cloud": {}
