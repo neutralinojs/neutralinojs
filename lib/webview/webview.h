@@ -520,7 +520,8 @@ public:
     gtk_window_set_title(GTK_WINDOW(m_window), title.c_str());
   }
 
-  void set_size(int width, int height, int minWidth, int minHeight, int maxWidth, int maxHeight, bool resizable) {
+  void set_size(int width, int height, int minWidth, int minHeight, 
+  int maxWidth, int maxHeight, bool resizable) {
     if(minWidth != -1 || minHeight != -1 || maxWidth != -1 || maxHeight != -1) {
       GdkGeometry g;
       GdkWindowHints h;
@@ -748,26 +749,27 @@ public:
         ((id(*)(id, SEL, const char *))objc_msgSend)(
             "NSString"_cls, "stringWithUTF8String:"_sel, title.c_str()));
   }
-  void set_size(int width, int height, int hints) {
+  void set_size(int width, int height, int minWidth, int minHeight, 
+                int maxWidth, int maxHeight, bool resizable) {
     auto style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
                  NSWindowStyleMaskMiniaturizable;
-    if (hints != WEBVIEW_HINT_FIXED) {
+    if (resizable) {
       style = style | NSWindowStyleMaskResizable;
     }
     ((void (*)(id, SEL, unsigned long))objc_msgSend)(
         m_window, "setStyleMask:"_sel, style);
 
-    if (hints == WEBVIEW_HINT_MIN) {
+    if (minWidth != -1 || minHeight != -1) {
       ((void (*)(id, SEL, CGSize))objc_msgSend)(
-          m_window, "setContentMinSize:"_sel, CGSizeMake(width, height));
-    } else if (hints == WEBVIEW_HINT_MAX) {
-      ((void (*)(id, SEL, CGSize))objc_msgSend)(
-          m_window, "setContentMaxSize:"_sel, CGSizeMake(width, height));
-    } else {
-      ((void (*)(id, SEL, CGRect, BOOL, BOOL))objc_msgSend)(
-          m_window, "setFrame:display:animate:"_sel,
-          CGRectMake(0, 0, width, height), 1, 0);
+          m_window, "setContentMinSize:"_sel, CGSizeMake(minWidth, minHeight));
     }
+    if (maxWidth != -1 || maxHeight != -1) {
+      ((void (*)(id, SEL, CGSize))objc_msgSend)(
+          m_window, "setContentMaxSize:"_sel, CGSizeMake(maxWidth, maxHeight));
+    }
+    ((void (*)(id, SEL, CGRect, BOOL, BOOL))objc_msgSend)(
+        m_window, "setFrame:display:animate:"_sel,
+        CGRectMake(0, 0, width, height), 1, 0);
     ((void (*)(id, SEL))objc_msgSend)(m_window, "center"_sel);
   }
   void navigate(const std::string url) {

@@ -94,27 +94,27 @@ namespace window {
         nativeWindow->run();
     }
     #elif defined(__APPLE__)
-    void __createWindow(int height, int width,
-        bool fullScreen, string title, bool alwaysOnTop, id icon,
-        bool enableInspector, bool borderless, bool maximize, bool hidden, string url) {
-        nativeWindow = new webview::webview(enableInspector, nullptr);
-        nativeWindow->set_title(title);
-        nativeWindow->set_size(width, height, WEBVIEW_HINT_NONE);
+    void __createWindow(WindowOptions windowProps) {
+        nativeWindow = new webview::webview(windowProps.enableInspector, nullptr);
+        nativeWindow->set_title(windowProps.title);
+        nativeWindow->set_size(windowProps.width, windowProps.height, windowProps.minWidth,
+                        windowProps.minHeight, windowProps.maxWidth, windowProps.maxHeight, 
+                        windowProps.resizable);
         windowHandle = (id) nativeWindow->window();
 
         // Window properties/modes
         ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
                     "setHasShadow:"_sel, true);
 
-        if(fullScreen)
+        if(windowProps.fullScreen)
             ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
                     "toggleFullScreen:"_sel, NULL);
         
-        if(alwaysOnTop)
+        if(windowProps.alwaysOnTop)
             ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle, 
                     "setLevel:"_sel, NSFloatingWindowLevel);
 
-        if(borderless) {
+        if(windowProps.borderless) {
             unsigned long windowStyleMask = ((unsigned long (*)(id, SEL))objc_msgSend)(
                 (id) windowHandle, "styleMask"_sel);
             windowStyleMask &= ~NSWindowStyleMaskTitled;
@@ -122,20 +122,20 @@ namespace window {
                     "setStyleMask:"_sel, windowStyleMask);
         }
 
-        if(maximize)
+        if(windowProps.maximize)
             ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
                     "zoom:"_sel, NULL);
         
         ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
-                    "setIsVisible:"_sel, !hidden);
+                    "setIsVisible:"_sel, !windowProps.hidden);
         
-        if(icon) {
+        if(windowProps.icon) {
             ((void (*)(id, SEL, id))objc_msgSend)(((id (*)(id, SEL))objc_msgSend)("NSApplication"_cls,
                                         "sharedApplication"_sel),
-                        "setApplicationIconImage:"_sel, icon);
+                        "setApplicationIconImage:"_sel, windowProps.icon);
         }
         
-        nativeWindow->navigate(url);
+        nativeWindow->navigate(windowProps.url);
         nativeWindow->run();
     }
     #elif defined(_WIN32)
@@ -262,13 +262,13 @@ namespace window {
             string iconfile = input["icon"].get<std::string>();
             string iconDataStr = settings::getFileContent(iconfile);
             const char *iconData = iconDataStr.c_str();
-            icon =
+            windowProps.icon =
                 ((id (*)(id, SEL))objc_msgSend)("NSImage"_cls, "alloc"_sel);
             
             id nsIconData = ((id (*)(id, SEL, const char*, int))objc_msgSend)("NSData"_cls,
                       "dataWithBytes:length:"_sel, iconData, iconDataStr.length());
 
-            ((void (*)(id, SEL, id))objc_msgSend)(icon, "initWithData:"_sel, nsIconData);
+            ((void (*)(id, SEL, id))objc_msgSend)(windowProps.icon, "initWithData:"_sel, nsIconData);
             
             #elif defined(_WIN32)
             string iconfile = input["icon"].get<std::string>();
