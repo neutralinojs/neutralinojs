@@ -18,7 +18,7 @@
 #elif defined(__APPLE__)
 #define OS_NAME "Darwin"
 #endif
-#define NL_VERSION "2.2.0"
+#define NL_VERSION "2.3.0"
 
 #define APP_CONFIG_FILE "/neutralino.config.json"
 
