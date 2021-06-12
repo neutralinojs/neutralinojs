@@ -37,33 +37,60 @@ id windowHandle;
 HWND windowHandle;
 #endif
 
-namespace window {
-    
+struct WindowOptions {
+    int width = 800;
+    int height = 600;
+    int minWidth = -1;
+    int minHeight = -1;
+    int maxWidth = -1;
+    int maxHeight = -1;
+    bool fullScreen = false;
+    bool alwaysOnTop = false;
+    bool enableInspector = false;
+    bool borderless= false;
+    bool maximize = false;
+    bool hidden = false;
+    bool resizable = true;
+    bool maximizable = true;
+    string title = "Neutralinojs window";
+    string url = "https://neutralino.js.org";
     #if defined(__linux__)
-    void __createWindow(int height, int width,
-        bool fullScreen, string title, bool alwaysOnTop, void* icon,
-        bool enableInspector, bool borderless, bool maximize, bool hidden, string url) {
-        nativeWindow = new webview::webview(enableInspector, nullptr);
-        nativeWindow->set_title(title);
-        nativeWindow->set_size(width, height, WEBVIEW_HINT_NONE);
+    GdkPixbuf *icon = nullptr;
+    #elif defined(__APPLE__)
+    id icon = nullptr;
+    #elif defined(_WIN32)
+    HICON icon = nullptr;
+    #endif
+};
+
+namespace window {
+    #if defined(__linux__)
+    void __createWindow(WindowOptions windowProps) {
+        nativeWindow = new webview::webview(windowProps.enableInspector, nullptr);
+        nativeWindow->set_title(windowProps.title);
+        nativeWindow->set_size(windowProps.width, windowProps.height, windowProps.minWidth,
+                        windowProps.minHeight, windowProps.maxWidth, windowProps.maxHeight, 
+                        windowProps.resizable);
         windowHandle = (GtkWidget*) nativeWindow->window();
 
         // Window properties/modes
-        if(fullScreen)
+        if(windowProps.fullScreen)
             gtk_window_fullscreen(GTK_WINDOW(windowHandle));
 
-        gtk_window_set_keep_above(GTK_WINDOW(windowHandle), alwaysOnTop);
+        gtk_window_set_keep_above(GTK_WINDOW(windowHandle), windowProps.alwaysOnTop);
 
-        if(maximize)
+        if(windowProps.maximize)
             gtk_window_maximize(GTK_WINDOW(windowHandle));
-        if(hidden)
+ 
+        if(windowProps.hidden)
             gtk_widget_hide(windowHandle);
 
-        gtk_window_set_decorated(GTK_WINDOW(windowHandle), !borderless);
+        gtk_window_set_decorated(GTK_WINDOW(windowHandle), !windowProps.borderless);
 
-        if(icon)
-            gtk_window_set_icon(GTK_WINDOW(windowHandle), (GdkPixbuf*)icon);
-        nativeWindow->navigate(url);
+        if(windowProps.icon)
+            gtk_window_set_icon(GTK_WINDOW(windowHandle), (GdkPixbuf*)windowProps.icon);
+        
+        nativeWindow->navigate(windowProps.url);
         nativeWindow->run();
     }
     #elif defined(__APPLE__)
@@ -180,46 +207,43 @@ namespace window {
     }
 
     string show(json input) {
-        int width = 800;
-        int height = 600;
-        bool fullScreen = false;
-        bool alwaysOnTop = false;
-        bool enableInspector = false;
-        bool borderless= false;
-        bool maximize = false;
-        bool hidden = false;
-        string title = "Neutralinojs window";
-        string url = "https://neutralino.js.org";
+        WindowOptions windowProps;
         json output;
-        
-        #if defined(__linux__)
-        GdkPixbuf *icon = nullptr;
-        #elif defined(__APPLE__)
-        id icon = nullptr;
-        #elif defined(_WIN32)
+        #if defined(_WIN32)
         GdiplusStartupInput gdiplusStartupInput;
         ULONG_PTR gdiplusToken;
         GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-        HICON icon = nullptr;
         #endif
 
         if(!input["width"].is_null())
-            width = input["width"];
+            windowProps.width = input["width"];
 
         if(!input["height"].is_null())
-            height = input["height"];
+            windowProps.height = input["height"];
+            
+        if(!input["minWidth"].is_null())
+            windowProps.minWidth = input["minWidth"];
+
+        if(!input["minHeight"].is_null())
+            windowProps.minHeight = input["minHeight"];
+            
+        if(!input["maxWidth"].is_null())
+            windowProps.maxWidth = input["maxWidth"];
+
+        if(!input["maxHeight"].is_null())
+            windowProps.maxHeight = input["maxHeight"];
 
         if(!input["fullScreen"].is_null())
-            fullScreen = input["fullScreen"];
+            windowProps.fullScreen = input["fullScreen"];
 
         if(!input["alwaysOnTop"].is_null())
-            alwaysOnTop = input["alwaysOnTop"];
+            windowProps.alwaysOnTop = input["alwaysOnTop"];
 
         if(!input["title"].is_null())
-            title = input["title"];
+            windowProps.title = input["title"];
 
         if(!input["url"].is_null())
-            url = input["url"];
+            windowProps.url = input["url"];
 
         if(!input["icon"].is_null()) {
             #if defined(__linux__)
@@ -232,7 +256,7 @@ namespace window {
             const char * iconData = iconDataStr.c_str();
             unsigned char * uiconData = reinterpret_cast <unsigned char *> (const_cast <char *> (iconData));
             gdk_pixbuf_loader_write(loader, uiconData, iconDataStr.length(), NULL);
-            icon = gdk_pixbuf_loader_get_pixbuf(loader);
+            windowProps.icon = gdk_pixbuf_loader_get_pixbuf(loader);
             
             #elif defined(__APPLE__)
             string iconfile = input["icon"].get<std::string>();
@@ -259,20 +283,21 @@ namespace window {
         }
 
         if (!input["enableInspector"].is_null())
-            enableInspector = input["enableInspector"];
+            windowProps.enableInspector = input["enableInspector"];
 
         if (!input["borderless"].is_null())
-            borderless = input["borderless"];
+            windowProps.borderless = input["borderless"];
 
         if (!input["maximize"].is_null())
-            maximize = input["maximize"];
+            windowProps.maximize = input["maximize"];
 
         if (!input["hidden"].is_null())
-            hidden = input["hidden"];
+            windowProps.hidden = input["hidden"];
+            
+        if (!input["resizable"].is_null())
+            windowProps.resizable = input["resizable"];
 
-        __createWindow(height, width,
-            fullScreen, title, alwaysOnTop, icon,
-            enableInspector, borderless, maximize, hidden, url);
+        __createWindow(windowProps);
         #if defined(_WIN32)
         GdiplusShutdown(gdiplusToken);
         #endif

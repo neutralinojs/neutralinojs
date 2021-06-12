@@ -520,21 +520,29 @@ public:
     gtk_window_set_title(GTK_WINDOW(m_window), title.c_str());
   }
 
-  void set_size(int width, int height, int hints) {
-    gtk_window_set_resizable(GTK_WINDOW(m_window), hints != WEBVIEW_HINT_FIXED);
-    if (hints == WEBVIEW_HINT_NONE) {
-      gtk_window_resize(GTK_WINDOW(m_window), width, height);
-    } else if (hints == WEBVIEW_HINT_FIXED) {
-      gtk_widget_set_size_request(m_window, width, height);
-    } else {
+  void set_size(int width, int height, int minWidth, int minHeight, int maxWidth, int maxHeight, bool resizable) {
+    if(minWidth != -1 || minHeight != -1 || maxWidth != -1 || maxHeight != -1) {
       GdkGeometry g;
-      g.min_width = g.max_width = width;
-      g.min_height = g.max_height = height;
-      GdkWindowHints h =
-          (hints == WEBVIEW_HINT_MIN ? GDK_HINT_MIN_SIZE : GDK_HINT_MAX_SIZE);
-      // This defines either MIN_SIZE, or MAX_SIZE, but not both:
+      GdkWindowHints h;
+
+      if((minWidth != -1 || minHeight != -1) && (maxWidth != -1 || maxHeight != -1))
+        h = (GdkWindowHints)(GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE);
+      else if(maxWidth != -1 || maxHeight != -1)
+        h = GDK_HINT_MAX_SIZE;
+      else 
+        h = GDK_HINT_MIN_SIZE;
+        
+      g.min_width = minWidth;
+      g.min_height = minHeight;
+      g.max_width = maxWidth;
+      g.max_height = maxHeight;
       gtk_window_set_geometry_hints(GTK_WINDOW(m_window), nullptr, &g, h);
     }
+    gtk_window_set_resizable(GTK_WINDOW(m_window), resizable);
+    if(resizable)
+      gtk_window_resize(GTK_WINDOW(m_window), width, height);
+    else
+      gtk_widget_set_size_request(m_window, width, height);
   }
 
   void navigate(const std::string url) {
@@ -1345,8 +1353,8 @@ WEBVIEW_API void webview_set_title(webview_t w, const char *title) {
 }
 
 WEBVIEW_API void webview_set_size(webview_t w, int width, int height,
-                                  int hints) {
-  static_cast<webview::webview *>(w)->set_size(width, height, hints);
+                                  int minWidth, int minHeight, int maxWidth, int maxHeight, bool resizable) {
+  static_cast<webview::webview *>(w)->set_size(width, height, minWidth, minHeight, maxWidth, maxHeight, resizable);
 }
 
 WEBVIEW_API void webview_navigate(webview_t w, const char *url) {
