@@ -139,19 +139,19 @@ namespace window {
         nativeWindow->run();
     }
     #elif defined(_WIN32)
-    void __createWindow(int height, int width,
-        bool fullScreen, string title, bool alwaysOnTop, void* icon,
-        bool enableInspector, bool borderless, bool maximize, bool hidden, string url) {
+    void __createWindow(WindowOptions windowProps) {
 
-        nativeWindow = new webview::webview(enableInspector, nullptr);
-        nativeWindow->set_title(title);
-        nativeWindow->set_size(width, height, WEBVIEW_HINT_NONE);
+        nativeWindow = new webview::webview(windowProps.enableInspector, nullptr);
+        nativeWindow->set_title(windowProps.title);
+        nativeWindow->set_size(windowProps.width, windowProps.height, windowProps.minWidth,
+                        windowProps.minHeight, windowProps.maxWidth, windowProps.maxHeight, 
+                        windowProps.resizable);
         windowHandle = (HWND) nativeWindow->window();
         DWORD currentStyle = GetWindowLong(windowHandle, GWL_STYLE);
         DWORD currentStyleX = GetWindowLong(windowHandle, GWL_EXSTYLE);
 
         // Window properties/modes
-        if(fullScreen) {
+        if(windowProps.fullScreen) {
             MONITORINFO monitor_info;
             currentStyle &= ~(WS_CAPTION | WS_THICKFRAME);
             currentStyleX &= ~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE |
@@ -171,27 +171,27 @@ namespace window {
                         SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
         }
 
-        if(alwaysOnTop)
+        if(windowProps.alwaysOnTop)
             SetWindowPos(windowHandle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
 
-        if(maximize)
+        if(windowProps.maximize)
             ShowWindow(windowHandle, SW_MAXIMIZE);
 
-        if(hidden)
+        if(windowProps.hidden)
             ShowWindow(windowHandle, SW_HIDE);
 
-        if(borderless) {
+        if(windowProps.borderless) {
             currentStyle &= ~(WS_CAPTION | WS_THICKFRAME);
             SetWindowLong(windowHandle, GWL_STYLE, currentStyle);
             SetWindowPos(windowHandle, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |
                             SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
         }
 
-        if(icon) {
-            SendMessage(windowHandle, WM_SETICON, ICON_SMALL, (LPARAM)icon);
-            SendMessage(windowHandle, WM_SETICON, ICON_BIG, (LPARAM)icon);
+        if(windowProps.icon) {
+            SendMessage(windowHandle, WM_SETICON, ICON_SMALL, (LPARAM)windowProps.icon);
+            SendMessage(windowHandle, WM_SETICON, ICON_BIG, (LPARAM)windowProps.icon);
         }
-        nativeWindow->navigate(url);
+        nativeWindow->navigate(windowProps.url);
         nativeWindow->run();
     }
     #endif
@@ -277,7 +277,7 @@ namespace window {
             unsigned char *uiconData = reinterpret_cast<unsigned char*>(const_cast<char*>(iconData));
             IStream *pStream = SHCreateMemStream((BYTE *) uiconData, iconDataStr.length());
             Gdiplus::Bitmap* bitmap = Gdiplus::Bitmap::FromStream(pStream);
-            bitmap->GetHICON(&icon);
+            bitmap->GetHICON(&windowProps.icon);
             pStream->Release();
             #endif
         }

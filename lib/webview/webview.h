@@ -1190,32 +1190,33 @@ public:
     SetWindowText(m_window, title.c_str());
   }
 
-  void set_size(int width, int height, int hints) {
+  void set_size(int width, int height, int minWidth, int minHeight, 
+                int maxWidth, int maxHeight, bool resizable) {
     auto style = GetWindowLong(m_window, GWL_STYLE);
-    if (hints == WEBVIEW_HINT_FIXED) {
+    if (!resizable) {
       style &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX);
     } else {
       style |= (WS_THICKFRAME | WS_MAXIMIZEBOX);
     }
     SetWindowLong(m_window, GWL_STYLE, style);
 
-    if (hints == WEBVIEW_HINT_MAX) {
-      m_maxsz.x = width;
-      m_maxsz.y = height;
-    } else if (hints == WEBVIEW_HINT_MIN) {
-      m_minsz.x = width;
-      m_minsz.y = height;
-    } else {
-      RECT r;
-      r.left = r.top = 0;
-      r.right = width;
-      r.bottom = height;
-      AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, 0);
-      SetWindowPos(
-          m_window, NULL, r.left, r.top, r.right - r.left, r.bottom - r.top,
-          SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_FRAMECHANGED);
-      m_browser->resize(m_window);
+    if (maxWidth != -1 || maxHeight != -1) {
+      m_maxsz.x = maxWidth;
+      m_maxsz.y = maxHeight;
+    } 
+    if (minWidth != -1 || minHeight != -1) {
+      m_minsz.x = minWidth;
+      m_minsz.y = minHeight;
     }
+    RECT r;
+    r.left = r.top = 0;
+    r.right = width;
+    r.bottom = height;
+    AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, 0);
+    SetWindowPos(
+        m_window, NULL, r.left, r.top, r.right - r.left, r.bottom - r.top,
+        SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_FRAMECHANGED);
+    m_browser->resize(m_window);
   }
 
   void navigate(const std::string url) { m_browser->navigate(url); }
