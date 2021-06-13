@@ -87,16 +87,7 @@ $ bash build_macos.sh
 
 ## Sponsors 
 
-[![MacStadium](https://assets-global.website-files.com/5ac3c046c82724970fc60918/5ac3c046c82724204dc6094e_macstadium-logo-white.png)](https://www.macstadium.com)
-
-MacStadium offered us a free remotely-accessed physical mac-mini for Neutralinojs-mac development.
-
-The following members are supporting us financially on [Patreon](https://www.patreon.com/shalithasuranga).
-
-- Just Epic
-- Brian McGonagill
-- Brian
-- Mortarwork Studios
+Organizations and individuals support Neutralinojs. See: https://codezri.org/sponsors
 
 If you like to support our work, you can donate to Neutralinojs via [Patreon](https://www.patreon.com/shalithasuranga).
 
