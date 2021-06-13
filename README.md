@@ -85,7 +85,7 @@ Compiling Neutralino server on MacOS
 $ bash build_macos.sh
 ```
 
-## Sponsors 
+## Sponsors and Donators
 
 Organizations and individuals support Neutralinojs. See: https://codezri.org/sponsors
 
