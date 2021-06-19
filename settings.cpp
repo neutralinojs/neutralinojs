@@ -17,6 +17,9 @@
 
 #elif defined(__APPLE__)
 #define OS_NAME "Darwin"
+
+#elif defined(__FreeBSD__)
+#define OS_NAME "FreeBSD"
 #endif
 #define NL_VERSION "2.3.0"
 

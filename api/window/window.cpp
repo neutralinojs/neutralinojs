@@ -1,6 +1,6 @@
 #include <iostream>
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(__FreeBSD__)
 #include <gtk/gtk.h>
 #include <glib.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
@@ -29,7 +29,7 @@ using namespace Gdiplus;
 #endif
 
 webview::webview *nativeWindow;
-#if defined(__linux__)
+#if defined(__linux__) || defined(__FreeBSD__)
 GtkWidget* windowHandle;
 #elif defined(__APPLE__)
 id windowHandle;
@@ -54,7 +54,7 @@ struct WindowOptions {
     bool maximizable = true;
     string title = "Neutralinojs window";
     string url = "https://neutralino.js.org";
-    #if defined(__linux__)
+    #if defined(__linux__) || defined(__FreeBSD__)
     GdkPixbuf *icon = nullptr;
     #elif defined(__APPLE__)
     id icon = nullptr;
@@ -64,7 +64,7 @@ struct WindowOptions {
 };
 
 namespace window {
-    #if defined(__linux__)
+    #if defined(__linux__) || defined(__FreeBSD__)
     void __createWindow(WindowOptions windowProps) {
         nativeWindow = new webview::webview(windowProps.enableInspector, nullptr);
         nativeWindow->set_title(windowProps.title);
@@ -246,7 +246,7 @@ namespace window {
             windowProps.url = input["url"];
 
         if(!input["icon"].is_null()) {
-            #if defined(__linux__)
+            #if defined(__linux__) || defined(__FreeBSD__)
             GdkPixbufLoader *loader;
             GdkPixbuf *pixbuf;
             loader = gdk_pixbuf_loader_new();

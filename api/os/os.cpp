@@ -60,7 +60,7 @@ namespace os {
 
     string dialogOpen(json input) {
         json output;
-        #if defined(__linux__)
+        #if defined(__linux__) || defined(__FreeBSD__)
         string command = "zenity --file-selection";
         if(!input["title"].is_null())
             command += " --title \"" + input["title"].get<std::string>() + "\"";
@@ -134,7 +134,7 @@ namespace os {
 
     string dialogSave(json input) {
         json output;
-        #if defined(__linux__)
+        #if defined(__linux__) || defined(__FreeBSD__)
         string command = "zenity --file-selection --save";
         if(!input["title"].is_null())
             command += " --title \"" + input["title"].get<std::string>() + "\"";
@@ -177,7 +177,7 @@ namespace os {
 
     string showNotification(json input) {
         json output;
-        #if defined(__linux__)
+        #if defined(__linux__) || defined(__FreeBSD__)
         string command = "notify-send \"" + input["summary"].get<string>() + "\" \"" +
                             input["body"].get<string>() + "\"";
         if(system(command.c_str()) == 0) {
@@ -217,7 +217,7 @@ namespace os {
     }
 
     string showMessageBox(json input) {
-        #if defined(__linux__)
+        #if defined(__linux__) || defined (__FreeBSD__)
         json output;
         map <string, string> messageTypes = {{"INFO", "info"}, {"WARN", "warning"},
                                             {"ERROR", "error"}, {"QUESTION", "question"}};
