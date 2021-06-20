@@ -30,6 +30,7 @@ c++ -arch x86_64 resources.cpp \
     -framework Cocoa \
     -DELPP_NO_DEFAULT_LOG_FILE=1 \
     -DWEBVIEW_COCOA=1 \
+    -DOBJC_OLD_DISPATCH_PROTOTYPES=1 \
     -Os \
     -o bin/neutralino-mac 
 
