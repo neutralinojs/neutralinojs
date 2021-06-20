@@ -304,5 +304,9 @@ namespace window {
         output["success"] = true;
         return output.dump();
     }
+    
+    void _executeJavaScript(string js) {
+        nativeWindow->eval(js);
+    }
 
 }

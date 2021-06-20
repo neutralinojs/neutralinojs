@@ -32,9 +32,13 @@
 #include "platform/platform.h"
 #include "lib/tray/tray.h"
 #include "../../helpers.h"
+#include "api/window/window.h"
 
 using namespace std;
 using json = nlohmann::json;
+
+struct tray_menu menus[10];
+struct tray tray;
 
 namespace os {
     string execCommand(json input) {
@@ -272,7 +276,9 @@ namespace os {
     
     static void __handleTrayMenuItem(struct tray_menu *item) {
         (void)item;
-    	std::cout << "x" << item->id;
+        string js = "if(window.Neutralino.events && window.Neutralino.events.onTrayMenuItemClicked) ";
+        js += "window.Neutralino.events.onTrayMenuItemClicked({id: '" + std::string(item->id) + "'})";
+    	window::_executeJavaScript(js);
     }
     
     string setTray(json input) {
@@ -287,7 +293,6 @@ namespace os {
             menuCount += input["menuItems"].size();
         }
         
-        struct tray_menu menus[menuCount];
         menus[menuCount - 1] = { NULL, NULL, 0, 0, NULL, NULL };
         
         int i = 0;
@@ -301,7 +306,7 @@ namespace os {
             menus[i++] = { id, text, disabled, checkBox, __handleTrayMenuItem, NULL };
         }
         
-        struct tray tray = {
+        tray = {
             .icon = iconPath.c_str(),
             .menu = menus,
         };

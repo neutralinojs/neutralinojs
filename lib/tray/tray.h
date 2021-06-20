@@ -61,7 +61,6 @@ static GtkMenuShell *_tray_menu(struct tray_menu *m) {
       }
       gtk_widget_set_sensitive(item, !m->disabled);
       if (m->cb != NULL) {
-        m->cb(m);
         g_signal_connect(item, "activate", G_CALLBACK(_tray_menu_cb), m);
       }
     }
