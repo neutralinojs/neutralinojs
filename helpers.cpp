@@ -67,4 +67,11 @@ namespace helpers {
         }
         *dst++ = '\0';
     }
+    
+ char* cStrCopy(string str) {
+        char *text = new char[str.size() + 1];
+        std::copy(str.begin(), str.end(), text);
+        text[str.size()] = '\0';
+        return text;
+    }
 }

@@ -9,23 +9,29 @@
 #include <string>
 #include <array>
 #include <map>
+#include <cstring>
 
-#if defined(__APPLE__)
+#if defined(__linux__)
+#define TRAY_APPINDICATOR 1
+
+#elif defined(__APPLE__)
 #include <lib/boxer/boxer.h>
+#define TRAY_APPKIT 1
 
 #elif defined(_WIN32)
 #include <windows.h>
 #include <shlobj.h>
 #include <shobjidl.h>
 #include <lib/boxer/boxer.h>
+#define TRAY_WINAPI 1
 
 #pragma comment(lib, "Comdlg32.lib")
 #pragma comment(lib, "Shell32.lib")
 #endif
 
 #include "platform/platform.h"
-
-
+#include "lib/tray/tray.h"
+#include "../../helpers.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -261,6 +267,47 @@ namespace os {
                 output["success"] = true;
         
         #endif
+        return output.dump();
+    }
+    
+    static void __handleTrayMenuItem(struct tray_menu *item) {
+        (void)item;
+    	std::cout << "x" << item->id;
+    }
+    
+    string setTray(json input) {
+        json output;
+        string iconPath = "";
+        int menuCount = 1;
+        
+        if(!input["icon"].is_null())
+            iconPath = input["icon"];
+            
+        if(!input["menuItems"].is_null()) {
+            menuCount += input["menuItems"].size();
+        }
+        
+        struct tray_menu menus[menuCount];
+        menus[menuCount - 1] = { NULL, NULL, 0, 0, NULL, NULL };
+        
+        int i = 0;
+        for (auto &menuItem: input["menuItems"]) {
+            char *id = helpers::cStrCopy(menuItem["id"].get<std::string>());
+            char *text = helpers::cStrCopy(menuItem["text"].get<std::string>());
+            int disabled = 0;
+            int checkBox = 0;
+            if(!menuItem["isDisabled"].is_null() && menuItem["isDisabled"].get<bool>())
+                disabled = 1;
+            menus[i++] = { id, text, disabled, checkBox, __handleTrayMenuItem, NULL };
+        }
+        
+        struct tray tray = {
+            .icon = iconPath.c_str(),
+            .menu = menus,
+        };
+                
+        tray_init(&tray);
+        output["success"] = true;
         return output.dump();
     }
 }

@@ -8,6 +8,7 @@ namespace os {
     string dialogSave(json input);
     string showNotification(json input);
     string showMessageBox(json input);
+    string setTray(json input);
 }
 
 #endif

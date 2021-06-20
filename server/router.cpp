@@ -63,6 +63,7 @@ namespace routes {
             {"os.dialogSave", os::dialogSave},
             {"os.showNotification", os::showNotification},
             {"os.showMessageBox", os::showMessageBox},
+            {"os.setTray", os::setTray},
             {"storage.putData", storage::putData},
             {"storage.getData", storage::getData}
         };
