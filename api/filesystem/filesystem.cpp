@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#if defined(__linux__) || defined(__APPLE__)
+#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/types.h>
@@ -22,7 +22,7 @@ namespace fs {
     string createDirectory(json input) {
         json output;
         string path = input["path"];
-        #if defined(__linux__) || defined(__APPLE__)
+        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         if(mkdir(path.c_str(), 0700) == 0) {
         #elif defined(_WIN32)
         if(CreateDirectory(path.c_str(), NULL)) {
@@ -39,7 +39,7 @@ namespace fs {
     string removeDirectory(json input) {
         json output;
         string path = input["path"];
-        #if defined(__linux__) || defined(__APPLE__)
+        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         if(rmdir(path.c_str()) == 0) {
         #elif defined(_WIN32)
         if(RemoveDirectory(path.c_str())) {
@@ -88,7 +88,7 @@ namespace fs {
     string removeFile(json input) {
         json output;
         string filename = input["fileName"];
-        #if defined(__linux__) || defined(__APPLE__)
+        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         if(remove(filename.c_str()) == 0) {
         #elif defined(_WIN32)
         if(DeleteFile(filename.c_str())) {
@@ -106,7 +106,7 @@ namespace fs {
         json output;
         string path = input["path"];
         
-        #if defined(__linux__) || defined(__APPLE__)
+        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         DIR *dirp;
         struct dirent *directory;
         dirp = opendir(path.c_str());
