@@ -307,7 +307,9 @@ namespace os {
 
         if(!input["icon"].is_null()) {
             string iconPath = input["icon"];
-            #if defined(__APPLE__)
+            #if defined(__linux__)
+            tray.icon = helpers::cStrCopy(iconPath);
+            #elif defined(__APPLE__)
             string iconDataStr = settings::getFileContent(iconPath);
             const char *iconData = iconDataStr.c_str();
             tray.icon =
