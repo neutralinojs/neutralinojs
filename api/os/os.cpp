@@ -33,6 +33,7 @@
 #include "lib/tray/tray.h"
 #include "../../helpers.h"
 #include "api/window/window.h"
+#include "settings.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -283,11 +284,7 @@ namespace os {
     
     string setTray(json input) {
         json output;
-        string iconPath = "";
         int menuCount = 1;
-        
-        if(!input["icon"].is_null())
-            iconPath = input["icon"];
             
         if(!input["menuItems"].is_null()) {
             menuCount += input["menuItems"].size();
@@ -305,11 +302,23 @@ namespace os {
                 disabled = 1;
             menus[i++] = { id, text, disabled, checkBox, __handleTrayMenuItem, NULL };
         }
-        
-        tray = {
-            .icon = iconPath.c_str(),
-            .menu = menus,
-        };
+
+        tray.menu = menus;
+
+        if(!input["icon"].is_null()) {
+            string iconPath = input["icon"];
+            #if defined(__APPLE__)
+            string iconDataStr = settings::getFileContent(iconPath);
+            const char *iconData = iconDataStr.c_str();
+            tray.icon =
+                ((id (*)(id, SEL))objc_msgSend)("NSImage"_cls, "alloc"_sel);
+            
+            id nsIconData = ((id (*)(id, SEL, const char*, int))objc_msgSend)("NSData"_cls,
+                        "dataWithBytes:length:"_sel, iconData, iconDataStr.length());
+
+            ((void (*)(id, SEL, id))objc_msgSend)(tray.icon, "initWithData:"_sel, nsIconData);
+            #endif
+        }
                 
         tray_init(&tray);
         output["success"] = true;

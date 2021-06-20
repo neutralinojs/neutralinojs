@@ -5,10 +5,21 @@ extern "C" {
 #ifndef TRAY_H
 #define TRAY_H
 
+#if defined(__APPLE__)
+#include <objc/objc-runtime.h>
+#include <limits.h>
+#endif
+
 struct tray_menu;
 
 struct tray {
-  const char *icon;
+  #if defined(__linux__)
+  char *icon;
+  #elif defined(__APPLE__)
+  id icon = NULL;
+  #elif defined(_WIN32)
+  HICON icon = NULL;
+  #endif
   struct tray_menu *menu;
 };
 
@@ -96,9 +107,6 @@ static void tray_update(struct tray *tray) {
 static void tray_exit() { loop_result = -1; }
 
 #elif defined(TRAY_APPKIT)
-
-#include <objc/objc-runtime.h>
-#include <limits.h>
 
 static id app;
 static id pool;
@@ -201,10 +209,7 @@ static int tray_loop(int blocking) {
 }
 
 static void tray_update(struct tray *tray) {
-  objc_msgSend(statusBarButton, sel_registerName("setImage:"), 
-    objc_msgSend((id)objc_getClass("NSImage"), sel_registerName("imageNamed:"), 
-      objc_msgSend((id)objc_getClass("NSString"), sel_registerName("stringWithUTF8String:"), tray->icon)));
-
+  objc_msgSend(statusBarButton, sel_registerName("setImage:"), tray->icon);
   objc_msgSend(statusItem, sel_registerName("setMenu:"), _tray_menu(tray->menu));
 }
 
