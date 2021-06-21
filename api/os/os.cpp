@@ -23,10 +23,13 @@
 #include <shlobj.h>
 #include <shobjidl.h>
 #include <lib/boxer/boxer.h>
+#include <gdiplus.h>
+#include <shlwapi.h>
 #define TRAY_WINAPI 1
 
 #pragma comment(lib, "Comdlg32.lib")
 #pragma comment(lib, "Shell32.lib")
+#pragma comment (lib,"Gdiplus.lib")
 #endif
 
 #include "platform/platform.h"
@@ -37,6 +40,9 @@
 
 using namespace std;
 using json = nlohmann::json;
+#if defined(_WIN32)
+using namespace Gdiplus;
+#endif
 
 struct tray_menu menus[10];
 struct tray tray;
@@ -283,6 +289,11 @@ namespace os {
     }
     
     string setTray(json input) {
+        #if defined(_WIN32)
+        GdiplusStartupInput gdiplusStartupInput;
+        ULONG_PTR gdiplusToken;
+        GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+        #endif
         json output;
         int menuCount = 1;
             
@@ -309,6 +320,16 @@ namespace os {
             string iconPath = input["icon"];
             #if defined(__linux__)
             tray.icon = helpers::cStrCopy(iconPath);
+
+            #elif defined(_WIN32)
+            string iconDataStr = settings::getFileContent(iconPath);
+            const char *iconData = iconDataStr.c_str();
+            unsigned char *uiconData = reinterpret_cast<unsigned char*>(const_cast<char*>(iconData));
+            IStream *pStream = SHCreateMemStream((BYTE *) uiconData, iconDataStr.length());
+            Gdiplus::Bitmap* bitmap = Gdiplus::Bitmap::FromStream(pStream);
+            bitmap->GetHICON(&tray.icon);
+            pStream->Release();
+
             #elif defined(__APPLE__)
             string iconDataStr = settings::getFileContent(iconPath);
             const char *iconData = iconDataStr.c_str();
@@ -323,6 +344,9 @@ namespace os {
         }
                 
         tray_init(&tray);
+        #if defined(_WIN32)
+        GdiplusShutdown(gdiplusToken);
+        #endif
         output["success"] = true;
         return output.dump();
     }
