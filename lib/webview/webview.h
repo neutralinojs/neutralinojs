@@ -847,6 +847,10 @@ using browser_engine = cocoa_wkwebview_engine;
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "oleaut32.lib")
 
+// Tray lib types
+#define TRAY_WINAPI 1
+#include "lib/tray/tray.h"
+
 namespace webview {
 
 using msg_cb_t = std::function<void(const std::string)>;
@@ -1102,12 +1106,13 @@ public:
       ZeroMemory(&wc, sizeof(WNDCLASSEX));
       wc.cbSize = sizeof(WNDCLASSEX);
       wc.hInstance = hInstance;
-      wc.lpszClassName = "webview";
+      wc.lpszClassName = "Neutralinojs_webview";
       wc.hIcon = icon;
       wc.hIconSm = icon;
       wc.lpfnWndProc =
           (WNDPROC)(+[](HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) -> int {
             auto w = (win32_edge_engine *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+            static HMENU menuRef;
             switch (msg) {
             case WM_SIZE:
               w->m_browser->resize(hwnd);
@@ -1118,6 +1123,37 @@ public:
             case WM_DESTROY:
               w->terminate();
               break;
+            // ---- Begin Tray lib related --------
+            case WM_TRAY_PASS_MENU_REF:
+              menuRef = (HMENU) wp;
+              break;
+            case WM_TRAY_CALLBACK_MESSAGE: 
+              if (lp == WM_LBUTTONUP || lp == WM_RBUTTONUP) {
+                POINT p;
+                GetCursorPos(&p);
+                SetForegroundWindow(hwnd);
+                WORD cmd = TrackPopupMenu(menuRef, TPM_LEFTALIGN | TPM_RIGHTBUTTON |
+                                                    TPM_RETURNCMD | TPM_NONOTIFY,
+                                          p.x, p.y, 0, hwnd, nullptr);
+                SendMessage(hwnd, WM_COMMAND, cmd, 0);
+              } 
+              break;
+            case WM_COMMAND:
+              if (wp >= ID_TRAY_FIRST) {
+                MENUITEMINFO item;
+                memset(&item, 0, sizeof(item));
+                item.cbSize = sizeof(MENUITEMINFO);
+                item.fMask = MIIM_ID | MIIM_DATA;
+                if (GetMenuItemInfo(menuRef, wp, false, &item)) {
+                  struct tray_menu *menu = (struct tray_menu *)item.dwItemData;
+                  if (menu != nullptr && menu->cb != nullptr) {
+                    menu->cb(menu);
+                  }
+                }
+                return 0;
+              }
+              break;
+            // ---- /End Tray lib related --------
             case WM_GETMINMAXINFO: {
               auto lpmmi = (LPMINMAXINFO)lp;
               if (w == nullptr) {
@@ -1137,7 +1173,7 @@ public:
             return 0;
           });
       RegisterClassEx(&wc);
-      m_window = CreateWindow("webview", "", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
+      m_window = CreateWindow("Neutralinojs_webview", "", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT,
                               CW_USEDEFAULT, 640, 480, nullptr, nullptr,
                               GetModuleHandle(nullptr), nullptr);
       SetWindowLongPtr(m_window, GWLP_USERDATA, (LONG_PTR)this);

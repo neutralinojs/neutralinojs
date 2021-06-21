@@ -281,7 +281,7 @@ namespace os {
         return output.dump();
     }
     
-    static void __handleTrayMenuItem(struct tray_menu *item) {
+    void __handleTrayMenuItem(struct tray_menu *item) {
         (void)item;
         string js = "if(window.Neutralino.events && window.Neutralino.events.onTrayMenuItemClicked) ";
         js += "window.Neutralino.events.onTrayMenuItemClicked({id: '" + std::string(item->id) + "'})";
