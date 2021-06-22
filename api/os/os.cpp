@@ -9,26 +9,47 @@
 #include <string>
 #include <array>
 #include <map>
+#include <cstring>
 
-#if defined(__APPLE__)
+#if defined(__linux__)
+#define TRAY_APPINDICATOR 1
+
+#elif defined(__APPLE__)
 #include <lib/boxer/boxer.h>
+#define TRAY_APPKIT 1
 
 #elif defined(_WIN32)
 #include <windows.h>
 #include <shlobj.h>
 #include <shobjidl.h>
 #include <lib/boxer/boxer.h>
+#include <gdiplus.h>
+#include <shlwapi.h>
+#define TRAY_WINAPI 1
 
 #pragma comment(lib, "Comdlg32.lib")
 #pragma comment(lib, "Shell32.lib")
+#pragma comment (lib,"Gdiplus.lib")
 #endif
 
 #include "platform/platform.h"
+#include "lib/tray/tray.h"
+#include "../../helpers.h"
+#include "api/window/window.h"
+#include "api/filesystem/filesystem.h"
+#include "settings.h"
+#include "resources.h"
 
-
+#define MAX_TRAY_MENU_ITEMS 50
 
 using namespace std;
 using json = nlohmann::json;
+#if defined(_WIN32)
+using namespace Gdiplus;
+#endif
+
+struct tray_menu menus[MAX_TRAY_MENU_ITEMS];
+struct tray tray;
 
 namespace os {
     string execCommand(json input) {
@@ -55,7 +76,6 @@ namespace os {
             output["success"] = true;
         }
         return output.dump();
-
     }
 
     string dialogOpen(json input) {
@@ -261,6 +281,88 @@ namespace os {
                 output["success"] = true;
         
         #endif
+        return output.dump();
+    }
+    
+    void __handleTrayMenuItem(struct tray_menu *item) {
+        (void)item;
+        string js = "if(window.Neutralino.events && window.Neutralino.events.onTrayMenuItemClicked) ";
+        js += "window.Neutralino.events.onTrayMenuItemClicked({id: '" + std::string(item->id) + "'})";
+    	window::_executeJavaScript(js);
+    }
+    
+    string setTray(json input) {
+        #if defined(_WIN32)
+        GdiplusStartupInput gdiplusStartupInput;
+        ULONG_PTR gdiplusToken;
+        GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+        #endif
+        json output;
+        int menuCount = 1;
+            
+        if(!input["menuItems"].is_null()) {
+            menuCount += input["menuItems"].size();
+        }
+        
+        menus[menuCount - 1] = { NULL, NULL, 0, 0, NULL, NULL };
+        
+        int i = 0;
+        for (auto &menuItem: input["menuItems"]) {
+            char *id = helpers::cStrCopy(menuItem["id"].get<std::string>());
+            char *text = helpers::cStrCopy(menuItem["text"].get<std::string>());
+            int disabled = 0;
+            int checkBox = 0;
+            if(!menuItem["isDisabled"].is_null() && menuItem["isDisabled"].get<bool>())
+                disabled = 1;
+            menus[i++] = { id, text, disabled, checkBox, __handleTrayMenuItem, NULL };
+        }
+
+        tray.menu = menus;
+
+        if(!input["icon"].is_null()) {
+            string iconPath = input["icon"];
+            #if defined(__linux__)
+            string fullIconPath;
+            if(loadResFromDir) {
+                fullIconPath = platform::getFullPathFromRelative(settings::joinAppPath("")) + iconPath;
+            }
+            else {
+                json createDirParams;
+                createDirParams["path"] = settings::joinAppPath("/.tmp");
+                fs::createDirectory(createDirParams);
+                string tempIconPath = settings::joinAppPath("/.tmp/tray_icon_linux.png");
+                resources::extractFile(iconPath, tempIconPath);
+                fullIconPath = platform::getFullPathFromRelative(tempIconPath);
+            }
+            tray.icon = helpers::cStrCopy(fullIconPath);
+
+            #elif defined(_WIN32)
+            string iconDataStr = settings::getFileContent(iconPath);
+            const char *iconData = iconDataStr.c_str();
+            unsigned char *uiconData = reinterpret_cast<unsigned char*>(const_cast<char*>(iconData));
+            IStream *pStream = SHCreateMemStream((BYTE *) uiconData, iconDataStr.length());
+            Gdiplus::Bitmap* bitmap = Gdiplus::Bitmap::FromStream(pStream);
+            bitmap->GetHICON(&tray.icon);
+            pStream->Release();
+
+            #elif defined(__APPLE__)
+            string iconDataStr = settings::getFileContent(iconPath);
+            const char *iconData = iconDataStr.c_str();
+            tray.icon =
+                ((id (*)(id, SEL))objc_msgSend)("NSImage"_cls, "alloc"_sel);
+            
+            id nsIconData = ((id (*)(id, SEL, const char*, int))objc_msgSend)("NSData"_cls,
+                        "dataWithBytes:length:"_sel, iconData, iconDataStr.length());
+
+            ((void (*)(id, SEL, id))objc_msgSend)(tray.icon, "initWithData:"_sel, nsIconData);
+            #endif
+        }
+                
+        tray_init(&tray);
+        #if defined(_WIN32)
+        GdiplusShutdown(gdiplusToken);
+        #endif
+        output["success"] = true;
         return output.dump();
     }
 }

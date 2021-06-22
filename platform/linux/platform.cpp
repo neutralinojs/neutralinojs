@@ -2,6 +2,7 @@
 #include <libgen.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
 #include "lib/easylogging/easylogging++.h"
 
 using namespace std;
@@ -28,6 +29,10 @@ namespace platform {
     }
     
     string getCurrentDirectory() {
-        return getcwd(NULL, 0);
+        return getcwd(nullptr, 0);
+    }
+    
+    string getFullPathFromRelative(string path) {
+        return realpath(path.c_str(), nullptr);
     }
 }

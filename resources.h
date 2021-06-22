@@ -8,4 +8,5 @@ namespace resources {
     bool makeFileTree();
     string getFileContent(string filename);
     string getFileContentBinary(string filename);
+    void extractFile(string filename, string outputFilename);
 }
