@@ -36,7 +36,11 @@
 #include "lib/tray/tray.h"
 #include "../../helpers.h"
 #include "api/window/window.h"
+#include "api/filesystem/filesystem.h"
 #include "settings.h"
+#include "resources.h"
+
+#define MAX_TRAY_MENU_ITEMS 50
 
 using namespace std;
 using json = nlohmann::json;
@@ -44,7 +48,7 @@ using json = nlohmann::json;
 using namespace Gdiplus;
 #endif
 
-struct tray_menu menus[10];
+struct tray_menu menus[MAX_TRAY_MENU_ITEMS];
 struct tray tray;
 
 namespace os {
@@ -72,7 +76,6 @@ namespace os {
             output["success"] = true;
         }
         return output.dump();
-
     }
 
     string dialogOpen(json input) {
@@ -319,7 +322,19 @@ namespace os {
         if(!input["icon"].is_null()) {
             string iconPath = input["icon"];
             #if defined(__linux__)
-            tray.icon = helpers::cStrCopy(iconPath);
+            string fullIconPath;
+            if(loadResFromDir) {
+                fullIconPath = platform::getFullPathFromRelative(settings::joinAppPath("")) + iconPath;
+            }
+            else {
+                json createDirParams;
+                createDirParams["path"] = settings::joinAppPath("/.tmp");
+                fs::createDirectory(createDirParams);
+                string tempIconPath = settings::joinAppPath("/.tmp/tray_icon_linux.png");
+                resources::extractFile(iconPath, tempIconPath);
+                fullIconPath = platform::getFullPathFromRelative(tempIconPath);
+            }
+            tray.icon = helpers::cStrCopy(fullIconPath);
 
             #elif defined(_WIN32)
             string iconDataStr = settings::getFileContent(iconPath);

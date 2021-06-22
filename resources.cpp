@@ -87,5 +87,12 @@ namespace resources {
         fileTree = files;
         return fileTree != nullptr;
     }
+    
+    void extractFile(string filename, string outputFilename) {
+        string fileContent = resources::getFileContent(filename);
+        ofstream outFile(outputFilename);
+        outFile << fileContent;
+        outFile.close();
+    }
 
 }
