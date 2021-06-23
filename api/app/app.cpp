@@ -48,7 +48,7 @@ namespace app {
         json output;
         string url = input["url"];
         #if defined(__linux__) 
-        system(("xdg-open \"" + url + "\"").c_str());
+        int status = system(("xdg-open \"" + url + "\"").c_str());
         #elif defined(__APPLE__)
         system(("open \"" + url + "\"").c_str());
         #elif defined(_WIN32)
