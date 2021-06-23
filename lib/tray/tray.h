@@ -275,11 +275,7 @@ static int tray_init(struct tray *tray) {
   nid.uFlags = NIF_ICON | NIF_MESSAGE;
   nid.uCallbackMessage = WM_TRAY_CALLBACK_MESSAGE;
   Shell_NotifyIcon(NIM_ADD, &nid);
-  tray_update(tray);
-  
-  // Send menu ref to webview's Window event listener,
-  // because WM_TRAY_CALLBACK_MESSAGE needs it
-  SendMessage(hwnd, WM_TRAY_PASS_MENU_REF, (WPARAM)hmenu, 0); 
+  tray_update(tray); 
   return 0;
 }
 
@@ -302,6 +298,9 @@ static void tray_update(struct tray *tray) {
   HMENU prevmenu = hmenu;
   UINT id = ID_TRAY_FIRST;
   hmenu = _tray_menu(tray->menu, &id);
+  // Send menu ref to webview's Window event listener,
+  // because WM_TRAY_CALLBACK_MESSAGE needs it
+  SendMessage(hwnd, WM_TRAY_PASS_MENU_REF, (WPARAM)hmenu, 0);
   SendMessage(hwnd, WM_INITMENUPOPUP, (WPARAM)hmenu, 0);
   if (nid.hIcon) {
     DestroyIcon(nid.hIcon);
