@@ -55,7 +55,7 @@ static void _tray_menu_cb(GtkMenuItem *item, gpointer data) {
 
 static GtkMenuShell *_tray_menu(struct tray_menu *m) {
   GtkMenuShell *menu = (GtkMenuShell *)gtk_menu_new();
-  for (; m != NULL && m->id != NULL; m++) {
+  for (; m != NULL && m->text != NULL; m++) {
     GtkWidget *item;
     if (strcmp(m->text, "-") == 0) {
       item = gtk_separator_menu_item_new();

@@ -50,6 +50,7 @@ using namespace Gdiplus;
 
 struct tray_menu menus[MAX_TRAY_MENU_ITEMS];
 struct tray tray;
+bool isTrayCreated = false;
 
 namespace os {
     string execCommand(json input) {
@@ -287,7 +288,10 @@ namespace os {
     void __handleTrayMenuItem(struct tray_menu *item) {
         (void)item;
         string js = "if(window.Neutralino.events && window.Neutralino.events.onTrayMenuItemClicked) ";
-        js += "window.Neutralino.events.onTrayMenuItemClicked({id: '" + std::string(item->id) + "'})";
+        js += "window.Neutralino.events.onTrayMenuItemClicked({";
+        js += "id: '" + std::string(item->id) + "',";
+        js += "isChecked: " + std::string(item->checked ? "true" : "false");
+        js += "});";
     	window::_executeJavaScript(js);
     }
     
@@ -311,10 +315,13 @@ namespace os {
             char *id = helpers::cStrCopy(menuItem["id"].get<std::string>());
             char *text = helpers::cStrCopy(menuItem["text"].get<std::string>());
             int disabled = 0;
-            int checkBox = 0;
+            int checked = 0;
             if(!menuItem["isDisabled"].is_null() && menuItem["isDisabled"].get<bool>())
                 disabled = 1;
-            menus[i++] = { id, text, disabled, checkBox, __handleTrayMenuItem, NULL };
+            if(!menuItem["isChecked"].is_null() && menuItem["isChecked"].get<bool>())
+                checked = 1;
+                
+            menus[i++] = { id, text, disabled, checked, __handleTrayMenuItem, NULL };
         }
 
         tray.menu = menus;
@@ -357,8 +364,14 @@ namespace os {
             ((void (*)(id, SEL, id))objc_msgSend)(tray.icon, "initWithData:"_sel, nsIconData);
             #endif
         }
-                
-        tray_init(&tray);
+        
+        if(!isTrayCreated) {
+            tray_init(&tray);
+            isTrayCreated = true;
+        }
+        else {
+            tray_update(&tray);
+        }
         #if defined(_WIN32)
         GdiplusShutdown(gdiplusToken);
         #endif
