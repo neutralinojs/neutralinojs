@@ -99,6 +99,7 @@ If you like to support our work, you can donate to Neutralinojs via [Patreon](ht
 - HTTP server library: MIT from [yhirose/cpp-httplib](https://github.com/yhirose/cpp-httplib). Copyright (c) 2017 Yuji Hirose.
 - JSON parser library: MIT from [nlohmann/json](https://github.com/nlohmann/json). Copyright (c) 2013-2021 Niels Lohmann.
 - Cross-platform webview library: MIT from [webview/webview](https://github.com/webview/webview). Copyright (c) 2017 Serge Zaitsev. 
+- Cross-platform tray library: MIT from [zserge/tray](https://github.com/zserge/tray). Copyright (c) 2017 Serge Zaitsev. 
 - Cross-platfrom message box library: MIT from [aaronmjacobs/Boxer](https://github.com/aaronmjacobs/Boxer). Copyright (c) 2014 Aaron Jacobs.
 
 Please check all licenses from [this](LICENSE) link.
