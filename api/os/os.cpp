@@ -11,7 +11,7 @@
 #include <map>
 #include <cstring>
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(__FreeBSD__)
 #define TRAY_APPINDICATOR 1
 
 #elif defined(__APPLE__)
@@ -238,7 +238,7 @@ namespace os {
     }
 
     string showMessageBox(json input) {
-        #if defined(__linux__) || defined (__FreeBSD__)
+        #if defined(__linux__) || defined(__FreeBSD__)
         json output;
         map <string, string> messageTypes = {{"INFO", "info"}, {"WARN", "warning"},
                                             {"ERROR", "error"}, {"QUESTION", "question"}};
