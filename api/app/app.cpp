@@ -1,6 +1,6 @@
 #include <iostream>
 
-#if defined(__linux__) || defined(__APPLE__)
+#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 #include <signal.h>
 #include <unistd.h>
 
@@ -19,7 +19,7 @@ using json = nlohmann::json;
 namespace app {
     
     string exit(json input) {
-        #if defined(__linux__) || defined(__APPLE__)
+        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         kill(getpid(),SIGINT);
         #elif defined(_WIN32)
         DWORD pid = GetCurrentProcessId();
@@ -47,7 +47,7 @@ namespace app {
     string open(json input) {
         json output;
         string url = input["url"];
-        #if defined(__linux__) 
+        #if defined(__linux__) || defined(__FreeBSD__)
         int status = system(("xdg-open \"" + url + "\"").c_str());
         #elif defined(__APPLE__)
         system(("open \"" + url + "\"").c_str());

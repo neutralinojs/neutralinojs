@@ -13,7 +13,7 @@ extern "C" {
 struct tray_menu;
 
 struct tray {
-  #if defined(__linux__)
+  #if defined(__linux__) || defined(__FreeBSD__)
   const char *icon = NULL;
   #elif defined(__APPLE__)
   id icon = NULL;
