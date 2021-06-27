@@ -25,3 +25,14 @@ jobs:
     - uses: actions/checkout@v1
     - name: build
       run: bash build_macos.sh
+
+  build-freebsd:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: build
+      uses: vmactions/freebsd-vm@v0.1.4
+      with:
+        usesh: true
+        prepare: pkg install -y gtk+-3.0 webkit2gtk-4.0 glib-2.0 appindicator3-0.1
+        run: sh build_freebsd.sh
