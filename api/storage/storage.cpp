@@ -1,21 +1,35 @@
 #include <iostream>
 #include <fstream>
+#include <regex>
 #include "lib/json.hpp"
 #include "settings.h"
 #include "../filesystem/filesystem.h"
 
 #define STORAGE_DIR "/.storage"
 #define STORAGE_EXT ".neustorage"
+#define STORAGE_BUCKET_REGEX "^[a-zA-Z-_0-9]{2,50}$"
 
 using namespace std;
 using json = nlohmann::json;
 
 namespace storage {
+    json __validateStorageBucket(string bucketName) {
+        if(regex_match(bucketName, regex(STORAGE_BUCKET_REGEX)))
+            return nullptr;
+        json output;
+        output["error"] = "Invalid storage bucket identifer";
+        return output;
+    }
+    
     string getData(json input) {
         json output;
         string bucket = input["bucket"];
+        json errorPayload = __validateStorageBucket(bucket);
+        if(!errorPayload.is_null()) 
+            return errorPayload.dump();
         string bucketPath = settings::joinAppPath(STORAGE_DIR);
         string filename = bucketPath + "/" + bucket + STORAGE_EXT;
+        
         ifstream t;
         t.open(filename);
         if(!t.is_open()) {
@@ -37,6 +51,9 @@ namespace storage {
     string putData(json input) {
         json output;
         string bucket = input["bucket"];
+        json errorPayload = __validateStorageBucket(bucket);
+        if(!errorPayload.is_null()) 
+            return errorPayload.dump();
         string bucketPath = settings::joinAppPath(STORAGE_DIR);
         
         json createDirParams;
