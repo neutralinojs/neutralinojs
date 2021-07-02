@@ -69,7 +69,7 @@ namespace os {
         string varKey = input["key"];
         char *varValue;
         varValue = getenv(varKey.c_str());
-        if(varValue == NULL) {
+        if(varValue == nullptr) {
             output["error"] =  varKey + " is not defined";
         }
         else {
@@ -107,16 +107,16 @@ namespace os {
             BROWSEINFO bInfo;
             ZeroMemory(&bInfo, sizeof(bInfo));
             bInfo.hwndOwner = GetForegroundWindow();
-            bInfo.pidlRoot = NULL;
+            bInfo.pidlRoot = nullptr;
             bInfo.pszDisplayName = szDir;
             bInfo.lpszTitle = const_cast<char *>(title.c_str());
             bInfo.ulFlags = 0 ;
-            bInfo.lpfn = NULL;
+            bInfo.lpfn = nullptr;
             bInfo.lParam = 0;
             bInfo.iImage = -1;
 
             LPITEMIDLIST lpItem = SHBrowseForFolder( &bInfo);
-            if( lpItem != NULL ) {
+            if( lpItem != nullptr ) {
                 SHGetPathFromIDList(lpItem, szDir );
                 output["selectedEntry"] = szDir;
             }
@@ -134,9 +134,9 @@ namespace os {
             ofn.lpstrFile = szFile;
             ofn.nMaxFile = sizeof(szFile);
             ofn.nFilterIndex = 1;
-            ofn.lpstrFileTitle = NULL;
+            ofn.lpstrFileTitle = nullptr;
             ofn.nMaxFileTitle = 0;
-            ofn.lpstrInitialDir = NULL;
+            ofn.lpstrInitialDir = nullptr;
             ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
             if (GetOpenFileName(&ofn)) {
@@ -180,9 +180,9 @@ namespace os {
         ofn.lpstrFile = szFile;
         ofn.nMaxFile = sizeof(szFile);
         ofn.nFilterIndex = 1;
-        ofn.lpstrFileTitle = NULL;
+        ofn.lpstrFileTitle = nullptr;
         ofn.nMaxFileTitle = 0;
-        ofn.lpstrInitialDir = NULL;
+        ofn.lpstrInitialDir = nullptr;
         ofn.Flags = OFN_PATHMUSTEXIST;
 
         if (GetSaveFileName(&ofn)) {
@@ -287,10 +287,14 @@ namespace os {
     
     void __handleTrayMenuItem(struct tray_menu *item) {
         (void)item;
+        if(item->id == nullptr)
+            return;
         string js = "if(window.Neutralino.events && window.Neutralino.events.onTrayMenuItemClicked) ";
         js += "window.Neutralino.events.onTrayMenuItemClicked({";
         js += "id: '" + std::string(item->id) + "',";
-        js += "isChecked: " + std::string(item->checked ? "true" : "false");
+        js += "text: '" + std::string(item->text) + "',";
+        js += "isChecked: " + std::string(item->checked ? "true" : "false") + ",";
+        js += "isDisabled: " + std::string(item->disabled ? "true" : "false");
         js += "});";
     	window::_executeJavaScript(js);
     }
@@ -299,7 +303,7 @@ namespace os {
         #if defined(_WIN32)
         GdiplusStartupInput gdiplusStartupInput;
         ULONG_PTR gdiplusToken;
-        GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+        GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
         #endif
         json output;
         int menuCount = 1;
@@ -308,20 +312,22 @@ namespace os {
             menuCount += input["menuItems"].size();
         }
         
-        menus[menuCount - 1] = { NULL, NULL, 0, 0, NULL, NULL };
+        menus[menuCount - 1] = { nullptr, nullptr, 0, 0, nullptr, nullptr };
         
         int i = 0;
         for (auto &menuItem: input["menuItems"]) {
-            char *id = helpers::cStrCopy(menuItem["id"].get<std::string>());
+            char *id = nullptr;
             char *text = helpers::cStrCopy(menuItem["text"].get<std::string>());
             int disabled = 0;
             int checked = 0;
+            if(!menuItem["id"].is_null())
+                id = helpers::cStrCopy(menuItem["id"].get<std::string>());
             if(!menuItem["isDisabled"].is_null() && menuItem["isDisabled"].get<bool>())
                 disabled = 1;
             if(!menuItem["isChecked"].is_null() && menuItem["isChecked"].get<bool>())
                 checked = 1;
                 
-            menus[i++] = { id, text, disabled, checked, __handleTrayMenuItem, NULL };
+            menus[i++] = { id, text, disabled, checked, __handleTrayMenuItem, nullptr };
         }
 
         tray.menu = menus;
