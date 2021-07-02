@@ -22,8 +22,6 @@ Get started with the neu CLI.
  $ neu run
 ```
 
-!!! On RHEL based Linux distributions such as Fedora , to avoid running into "Application was terminated." error,  you will have to install "libappindicator" , by running the command : "sudo dnf install libappindicator-gtk3.x86_64" or "sudo dnf install libappindicator-gtk3.i686" (depending on arhitecture).
-
 This documentation is for contributors. If you would like to learn Neutralinojs application development, please check [this](https://neutralino.js.org/docs) documentation.
  
 ## Why Neutralinojs? 
