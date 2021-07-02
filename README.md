@@ -22,6 +22,8 @@ Get started with the neu CLI.
  $ neu run
 ```
 
+!!! On RHEL based Linux distributions such as Fedora , to avoid running into "Application was terminated." error,  you will have to install "libappindicator" , by running the command : "sudo dnf install libappindicator-gtk3.x86_64" or "sudo dnf install libappindicator-gtk3.i686" (depending on arhitecture).
+
 This documentation is for contributors. If you would like to learn Neutralinojs application development, please check [this](https://neutralino.js.org/docs) documentation.
  
 ## Why Neutralinojs? 
@@ -50,6 +52,8 @@ No need for separate compilers because Linux distributions usually have GNU C/C+
 
 Install GTk and webkit libraries
 
+**Ubuntu**
+
 If you are using a newer version of Ubuntu, there is no need to run the following commands.
 
 ```bash
@@ -57,6 +61,17 @@ $ sudo apt-get install libgtk-3-dev
 $ sudo add-apt-repository ppa:webkit-team/ppa
 $ sudo apt-get update
 $ sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev
+```
+
+**Fedora**
+
+```bash
+$ sudo dnf install \
+    @development-tools \
+    libappindicator-gtk3.x86_64 \
+    gtk3 \
+    webkit2gtk3.x86_64 \
+    webkit2gtk3-devel.x86_64
 ```
 
 Compiling Neutralino server on Linux
