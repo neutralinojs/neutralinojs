@@ -21,6 +21,7 @@
 #include "settings.h"
 #define WEBVIEW_IMPLEMENTATION
 #include "lib/webview/webview.h"
+#include "api/window/window.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -80,7 +81,7 @@ namespace window {
         gtk_window_set_keep_above(GTK_WINDOW(windowHandle), windowProps.alwaysOnTop);
 
         if(windowProps.maximize)
-            gtk_window_maximize(GTK_WINDOW(windowHandle));
+            window::maximize(nullptr);
  
         if(windowProps.hidden)
             gtk_widget_hide(windowHandle);
@@ -199,49 +200,47 @@ namespace window {
     string setTitle(json input) {
         json output;
         string title = "";
-        if(!input["title"].is_null()) title = input["title"];
+        if(!input["title"].is_null()) 
+            title = input["title"];
         nativeWindow->set_title(title);
         output["success"] = true;
         return output.dump();
     }
 
+    string maximize(json input) {
+        json output;
+        #if defined(__linux__)
+        gtk_window_maximize(GTK_WINDOW(windowHandle));
+        #endif
+        output["success"] = true;
+        return output.dump();
+    }
 
+    string unmaximize(json input) {
+        json output;
+        #if defined(__linux__)
+        gtk_window_unmaximize(GTK_WINDOW(windowHandle));
+        #endif
+        output["success"] = true;
+        return output.dump();
+    }
+    
+    string isMaximized(json input) {
+        json output;
+        #if defined(__linux__)
+        output["returnValue"] = gtk_window_is_maximized(GTK_WINDOW(windowHandle)) == 1;
+        #endif
+        output["success"] = true;
+        return output.dump();
+    }
 
-    namespace WindowMethods{
-        string __navigate(json input) {
-            json output; string url = "";
-
-            if(!input["url"].is_null()) url = input["url"];
-
-            nativeWindow->navigate(url);
-
-            output["success"] = true;return output.dump();
-        }
-
-        string maximize(json input) 
-        {
-            json output;  gtk_window_maximize(GTK_WINDOW(windowHandle)); output["success"] = true;  return output.dump();
-        }
-
-        string unmaximize(json input) 
-        {
-            json output;  gtk_window_unmaximize(GTK_WINDOW(windowHandle)); output["success"] = true; return output.dump();
-        }
-
-        string iconify(json input) 
-        {
-            json output;  gtk_window_iconify(GTK_WINDOW(windowHandle)); output["success"] = true;return output.dump();
-        }
-
-        string deiconify(json input) 
-        {
-            json output;  gtk_window_deiconify(GTK_WINDOW(windowHandle)); output["success"] = true; return output.dump();
-        }
-
-        string destroy(json input) 
-        {
-            json output;   gtk_widget_destroy(windowHandle);  output["success"] = true; return output.dump();
-        }
+    string minimize(json input) {
+        json output; 
+        #if defined(__linux__)
+        gtk_window_iconify(GTK_WINDOW(windowHandle));
+        #endif
+        output["success"] = true;
+        return output.dump();
     }
     
     string show(json input) {
