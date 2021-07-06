@@ -1,8 +1,5 @@
 @echo off
 
-echo Webview directory: %src_dir%
-echo Build directory: %build_dir%
-
 echo Looking for vswhere.exe...
 set "vswhere=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
 if not exist "%vswhere%" set "vswhere=%ProgramFiles%\Microsoft Visual Studio\Installer\vswhere.exe"
@@ -34,6 +31,7 @@ cl /std:c++17 ^
 /I . ^
 /I platform/windows/webview2 ^
 /EHsc ^
+/Os ^
 main.cpp ^
 settings.cpp ^
 resources.cpp ^
