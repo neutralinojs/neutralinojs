@@ -21,7 +21,7 @@
 #elif defined(__FreeBSD__)
 #define OS_NAME "FreeBSD"
 #endif
-#define NL_VERSION "2.4.0"
+#define NL_VERSION "2.4.1"
 
 #define APP_CONFIG_FILE "/neutralino.config.json"
 
@@ -98,7 +98,7 @@ namespace settings {
 
     void setGlobalArgs(json args) {
         int argIndex = 0;
-        for(string arg : args) {
+        for(string arg: args) {
             // Set default path
             if(argIndex == 0) {
                 appPath = platform::getDirectoryName(args[argIndex].get<std::string>());
