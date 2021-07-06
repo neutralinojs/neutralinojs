@@ -199,13 +199,51 @@ namespace window {
     string setTitle(json input) {
         json output;
         string title = "";
-        if(!input["title"].is_null())
-            title = input["title"];
+        if(!input["title"].is_null()) title = input["title"];
         nativeWindow->set_title(title);
         output["success"] = true;
         return output.dump();
     }
 
+
+
+    namespace WindowMethods{
+        string __navigate(json input) {
+            json output; string url = "";
+
+            if(!input["url"].is_null()) url = input["url"];
+
+            nativeWindow->navigate(url);
+
+            output["success"] = true;return output.dump();
+        }
+
+        string maximize(json input) 
+        {
+            json output;  gtk_window_maximize(GTK_WINDOW(windowHandle)); output["success"] = true;  return output.dump();
+        }
+
+        string unmaximize(json input) 
+        {
+            json output;  gtk_window_unmaximize(GTK_WINDOW(windowHandle)); output["success"] = true; return output.dump();
+        }
+
+        string iconify(json input) 
+        {
+            json output;  gtk_window_iconify(GTK_WINDOW(windowHandle)); output["success"] = true;return output.dump();
+        }
+
+        string deiconify(json input) 
+        {
+            json output;  gtk_window_deiconify(GTK_WINDOW(windowHandle)); output["success"] = true; return output.dump();
+        }
+
+        string destroy(json input) 
+        {
+            json output;   gtk_widget_destroy(windowHandle);  output["success"] = true; return output.dump();
+        }
+    }
+    
     string show(json input) {
         WindowOptions windowProps;
         json output;
