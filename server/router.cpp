@@ -80,7 +80,7 @@ namespace routes {
                 #if defined(__APPLE__)
                 // In macos, child threads cannot run UI logic
                 if(modfunc == "os.showMessageBox" || 
-                    modfunc == "window.setTitle" || 
+                    regex_match(modfunc, regex("^window.*")) || 
                     modfunc == "os.setTray") {
                     dispatch_sync(dispatch_get_main_queue(), ^{
                         output = (*nativeMethod)(inputPayload);

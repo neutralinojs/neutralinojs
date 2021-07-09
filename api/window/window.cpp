@@ -124,8 +124,7 @@ namespace window {
         }
 
         if(windowProps.maximize)
-            ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
-                    "zoom:"_sel, NULL);
+            window::maximize(nullptr);     
         
         ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
                     "setIsVisible:"_sel, !windowProps.hidden);
@@ -213,6 +212,9 @@ namespace window {
         gtk_window_maximize(GTK_WINDOW(windowHandle));
         #elif defined(_WIN32)
         ShowWindow(windowHandle, SW_MAXIMIZE);
+        #elif defined(__APPLE__)
+        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+            "zoom:"_sel, NULL);
         #endif
         output["success"] = true;
         return output.dump();
@@ -224,6 +226,9 @@ namespace window {
         gtk_window_unmaximize(GTK_WINDOW(windowHandle));
         #elif defined(_WIN32)
         ShowWindow(windowHandle, SW_RESTORE);
+        #elif defined(__APPLE__)
+        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+            "zoom:"_sel, NULL);
         #endif
         output["success"] = true;
         return output.dump();
@@ -235,6 +240,9 @@ namespace window {
         output["returnValue"] = gtk_window_is_maximized(GTK_WINDOW(windowHandle)) == 1;
         #elif defined(_WIN32)
         output["returnValue"] = IsZoomed(windowHandle) == 1;
+        #elif defined(__APPLE__)
+        output["returnValue"] = ((bool (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+            "isZoomed"_sel, NULL);
         #endif
         output["success"] = true;
         return output.dump();
@@ -246,6 +254,9 @@ namespace window {
         gtk_window_iconify(GTK_WINDOW(windowHandle));
         #elif defined(_WIN32)
         ShowWindow(windowHandle, SW_MINIMIZE);
+        #elif defined(__APPLE__)
+        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+            "miniaturize:"_sel, NULL);
         #endif
         output["success"] = true;
         return output.dump();
