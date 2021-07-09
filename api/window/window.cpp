@@ -176,7 +176,7 @@ namespace window {
             SetWindowPos(windowHandle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
 
         if(windowProps.maximize)
-            ShowWindow(windowHandle, SW_MAXIMIZE);
+            window::maximize(nullptr);
 
         if(windowProps.hidden)
             ShowWindow(windowHandle, SW_HIDE);
@@ -211,6 +211,8 @@ namespace window {
         json output;
         #if defined(__linux__)
         gtk_window_maximize(GTK_WINDOW(windowHandle));
+        #elif defined(_WIN32)
+        ShowWindow(windowHandle, SW_MAXIMIZE);
         #endif
         output["success"] = true;
         return output.dump();
@@ -220,6 +222,8 @@ namespace window {
         json output;
         #if defined(__linux__)
         gtk_window_unmaximize(GTK_WINDOW(windowHandle));
+        #elif defined(_WIN32)
+        ShowWindow(windowHandle, SW_RESTORE);
         #endif
         output["success"] = true;
         return output.dump();
@@ -229,6 +233,8 @@ namespace window {
         json output;
         #if defined(__linux__)
         output["returnValue"] = gtk_window_is_maximized(GTK_WINDOW(windowHandle)) == 1;
+        #elif defined(_WIN32)
+        output["returnValue"] = IsZoomed(windowHandle) == 1;
         #endif
         output["success"] = true;
         return output.dump();
@@ -238,6 +244,8 @@ namespace window {
         json output; 
         #if defined(__linux__)
         gtk_window_iconify(GTK_WINDOW(windowHandle));
+        #elif defined(_WIN32)
+        ShowWindow(windowHandle, SW_MINIMIZE);
         #endif
         output["success"] = true;
         return output.dump();
