@@ -4,10 +4,15 @@
 using namespace std;
 
 namespace app {
-    string exit(json input);
-    string open(json input);
-    string keepAlive(json input);
-    string getConfig(json input);
-}
+    void exit();
+    void open(string url);
 
+namespace controllers {
+    json exit(json input);
+    json open(json input);
+    json keepAlive(json input);
+    json getConfig(json input);
+
+} // namespace controllers
+} // namespace app
 #endif

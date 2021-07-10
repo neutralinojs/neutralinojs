@@ -54,8 +54,8 @@ int main(int argc, char ** argv)
         msgBoxParams["type"] = "ERROR";
         msgBoxParams["title"] = "Unable to load app configuration";
         msgBoxParams["content"] = "neutralino.config.json file is missing or corrupted.";
-        os::showMessageBox(msgBoxParams);
-        app::exit(nullptr);
+        os::controllers::showMessageBox(msgBoxParams);
+        app::exit();
     }
 
     authbasic::generateToken();
@@ -84,15 +84,13 @@ int main(int argc, char ** argv)
 
     string mode = settings::getMode();
     if(mode == "browser") {
-        json browserOptions = options["modes"]["browser"];
-        browserOptions["url"] = navigationUrl;
-        app::open(browserOptions);
+        app::open(navigationUrl);
         while(true);
     }
     else if(mode == "window") {
         json windowOptions = options["modes"]["window"];
         windowOptions["url"] = navigationUrl;
-        window::show(windowOptions);
+        window::controllers::show(windowOptions);
     }
     else if(mode == "cloud") {
         if(enableHTTPServer)

@@ -65,6 +65,11 @@ struct WindowOptions {
 };
 
 namespace window {
+    void executeJavaScript(string js) {
+        nativeWindow->eval(js);
+    }
+
+namespace controllers {
     #if defined(__linux__) || defined(__FreeBSD__)
     void __createWindow(WindowOptions windowProps) {
         nativeWindow = new webview::webview(windowProps.enableInspector, nullptr);
@@ -197,53 +202,53 @@ namespace window {
     }
     #endif
 
-    string setTitle(json input) {
+    json setTitle(json input) {
         json output;
         string title = "";
         if(!input["title"].is_null()) 
             title = input["title"];
         nativeWindow->set_title(title);
         output["success"] = true;
-        return output.dump();
+        return output;
     }
 
-    string maximize(json input) {
+    json maximize(json input) {
         json output;
         #if defined(__linux__)
         gtk_window_maximize(GTK_WINDOW(windowHandle));
         #endif
         output["success"] = true;
-        return output.dump();
+        return output;
     }
 
-    string unmaximize(json input) {
+    json unmaximize(json input) {
         json output;
         #if defined(__linux__)
         gtk_window_unmaximize(GTK_WINDOW(windowHandle));
         #endif
         output["success"] = true;
-        return output.dump();
+        return output;
     }
     
-    string isMaximized(json input) {
+    json isMaximized(json input) {
         json output;
         #if defined(__linux__)
         output["returnValue"] = gtk_window_is_maximized(GTK_WINDOW(windowHandle)) == 1;
         #endif
         output["success"] = true;
-        return output.dump();
+        return output;
     }
 
-    string minimize(json input) {
+    json minimize(json input) {
         json output; 
         #if defined(__linux__)
         gtk_window_iconify(GTK_WINDOW(windowHandle));
         #endif
         output["success"] = true;
-        return output.dump();
+        return output;
     }
     
-    string show(json input) {
+    json show(json input) {
         WindowOptions windowProps;
         json output;
         #if defined(_WIN32)
@@ -339,11 +344,8 @@ namespace window {
         GdiplusShutdown(gdiplusToken);
         #endif
         output["success"] = true;
-        return output.dump();
-    }
-    
-    void _executeJavaScript(string js) {
-        nativeWindow->eval(js);
+        return output;
     }
 
-}
+} // namespace controllers
+} // namespace window

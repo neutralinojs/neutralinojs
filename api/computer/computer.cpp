@@ -20,7 +20,8 @@ using json = nlohmann::json;
 #define DIV 1024
 
 namespace computer {
-    string getRamUsage(json input) {
+namespace controllers {
+    json getRamUsage(json input) {
         json output;
         #if defined(__linux__)
         struct sysinfo sys_info;
@@ -59,6 +60,7 @@ namespace computer {
         };
         #endif
         output["success"] = true;
-        return output.dump();
+        return output;
     }
-}
+} // namespace controllers
+} // namespace computer

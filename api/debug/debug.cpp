@@ -7,7 +7,8 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace debug {
-    string log(json input) {
+namespace controllers {
+    json log(json input) {
         json output;
         string type = input["type"];
         string message = input["message"];
@@ -23,7 +24,8 @@ namespace debug {
 
         output["message"] = "Wrote to the log file: neutralino.log";
         output["success"] = true;
-        return output.dump();
+        return output;
     }
 
-}
+} // namespace controllers
+} // namespace debug

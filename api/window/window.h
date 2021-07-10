@@ -6,14 +6,17 @@ using json = nlohmann::json;
 using namespace std;
 
 namespace window {
-    string show(json input);
-    string setTitle(json input);
-    string maximize(json input); 
-    string unmaximize(json input);
-    string isMaximized(json input);
-    string minimize(json input);
+    void executeJavaScript(string js);
+
+namespace controllers {
+    json show(json input);
+    json setTitle(json input);
+    json maximize(json input); 
+    json unmaximize(json input);
+    json isMaximized(json input);
+    json minimize(json input);
         
-    void _executeJavaScript(string js);
-}
+} // namespace controllers
+} // namespace window
 
 #endif

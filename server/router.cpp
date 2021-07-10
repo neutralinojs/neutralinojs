@@ -22,7 +22,7 @@
 
 using namespace std;
 using json = nlohmann::json;
-typedef string (*NativeMethod)(json);
+typedef json (*NativeMethod)(json);
 
 namespace routes {
     pair<string, string> executeNativeMethod(string path, string postData, string token) {
@@ -44,32 +44,32 @@ namespace routes {
             return make_pair("{\"error\":\"Missing permission to access Native API\"}", "application/json");
 
         map <string, NativeMethod> methodMap = {
-            {"app.exit", app::exit},
-            {"app.getConfig", app::getConfig},
-            {"app.keepAlive", app::keepAlive},
-            {"app.open", app::open},
-            {"window.setTitle", window::setTitle},
-            {"window.maximize", window::maximize},
-            {"window.isMaximized", window::isMaximized},
-            {"window.unmaximize", window::unmaximize},
-            {"window.minimize", window::minimize},
-            {"computer.getRamUsage", computer::getRamUsage},
-            {"debug.log", debug::log},
-            {"filesystem.createDirectory", fs::createDirectory},
-            {"filesystem.removeDirectory", fs::removeDirectory},
-            {"filesystem.readFile", fs::readFile},
-            {"filesystem.writeFile", fs::writeFile},
-            {"filesystem.removeFile", fs::removeFile},
-            {"filesystem.readDirectory", fs::readDirectory},
-            {"os.execCommand", os::execCommand},
-            {"os.getEnvar", os::getEnvar},
-            {"os.dialogOpen", os::dialogOpen},
-            {"os.dialogSave", os::dialogSave},
-            {"os.showNotification", os::showNotification},
-            {"os.showMessageBox", os::showMessageBox},
-            {"os.setTray", os::setTray},
-            {"storage.putData", storage::putData},
-            {"storage.getData", storage::getData}
+            {"app.exit", app::controllers::exit},
+            {"app.getConfig", app::controllers::getConfig},
+            {"app.keepAlive", app::controllers::keepAlive},
+            {"app.open", app::controllers::open},
+            {"window.setTitle", window::controllers::setTitle},
+            {"window.maximize", window::controllers::maximize},
+            {"window.isMaximized", window::controllers::isMaximized},
+            {"window.unmaximize", window::controllers::unmaximize},
+            {"window.minimize", window::controllers::minimize},
+            {"computer.getRamUsage", computer::controllers::getRamUsage},
+            {"debug.log", debug::controllers::log},
+            {"filesystem.createDirectory", fs::controllers::createDirectory},
+            {"filesystem.removeDirectory", fs::controllers::removeDirectory},
+            {"filesystem.readFile", fs::controllers::readFile},
+            {"filesystem.writeFile", fs::controllers::writeFile},
+            {"filesystem.removeFile", fs::controllers::removeFile},
+            {"filesystem.readDirectory", fs::controllers::readDirectory},
+            {"os.execCommand", os::controllers::execCommand},
+            {"os.getEnvar", os::controllers::getEnvar},
+            {"os.dialogOpen", os::controllers::dialogOpen},
+            {"os.dialogSave", os::controllers::dialogSave},
+            {"os.showNotification", os::controllers::showNotification},
+            {"os.showMessageBox", os::controllers::showMessageBox},
+            {"os.setTray", os::controllers::setTray},
+            {"storage.putData", storage::controllers::putData},
+            {"storage.getData", storage::controllers::getData}
         };
 
         if(methodMap.find(modfunc) != methodMap.end() ){
@@ -77,21 +77,23 @@ namespace routes {
                 if(postData != "")
                     inputPayload = json::parse(postData);
                 NativeMethod nativeMethod = methodMap[modfunc];
+                json apiOutput;
                 #if defined(__APPLE__)
                 // In macos, child threads cannot run UI logic
                 if(modfunc == "os.showMessageBox" || 
                     modfunc == "window.setTitle" || 
                     modfunc == "os.setTray") {
                     dispatch_sync(dispatch_get_main_queue(), ^{
-                        output = (*nativeMethod)(inputPayload);
+                        apiOutput = (*nativeMethod)(inputPayload);
                     });
                 }
                 else {
-                    output = (*nativeMethod)(inputPayload);
+                    apiOutput = (*nativeMethod)(inputPayload);
                 }
                 #else
-                    output = (*nativeMethod)(inputPayload);
+                    apiOutput = (*nativeMethod)(inputPayload);
                 #endif
+                output = apiOutput.dump();
             }
             catch(exception e){
                 json parserOutput = {{"error", "Native method execution error occured"}};

@@ -28,7 +28,7 @@ namespace ping {
 
     void pingTick() {
         if(!isActive) {
-            app::exit(nullptr);
+            app::exit();
         }
         isActive = false;
     }

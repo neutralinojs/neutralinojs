@@ -12,13 +12,14 @@
 #include "lib/json.hpp"
 #include "server/ping.h"
 #include "settings.h"
+#include "api/app/app.h"
 
 using namespace std;
 using json = nlohmann::json;
 
 namespace app {
-    
-    string exit(json input) {
+
+    void exit() {
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         kill(getpid(),SIGINT);
         #elif defined(_WIN32)
@@ -26,27 +27,9 @@ namespace app {
         HANDLE hnd = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, TRUE, pid);
         TerminateProcess(hnd, 0);
         #endif
-        return "";
     }
-
-    string keepAlive(json input) {
-        json output;
-        ping::receivePing();
-        output["message"] = "Keep alive call was successful. Server will not be terminated automatically.";
-        output["success"] = true;
-        return output.dump();
-    }
-
-    string getConfig(json input) {
-        json output;
-        output["config"] = settings::getConfig();
-        output["success"] = true;
-        return output.dump();
-    }
-
-    string open(json input) {
-        json output;
-        string url = input["url"];
+    
+    void open(string url) {
         #if defined(__linux__) || defined(__FreeBSD__)
         int status = system(("xdg-open \"" + url + "\"").c_str());
         #elif defined(__APPLE__)
@@ -54,8 +37,37 @@ namespace app {
         #elif defined(_WIN32)
         ShellExecute(0, 0, url.c_str(), 0, 0, SW_SHOW );
         #endif
-        output["success"] = true;
-        return output.dump();
     }
 
-}
+namespace controllers {
+
+    json exit(json input) {
+        app::exit();
+        return nullptr;
+    }
+
+    json keepAlive(json input) {
+        json output;
+        ping::receivePing();
+        output["message"] = "Keep alive call was successful. Server will not be terminated automatically.";
+        output["success"] = true;
+        return output;
+    }
+
+    json getConfig(json input) {
+        json output;
+        output["config"] = settings::getConfig();
+        output["success"] = true;
+        return output;
+    }
+
+    json open(json input) {
+        json output;
+        string url = input["url"];
+        app::open(url);
+        output["success"] = true;
+        return output;
+    }
+    
+} // namespace controllers
+} // namespace app

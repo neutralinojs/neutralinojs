@@ -13,6 +13,7 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace storage {
+namespace controllers {
     json __validateStorageBucket(string bucketName) {
         if(regex_match(bucketName, regex(STORAGE_BUCKET_REGEX)))
             return nullptr;
@@ -21,12 +22,12 @@ namespace storage {
         return output;
     }
     
-    string getData(json input) {
+    json getData(json input) {
         json output;
         string bucket = input["bucket"];
         json errorPayload = __validateStorageBucket(bucket);
         if(!errorPayload.is_null()) 
-            return errorPayload.dump();
+            return errorPayload;
         string bucketPath = settings::joinAppPath(STORAGE_DIR);
         string filename = bucketPath + "/" + bucket + STORAGE_EXT;
         
@@ -34,7 +35,7 @@ namespace storage {
         t.open(filename);
         if(!t.is_open()) {
             output["error"] = "Unable to open storage bucket: " + bucket;
-            return output.dump();
+            return output;
         }
         string buffer = "";
         string line;
@@ -45,20 +46,18 @@ namespace storage {
         t.close();
         output["data"] = buffer;
         output["success"] = true;
-        return output.dump();
+        return output;
     }
 
-    string putData(json input) {
+    json putData(json input) {
         json output;
         string bucket = input["bucket"];
         json errorPayload = __validateStorageBucket(bucket);
         if(!errorPayload.is_null()) 
-            return errorPayload.dump();
+            return errorPayload;
         string bucketPath = settings::joinAppPath(STORAGE_DIR);
-        
-        json createDirParams;
-        createDirParams["path"] = bucketPath;
-        fs::createDirectory(createDirParams);
+
+        fs::createDirectory(bucketPath);
         
         string filename = bucketPath + "/" + bucket + STORAGE_EXT;
         if(input["data"].is_null()) {
@@ -71,13 +70,14 @@ namespace storage {
             ofstream t(filename);
             if(!t.is_open()) {
                 output["error"] = "Unable to write storage bucket: " + bucket;
-                return output.dump();
+                return output;
             }
             t << content;
             t.close();
         }
         output["success"] = true;
-        return output.dump();
+        return output;
     }
 
-}
+} // namespace controllers
+} // namespace storage

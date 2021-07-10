@@ -2,12 +2,17 @@
 #define FILESYSTEM_H
 
 namespace fs {
-    string createDirectory(json input);
-    string removeDirectory(json input);
-    string writeFile(json input);
-    string readFile(json input);
-    string removeFile(json input);
-    string readDirectory(json input);
-}
+    bool createDirectory(string path);
+    bool removeFile(string filename);
+
+namespace controllers {
+    json createDirectory(json input);
+    json removeDirectory(json input);
+    json writeFile(json input);
+    json readFile(json input);
+    json removeFile(json input);
+    json readDirectory(json input);
+} // namespace controllers
+} // namespace fs
 
 #endif

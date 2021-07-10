@@ -2,13 +2,15 @@
 #define OS_H
 
 namespace os {
-    string execCommand(json input);
-    string getEnvar(json input);
-    string dialogOpen(json input);
-    string dialogSave(json input);
-    string showNotification(json input);
-    string showMessageBox(json input);
-    string setTray(json input);
-}
+namespace controllers {
+    json execCommand(json input);
+    json getEnvar(json input);
+    json dialogOpen(json input);
+    json dialogSave(json input);
+    json showNotification(json input);
+    json showMessageBox(json input);
+    json setTray(json input);
+} // namespace controllers
+} // namespace os
 
 #endif

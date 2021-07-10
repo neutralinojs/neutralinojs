@@ -7,7 +7,9 @@
 using namespace std;
 
 namespace debug {
-    string log(json input);
-}
+namespace controllers {
+    json log(json input);
+} // namespace controllers
+} // namespace debug
 
 #endif

@@ -51,7 +51,7 @@ namespace platform {
         // Create the child process.
         bSuccess = CreateProcess(
             NULL,             // program name
-            (LPSTR)(command + " 2>&1").c_str(),       // command line
+            (LPSTR)("cmd /c " + command + " 2>&1").c_str(),       // command line
             NULL,             // process security attributes
             NULL,             // primary thread security attributes
             TRUE,             // handles are inherited

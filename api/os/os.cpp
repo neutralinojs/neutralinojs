@@ -53,18 +53,16 @@ struct tray tray;
 bool isTrayCreated = false;
 
 namespace os {
-    string execCommand(json input) {
+namespace controllers {
+    json execCommand(json input) {
         json output;
         string command = input["command"];
-        #if defined(_WIN32)
-        command = "cmd /c " + command;
-        #endif
         output["output"] = platform::execCommand(command);
         output["success"] = true;
-        return output.dump();
+        return output;
     }
 
-    string getEnvar(json input) {
+    json getEnvar(json input) {
         json output;
         string varKey = input["key"];
         char *varValue;
@@ -76,10 +74,10 @@ namespace os {
             output["value"] = varValue;
             output["success"] = true;
         }
-        return output.dump();
+        return output;
     }
 
-    string dialogOpen(json input) {
+    json dialogOpen(json input) {
         json output;
         #if defined(__linux__) || defined(__FreeBSD__)
         string command = "zenity --file-selection";
@@ -149,11 +147,10 @@ namespace os {
         #endif
         
         output["success"] = true;
-        return output.dump();
+        return output;
     }
 
-
-    string dialogSave(json input) {
+    json dialogSave(json input) {
         json output;
         #if defined(__linux__) || defined(__FreeBSD__)
         string command = "zenity --file-selection --save";
@@ -193,10 +190,10 @@ namespace os {
         }
         #endif
         output["success"] = true;
-        return output.dump();
+        return output;
     }
 
-    string showNotification(json input) {
+    json showNotification(json input) {
         json output;
         #if defined(__linux__) || defined(__FreeBSD__)
         string command = "notify-send \"" + input["summary"].get<string>() + "\" \"" +
@@ -234,10 +231,10 @@ namespace os {
         else
             output["error"] = "An error thrown while sending the notification";
         #endif
-        return output.dump();
+        return output;
     }
 
-    string showMessageBox(json input) {
+    json showMessageBox(json input) {
         #if defined(__linux__) || defined(__FreeBSD__)
         json output;
         map <string, string> messageTypes = {{"INFO", "info"}, {"WARN", "warning"},
@@ -282,7 +279,7 @@ namespace os {
                 output["success"] = true;
         
         #endif
-        return output.dump();
+        return output;
     }
     
     void __handleTrayMenuItem(struct tray_menu *item) {
@@ -296,10 +293,10 @@ namespace os {
         js += "isChecked: " + std::string(item->checked ? "true" : "false") + ",";
         js += "isDisabled: " + std::string(item->disabled ? "true" : "false");
         js += "});";
-    	window::_executeJavaScript(js);
+    	window::executeJavaScript(js);
     }
     
-    string setTray(json input) {
+    json setTray(json input) {
         #if defined(_WIN32)
         GdiplusStartupInput gdiplusStartupInput;
         ULONG_PTR gdiplusToken;
@@ -382,6 +379,7 @@ namespace os {
         GdiplusShutdown(gdiplusToken);
         #endif
         output["success"] = true;
-        return output.dump();
+        return output;
     }
-}
+} // namespace controllers
+} // namespace os

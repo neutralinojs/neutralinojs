@@ -4,8 +4,10 @@
 using namespace std;
 
 namespace storage {
-    string putData(json input);
-    string getData(json input);
-}
+namespace controllers {
+    json putData(json input);
+    json getData(json input);
+} // namespace controllers
+} // namespace storage
 
 #endif

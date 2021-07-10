@@ -13,30 +13,43 @@
 
 #include "lib/json.hpp"
 #include "settings.h"
+#include "api/filesystem/filesystem.h"
 
 using namespace std;
 using json = nlohmann::json;
 
 namespace fs {
+    bool createDirectory(string path) {
+        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+        return mkdir(path.c_str(), 0700) == 0;
+        #elif defined(_WIN32)
+        return CreateDirectory(path.c_str(), NULL)) == 1;
+        #endif
+    }
+    
+    bool removeFile(string filename) {
+        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+        return remove(filename.c_str()) == 0;
+        #elif defined(_WIN32)
+        return DeleteFile(filename.c_str()) == 1;
+        #endif
+    }
 
-    string createDirectory(json input) {
+namespace controllers {
+    json createDirectory(json input) {
         json output;
         string path = input["path"];
-        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-        if(mkdir(path.c_str(), 0700) == 0) {
-        #elif defined(_WIN32)
-        if(CreateDirectory(path.c_str(), NULL)) {
-        #endif
+        if(fs::createDirectory(path)) {
             output["success"] = true;
             output["message"] = "Directory " + path + " was created";
         }
         else{
             output["error"] = "Cannot create a directory in " + path;
         }
-        return output.dump();
+        return output;
     }
 
-    string removeDirectory(json input) {
+    json removeDirectory(json input) {
         json output;
         string path = input["path"];
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
@@ -50,17 +63,17 @@ namespace fs {
         else{
             output["error"] = "Cannot remove " + path;
         }
-        return output.dump();
+        return output;
     }
 
-    string readFile(json input) {
+    json readFile(json input) {
         json output;
         string filename = input["fileName"];
         ifstream t;
         t.open(filename);
         if(!t.is_open()) {
             output["error"] = "Unable to open " + filename;
-            return output.dump();
+            return output;
         }
         string buffer = "";
         string line;
@@ -71,10 +84,10 @@ namespace fs {
         t.close();
         output["data"] = buffer;
         output["success"] = true;
-        return output.dump();
+        return output;
     }
 
-     string writeFile(json input) {
+     json writeFile(json input) {
         json output;
         string filename = input["fileName"];
         string data = input["data"];
@@ -82,27 +95,23 @@ namespace fs {
         t << data;
         t.close();
         output["success"] = true;
-        return output.dump();
+        return output;
     }
 
-    string removeFile(json input) {
+    json removeFile(json input) {
         json output;
         string filename = input["fileName"];
-        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-        if(remove(filename.c_str()) == 0) {
-        #elif defined(_WIN32)
-        if(DeleteFile(filename.c_str())) {
-        #endif
+        if(fs::removeFile(filename)) {
             output["success"] = true;
             output["message"] = filename + " was deleted";
         }
         else{
             output["error"] = "Cannot remove " + filename;
         }
-        return output.dump();
+        return output;
     }
 
-    string readDirectory(json input) {
+    json readDirectory(json input) {
         json output;
         string path = input["path"];
         
@@ -148,6 +157,7 @@ namespace fs {
             output["success"] = true;
         }
         #endif
-        return output.dump();
+        return output;
     }
-}
+} // namespace controllers
+} // namespace fs
