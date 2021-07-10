@@ -15,7 +15,6 @@ c++ -arch x86_64 resources.cpp \
     auth/permission.cpp \
     lib/boxer/boxer_osx.mm \
     lib/easylogging/easylogging++.cc \
-    platform/macos/platform.cpp \
     api/filesystem/filesystem.cpp \
     api/os/os.cpp \
     api/computer/computer.cpp \

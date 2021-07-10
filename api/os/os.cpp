@@ -132,29 +132,29 @@ namespace os {
         #endif
     }
     
-    os::MessageBoxResult showMessageBox(os::MessageBoxOptions options) {
+    os::MessageBoxResult showMessageBox(os::MessageBoxOptions msgboxOptions) {
         MessageBoxResult result;
         #if defined(__linux__) || defined(__FreeBSD__)
         map <string, string> messageTypes = {{"INFO", "info"}, {"WARN", "warning"},
                                             {"ERROR", "error"}, {"QUESTION", "question"}};
         string messageType;
-        messageType = options.type;
+        messageType = msgboxOptions.type;
         if(messageTypes.find(messageType) == messageTypes.end()) {
             result.hasError = true;
             result.error = "Invalid message type: '" + messageType + "' provided";
             return result;
         }
         string command = "zenity --no-wrap --" + messageTypes[messageType] + " --title=\"" +
-                            options.title + "\" --text=\"" +
-                            options.content + "\" && echo $?";
+                            msgboxOptions.title + "\" --text=\"" +
+                            msgboxOptions.content + "\" && echo $?";
         string response = os::execCommand(command);
         if(messageType == "QUESTION")
             result.yesButtonClicked =  response.find("0") != std::string::npos;
         
         #elif defined(__APPLE__) || defined(_WIN32)
-            string title = input["title"];
-            string content = input["content"];
-            string type = input["type"];
+            string title = msgboxOptions.title;
+            string content = msgboxOptions.content;
+            string type = msgboxOptions.type;
 
             boxer::Selection msgSel;
 
@@ -221,7 +221,7 @@ namespace controllers {
         if(!input["title"].is_null())
             command += " with prompt \"" + input["title"].get<std::string>() + "\"";
         command += ")'";
-        output["selectedEntry"] = platform::execCommand(command);
+        output["selectedEntry"] = os::execCommand(command);
         
         #elif defined(_WIN32)
         string title = input["title"];
@@ -288,7 +288,7 @@ namespace controllers {
         if(!input["title"].is_null())
             command += " with prompt \"" + input["title"].get<std::string>() + "\"";
         command += ")'";
-        output["selectedEntry"] = platform::execCommand(command);
+        output["selectedEntry"] = os::execCommand(command);
         
         #elif defined(_WIN32)
         string title = input["title"];
@@ -336,7 +336,7 @@ namespace controllers {
         if(!input["summary"].is_null())
             command += " with title \"" + input["summary"].get<std::string>() + "\"";
         command += "'";
-        platform::execCommand(command);
+        os::execCommand(command);
         output["success"] = true;
         
         #elif defined(_WIN32)
@@ -347,7 +347,7 @@ namespace controllers {
                         "$notify.Visible = $true;"
                         "$notify.ShowBalloonTip(0 ,'"+ input["summary"].get<string>() + "','" + input["body"].get<string>() + "',[System.Windows.Forms.TooltipIcon]::None)}\"";
 
-        string commandOutput = platform::execCommand(command);
+        string commandOutput = os::execCommand(command);
 
         if(commandOutput.find("'powershell'") == string::npos) {
             output["success"] = true;

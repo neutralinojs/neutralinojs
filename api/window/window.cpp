@@ -7,7 +7,6 @@
 
 #elif defined(__APPLE__)
 #include <objc/objc-runtime.h>
-#include "platform/platform.h"
 #define NSFloatingWindowLevel 5
 
 #elif defined(_WIN32)

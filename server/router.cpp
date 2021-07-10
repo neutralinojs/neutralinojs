@@ -77,8 +77,11 @@ namespace routes {
                 if(postData != "")
                     inputPayload = json::parse(postData);
                 NativeMethod nativeMethod = methodMap[modfunc];
+                #if defined(__linux__) || defined(_WIN32) || defined(__FreeBSD__)
                 json apiOutput;
+                #endif
                 #if defined(__APPLE__)
+                __block json apiOutput;
                 // In macos, child threads cannot run UI logic
                 if(modfunc == "os.showMessageBox" || 
                     regex_match(modfunc, regex("^window.*")) || 
