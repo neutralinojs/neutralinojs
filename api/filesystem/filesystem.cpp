@@ -26,7 +26,7 @@ namespace fs {
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         return mkdir(path.c_str(), 0700) == 0;
         #elif defined(_WIN32)
-        return CreateDirectory(path.c_str(), NULL)) == 1;
+        return CreateDirectory(path.c_str(), nullptr) == 1;
         #endif
     }
     
@@ -179,7 +179,7 @@ namespace controllers {
         struct dirent *directory;
         dirp = opendir(path.c_str());
         if (dirp) {
-            while ((directory = readdir(dirp)) != NULL) {
+            while ((directory = readdir(dirp)) != nullptr) {
                 string type = "OTHER";
                 if(directory->d_type == DT_DIR)
                     type = "DIRECTORY";

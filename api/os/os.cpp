@@ -26,6 +26,7 @@
 #include <gdiplus.h>
 #include <shlwapi.h>
 #define TRAY_WINAPI 1
+#define EXEC_BUFSIZE 4096
 
 #pragma comment(lib, "Comdlg32.lib")
 #pragma comment(lib, "Shell32.lib")
