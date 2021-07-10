@@ -46,11 +46,11 @@ jobs:
 
     # ℹ️ Command-line programs to run using the OS shell.
     # 📚 https://git.io/JvXDl
-
-    - run: bash ./build_linux.sh
     
     - name: configure
       run: sudo apt-get install libgtk-3-dev -y && sudo apt-get update && sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev
 
+    - run: bash build_linux.sh
+    
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
