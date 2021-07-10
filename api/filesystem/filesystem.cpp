@@ -6,9 +6,12 @@
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <libgen.h>
 
 #elif defined(_WIN32)
 #include <windows.h>
+#include <atlstr.h>
+#include <shlwapi.h>
 #endif 
 
 #include "lib/json.hpp"
@@ -33,6 +36,68 @@ namespace fs {
         #elif defined(_WIN32)
         return DeleteFile(filename.c_str()) == 1;
         #endif
+    }
+    
+    string getDirectoryName(string filename){
+        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+        return dirname((char*)filename.c_str());
+        #elif defined(_WIN32)
+        LPSTR pathToReplace = const_cast<char *>(filename.c_str());
+        PathRemoveFileSpecA(pathToReplace);
+        std::string directory(pathToReplace);
+        std::replace(directory.begin(), directory.end(), '\\', '/');
+        return directory;
+        #endif 
+    }
+
+    string getCurrentDirectory() {
+        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+        return getcwd(nullptr, 0);
+        #elif defined(_WIN32)
+        TCHAR currentDir[MAX_PATH];
+        GetCurrentDirectory(MAX_PATH, currentDir);   
+        std::string currentDirStr(currentDir);
+        std::replace(currentDirStr.begin(), currentDirStr.end(), '\\', '/');     
+        return currentDirStr;
+        #endif
+    }
+    
+    string getFullPathFromRelative(string path) {
+        #if defined(__linux__)
+        return realpath(path.c_str(), nullptr);
+        #else
+        return path;
+        #endif
+    }
+    
+    fs::FileReaderResult readFile(string filename) {
+        fs::FileReaderResult fileReaderResult;
+        ifstream reader(filename.c_str(), ios::binary | ios::ate);
+        if(!reader.is_open()) {
+            fileReaderResult.hasError = true;
+            fileReaderResult.error = "Unable to open " + filename;
+            return fileReaderResult;
+        }
+        vector<char> buffer;
+        int size = reader.tellg();
+        reader.seekg(0, ios::beg);
+        buffer.resize(size);
+        reader.read(buffer.data(), size);
+        string result(buffer.begin(), buffer.end());
+        reader.close();
+        
+        fileReaderResult.data = result;
+        return fileReaderResult;
+    }
+
+     bool writeFile(fs::FileWriterOptions fileWriterOptions) {
+        json output;
+        ofstream writer(fileWriterOptions.filename);
+        if(!writer.is_open())
+            return false;
+        writer << fileWriterOptions.data;
+        writer.close();
+        return true;
     }
 
 namespace controllers {
@@ -68,33 +133,27 @@ namespace controllers {
 
     json readFile(json input) {
         json output;
-        string filename = input["fileName"];
-        ifstream t;
-        t.open(filename);
-        if(!t.is_open()) {
-            output["error"] = "Unable to open " + filename;
-            return output;
+        fs::FileReaderResult fileReaderResult;
+        fileReaderResult = fs::readFile(input["fileName"].get<std::string>());
+        if(fileReaderResult.hasError) {
+            output["error"] = fileReaderResult.error;
         }
-        string buffer = "";
-        string line;
-        while(!t.eof()){
-            getline(t, line);
-            buffer += line + "\n";
+        else {
+            output["data"] = fileReaderResult.data;
+            output["success"] = true;
         }
-        t.close();
-        output["data"] = buffer;
-        output["success"] = true;
         return output;
     }
 
      json writeFile(json input) {
         json output;
-        string filename = input["fileName"];
-        string data = input["data"];
-        ofstream t(filename);
-        t << data;
-        t.close();
-        output["success"] = true;
+        fs::FileWriterOptions fileWriterOptions;
+        fileWriterOptions.filename = input["fileName"];
+        fileWriterOptions.data = input["data"];
+        if(fs::writeFile(fileWriterOptions))
+            output["success"] = true;
+        else
+            output["error"] = "Unable to write file: " + fileWriterOptions.filename;
         return output;
     }
 

@@ -55,60 +55,93 @@ struct WindowOptions {
     bool maximizable = true;
     string title = "Neutralinojs window";
     string url = "https://neutralino.js.org";
-    #if defined(__linux__) || defined(__FreeBSD__)
-    GdkPixbuf *icon = nullptr;
-    #elif defined(__APPLE__)
-    id icon = nullptr;
-    #elif defined(_WIN32)
-    HICON icon = nullptr;
-    #endif
+    string icon = "";
 };
 
 namespace window {
     void executeJavaScript(string js) {
         nativeWindow->eval(js);
     }
+    
+    bool isMaximized() {
+        json output;
+        #if defined(__linux__)
+        return gtk_window_is_maximized(GTK_WINDOW(windowHandle)) == 1;
+        #elif defined(_WIN32)
+        return  IsZoomed(windowHandle) == 1;
+        #elif defined(__APPLE__)
+        return ((bool (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+            "isZoomed"_sel, NULL);
+        #endif
+    }
+    
+    void maximize() {
+        if(window::isMaximized())
+            return;
+        #if defined(__linux__)
+        gtk_window_maximize(GTK_WINDOW(windowHandle));
+        #elif defined(_WIN32)
+        ShowWindow(windowHandle, SW_MAXIMIZE);
+        #elif defined(__APPLE__)
+        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+            "zoom:"_sel, NULL);
+        #endif
+    }
+    
+    void unmaximize() {
+        if(!window::isMaximized())
+            return;
+        #if defined(__linux__)
+        gtk_window_unmaximize(GTK_WINDOW(windowHandle));
+        #elif defined(_WIN32)
+        ShowWindow(windowHandle, SW_RESTORE);
+        #elif defined(__APPLE__)
+        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+            "zoom:"_sel, NULL);
+        #endif
+    }
 
 namespace controllers {
-    #if defined(__linux__) || defined(__FreeBSD__)
     void __createWindow(WindowOptions windowProps) {
         nativeWindow = new webview::webview(windowProps.enableInspector, nullptr);
         nativeWindow->set_title(windowProps.title);
         nativeWindow->set_size(windowProps.width, windowProps.height, windowProps.minWidth,
                         windowProps.minHeight, windowProps.maxWidth, windowProps.maxHeight, 
                         windowProps.resizable);
+
+        if(windowProps.maximize)
+            window::maximize();
+
+        #if defined(__linux__) || defined(__FreeBSD__)
         windowHandle = (GtkWidget*) nativeWindow->window();
 
-        // Window properties/modes
         if(windowProps.fullScreen)
             gtk_window_fullscreen(GTK_WINDOW(windowHandle));
 
         gtk_window_set_keep_above(GTK_WINDOW(windowHandle), windowProps.alwaysOnTop);
-
-        if(windowProps.maximize)
-            window::maximize(nullptr);
  
         if(windowProps.hidden)
             gtk_widget_hide(windowHandle);
 
         gtk_window_set_decorated(GTK_WINDOW(windowHandle), !windowProps.borderless);
 
-        if(windowProps.icon)
-            gtk_window_set_icon(GTK_WINDOW(windowHandle), (GdkPixbuf*)windowProps.icon);
+        if(windowProps.icon != "") {
+            GdkPixbuf *icon = nullptr;
+            GdkPixbufLoader *loader;
+            GdkPixbuf *pixbuf;
+            loader = gdk_pixbuf_loader_new();
+            std::string iconDataStr = settings::getFileContent(windowProps.icon);
+
+            const char * iconData = iconDataStr.c_str();
+            unsigned char * uiconData = reinterpret_cast <unsigned char *> (const_cast <char *> (iconData));
+            gdk_pixbuf_loader_write(loader, uiconData, iconDataStr.length(), NULL);
+            icon = gdk_pixbuf_loader_get_pixbuf(loader);
+            gtk_window_set_icon(GTK_WINDOW(windowHandle), (GdkPixbuf*)icon);
+        }
         
-        nativeWindow->navigate(windowProps.url);
-        nativeWindow->run();
-    }
-    #elif defined(__APPLE__)
-    void __createWindow(WindowOptions windowProps) {
-        nativeWindow = new webview::webview(windowProps.enableInspector, nullptr);
-        nativeWindow->set_title(windowProps.title);
-        nativeWindow->set_size(windowProps.width, windowProps.height, windowProps.minWidth,
-                        windowProps.minHeight, windowProps.maxWidth, windowProps.maxHeight, 
-                        windowProps.resizable);
+        #elif defined(__APPLE__)
         windowHandle = (id) nativeWindow->window();
 
-        // Window properties/modes
         ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
                     "setHasShadow:"_sel, true);
 
@@ -126,36 +159,32 @@ namespace controllers {
             windowStyleMask &= ~NSWindowStyleMaskTitled;
             ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle, 
                     "setStyleMask:"_sel, windowStyleMask);
-        }
-
-        if(windowProps.maximize)
-            window::maximize(nullptr);     
+        }  
         
         ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
                     "setIsVisible:"_sel, !windowProps.hidden);
         
-        if(windowProps.icon) {
+        if(windowProps.icon != "") {
+            id icon = nullptr;
+            string iconDataStr = settings::getFileContent(windowProps.icon);
+            const char *iconData = iconDataStr.c_str();
+            icon =
+                ((id (*)(id, SEL))objc_msgSend)("NSImage"_cls, "alloc"_sel);
+            
+            id nsIconData = ((id (*)(id, SEL, const char*, int))objc_msgSend)("NSData"_cls,
+                      "dataWithBytes:length:"_sel, iconData, iconDataStr.length());
+
+            ((void (*)(id, SEL, id))objc_msgSend)(icon, "initWithData:"_sel, nsIconData);
             ((void (*)(id, SEL, id))objc_msgSend)(((id (*)(id, SEL))objc_msgSend)("NSApplication"_cls,
                                         "sharedApplication"_sel),
-                        "setApplicationIconImage:"_sel, windowProps.icon);
+                        "setApplicationIconImage:"_sel,icon);
         }
         
-        nativeWindow->navigate(windowProps.url);
-        nativeWindow->run();
-    }
-    #elif defined(_WIN32)
-    void __createWindow(WindowOptions windowProps) {
-
-        nativeWindow = new webview::webview(windowProps.enableInspector, nullptr);
-        nativeWindow->set_title(windowProps.title);
-        nativeWindow->set_size(windowProps.width, windowProps.height, windowProps.minWidth,
-                        windowProps.minHeight, windowProps.maxWidth, windowProps.maxHeight, 
-                        windowProps.resizable);
+        #elif defined(_WIN32)
         windowHandle = (HWND) nativeWindow->window();
         DWORD currentStyle = GetWindowLong(windowHandle, GWL_STYLE);
         DWORD currentStyleX = GetWindowLong(windowHandle, GWL_EXSTYLE);
 
-        // Window properties/modes
         if(windowProps.fullScreen) {
             MONITORINFO monitor_info;
             currentStyle &= ~(WS_CAPTION | WS_THICKFRAME);
@@ -179,9 +208,6 @@ namespace controllers {
         if(windowProps.alwaysOnTop)
             SetWindowPos(windowHandle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
 
-        if(windowProps.maximize)
-            window::maximize(nullptr);
-
         if(windowProps.hidden)
             ShowWindow(windowHandle, SW_HIDE);
 
@@ -192,14 +218,28 @@ namespace controllers {
                             SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
         }
 
-        if(windowProps.icon) {
-            SendMessage(windowHandle, WM_SETICON, ICON_SMALL, (LPARAM)windowProps.icon);
-            SendMessage(windowHandle, WM_SETICON, ICON_BIG, (LPARAM)windowProps.icon);
+        if(windowProps.icon != "") {
+            GdiplusStartupInput gdiplusStartupInput;
+            ULONG_PTR gdiplusToken;
+            GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+    
+            HICON icon = nullptr;
+            string iconDataStr = settings::getFileContent(windowProps.icon);
+            const char *iconData = iconDataStr.c_str();
+            unsigned char *uiconData = reinterpret_cast<unsigned char*>(const_cast<char*>(iconData));
+            IStream *pStream = SHCreateMemStream((BYTE *) uiconData, iconDataStr.length());
+            Gdiplus::Bitmap* bitmap = Gdiplus::Bitmap::FromStream(pStream);
+            bitmap->GetHICON(&icon);
+            pStream->Release();
+    
+            SendMessage(windowHandle, WM_SETICON, ICON_SMALL, (LPARAM)icon);
+            SendMessage(windowHandle, WM_SETICON, ICON_BIG, (LPARAM)icon);
+            GdiplusShutdown(gdiplusToken);
         }
+        #endif
         nativeWindow->navigate(windowProps.url);
         nativeWindow->run();
     }
-    #endif
 
     json setTitle(json input) {
         json output;
@@ -213,42 +253,21 @@ namespace controllers {
 
     json maximize(json input) {
         json output;
-        #if defined(__linux__)
-        gtk_window_maximize(GTK_WINDOW(windowHandle));
-        #elif defined(_WIN32)
-        ShowWindow(windowHandle, SW_MAXIMIZE);
-        #elif defined(__APPLE__)
-        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
-            "zoom:"_sel, NULL);
-        #endif
+        window::maximize();
         output["success"] = true;
         return output;
     }
 
     json unmaximize(json input) {
         json output;
-        #if defined(__linux__)
-        gtk_window_unmaximize(GTK_WINDOW(windowHandle));
-        #elif defined(_WIN32)
-        ShowWindow(windowHandle, SW_RESTORE);
-        #elif defined(__APPLE__)
-        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
-            "zoom:"_sel, NULL);
-        #endif
+        window::unmaximize();
         output["success"] = true;
         return output;
     }
     
     json isMaximized(json input) {
         json output;
-        #if defined(__linux__)
-        output["returnValue"] = gtk_window_is_maximized(GTK_WINDOW(windowHandle)) == 1;
-        #elif defined(_WIN32)
-        output["returnValue"] = IsZoomed(windowHandle) == 1;
-        #elif defined(__APPLE__)
-        output["returnValue"] = ((bool (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
-            "isZoomed"_sel, NULL);
-        #endif
+        output["returnValue"] = window::isMaximized();
         output["success"] = true;
         return output;
     }
@@ -270,11 +289,6 @@ namespace controllers {
     json show(json input) {
         WindowOptions windowProps;
         json output;
-        #if defined(_WIN32)
-        GdiplusStartupInput gdiplusStartupInput;
-        ULONG_PTR gdiplusToken;
-        GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-        #endif
 
         if(!input["width"].is_null())
             windowProps.width = input["width"];
@@ -306,62 +320,25 @@ namespace controllers {
         if(!input["url"].is_null())
             windowProps.url = input["url"];
 
-        if(!input["icon"].is_null()) {
-            #if defined(__linux__) || defined(__FreeBSD__)
-            GdkPixbufLoader *loader;
-            GdkPixbuf *pixbuf;
-            loader = gdk_pixbuf_loader_new();
-            std::string iconFile = input["icon"].get<std::string>();
-            std::string iconDataStr = settings::getFileContent(iconFile);
+        if(!input["icon"].is_null())
+            windowProps.icon = input["icon"];
 
-            const char * iconData = iconDataStr.c_str();
-            unsigned char * uiconData = reinterpret_cast <unsigned char *> (const_cast <char *> (iconData));
-            gdk_pixbuf_loader_write(loader, uiconData, iconDataStr.length(), NULL);
-            windowProps.icon = gdk_pixbuf_loader_get_pixbuf(loader);
-            
-            #elif defined(__APPLE__)
-            string iconfile = input["icon"].get<std::string>();
-            string iconDataStr = settings::getFileContent(iconfile);
-            const char *iconData = iconDataStr.c_str();
-            windowProps.icon =
-                ((id (*)(id, SEL))objc_msgSend)("NSImage"_cls, "alloc"_sel);
-            
-            id nsIconData = ((id (*)(id, SEL, const char*, int))objc_msgSend)("NSData"_cls,
-                      "dataWithBytes:length:"_sel, iconData, iconDataStr.length());
-
-            ((void (*)(id, SEL, id))objc_msgSend)(windowProps.icon, "initWithData:"_sel, nsIconData);
-            
-            #elif defined(_WIN32)
-            string iconfile = input["icon"].get<std::string>();
-            string iconDataStr = settings::getFileContent(iconfile);
-            const char *iconData = iconDataStr.c_str();
-            unsigned char *uiconData = reinterpret_cast<unsigned char*>(const_cast<char*>(iconData));
-            IStream *pStream = SHCreateMemStream((BYTE *) uiconData, iconDataStr.length());
-            Gdiplus::Bitmap* bitmap = Gdiplus::Bitmap::FromStream(pStream);
-            bitmap->GetHICON(&windowProps.icon);
-            pStream->Release();
-            #endif
-        }
-
-        if (!input["enableInspector"].is_null())
+        if(!input["enableInspector"].is_null())
             windowProps.enableInspector = input["enableInspector"];
 
-        if (!input["borderless"].is_null())
+        if(!input["borderless"].is_null())
             windowProps.borderless = input["borderless"];
 
-        if (!input["maximize"].is_null())
+        if(!input["maximize"].is_null())
             windowProps.maximize = input["maximize"];
 
-        if (!input["hidden"].is_null())
+        if(!input["hidden"].is_null())
             windowProps.hidden = input["hidden"];
             
-        if (!input["resizable"].is_null())
+        if(!input["resizable"].is_null())
             windowProps.resizable = input["resizable"];
 
         __createWindow(windowProps);
-        #if defined(_WIN32)
-        GdiplusShutdown(gdiplusToken);
-        #endif
         output["success"] = true;
         return output;
     }

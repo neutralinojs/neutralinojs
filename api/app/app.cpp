@@ -18,7 +18,6 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace app {
-
     void exit() {
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         kill(getpid(),SIGINT);
@@ -40,7 +39,6 @@ namespace app {
     }
 
 namespace controllers {
-
     json exit(json input) {
         app::exit();
         return nullptr;
@@ -56,7 +54,7 @@ namespace controllers {
 
     json getConfig(json input) {
         json output;
-        output["config"] = settings::getConfig();
+        output["returnValue"] = settings::getConfig();
         output["success"] = true;
         return output;
     }

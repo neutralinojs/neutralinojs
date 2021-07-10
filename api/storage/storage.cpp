@@ -31,20 +31,16 @@ namespace controllers {
         string bucketPath = settings::joinAppPath(STORAGE_DIR);
         string filename = bucketPath + "/" + bucket + STORAGE_EXT;
         
+        fs::FileReaderResult fileReaderResult;
+        fileReaderResult = fs::readFile(filename);
         ifstream t;
         t.open(filename);
-        if(!t.is_open()) {
-            output["error"] = "Unable to open storage bucket: " + bucket;
+        if(fileReaderResult.hasError) {
+            output["error"] = "Unable to open storage bucket: " + bucket +
+                                 ". " + fileReaderResult.error;
             return output;
         }
-        string buffer = "";
-        string line;
-        while(!t.eof()){
-            getline(t, line);
-            buffer += line + "\n";
-        }
-        t.close();
-        output["data"] = buffer;
+        output["data"] = fileReaderResult.data;
         output["success"] = true;
         return output;
     }
@@ -61,19 +57,17 @@ namespace controllers {
         
         string filename = bucketPath + "/" + bucket + STORAGE_EXT;
         if(input["data"].is_null()) {
-            json readFileParams;
-            readFileParams["fileName"] = filename;
-            fs::removeFile(readFileParams);
+            fs::removeFile(filename);
         }
         else {
-            string content = input["data"];
-            ofstream t(filename);
-            if(!t.is_open()) {
+            fs::FileWriterOptions fileWriterOptions;
+            fileWriterOptions.data = input["data"];
+            fileWriterOptions.filename = filename;
+    
+            if(!fs::writeFile(fileWriterOptions)) {
                 output["error"] = "Unable to write storage bucket: " + bucket;
                 return output;
             }
-            t << content;
-            t.close();
         }
         output["success"] = true;
         return output;

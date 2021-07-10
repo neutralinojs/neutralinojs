@@ -2,12 +2,12 @@
 #include <fstream>
 #include <algorithm>
 #include <regex>
-#include "lib/easylogging/easylogging++.h"
 #include "lib/json.hpp"
 #include "auth/authbasic.h"
 #include "resources.h"
 #include "helpers.h"
-#include "platform/platform.h"
+#include "api/filesystem/filesystem.h"
+#include "api/debug/debug.h"
 
 #if defined(__linux__)
 #define OS_NAME "Linux"
@@ -43,19 +43,17 @@ namespace settings {
     }
 
     string getFileContent(string filename) {
+        string content;
         if(!loadResFromDir)
             return resources::getFileContent(filename);
         filename = settings::joinAppPath(filename);
-        vector<char> buffer;
-        ifstream ifd(filename.c_str(), ios::binary | ios::ate);
-        if(!ifd.is_open())
-            return "";
-        int size = ifd.tellg();
-        ifd.seekg(0, ios::beg);
-        buffer.resize(size);
-        ifd.read(buffer.data(), size);
-        string result(buffer.begin(), buffer.end());
-        return result;
+        fs::FileReaderResult fileReaderResult = fs::readFile(filename);
+        
+        if(fileReaderResult.hasError)
+            debug::log("ERROR", fileReaderResult.error);
+        else
+            content = fileReaderResult.data;
+        return content;
     }
 
     json getConfig() {
@@ -72,7 +70,7 @@ namespace settings {
             }
         }
         catch(exception e){
-            LOG(ERROR) << "Unable to load: " << APP_CONFIG_FILE;
+            debug::log("ERROR", "Unable to load: " + std::string(APP_CONFIG_FILE));
         }
         return options;
     }
@@ -84,7 +82,7 @@ namespace settings {
         jsSnippet += "var NL_PORT=" + std::to_string(options["port"].get<int>()) + ";";
         jsSnippet += "var NL_MODE='" + options["defaultMode"].get<std::string>() + "';";
         jsSnippet += "var NL_TOKEN='" + authbasic::getToken() + "';";
-        jsSnippet += "var NL_CWD='" + platform::getCurrentDirectory() + "';";
+        jsSnippet += "var NL_CWD='" + fs::getCurrentDirectory() + "';";
         jsSnippet += "var NL_ARGS=" + globalArgs.dump() + ";";
         jsSnippet += "var NL_PATH='" + appPath + "';";
 
@@ -101,9 +99,9 @@ namespace settings {
         for(string arg: args) {
             // Set default path
             if(argIndex == 0) {
-                appPath = platform::getDirectoryName(args[argIndex].get<std::string>());
+                appPath = fs::getDirectoryName(args[argIndex].get<std::string>());
                 if(appPath == "")
-                    appPath = platform::getCurrentDirectory();
+                    appPath = fs::getCurrentDirectory();
                 globalArgs = args;
             }
             
@@ -119,7 +117,7 @@ namespace settings {
                     if(modeArgParts[1] == "browser" || modeArgParts[1] == "window" || modeArgParts[1] == "cloud")
                         configOverrides.push_back(make_pair("defaultMode", modeArgParts[1]));
                     else
-                        LOG(ERROR) << "Unsupported mode: '" << modeArgParts[1] << "'. The default mode is selected.";
+                        debug::log("ERROR", "Unsupported mode: '" + modeArgParts[1] + "'. The default mode is selected.");
                 }
             }
             

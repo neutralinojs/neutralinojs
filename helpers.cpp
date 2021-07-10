@@ -5,8 +5,8 @@
 #include <ctype.h>
 
 using namespace std;
-namespace helpers {
 
+namespace helpers {
     vector<string> split(const string &s, char delim) {
         stringstream ss(s);
         string item;
@@ -68,7 +68,7 @@ namespace helpers {
         *dst++ = '\0';
     }
     
- char* cStrCopy(string str) {
+    char* cStrCopy(string str) {
         char *text = new char[str.size() + 1];
         std::copy(str.begin(), str.end(), text);
         text[str.size()] = '\0';

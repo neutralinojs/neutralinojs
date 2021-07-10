@@ -38,6 +38,7 @@ namespace controllers {
         int mib[2];
         int64_t physical_memory;
         mib[0] = CTL_HW;
+
 	#if defined(__FreeBSD__)
 	#define HW_MEMSIZE HW_PHYSMEM
 	#endif

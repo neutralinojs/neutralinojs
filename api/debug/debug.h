@@ -7,6 +7,8 @@
 using namespace std;
 
 namespace debug {
+    void log(string type, string message);
+
 namespace controllers {
     json log(json input);
 } // namespace controllers

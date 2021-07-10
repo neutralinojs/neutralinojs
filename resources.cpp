@@ -7,6 +7,8 @@
 #include "lib/json.hpp"
 #include "helpers.h"
 #include "settings.h"
+#include "api/debug/debug.h"
+#include "api/filesystem/filesystem.h"
 
 #define APP_RES_FILE "/res.neu"
 
@@ -39,7 +41,7 @@ namespace resources {
             resFileName = settings::joinAppPath(resFileName);
             asarArchive.open(resFileName, std::ios::binary);
             if (!asarArchive) {
-                LOG(ERROR) << "Resource file tree generation error: " << resFileName << " is missing.";
+                debug::log("ERROR", "Resource file tree generation error: " + resFileName + " is missing.");
                 return "";
             }
             unsigned int uSize = p.first;
@@ -62,7 +64,7 @@ namespace resources {
         resFileName = settings::joinAppPath(resFileName);
         asarArchive.open(resFileName, std::ios::binary);
         if (!asarArchive) {
-            LOG(ERROR) << "Resource file tree generation error: " << resFileName << " is missing.";
+            debug::log("ERROR", "Resource file tree generation error: " + resFileName + " is missing.");
             return false;
         }
 
@@ -74,7 +76,7 @@ namespace resources {
 
         asarHeaderSize = uSize + 16;
         std::vector<char> headerBuf(uSize);
-        asarArchive.seekg(16); // skip header
+        asarArchive.seekg(16);
         asarArchive.read(headerBuf.data(), uSize);
         json files;
         std::string headerContent(headerBuf.begin(), headerBuf.end());
@@ -82,7 +84,7 @@ namespace resources {
             files = json::parse(headerContent);
         }
         catch(exception e) {
-            LOG(ERROR) << e.what();
+            debug::log("ERROR", e.what());
         }
         fileTree = files;
         return fileTree != nullptr;
@@ -90,9 +92,10 @@ namespace resources {
     
     void extractFile(string filename, string outputFilename) {
         string fileContent = resources::getFileContent(filename);
-        ofstream outFile(outputFilename);
-        outFile << fileContent;
-        outFile.close();
+        fs::FileWriterOptions fileWriterOptions;
+        fileWriterOptions.filename = outputFilename;
+        fileWriterOptions.data = fileContent;
+        fs::writeFile(fileWriterOptions);
     }
 
 }

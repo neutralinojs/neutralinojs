@@ -4,6 +4,7 @@
 
 using namespace std;
 string token = "";
+
 namespace authbasic {
 
     void generateToken() {

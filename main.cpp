@@ -15,6 +15,7 @@
 #include "api/app/app.h"
 #include "api/window/window.h"
 #include "api/os/os.h"
+#include "api/debug/debug.h"
 
 #define APP_LOG_FILE "/neutralinojs.log"
 #define APP_LOG_FORMAT "%level %datetime %msg %loc %user@%host"
@@ -50,11 +51,11 @@ int main(int argc, char ** argv)
 
     json options = settings::getConfig();
     if(options.is_null()) {
-        json msgBoxParams;
-        msgBoxParams["type"] = "ERROR";
-        msgBoxParams["title"] = "Unable to load app configuration";
-        msgBoxParams["content"] = "neutralino.config.json file is missing or corrupted.";
-        os::controllers::showMessageBox(msgBoxParams);
+        os::MessageBoxOptions msgBoxOptions;
+        msgBoxOptions.type = "ERROR";
+        msgBoxOptions.title = "Unable to load app configuration";
+        msgBoxOptions.content = "neutralino.config.json file is missing or corrupted.";
+        os::showMessageBox(msgBoxOptions);
         app::exit();
     }
 
@@ -94,8 +95,8 @@ int main(int argc, char ** argv)
     }
     else if(mode == "cloud") {
         if(enableHTTPServer)
-            LOG(INFO) << options["applicationId"].get<std::string>() <<
-                     " is available at " << navigationUrl;
+            debug::log("INFO", options["applicationId"].get<std::string>() +
+                     " is available at " + navigationUrl);
         while(true);
     }
     delete server;

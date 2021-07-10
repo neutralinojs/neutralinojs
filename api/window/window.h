@@ -7,6 +7,9 @@ using namespace std;
 
 namespace window {
     void executeJavaScript(string js);
+    bool isMaximized();
+    void maximize();
+    void minimize();
 
 namespace controllers {
     json show(json input);

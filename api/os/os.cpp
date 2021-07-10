@@ -32,11 +32,12 @@
 #pragma comment (lib,"Gdiplus.lib")
 #endif
 
-#include "platform/platform.h"
 #include "lib/tray/tray.h"
 #include "../../helpers.h"
 #include "api/window/window.h"
 #include "api/filesystem/filesystem.h"
+#include "api/debug/debug.h"
+#include "api/os/os.h"
 #include "settings.h"
 #include "resources.h"
 
@@ -53,11 +54,135 @@ struct tray tray;
 bool isTrayCreated = false;
 
 namespace os {
+
+    string execCommand(string command){
+        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+        std::array<char, 128> buffer;
+        std::string result = "";
+        std::shared_ptr<FILE> pipe(popen((command + " 2>&1").c_str(), "r"), pclose);
+        if (!pipe) {
+            debug::log("ERROR", "Pipe open failed.");
+        }
+        else {
+            while (!feof(pipe.get())) {
+                if (fgets(buffer.data(), 128, pipe.get()) != nullptr)
+                    result += buffer.data();
+            }
+        }
+        return result;
+
+        #elif defined(_WIN32)
+        // A modified version of https://stackoverflow.com/a/59523254
+        string output = "";
+        HANDLE g_hChildStd_OUT_Rd = NULL;
+        HANDLE g_hChildStd_OUT_Wr = NULL;
+
+        SECURITY_ATTRIBUTES sa;
+        // Set the bInheritHandle flag so pipe handles are inherited.
+        sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+        sa.bInheritHandle = TRUE;
+        sa.lpSecurityDescriptor = NULL;
+        if (!CreatePipe(&g_hChildStd_OUT_Rd, &g_hChildStd_OUT_Wr, &sa, 0))     { return output; } // Create a pipe for the child process's STDOUT.
+        if (!SetHandleInformation(g_hChildStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0)) { return output; } // Ensure the read handle to the pipe for STDOUT is not inherited
+
+        PROCESS_INFORMATION piProcInfo;
+        STARTUPINFO siStartInfo;
+        bool bSuccess = FALSE;
+
+        // Set up members of the PROCESS_INFORMATION structure.
+        ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
+
+        // Set up members of the STARTUPINFO structure.
+        // This structure specifies the STDERR and STDOUT handles for redirection.
+        ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
+        siStartInfo.cb = sizeof(STARTUPINFO);
+        siStartInfo.hStdOutput = g_hChildStd_OUT_Wr;
+        siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
+
+        // Create the child process.
+        bSuccess = CreateProcess(
+            NULL,             // program name
+            (LPSTR)("cmd /c " + command + " 2>&1").c_str(),       // command line
+            NULL,             // process security attributes
+            NULL,             // primary thread security attributes
+            TRUE,             // handles are inherited
+            CREATE_NO_WINDOW, // creation flags (this is what hides the window)
+            NULL,             // use parent's environment
+            NULL,             // use parent's current directory
+            &siStartInfo,     // STARTUPINFO pointer
+            &piProcInfo       // receives PROCESS_INFORMATION
+        );
+        CloseHandle(g_hChildStd_OUT_Wr);
+
+        // read output
+        DWORD dwRead;
+        CHAR chBuf[EXEC_BUFSIZE];
+        bool bSuccess2 = FALSE;
+        for (;;) { // read stdout
+            bSuccess2 = ReadFile(g_hChildStd_OUT_Rd, chBuf, EXEC_BUFSIZE, &dwRead, NULL);
+            if(!bSuccess2 || dwRead == 0) break;
+            std::string s(chBuf, dwRead);
+            output += s;
+        }
+
+        // The remaining open handles are cleaned up when this process terminates.
+        // To avoid resource leaks in a larger application,
+        // close handles explicitly.
+        return output;
+        #endif
+    }
+    
+    os::MessageBoxResult showMessageBox(os::MessageBoxOptions options) {
+        MessageBoxResult result;
+        #if defined(__linux__) || defined(__FreeBSD__)
+        map <string, string> messageTypes = {{"INFO", "info"}, {"WARN", "warning"},
+                                            {"ERROR", "error"}, {"QUESTION", "question"}};
+        string messageType;
+        messageType = options.type;
+        if(messageTypes.find(messageType) == messageTypes.end()) {
+            result.hasError = true;
+            result.error = "Invalid message type: '" + messageType + "' provided";
+            return result;
+        }
+        string command = "zenity --no-wrap --" + messageTypes[messageType] + " --title=\"" +
+                            options.title + "\" --text=\"" +
+                            options.content + "\" && echo $?";
+        string response = os::execCommand(command);
+        if(messageType == "QUESTION")
+            result.yesButtonClicked =  response.find("0") != std::string::npos;
+        
+        #elif defined(__APPLE__) || defined(_WIN32)
+            string title = input["title"];
+            string content = input["content"];
+            string type = input["type"];
+
+            boxer::Selection msgSel;
+
+            if(type == "INFO")
+                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Info);
+            else if(type == "WARN")
+                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Warning);
+            else if(type == "ERROR")
+                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Error);
+            else if(type == "QUESTION") {
+                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Question,
+                                    boxer::Buttons::YesNo);
+                result.yesButtonClicked =  msgSel == boxer::Selection::Yes;
+            }
+            else {
+                result.hasError = true;
+                result.error = "Invalid message type: '" + type + "' provided";
+            }
+        
+        #endif
+        return result;
+    }
+    
 namespace controllers {
     json execCommand(json input) {
         json output;
         string command = input["command"];
-        output["output"] = platform::execCommand(command);
+        output["output"] = os::execCommand(command);
         output["success"] = true;
         return output;
     }
@@ -85,7 +210,7 @@ namespace controllers {
             command += " --title \"" + input["title"].get<std::string>() + "\"";
         if(!input["isDirectoryMode"].is_null() && input["isDirectoryMode"].get<bool>())
             command += " --directory";
-        output["selectedEntry"] = platform::execCommand(command);
+        output["selectedEntry"] = os::execCommand(command);
         
         #elif defined(__APPLE__)
         string command = "osascript -e 'POSIX path of (choose ";
@@ -156,7 +281,7 @@ namespace controllers {
         string command = "zenity --file-selection --save";
         if(!input["title"].is_null())
             command += " --title \"" + input["title"].get<std::string>() + "\"";
-        output["selectedEntry"] = platform::execCommand(command);
+        output["selectedEntry"] = os::execCommand(command);
         
         #elif defined(__APPLE__)
         string command = "osascript -e 'POSIX path of (choose file name";
@@ -235,50 +360,21 @@ namespace controllers {
     }
 
     json showMessageBox(json input) {
-        #if defined(__linux__) || defined(__FreeBSD__)
         json output;
-        map <string, string> messageTypes = {{"INFO", "info"}, {"WARN", "warning"},
-                                            {"ERROR", "error"}, {"QUESTION", "question"}};
-        string messageType;
-        messageType = input["type"].get<string>();
-        if(messageTypes.find(messageType) == messageTypes.end()) {
-            output["error"] = "Invalid message type: '" + messageType + "' provided";
-            return output.dump();
+        os::MessageBoxOptions msgBoxOptions;
+        os::MessageBoxResult msgBoxResult;
+        msgBoxOptions.type = input["type"];
+        msgBoxOptions.title = input["title"];
+        msgBoxOptions.content = input["content"];
+        msgBoxResult = os::showMessageBox(msgBoxOptions);
+        if(msgBoxResult.hasError) {
+            output["error"] = msgBoxResult.error;
         }
-        string command = "zenity --no-wrap --" + messageTypes[messageType] + " --title=\"" +
-                            input["title"].get<string>() + "\" --text=\"" +
-                            input["content"].get<string>() + "\" && echo $?";
-        string response = platform::execCommand(command);
-        if(messageType == "QUESTION")
-            output["yesButtonClicked"] =  response.find("0") != std::string::npos;
-        output["success"] = true;
-        
-        #elif defined(__APPLE__) || defined(_WIN32)
-            string title = input["title"];
-            string content = input["content"];
-            string type = input["type"];
-
-            json output;
-            boxer::Selection msgSel;
-
-            if(type == "INFO")
-                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Info);
-            else if(type == "WARN")
-                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Warning);
-            else if(type == "ERROR")
-                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Error);
-            else if(type == "QUESTION") {
-                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Question,
-                                    boxer::Buttons::YesNo);
-                output["yesButtonClicked"] =  msgSel == boxer::Selection::Yes;
-            }
-            else 
-                output["error"] = "Invalid message type: '" + type + "' provided";
-
-            if(output["error"].is_null())
-                output["success"] = true;
-        
-        #endif
+        else {
+            if(msgBoxOptions.type == "QUESTION")
+                output["yesButtonClicked"] = msgBoxResult.yesButtonClicked;
+            output["success"] = true;
+        }
         return output;
     }
     
@@ -334,7 +430,7 @@ namespace controllers {
             #if defined(__linux__)
             string fullIconPath;
             if(loadResFromDir) {
-                fullIconPath = platform::getFullPathFromRelative(settings::joinAppPath("")) + iconPath;
+                fullIconPath = fs::getFullPathFromRelative(settings::joinAppPath("")) + iconPath;
             }
             else {
                 json createDirParams;
@@ -342,7 +438,7 @@ namespace controllers {
                 fs::createDirectory(createDirParams);
                 string tempIconPath = settings::joinAppPath("/.tmp/tray_icon_linux.png");
                 resources::extractFile(iconPath, tempIconPath);
-                fullIconPath = platform::getFullPathFromRelative(tempIconPath);
+                fullIconPath = fs::getFullPathFromRelative(tempIconPath);
             }
             tray.icon = helpers::cStrCopy(fullIconPath);
 
