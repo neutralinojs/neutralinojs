@@ -33,8 +33,6 @@ namespace controllers {
         
         fs::FileReaderResult fileReaderResult;
         fileReaderResult = fs::readFile(filename);
-        ifstream t;
-        t.open(filename);
         if(fileReaderResult.hasError) {
             output["error"] = "Unable to open storage bucket: " + bucket +
                                  ". " + fileReaderResult.error;
