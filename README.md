@@ -52,13 +52,14 @@ Install GTk and webkit libraries
 
 **Ubuntu**
 
-If you are using a newer version of Ubuntu, there is no need to run the following commands.
+If you are using a newer version of Ubuntu, some libraries may be pre-installed.
 
 ```bash
-$ sudo apt-get install libgtk-3-dev
-$ sudo add-apt-repository ppa:webkit-team/ppa
-$ sudo apt-get update
-$ sudo apt-get install libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev
+$ sudo apt-get install -y -f  \ 
+    libgtk-3-dev \ 
+    libwebkit2gtk-4.0-37 \ 
+    libwebkit2gtk-4.0-dev \
+    libappindicator3-dev
 ```
 
 **Fedora**
