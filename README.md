@@ -55,7 +55,7 @@ Install GTk and webkit libraries
 If you are using a newer version of Ubuntu, some libraries may be pre-installed.
 
 ```bash
-$ sudo apt-get install -y -f  \ 
+$ sudo apt-get install \ 
     libgtk-3-dev \ 
     libwebkit2gtk-4.0-37 \ 
     libwebkit2gtk-4.0-dev \
