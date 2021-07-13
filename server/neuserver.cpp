@@ -16,12 +16,13 @@ std::string NeuServer::init() {
     this->svr = new httplib::Server();
 
     this->svr->Get(".*", [](const httplib::Request &req, httplib::Response &res) {
-      pair<string, string> resp =  routes::handle(req.path, "", req.get_header_value("Authorization"));
-      res.set_content(resp.first, resp.second.c_str());
+      router::Response routerResponse  =  router::handle({req.path, "", req.get_header_value("Authorization")});
+      res.set_content(routerResponse.data, routerResponse.header.c_str());
     });
+
     this->svr->Post(".*", [](const httplib::Request &req, httplib::Response &res) {
-      pair<string, string> resp =  routes::handle(req.path, req.body, req.get_header_value("Authorization"));
-      res.set_content(resp.first, resp.second.c_str());
+      router::Response routerResponse =  router::handle({req.path, req.body, req.get_header_value("Authorization")});
+      res.set_content(routerResponse.data, routerResponse.header.c_str());
     });
 
     json options = settings::getConfig();

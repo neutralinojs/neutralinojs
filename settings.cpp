@@ -28,7 +28,6 @@
 using namespace std;
 using json = nlohmann::json;
 
-
 json options;
 json globalArgs;
 bool loadResFromDir = false;

@@ -15,6 +15,7 @@
 #include "api/debug/debug.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
+#include "server/router.h"
 
 #if defined(__APPLE__)
 #include <dispatch/dispatch.h>
@@ -24,9 +25,9 @@ using namespace std;
 using json = nlohmann::json;
 typedef json (*NativeMethod)(json);
 
-namespace routes {
-    pair<string, string> executeNativeMethod(string path, string postData, string token) {
-        string modfunc = regex_replace(path, std::regex("/__nativeMethod_"), "");
+namespace router {
+    router::Response executeNativeMethod(router::Request request) {
+        string nativeMethodId = regex_replace(request.path, std::regex("/__nativeMethod_"), "");
 
         #if (__APPLE__)
         __block string output = "";
@@ -36,12 +37,12 @@ namespace routes {
         json inputPayload;
         #endif
 
-        if(!authbasic::verifyToken(token))
-            return make_pair("{\"error\":\"Invalid or expired NL_TOKEN value from client\"}", "application/json");
-        if(!permission::hasAccess(modfunc))
-            return make_pair("{\"error\":\"Missing permission to execute the native method\"}", "application/json");
-        if(!permission::hasAPIAccess(modfunc) && modfunc != "app.keepAlive")
-            return make_pair("{\"error\":\"Missing permission to access Native API\"}", "application/json");
+        if(!authbasic::verifyToken(request.token))
+            return router::makeNativeFailResponse("Invalid or expired NL_TOKEN value from client");
+        if(!permission::hasAccess(nativeMethodId))
+            return router::makeNativeFailResponse("Missing permission to execute the native method");
+        if(!permission::hasAPIAccess(nativeMethodId) && nativeMethodId != "app.keepAlive")
+            return router::makeNativeFailResponse("Missing permission to access Native API");
 
         map <string, NativeMethod> methodMap = {
             {"app.exit", app::controllers::exit},
@@ -72,20 +73,20 @@ namespace routes {
             {"storage.getData", storage::controllers::getData}
         };
 
-        if(methodMap.find(modfunc) != methodMap.end() ){
+        if(methodMap.find(nativeMethodId) != methodMap.end() ) {
             try {
-                if(postData != "")
-                    inputPayload = json::parse(postData);
-                NativeMethod nativeMethod = methodMap[modfunc];
+                if(request.data != "")
+                    inputPayload = json::parse(request.data);
+                NativeMethod nativeMethod = methodMap[nativeMethodId];
                 #if defined(__linux__) || defined(_WIN32) || defined(__FreeBSD__)
                 json apiOutput;
                 #endif
                 #if defined(__APPLE__)
                 __block json apiOutput;
                 // In macos, child threads cannot run UI logic
-                if(modfunc == "os.showMessageBox" || 
-                    regex_match(modfunc, regex("^window.*")) || 
-                    modfunc == "os.setTray") {
+                if(nativeMethodId == "os.showMessageBox" || 
+                    regex_match(nativeMethodId, regex("^window.*")) || 
+                    nativeMethodId == "os.setTray") {
                     dispatch_sync(dispatch_get_main_queue(), ^{
                         apiOutput = (*nativeMethod)(inputPayload);
                     });
@@ -97,21 +98,30 @@ namespace routes {
                     apiOutput = (*nativeMethod)(inputPayload);
                 #endif
                 output = apiOutput.dump();
+                return router::makeNativeResponse(output);
             }
             catch(exception e){
-                json parserOutput = {{"error", "Native method execution error occured"}};
-                output = parserOutput.dump();
+                return router::makeNativeFailResponse("Native method execution error occured");
             }
         }
         else {
-            json defaultOutput = {{"error", modfunc + " is not implemented in the Neutralinojs server"}};
-            output = defaultOutput.dump();
+            return router::makeNativeFailResponse(nativeMethodId + " is not implemented in the Neutralinojs server");
         }
-
-        return make_pair(output, "application/json");
+    }
+    
+    router::Response makeNativeResponse(string data) {
+        router::Response response;
+        response.data = data;
+        response.header = "application/json";
+        return response;
+    }
+    
+    router::Response makeNativeFailResponse(string errorMessage) {
+        return router::makeNativeResponse("{\"error\":\"" + errorMessage + "\"}");
     }
 
-    pair<string, string> getAsset(string path, string prependData = "") {
+    router::Response getAsset(string path, string prependData) {
+        router::Response response;
         vector<string> split = helpers::split(path, '.');
         if(split.size() < 2) {
             if(path.back() != '/')
@@ -133,30 +143,31 @@ namespace routes {
             {"xml", "application/xml"},
             {"json", "application/json"}
         };
-        string fileData = settings::getFileContent(path);
+        response.data = settings::getFileContent(path);
         if(prependData != "")
-            fileData = prependData + fileData;
-        return make_pair(fileData, mimeTypes[extension]);
+            response.data = prependData + response.data;
+        response.header = mimeTypes[extension];
+        return response;
     }
 
-   pair<string, string> handle(string encodedPath, string postData, string token) {
-        char *originalPath = (char *) encodedPath.c_str();
+   router::Response handle(router::Request request) {
+        char *originalPath = (char *) request.path.c_str();
         char *decodedPath = new char[strlen(originalPath) + 1];
         helpers::urldecode(decodedPath, originalPath);
-        string path = string(decodedPath);
+        request.path = string(decodedPath);
         delete []decodedPath;
 
-        bool isNativeMethod = regex_match(path, regex(".*/__nativeMethod_.*"));
-        bool isClientLibrary = regex_match(path, regex(".*neutralino.js$"));
+        bool isNativeMethod = regex_match(request.path, regex(".*/__nativeMethod_.*"));
+        bool isClientLibrary = regex_match(request.path, regex(".*neutralino.js$"));
 
         if(isNativeMethod) {
-            return executeNativeMethod(path, postData, token);
+            return executeNativeMethod(request);
         }
         else if(isClientLibrary) {
-            return getAsset(path, settings::getGlobalVars());
+            return getAsset(request.path, settings::getGlobalVars());
         }
         else {
-            return getAsset(path);
+            return getAsset(request.path);
         }
     }
 
