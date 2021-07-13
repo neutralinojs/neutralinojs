@@ -73,7 +73,7 @@ namespace router {
             {"storage.getData", storage::controllers::getData}
         };
 
-        if(methodMap.find(nativeMethodId) != methodMap.end() ) {
+        if(methodMap.find(nativeMethodId) != methodMap.end()) {
             try {
                 if(request.data != "")
                     inputPayload = json::parse(request.data);
@@ -143,6 +143,10 @@ namespace router {
             {"xml", "application/xml"},
             {"json", "application/json"}
         };
+
+        if(mimeTypes.find(extension) == mimeTypes.end())
+            return router::makeNativeFailResponse("File extension: " + extension + " is not supported");
+
         response.data = settings::getFileContent(path);
         if(prependData != "")
             response.data = prependData + response.data;
