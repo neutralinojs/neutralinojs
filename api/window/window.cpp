@@ -8,6 +8,7 @@
 #elif defined(__APPLE__)
 #include <objc/objc-runtime.h>
 #define NSFloatingWindowLevel 5
+#define NSWindowStyleMaskFullScreen 16384
 
 #elif defined(_WIN32)
 #include <windows.h>
@@ -105,9 +106,11 @@ namespace window {
     bool isVisible() {
         #if defined(__linux__) || defined(__FreeBSD__)
         return gtk_widget_is_visible(windowHandle) == 1;
-        #elif defined(_WIN32)
-        return true;
         #elif defined(__APPLE__)
+        return ((bool (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+            "isVisible"_sel, NULL);
+        return true;
+        #elif defined(_WIN32)
         return true;
         #endif
     }
@@ -117,9 +120,10 @@ namespace window {
             return;
         #if defined(__linux__) || defined(__FreeBSD__)
         gtk_widget_show(windowHandle);
-        #elif defined(_WIN32)
-
         #elif defined(__APPLE__)
+        ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
+                    "setIsVisible:"_sel, true);
+        #elif defined(_WIN32)
 
         #endif
     }
@@ -129,9 +133,10 @@ namespace window {
             return;
         #if defined(__linux__) || defined(__FreeBSD__)
         gtk_widget_hide(windowHandle);
-        #elif defined(_WIN32)
-
         #elif defined(__APPLE__)
+        ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
+                    "setIsVisible:"_sel, false);
+        #elif defined(_WIN32)
 
         #endif
     }
@@ -140,9 +145,11 @@ namespace window {
         json output;
         #if defined(__linux__) || defined(__FreeBSD__)
         return isGtkWindowFullScreen;
-        #elif defined(_WIN32)
-        return false;
         #elif defined(__APPLE__)
+        unsigned long windowStyleMask = ((unsigned long (*)(id, SEL))objc_msgSend)(
+            (id) windowHandle, "styleMask"_sel);
+        return (windowStyleMask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen;
+        #elif defined(_WIN32)
         return false;
         #endif
     }
@@ -152,11 +159,11 @@ namespace window {
             return;
         #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_fullscreen(GTK_WINDOW(windowHandle));
-        #elif defined(_WIN32)
-        ShowWindow(windowHandle, SW_MAXIMIZE);
         #elif defined(__APPLE__)
         ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
-            "zoom:"_sel, NULL);
+                "toggleFullScreen:"_sel, NULL);
+        #elif defined(_WIN32)
+        ShowWindow(windowHandle, SW_MAXIMIZE);
         #endif
     }
     
@@ -165,27 +172,42 @@ namespace window {
             return;
         #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_unfullscreen(GTK_WINDOW(windowHandle));
-        #elif defined(_WIN32)
-
         #elif defined(__APPLE__)
+        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+                "toggleFullScreen:"_sel, NULL);
+        #elif defined(_WIN32)
 
         #endif
     }
     
     void setIcon(string iconFile) {
+        string iconDataStr = settings::getFileContent(iconFile);
         #if defined(__linux__) || defined(__FreeBSD__)
         GdkPixbuf *icon = nullptr;
         GdkPixbufLoader *loader;
         GdkPixbuf *pixbuf;
         loader = gdk_pixbuf_loader_new();
-        std::string iconDataStr = settings::getFileContent(iconFile);
 
         const char *iconData = iconDataStr.c_str();
         unsigned char *uiconData = reinterpret_cast <unsigned char *> (const_cast <char *> (iconData));
         gdk_pixbuf_loader_write(loader, uiconData, iconDataStr.length(), NULL);
         icon = gdk_pixbuf_loader_get_pixbuf(loader);
         gtk_window_set_icon(GTK_WINDOW(windowHandle), (GdkPixbuf*)icon);
+
         #elif defined(__APPLE__)
+        id icon = nullptr;
+        const char *iconData = iconDataStr.c_str();
+        icon =
+            ((id (*)(id, SEL))objc_msgSend)("NSImage"_cls, "alloc"_sel);
+        
+        id nsIconData = ((id (*)(id, SEL, const char*, int))objc_msgSend)("NSData"_cls,
+                    "dataWithBytes:length:"_sel, iconData, iconDataStr.length());
+
+        ((void (*)(id, SEL, id))objc_msgSend)(icon, "initWithData:"_sel, nsIconData);
+        ((void (*)(id, SEL, id))objc_msgSend)(((id (*)(id, SEL))objc_msgSend)("NSApplication"_cls,
+                                    "sharedApplication"_sel),
+                    "setApplicationIconImage:"_sel,icon);
+
         #elif defined(_WIN32)
         #endif
     }
@@ -229,10 +251,6 @@ namespace controllers {
 
         ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
                     "setHasShadow:"_sel, true);
-
-        if(windowProps.fullScreen)
-            ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
-                    "toggleFullScreen:"_sel, NULL);
         
         if(windowProps.alwaysOnTop)
             ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle, 
@@ -244,26 +262,7 @@ namespace controllers {
             windowStyleMask &= ~NSWindowStyleMaskTitled;
             ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle, 
                     "setStyleMask:"_sel, windowStyleMask);
-        }  
-        
-        ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
-                    "setIsVisible:"_sel, !windowProps.hidden);
-        
-        if(windowProps.icon != "") {
-            id icon = nullptr;
-            string iconDataStr = settings::getFileContent(windowProps.icon);
-            const char *iconData = iconDataStr.c_str();
-            icon =
-                ((id (*)(id, SEL))objc_msgSend)("NSImage"_cls, "alloc"_sel);
-            
-            id nsIconData = ((id (*)(id, SEL, const char*, int))objc_msgSend)("NSData"_cls,
-                      "dataWithBytes:length:"_sel, iconData, iconDataStr.length());
-
-            ((void (*)(id, SEL, id))objc_msgSend)(icon, "initWithData:"_sel, nsIconData);
-            ((void (*)(id, SEL, id))objc_msgSend)(((id (*)(id, SEL))objc_msgSend)("NSApplication"_cls,
-                                        "sharedApplication"_sel),
-                        "setApplicationIconImage:"_sel,icon);
-        }
+        } 
         
         #elif defined(_WIN32)
         windowHandle = (HWND) nativeWindow->window();
@@ -423,9 +422,10 @@ namespace controllers {
         json output; 
         #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_present(GTK_WINDOW(windowHandle));
-        #elif defined(_WIN32)
-
         #elif defined(__APPLE__)
+        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+                "orderFront:"_sel, NULL);
+        #elif defined(_WIN32)
         
         #endif
         output["success"] = true;
