@@ -60,12 +60,13 @@ struct WindowOptions {
 
 namespace window {
     void executeJavaScript(string js) {
-        nativeWindow->eval(js);
+        if(nativeWindow)
+            nativeWindow->eval(js);
     }
     
     bool isMaximized() {
         json output;
-        #if defined(__linux__)
+        #if defined(__linux__) || defined(__FreeBSD__)
         return gtk_window_is_maximized(GTK_WINDOW(windowHandle)) == 1;
         #elif defined(_WIN32)
         return  IsZoomed(windowHandle) == 1;
@@ -78,7 +79,7 @@ namespace window {
     void maximize() {
         if(window::isMaximized())
             return;
-        #if defined(__linux__)
+        #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_maximize(GTK_WINDOW(windowHandle));
         #elif defined(_WIN32)
         ShowWindow(windowHandle, SW_MAXIMIZE);
@@ -91,7 +92,7 @@ namespace window {
     void unmaximize() {
         if(!window::isMaximized())
             return;
-        #if defined(__linux__)
+        #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_unmaximize(GTK_WINDOW(windowHandle));
         #elif defined(_WIN32)
         ShowWindow(windowHandle, SW_RESTORE);
@@ -102,7 +103,7 @@ namespace window {
     }
     
     bool isVisible() {
-        #if defined(__linux__)
+        #if defined(__linux__) || defined(__FreeBSD__)
         return gtk_widget_is_visible(windowHandle) == 1;
         #elif defined(_WIN32)
         return true;
@@ -114,7 +115,7 @@ namespace window {
     void show() {
         if(window::isVisible())
             return;
-        #if defined(__linux__)
+        #if defined(__linux__) || defined(__FreeBSD__)
         gtk_widget_show(windowHandle);
         #elif defined(_WIN32)
 
@@ -126,7 +127,7 @@ namespace window {
     void hide() {
         if(!window::isVisible())
             return;
-        #if defined(__linux__)
+        #if defined(__linux__) || defined(__FreeBSD__)
         gtk_widget_hide(windowHandle);
         #elif defined(_WIN32)
 
@@ -137,7 +138,7 @@ namespace window {
     
     bool isFullScreen() {
         json output;
-        #if defined(__linux__)
+        #if defined(__linux__) || defined(__FreeBSD__)
         return isGtkWindowFullScreen;
         #elif defined(_WIN32)
         return false;
@@ -149,7 +150,7 @@ namespace window {
     void setFullScreen() {
         if(window::isFullScreen())
             return;
-        #if defined(__linux__)
+        #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_fullscreen(GTK_WINDOW(windowHandle));
         #elif defined(_WIN32)
         ShowWindow(windowHandle, SW_MAXIMIZE);
@@ -162,7 +163,7 @@ namespace window {
     void exitFullScreen() {
         if(!window::isFullScreen())
             return;
-        #if defined(__linux__)
+        #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_unfullscreen(GTK_WINDOW(windowHandle));
         #elif defined(_WIN32)
 
@@ -358,7 +359,7 @@ namespace controllers {
 
     json minimize(json input) {
         json output; 
-        #if defined(__linux__)
+        #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_iconify(GTK_WINDOW(windowHandle));
         #elif defined(_WIN32)
         ShowWindow(windowHandle, SW_MINIMIZE);
