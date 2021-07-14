@@ -29,6 +29,8 @@ namespace window {
     void exitFullScreen();
     bool isFullScreen();
     void setIcon(string icon);
+    void setAwaysOnTop();
+    void setBorderless();
 
 namespace controllers {
     json init(json input);

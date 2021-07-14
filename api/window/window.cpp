@@ -211,6 +211,31 @@ namespace window {
         #elif defined(_WIN32)
         #endif
     }
+    
+    void setAlwaysOnTop() {
+        #if defined(__linux__) || defined(__FreeBSD__)
+        gtk_window_set_keep_above(GTK_WINDOW(windowHandle), true);
+        #elif defined(__APPLE__)
+        ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle, 
+                "setLevel:"_sel, NSFloatingWindowLevel);
+        #elif defined(_WIN32)
+
+        #endif
+    }
+    
+    void setBorderless() {
+        #if defined(__linux__) || defined(__FreeBSD__)
+        gtk_window_set_decorated(GTK_WINDOW(windowHandle), false);
+        #elif defined(__APPLE__)
+        unsigned long windowStyleMask = ((unsigned long (*)(id, SEL))objc_msgSend)(
+            (id) windowHandle, "styleMask"_sel);
+        windowStyleMask &= ~NSWindowStyleMaskTitled;
+        ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle, 
+                "setStyleMask:"_sel, windowStyleMask);
+        #elif defined(_WIN32)
+
+        #endif
+    }
 
 namespace controllers {
     void __createWindow(WindowOptions windowProps) {
@@ -241,28 +266,18 @@ namespace controllers {
             
         if(windowProps.icon != "")
             window::setIcon(windowProps.icon);
-
-        #if defined(__linux__) || defined(__FreeBSD__)
-        gtk_window_set_keep_above(GTK_WINDOW(windowHandle), windowProps.alwaysOnTop);
-        gtk_window_set_decorated(GTK_WINDOW(windowHandle), !windowProps.borderless);
         
-        #elif defined(__APPLE__)
+        if(windowProps.alwaysOnTop)
+            window::setAlwaysOnTop();
+        
+        if(windowProps.borderless)
+            window::setBorderless();
+
+        #if defined(__APPLE__)
         windowHandle = (id) nativeWindow->window();
 
         ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
                     "setHasShadow:"_sel, true);
-        
-        if(windowProps.alwaysOnTop)
-            ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle, 
-                    "setLevel:"_sel, NSFloatingWindowLevel);
-
-        if(windowProps.borderless) {
-            unsigned long windowStyleMask = ((unsigned long (*)(id, SEL))objc_msgSend)(
-                (id) windowHandle, "styleMask"_sel);
-            windowStyleMask &= ~NSWindowStyleMaskTitled;
-            ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle, 
-                    "setStyleMask:"_sel, windowStyleMask);
-        } 
         
         #elif defined(_WIN32)
         windowHandle = (HWND) nativeWindow->window();
