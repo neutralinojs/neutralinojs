@@ -91,7 +91,7 @@ int main(int argc, char ** argv)
     else if(mode == "window") {
         json windowOptions = options["modes"]["window"];
         windowOptions["url"] = navigationUrl;
-        window::controllers::show(windowOptions);
+        window::controllers::init(windowOptions);
     }
     else if(mode == "cloud") {
         if(enableHTTPServer)

@@ -30,6 +30,7 @@ using namespace Gdiplus;
 
 webview::webview *nativeWindow;
 #if defined(__linux__) || defined(__FreeBSD__)
+bool isGtkWindowFullScreen = false;
 GtkWidget* windowHandle;
 #elif defined(__APPLE__)
 id windowHandle;
@@ -99,6 +100,94 @@ namespace window {
             "zoom:"_sel, NULL);
         #endif
     }
+    
+    bool isVisible() {
+        #if defined(__linux__)
+        return gtk_widget_is_visible(windowHandle) == 1;
+        #elif defined(_WIN32)
+        return true;
+        #elif defined(__APPLE__)
+        return true;
+        #endif
+    }
+    
+    void show() {
+        if(window::isVisible())
+            return;
+        #if defined(__linux__)
+        gtk_widget_show(windowHandle);
+        #elif defined(_WIN32)
+
+        #elif defined(__APPLE__)
+
+        #endif
+    }
+    
+    void hide() {
+        if(!window::isVisible())
+            return;
+        #if defined(__linux__)
+        gtk_widget_hide(windowHandle);
+        #elif defined(_WIN32)
+
+        #elif defined(__APPLE__)
+
+        #endif
+    }
+    
+    bool isFullScreen() {
+        json output;
+        #if defined(__linux__)
+        return isGtkWindowFullScreen;
+        #elif defined(_WIN32)
+        return false;
+        #elif defined(__APPLE__)
+        return false;
+        #endif
+    }
+    
+    void setFullScreen() {
+        if(window::isFullScreen())
+            return;
+        #if defined(__linux__)
+        gtk_window_fullscreen(GTK_WINDOW(windowHandle));
+        #elif defined(_WIN32)
+        ShowWindow(windowHandle, SW_MAXIMIZE);
+        #elif defined(__APPLE__)
+        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+            "zoom:"_sel, NULL);
+        #endif
+    }
+    
+    void exitFullScreen() {
+        if(!window::isFullScreen())
+            return;
+        #if defined(__linux__)
+        gtk_window_unfullscreen(GTK_WINDOW(windowHandle));
+        #elif defined(_WIN32)
+
+        #elif defined(__APPLE__)
+
+        #endif
+    }
+    
+    void setIcon(string iconFile) {
+        #if defined(__linux__) || defined(__FreeBSD__)
+        GdkPixbuf *icon = nullptr;
+        GdkPixbufLoader *loader;
+        GdkPixbuf *pixbuf;
+        loader = gdk_pixbuf_loader_new();
+        std::string iconDataStr = settings::getFileContent(iconFile);
+
+        const char *iconData = iconDataStr.c_str();
+        unsigned char *uiconData = reinterpret_cast <unsigned char *> (const_cast <char *> (iconData));
+        gdk_pixbuf_loader_write(loader, uiconData, iconDataStr.length(), NULL);
+        icon = gdk_pixbuf_loader_get_pixbuf(loader);
+        gtk_window_set_icon(GTK_WINDOW(windowHandle), (GdkPixbuf*)icon);
+        #elif defined(__APPLE__)
+        #elif defined(_WIN32)
+        #endif
+    }
 
 namespace controllers {
     void __createWindow(WindowOptions windowProps) {
@@ -107,36 +196,32 @@ namespace controllers {
         nativeWindow->set_size(windowProps.width, windowProps.height, windowProps.minWidth,
                         windowProps.minHeight, windowProps.maxWidth, windowProps.maxHeight, 
                         windowProps.resizable);
+                        
+        #if defined(__linux__) || defined(__FreeBSD__)
+        windowHandle = (GtkWidget*) nativeWindow->window();
+        
+        g_signal_connect(G_OBJECT(windowHandle), "window-state-event",
+             G_CALLBACK(+[](GtkWidget *widget, GdkEventWindowState *event, gpointer user_data) {
+                 isGtkWindowFullScreen = event->new_window_state & GDK_WINDOW_STATE_FULLSCREEN;
+             }),
+        nullptr);
+        #endif
 
         if(windowProps.maximize)
             window::maximize();
-
-        #if defined(__linux__) || defined(__FreeBSD__)
-        windowHandle = (GtkWidget*) nativeWindow->window();
+        
+        if(windowProps.hidden)
+            window::hide();
 
         if(windowProps.fullScreen)
-            gtk_window_fullscreen(GTK_WINDOW(windowHandle));
+            window::setFullScreen();
+            
+        if(windowProps.icon != "")
+            window::setIcon(windowProps.icon);
 
+        #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_set_keep_above(GTK_WINDOW(windowHandle), windowProps.alwaysOnTop);
- 
-        if(windowProps.hidden)
-            gtk_widget_hide(windowHandle);
-
         gtk_window_set_decorated(GTK_WINDOW(windowHandle), !windowProps.borderless);
-
-        if(windowProps.icon != "") {
-            GdkPixbuf *icon = nullptr;
-            GdkPixbufLoader *loader;
-            GdkPixbuf *pixbuf;
-            loader = gdk_pixbuf_loader_new();
-            std::string iconDataStr = settings::getFileContent(windowProps.icon);
-
-            const char * iconData = iconDataStr.c_str();
-            unsigned char * uiconData = reinterpret_cast <unsigned char *> (const_cast <char *> (iconData));
-            gdk_pixbuf_loader_write(loader, uiconData, iconDataStr.length(), NULL);
-            icon = gdk_pixbuf_loader_get_pixbuf(loader);
-            gtk_window_set_icon(GTK_WINDOW(windowHandle), (GdkPixbuf*)icon);
-        }
         
         #elif defined(__APPLE__)
         windowHandle = (id) nativeWindow->window();
@@ -286,6 +371,75 @@ namespace controllers {
     }
     
     json show(json input) {
+        json output;
+        #if defined(__linux__) || defined(__FreeBSD__)
+        nativeWindow->dispatch([&]() {
+            window::show();
+        });
+        #else
+        window::show();
+        #endif
+        output["success"] = true;
+        return output;
+    }
+
+    json hide(json input) {
+        json output;
+        window::hide();
+        output["success"] = true;
+        return output;
+    }
+    
+    json isVisible(json input) {
+        json output;
+        output["returnValue"] = window::isVisible();
+        output["success"] = true;
+        return output;
+    }
+    
+    json setFullScreen(json input) {
+        json output;
+        window::setFullScreen();
+        output["success"] = true;
+        return output;
+    }
+
+    json exitFullScreen(json input) {
+        json output;
+        window::exitFullScreen();
+        output["success"] = true;
+        return output;
+    }
+    
+    json isFullScreen(json input) {
+        json output;
+        output["returnValue"] = window::isFullScreen();
+        output["success"] = true;
+        return output;
+    }
+    
+    json focus(json input) {
+        json output; 
+        #if defined(__linux__) || defined(__FreeBSD__)
+        gtk_window_present(GTK_WINDOW(windowHandle));
+        #elif defined(_WIN32)
+
+        #elif defined(__APPLE__)
+        
+        #endif
+        output["success"] = true;
+        return output;
+    }
+    
+    json setIcon(json input) {
+        json output;
+        string icon = input["icon"];
+        window::setIcon(icon);
+        output["success"] = true;
+        return output;
+    }
+    
+    json init(json input) {
         WindowOptions windowProps;
         json output;
 

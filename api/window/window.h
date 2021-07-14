@@ -22,14 +22,29 @@ namespace window {
     bool isMaximized();
     void maximize();
     void minimize();
+    bool isVisible();
+    void show();
+    void hide();
+    void setFullScreen();
+    void exitFullScreen();
+    bool isFullScreen();
+    void setIcon(string icon);
 
 namespace controllers {
-    json show(json input);
+    json init(json input);
     json setTitle(json input);
     json maximize(json input); 
     json unmaximize(json input);
     json isMaximized(json input);
     json minimize(json input);
+    json isVisible(json input);
+    json show(json input);
+    json hide(json input);
+    json setFullScreen(json input);
+    json exitFullScreen(json input);
+    json isFullScreen(json input);
+    json focus(json input);
+    json setIcon(json input);
         
 } // namespace controllers
 } // namespace window
