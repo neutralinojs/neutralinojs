@@ -253,6 +253,12 @@ namespace controllers {
                  isGtkWindowFullScreen = event->new_window_state & GDK_WINDOW_STATE_FULLSCREEN;
              }),
         nullptr);
+
+        #elif defined(__APPLE__)
+        windowHandle = (id) nativeWindow->window();
+
+        ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
+                    "setHasShadow:"_sel, true);
         #endif
 
         if(windowProps.maximize)
@@ -272,14 +278,8 @@ namespace controllers {
         
         if(windowProps.borderless)
             window::setBorderless();
-
-        #if defined(__APPLE__)
-        windowHandle = (id) nativeWindow->window();
-
-        ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
-                    "setHasShadow:"_sel, true);
         
-        #elif defined(_WIN32)
+        #if defined(_WIN32)
         windowHandle = (HWND) nativeWindow->window();
         DWORD currentStyle = GetWindowLong(windowHandle, GWL_STYLE);
         DWORD currentStyleX = GetWindowLong(windowHandle, GWL_EXSTYLE);
