@@ -36,6 +36,10 @@ GtkWidget* windowHandle;
 #elif defined(__APPLE__)
 id windowHandle;
 #elif defined(_WIN32)
+bool isWinWindowFullScreen = false;
+DWORD savedStyle;
+DWORD savedStyleX;
+RECT savedRect;
 HWND windowHandle;
 #endif
 
@@ -111,7 +115,7 @@ namespace window {
             "isVisible"_sel, NULL);
         return true;
         #elif defined(_WIN32)
-        return true;
+        return IsWindowVisible(windowHandle) == 1;
         #endif
     }
     
@@ -124,7 +128,7 @@ namespace window {
         ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
                     "setIsVisible:"_sel, true);
         #elif defined(_WIN32)
-
+        ShowWindow(windowHandle, SW_SHOW);
         #endif
     }
     
@@ -137,7 +141,7 @@ namespace window {
         ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
                     "setIsVisible:"_sel, false);
         #elif defined(_WIN32)
-
+        ShowWindow(windowHandle, SW_HIDE);
         #endif
     }
     
@@ -150,7 +154,7 @@ namespace window {
             (id) windowHandle, "styleMask"_sel);
         return (windowStyleMask & NSWindowStyleMaskFullScreen) == NSWindowStyleMaskFullScreen;
         #elif defined(_WIN32)
-        return false;
+        return isWinWindowFullScreen;
         #endif
     }
     
@@ -163,7 +167,28 @@ namespace window {
         ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
                 "toggleFullScreen:"_sel, NULL);
         #elif defined(_WIN32)
-        ShowWindow(windowHandle, SW_MAXIMIZE);
+        savedStyle = GetWindowLong(windowHandle, GWL_STYLE);
+        savedStyleX = GetWindowLong(windowHandle, GWL_EXSTYLE);
+        GetWindowRect(windowHandle, &savedRect);
+
+        MONITORINFO monitor_info;
+        DWORD newStyle = savedStyle & ~(WS_CAPTION | WS_THICKFRAME);
+        DWORD newStyleX = savedStyleX & ~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE |
+                            WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
+        SetWindowLong(windowHandle, GWL_STYLE, newStyle);
+        SetWindowLong(windowHandle, GWL_EXSTYLE, newStyleX);
+        monitor_info.cbSize = sizeof(monitor_info);
+        GetMonitorInfo(MonitorFromWindow(windowHandle, MONITOR_DEFAULTTONEAREST),
+                    &monitor_info);
+        RECT r;
+        r.left = monitor_info.rcMonitor.left;
+        r.top = monitor_info.rcMonitor.top;
+        r.right = monitor_info.rcMonitor.right;
+        r.bottom = monitor_info.rcMonitor.bottom;
+        SetWindowPos(windowHandle, NULL, r.left, r.top, r.right - r.left,
+                    r.bottom - r.top,
+                    SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+        isWinWindowFullScreen = true;
         #endif
     }
     
@@ -176,7 +201,12 @@ namespace window {
         ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
                 "toggleFullScreen:"_sel, NULL);
         #elif defined(_WIN32)
-
+        SetWindowLong(windowHandle, GWL_STYLE, savedStyle);
+        SetWindowLong(windowHandle, GWL_EXSTYLE, savedStyleX);
+        SetWindowPos(windowHandle, NULL, savedRect.left, savedRect.top, savedRect.right - savedRect.left,
+                    savedRect.bottom - savedRect.top,
+                    SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+        isWinWindowFullScreen = false;
         #endif
     }
     
@@ -209,6 +239,21 @@ namespace window {
                     "setApplicationIconImage:"_sel,icon);
 
         #elif defined(_WIN32)
+        GdiplusStartupInput gdiplusStartupInput;
+        ULONG_PTR gdiplusToken;
+        GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+
+        HICON icon = nullptr;
+        const char *iconData = iconDataStr.c_str();
+        unsigned char *uiconData = reinterpret_cast<unsigned char*>(const_cast<char*>(iconData));
+        IStream *pStream = SHCreateMemStream((BYTE *) uiconData, iconDataStr.length());
+        Gdiplus::Bitmap* bitmap = Gdiplus::Bitmap::FromStream(pStream);
+        bitmap->GetHICON(&icon);
+        pStream->Release();
+
+        SendMessage(windowHandle, WM_SETICON, ICON_SMALL, (LPARAM)icon);
+        SendMessage(windowHandle, WM_SETICON, ICON_BIG, (LPARAM)icon);
+        GdiplusShutdown(gdiplusToken);
         #endif
     }
     
@@ -219,7 +264,7 @@ namespace window {
         ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle, 
                 "setLevel:"_sel, NSFloatingWindowLevel);
         #elif defined(_WIN32)
-
+        SetWindowPos(windowHandle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
         #endif
     }
     
@@ -233,7 +278,11 @@ namespace window {
         ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle, 
                 "setStyleMask:"_sel, windowStyleMask);
         #elif defined(_WIN32)
-
+        DWORD currentStyle = GetWindowLong(windowHandle, GWL_STYLE);
+        currentStyle &= ~(WS_CAPTION | WS_THICKFRAME);
+        SetWindowLong(windowHandle, GWL_STYLE, currentStyle);
+        SetWindowPos(windowHandle, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |
+                        SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
         #endif
     }
 
@@ -256,9 +305,11 @@ namespace controllers {
 
         #elif defined(__APPLE__)
         windowHandle = (id) nativeWindow->window();
-
         ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
                     "setHasShadow:"_sel, true);
+
+        #elif defined(_WIN32)
+        windowHandle = (HWND) nativeWindow->window();
         #endif
 
         if(windowProps.maximize)
@@ -278,64 +329,7 @@ namespace controllers {
         
         if(windowProps.borderless)
             window::setBorderless();
-        
-        #if defined(_WIN32)
-        windowHandle = (HWND) nativeWindow->window();
-        DWORD currentStyle = GetWindowLong(windowHandle, GWL_STYLE);
-        DWORD currentStyleX = GetWindowLong(windowHandle, GWL_EXSTYLE);
 
-        if(windowProps.fullScreen) {
-            MONITORINFO monitor_info;
-            currentStyle &= ~(WS_CAPTION | WS_THICKFRAME);
-            currentStyleX &= ~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE |
-                                WS_EX_CLIENTEDGE | WS_EX_STATICEDGE);
-            SetWindowLong(windowHandle, GWL_STYLE, currentStyle);
-            SetWindowLong(windowHandle, GWL_EXSTYLE, currentStyleX);
-            monitor_info.cbSize = sizeof(monitor_info);
-            GetMonitorInfo(MonitorFromWindow(windowHandle, MONITOR_DEFAULTTONEAREST),
-                        &monitor_info);
-            RECT r;
-            r.left = monitor_info.rcMonitor.left;
-            r.top = monitor_info.rcMonitor.top;
-            r.right = monitor_info.rcMonitor.right;
-            r.bottom = monitor_info.rcMonitor.bottom;
-            SetWindowPos(windowHandle, NULL, r.left, r.top, r.right - r.left,
-                        r.bottom - r.top,
-                        SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-        }
-
-        if(windowProps.alwaysOnTop)
-            SetWindowPos(windowHandle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE );
-
-        if(windowProps.hidden)
-            ShowWindow(windowHandle, SW_HIDE);
-
-        if(windowProps.borderless) {
-            currentStyle &= ~(WS_CAPTION | WS_THICKFRAME);
-            SetWindowLong(windowHandle, GWL_STYLE, currentStyle);
-            SetWindowPos(windowHandle, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |
-                            SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
-        }
-
-        if(windowProps.icon != "") {
-            GdiplusStartupInput gdiplusStartupInput;
-            ULONG_PTR gdiplusToken;
-            GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-    
-            HICON icon = nullptr;
-            string iconDataStr = settings::getFileContent(windowProps.icon);
-            const char *iconData = iconDataStr.c_str();
-            unsigned char *uiconData = reinterpret_cast<unsigned char*>(const_cast<char*>(iconData));
-            IStream *pStream = SHCreateMemStream((BYTE *) uiconData, iconDataStr.length());
-            Gdiplus::Bitmap* bitmap = Gdiplus::Bitmap::FromStream(pStream);
-            bitmap->GetHICON(&icon);
-            pStream->Release();
-    
-            SendMessage(windowHandle, WM_SETICON, ICON_SMALL, (LPARAM)icon);
-            SendMessage(windowHandle, WM_SETICON, ICON_BIG, (LPARAM)icon);
-            GdiplusShutdown(gdiplusToken);
-        }
-        #endif
         nativeWindow->navigate(windowProps.url);
         nativeWindow->run();
     }
@@ -441,7 +435,7 @@ namespace controllers {
         ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
                 "orderFront:"_sel, NULL);
         #elif defined(_WIN32)
-        
+        SetForegroundWindow(windowHandle);
         #endif
         output["success"] = true;
         return output;
