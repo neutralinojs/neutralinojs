@@ -11,7 +11,8 @@
 
 Neutralinojs is a lightweight and portable desktop application development framework. It lets you develop lightweight cross-platform desktop applications using JavaScript, HTML and CSS. Apps built with Neutralinojs can run on Linux, macOS, Windows, and Web.
 
-[Neutralinojs vs Electron vs NW.js](https://github.com/neutralinojs/evaluation)
+- [Neutralinojs vs Electron vs NW.js](https://github.com/neutralinojs/evaluation)
+- [Roadmap for 2021](https://github.com/neutralinojs/roadmap#roadmapplan-2021)
 
 Get started with the neu CLI.
 
