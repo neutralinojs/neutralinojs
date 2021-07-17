@@ -7,6 +7,7 @@
 
 #elif defined(__APPLE__)
 #include <objc/objc-runtime.h>
+#include <CoreGraphics/CGDisplayConfiguration.h>
 #define NSFloatingWindowLevel 5
 #define NSWindowStyleMaskFullScreen 16384
 
@@ -456,9 +457,11 @@ namespace controllers {
         #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_move(GTK_WINDOW(windowHandle), x, y);
         #elif defined(__APPLE__)
+        auto displayId = CGMainDisplayID();
+        int height = CGDisplayPixelsHigh(displayId);
         ((void (*)(id, SEL, CGPoint))objc_msgSend)(
             (id) windowHandle, "setFrameTopLeftPoint:"_sel,
-            CGPointMake(x, y));
+            CGPointMake(x, height - y));
         #elif defined(_WIN32)
         RECT winPos;
         GetWindowRect(windowHandle, &winPos);
