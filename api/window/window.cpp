@@ -460,7 +460,10 @@ namespace controllers {
             (id) windowHandle, "setFrameTopLeftPoint:"_sel,
             CGPointMake(x, y));
         #elif defined(_WIN32)
-
+        RECT winPos;
+        GetWindowRect(windowHandle, &winPos);
+        MoveWindow(windowHandle, x, y, winPos.right - winPos.left,
+                    winPos.bottom - winPos.top, true);
         #endif
         output["success"] = true;
         return output;
