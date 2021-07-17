@@ -456,7 +456,9 @@ namespace controllers {
         #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_move(GTK_WINDOW(windowHandle), x, y);
         #elif defined(__APPLE__)
-
+        ((void (*)(id, SEL, CGPoint))objc_msgSend)(
+            (id) windowHandle, "setFrameTopLeftPoint:"_sel,
+            CGPointMake(x, y));
         #elif defined(_WIN32)
 
         #endif
