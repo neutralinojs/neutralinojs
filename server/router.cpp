@@ -45,10 +45,12 @@ namespace router {
             return router::makeNativeFailResponse("Missing permission to access Native API");
 
         map <string, NativeMethod> methodMap = {
+            // Neutralino.app
             {"app.exit", app::controllers::exit},
             {"app.getConfig", app::controllers::getConfig},
             {"app.keepAlive", app::controllers::keepAlive},
             {"app.open", app::controllers::open},
+            // Neutralino.window
             {"window.setTitle", window::controllers::setTitle},
             {"window.maximize", window::controllers::maximize},
             {"window.isMaximized", window::controllers::isMaximized},
@@ -62,14 +64,19 @@ namespace router {
             {"window.exitFullScreen", window::controllers::exitFullScreen},
             {"window.focus", window::controllers::focus},
             {"window.setIcon", window::controllers::setIcon},
+            {"window.move", window::controllers::move},
+            // Neutralino.computer
             {"computer.getRamUsage", computer::controllers::getRamUsage},
+            // Neutralino.log
             {"debug.log", debug::controllers::log},
+            // Neutralino.filesystem
             {"filesystem.createDirectory", fs::controllers::createDirectory},
             {"filesystem.removeDirectory", fs::controllers::removeDirectory},
             {"filesystem.readFile", fs::controllers::readFile},
             {"filesystem.writeFile", fs::controllers::writeFile},
             {"filesystem.removeFile", fs::controllers::removeFile},
             {"filesystem.readDirectory", fs::controllers::readDirectory},
+            // Neutralino.os
             {"os.execCommand", os::controllers::execCommand},
             {"os.getEnvar", os::controllers::getEnvar},
             {"os.dialogOpen", os::controllers::dialogOpen},
@@ -77,6 +84,7 @@ namespace router {
             {"os.showNotification", os::controllers::showNotification},
             {"os.showMessageBox", os::controllers::showMessageBox},
             {"os.setTray", os::controllers::setTray},
+            // Neutralino.storage
             {"storage.putData", storage::controllers::putData},
             {"storage.getData", storage::controllers::getData}
         };
@@ -109,7 +117,7 @@ namespace router {
                 return router::makeNativeResponse(output);
             }
             catch(exception e){
-                return router::makeNativeFailResponse("Native method execution error occured");
+                return router::makeNativeFailResponse("Native method execution error occurred");
             }
         }
         else {

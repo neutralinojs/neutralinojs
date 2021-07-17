@@ -449,6 +449,21 @@ namespace controllers {
         return output;
     }
     
+    json move(json input) {
+        json output; 
+        int x = input["x"];
+        int y = input["y"];
+        #if defined(__linux__) || defined(__FreeBSD__)
+        gtk_window_move(GTK_WINDOW(windowHandle), x, y);
+        #elif defined(__APPLE__)
+
+        #elif defined(_WIN32)
+
+        #endif
+        output["success"] = true;
+        return output;
+    }
+    
     json init(json input) {
         WindowOptions windowProps;
         json output;

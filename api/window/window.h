@@ -47,6 +47,7 @@ namespace controllers {
     json isFullScreen(json input);
     json focus(json input);
     json setIcon(json input);
+    json move(json input);
         
 } // namespace controllers
 } // namespace window
