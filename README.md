@@ -27,7 +27,7 @@ This documentation is for contributors. If you would like to learn Neutralinojs 
  
 ## Why Neutralinojs? 
 
-In Electron and NWjs, you have to install NodeJs and hundreds of dependency libraries. Embedded Chromium and Node make simple apps bloaty. Neutralinojs offers a lightweight and portable SDK which is an alternative for Electron and NW.js also with many advantages.
+In Electron and NWjs, you have to install NodeJs and hundreds of dependency libraries. Embedded Chromium and Node make simple apps bloaty. Neutralinojs offers a lightweight and portable SDK which is an alternative for Electron and NW.js. Neutralinojs implements a RESTful API for native operations, and it embeds a static web server to serve the web content. Also, it offers a built-in JavaScript client library for developers.
 
 Ask questions on StackOverflow using tag [neutralinojs](https://stackoverflow.com/questions/tagged/neutralinojs)
 
