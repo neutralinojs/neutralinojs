@@ -17,10 +17,14 @@ Neutralinojs is a lightweight and portable desktop application development frame
 Get started with the neu CLI.
 
 ```bash
+ # Creating a new app
  $ npm i -g @neutralinojs/neu
  $ neu create hello-world
  $ cd hello-world
  $ neu run
+ 
+ # Building your app
+ $ neu build --release
 ```
 
 This documentation is for contributors. If you would like to learn Neutralinojs application development, please check [this](https://neutralino.js.org/docs) documentation.
