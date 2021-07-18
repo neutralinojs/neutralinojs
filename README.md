@@ -24,7 +24,7 @@ Get started with the neu CLI.
  $ neu run
  
  # Building your app
- $ neu build --release
+ $ neu build
 ```
 
 This documentation is for contributors. If you would like to learn Neutralinojs application development, please check [this](https://neutralino.js.org/docs) documentation.
