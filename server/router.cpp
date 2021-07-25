@@ -39,9 +39,9 @@ namespace router {
 
         if(!authbasic::verifyToken(request.token))
             return router::makeNativeFailResponse("Invalid or expired NL_TOKEN value from client");
-        if(!permission::hasAccess(nativeMethodId))
+        if(!permission::hasMethodAccess(nativeMethodId))
             return router::makeNativeFailResponse("Missing permission to execute the native method");
-        if(!permission::hasAPIAccess(nativeMethodId) && nativeMethodId != "app.keepAlive")
+        if(!permission::hasAPIAccess() && nativeMethodId != "app.keepAlive")
             return router::makeNativeFailResponse("Missing permission to access Native API");
 
         map <string, NativeMethod> methodMap = {

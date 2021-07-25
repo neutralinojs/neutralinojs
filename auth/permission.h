@@ -2,6 +2,6 @@ using namespace std;
 
 namespace permission {
     void registerBlockList();
-    bool hasAccess(string func);
-    bool hasAPIAccess(string nativeMethod);
+    bool hasMethodAccess(string func);
+    bool hasAPIAccess();
 }
