@@ -48,7 +48,7 @@ jobs:
     # 📚 https://git.io/JvXDl
     
     - name: configure
-    - run: sudo apt-get install -y -f libgtk-3-dev libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev libappindicator3-dev
+      run: sudo apt-get install -y -f libgtk-3-dev libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev libappindicator3-dev
     - run: bash build_linux.sh
     
     - name: Perform CodeQL Analysis
