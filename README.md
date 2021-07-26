@@ -81,7 +81,7 @@ $ sudo dnf install \
 Compiling Neutralino server on Linux
 
 ```bash
-$ bash build_linux.sh
+$ bash build_linux.sh # [ia32, x64]
 ```
 
 **Windows**
