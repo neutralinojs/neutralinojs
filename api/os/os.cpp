@@ -298,7 +298,7 @@ namespace controllers {
             if(!input["filter"].is_null()) {
                 vector<string> filters = input["filter"];
                 for(int i = 0; i < filters.size(); i++) {
-                   filterStr.append(filters[i] + " files");
+                   filterStr.append("." + filters[i] + " files");
                    filterStr.push_back('\0');
                    filterStr.append("*." + filters[i]);
                    filterStr.push_back('\0');
