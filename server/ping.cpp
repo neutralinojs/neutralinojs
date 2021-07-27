@@ -9,18 +9,17 @@ using namespace std;
 
 bool isActive = true;
 
-void setInterval(std::function<void (void)> function) {
-    thread pingThread([=]() {
-        while(true) {
-            std::this_thread::sleep_for(5s);
-            function();
-        }
-    });
-    pingThread.detach();
-}
-
-
 namespace ping {
+
+    void __setInterval(std::function<void (void)> function) {
+        thread pingThread([=]() {
+            while(true) {
+                std::this_thread::sleep_for(5s);
+                function();
+            }
+        });
+        pingThread.detach();
+    }
 
     void receivePing() {
         isActive = true;
@@ -35,7 +34,7 @@ namespace ping {
 
     void startPingReceiver() {
         if(settings::getMode() == "browser") {
-            setInterval([]() {
+            __setInterval([]() {
                 pingTick();
             });
         }

@@ -225,7 +225,7 @@ namespace controllers {
             for(int i = 0; i < filters.size(); i++) {
                 command += " --file-filter=\"*." + filters[i] + "\"";
             }
-	    }
+        }
 	    
         string commandOutput = os::execCommand(command);
         if(!commandOutput.empty())

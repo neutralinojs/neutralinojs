@@ -19,6 +19,10 @@ namespace permission {
         return regex_match(methodMatch, regex(".*\\.\\*"));
     }
     
+    bool __isPingMethod(string methodMatch) {
+        return methodMatch == "app.keepAlive";
+    }
+    
     string __getModuleFromMethod(string nativeMethod) {
         vector <string> methodParts = helpers::split(nativeMethod, '.');
         return methodParts[0];
@@ -44,6 +48,8 @@ namespace permission {
     }
 
     bool hasMethodAccess(string nativeMethod) {
+        if(__isPingMethod(nativeMethod))
+            return true;
         string module = __getModuleFromMethod(nativeMethod);
         // Check modules
         if(find(blockedModules.begin(), blockedModules.end(), module) 
@@ -59,7 +65,9 @@ namespace permission {
         return true;
     }
 
-    bool hasAPIAccess() {
+    bool hasAPIAccess(string nativeMethod) {
+        if(__isPingMethod(nativeMethod))
+            return true;
         if(!settings::getConfig()["enableNativeAPI"].is_null())
             return settings::getConfig()["enableNativeAPI"].get<bool>();
         return false;
