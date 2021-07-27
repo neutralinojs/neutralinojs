@@ -70,6 +70,9 @@ namespace os {
                     result += buffer.data();
             }
         }
+        // Erase ending new line charactor
+        if (!result.empty() && result[result.length() - 1] == '\n')
+            result.erase(result.length() - 1);
         return result;
 
         #elif defined(_WIN32)
@@ -205,55 +208,49 @@ namespace controllers {
 
     json dialogOpen(json input) {
         json output;
+        bool isDirectoryMode = false;
+        if(!input["isDirectoryMode"].is_null() && input["isDirectoryMode"].get<bool>())
+            isDirectoryMode = true;
+        
         #if defined(__linux__) || defined(__FreeBSD__)
         string command = "zenity --file-selection";
         if(!input["title"].is_null())
             command += " --title \"" + input["title"].get<std::string>() + "\"";
-        if(!input["isDirectoryMode"].is_null() && input["isDirectoryMode"].get<bool>())
+        if(isDirectoryMode)
             command += " --directory";
-        if((!input["isDirectoryMode"].is_null() && input["isDirectoryMode"].get<bool>() == false) && !input["filter"].is_null()) {
-            std::vector<std::string> filterjson = input["filter"];
-            for(int i = 0; i < filterjson.size(); i++) {
-                command += " --file-filter=\"*." + filterjson[i] + "\"";
+        if(!isDirectoryMode && !input["filter"].is_null()) {
+            vector<string> filters = input["filter"];
+            for(int i = 0; i < filters.size(); i++) {
+                command += " --file-filter=\"*." + filters[i] + "\"";
             }
 	    }
-
-        // Fix for GTK warnings getting added to the output and an extra new-line added at the end
-        string entrystring = os::execCommand(command);
-        if (!entrystring.empty() && entrystring[entrystring.length() - 1] == '\n') {
-            entrystring.erase(entrystring.length() - 1);
-        }
-        output["selectedEntry"] = entrystring.substr(entrystring.find("/"));
+	    
+        output["selectedEntry"] = os::execCommand(command);
         
         #elif defined(__APPLE__)
         string command = "osascript -e 'POSIX path of (choose ";
-        if(!input["isDirectoryMode"].is_null() && input["isDirectoryMode"].get<bool>())
+        if(isDirectoryMode)
             command += "folder";
         else
             command += "file";
         if(!input["title"].is_null())
             command += " with prompt \"" + input["title"].get<std::string>() + "\"";
-        if((!input["isDirectoryMode"].is_null() && input["isDirectoryMode"].get<bool>() == false) && !input["filter"].is_null()) {
-            string filterstring = "of type {\"\"";
-            std::vector<std::string> filterjson = input["filter"];
-            for(int i = 0; i < filterjson.size(); i++) {
-                filterstring += ", \"" + filterjson[i] + "\"";
+        if(!isDirectoryMode && !input["filter"].is_null()) {
+            string filterCommand = "of type {\"\"";
+            vector<string> filters = input["filter"];
+            for(int i = 0; i < filters.size(); i++) {
+                filterCommand += ", \"" + filters[i] + "\"";
             }
-            filterstring += "}";
-            command += " " + filterstring;
+            filterCommand += "}";
+            command += " " + filterCommand;
 	    }
         command += ")'";
 
-	    // Fix for New Line added to end of string
-        string entrystring = os::execCommand(command);
-        if (!entrystring.empty() && entrystring[entrystring.length() - 1] == '\n') {
-            entrystring.erase(entrystring.length() - 1);
-        }
-        output["selectedEntry"] = entrystring;
+        output["selectedEntry"] = os::execCommand(command);
         
         #elif defined(_WIN32)
         string title = input["title"];
-        if(!input["isDirectoryMode"].is_null() && input["isDirectoryMode"].get<bool>()) {
+        if(isDirectoryMode) {
             TCHAR szDir[MAX_PATH];
             BROWSEINFO bInfo;
             ZeroMemory(&bInfo, sizeof(bInfo));
@@ -266,7 +263,7 @@ namespace controllers {
             bInfo.lParam = 0;
             bInfo.iImage = -1;
 
-            LPITEMIDLIST lpItem = SHBrowseForFolder( &bInfo);
+            LPITEMIDLIST lpItem = SHBrowseForFolder(&bInfo);
             if( lpItem != nullptr ) {
                 SHGetPathFromIDList(lpItem, szDir );
                 output["selectedEntry"] = szDir;
@@ -276,7 +273,7 @@ namespace controllers {
             }
         }
         else {
-            std::string filterstring = "";
+            string filterStr = "";
             OPENFILENAME ofn;
             TCHAR szFile[MAX_PATH] = { 0 };
             ZeroMemory(&ofn, sizeof(ofn));
@@ -287,14 +284,14 @@ namespace controllers {
             ofn.nMaxFile = sizeof(szFile);
             ofn.nFilterIndex = 1;
             if(!input["filter"].is_null()) {
-                std::vector<std::string> filterjson = input["filter"];
-                for(int i = 0; i < filterjson.size(); i++) {
-                   filterstring.append(filterjson[i] + " files");
-                   filterstring.push_back('\0');
-                   filterstring.append("*." + filterjson[i]);
-                   filterstring.push_back('\0');
+                vector<string> filters = input["filter"];
+                for(int i = 0; i < filters.size(); i++) {
+                   filterStr.append(filters[i] + " files");
+                   filterStr.push_back('\0');
+                   filterStr.append("*." + filters[i]);
+                   filterStr.push_back('\0');
                 }
-                ofn.lpstrFilter = filterstring.c_str();
+                ofn.lpstrFilter = filterStr.c_str();
             }
             ofn.lpstrFileTitle = nullptr;
             ofn.nMaxFileTitle = 0;
