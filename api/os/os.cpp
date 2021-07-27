@@ -228,7 +228,7 @@ namespace controllers {
 	    }
 	    
         string commandOutput = os::execCommand(command);
-        if(commandOutput.find(": execution error:") == string::npos)
+        if(!commandOutput.empty())
             output["selectedEntry"] = commandOutput;
         else
             output["selectedEntry"] = nullptr;
@@ -329,14 +329,22 @@ namespace controllers {
         string command = "zenity --file-selection --save";
         if(!input["title"].is_null())
             command += " --title \"" + input["title"].get<std::string>() + "\"";
-        output["selectedEntry"] = os::execCommand(command);
+        string commandOutput = os::execCommand(command);
+        if(!commandOutput.empty())
+            output["selectedEntry"] = commandOutput;
+        else
+            output["selectedEntry"] = nullptr;
         
         #elif defined(__APPLE__)
         string command = "osascript -e 'POSIX path of (choose file name";
         if(!input["title"].is_null())
             command += " with prompt \"" + input["title"].get<std::string>() + "\"";
         command += ")'";
-        output["selectedEntry"] = os::execCommand(command);
+        string commandOutput = os::execCommand(command);
+        if(commandOutput.find(": execution error:") == string::npos)
+            output["selectedEntry"] = commandOutput;
+        else
+            output["selectedEntry"] = nullptr;
         
         #elif defined(_WIN32)
         string title = input["title"];
