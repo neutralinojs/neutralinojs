@@ -56,7 +56,9 @@ bool isTrayCreated = false;
 
 namespace os {
 
-    string execCommand(string command){
+    string execCommand(string command, bool shouldCombineErrorStream) {
+        if(shouldCombineErrorStream)
+            command += " 2>&1";
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         std::array<char, 128> buffer;
         std::string result = "";
@@ -106,7 +108,7 @@ namespace os {
         // Create the child process.
         bSuccess = CreateProcess(
             NULL,             // program name
-            (LPSTR)("cmd /c " + command + " 2>&1").c_str(),       // command line
+            (LPSTR)("cmd /c " + command).c_str(),       // command line
             NULL,             // process security attributes
             NULL,             // primary thread security attributes
             TRUE,             // handles are inherited
@@ -186,7 +188,7 @@ namespace controllers {
     json execCommand(json input) {
         json output;
         string command = input["command"];
-        output["output"] = os::execCommand(command);
+        output["output"] = os::execCommand(command, true);
         output["success"] = true;
         return output;
     }
@@ -255,7 +257,7 @@ namespace controllers {
         command += ")'";
 
         string commandOutput = os::execCommand(command);
-        if(commandOutput.find(": execution error:") == string::npos)
+        if(!commandOutput.empty())
             output["selectedEntry"] = commandOutput;
         else
             output["selectedEntry"] = nullptr;
@@ -329,6 +331,7 @@ namespace controllers {
         string command = "zenity --file-selection --save";
         if(!input["title"].is_null())
             command += " --title \"" + input["title"].get<std::string>() + "\"";
+
         string commandOutput = os::execCommand(command);
         if(!commandOutput.empty())
             output["selectedEntry"] = commandOutput;
@@ -341,7 +344,7 @@ namespace controllers {
             command += " with prompt \"" + input["title"].get<std::string>() + "\"";
         command += ")'";
         string commandOutput = os::execCommand(command);
-        if(commandOutput.find(": execution error:") == string::npos)
+        if(!commandOutput.empty())
             output["selectedEntry"] = commandOutput;
         else
             output["selectedEntry"] = nullptr;
@@ -405,12 +408,7 @@ namespace controllers {
 
         string commandOutput = os::execCommand(command);
 
-        if(commandOutput.find("'powershell'") == string::npos) {
-            output["success"] = true;
-            output["message"] = "Notification was sent to the system";
-        }
-        else
-            output["error"] = "An error thrown while sending the notification";
+        output["success"] = true;
         #endif
         return output;
     }

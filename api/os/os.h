@@ -13,7 +13,7 @@ namespace os {
         string error;
         bool yesButtonClicked = false;
     };
-    string execCommand(string command);
+    string execCommand(string command, bool shouldCombineErrorStream = false);
     MessageBoxResult showMessageBox(MessageBoxOptions options);
 
 namespace controllers {
