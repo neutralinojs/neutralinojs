@@ -214,10 +214,12 @@ namespace controllers {
         
         #if defined(__linux__) || defined(__FreeBSD__)
         string command = "zenity --file-selection";
+
         if(!input["title"].is_null())
             command += " --title \"" + input["title"].get<std::string>() + "\"";
         if(isDirectoryMode)
             command += " --directory";
+
         if(!isDirectoryMode && !input["filter"].is_null()) {
             vector<string> filters = input["filter"];
             for(int i = 0; i < filters.size(); i++) {
@@ -225,16 +227,22 @@ namespace controllers {
             }
 	    }
 	    
-        output["selectedEntry"] = os::execCommand(command);
+        string commandOutput = os::execCommand(command);
+        if(commandOutput.find(": execution error:") == string::npos)
+            output["selectedEntry"] = commandOutput;
+        else
+            output["selectedEntry"] = nullptr;
         
         #elif defined(__APPLE__)
         string command = "osascript -e 'POSIX path of (choose ";
+
         if(isDirectoryMode)
             command += "folder";
         else
             command += "file";
         if(!input["title"].is_null())
             command += " with prompt \"" + input["title"].get<std::string>() + "\"";
+
         if(!isDirectoryMode && !input["filter"].is_null()) {
             string filterCommand = "of type {\"\"";
             vector<string> filters = input["filter"];
@@ -246,7 +254,11 @@ namespace controllers {
 	    }
         command += ")'";
 
-        output["selectedEntry"] = os::execCommand(command);
+        string commandOutput = os::execCommand(command);
+        if(commandOutput.find(": execution error:") == string::npos)
+            output["selectedEntry"] = commandOutput;
+        else
+            output["selectedEntry"] = nullptr;
         
         #elif defined(_WIN32)
         string title = input["title"];
