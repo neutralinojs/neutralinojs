@@ -62,7 +62,7 @@ namespace os {
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         std::array<char, 128> buffer;
         std::string result = "";
-        std::shared_ptr<FILE> pipe(popen((command).c_str(), "r"), pclose);
+        std::shared_ptr<FILE> pipe(popen(command.c_str(), "r"), pclose);
         if (!pipe) {
             debug::log("ERROR", "Pipe open failed.");
         }
