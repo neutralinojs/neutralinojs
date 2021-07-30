@@ -61,7 +61,7 @@ int main(int argc, char ** argv)
 
     authbasic::generateToken();
     ping::startPingReceiver();
-    permission::registerBlockList();
+    permission::init();
 
     NeuServer *server = new NeuServer();
     string navigationUrl = options["url"];
