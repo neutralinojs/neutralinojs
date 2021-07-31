@@ -436,8 +436,7 @@ namespace controllers {
         (void)item;
         if(item->id == nullptr)
             return;
-        string js = "if(window.Neutralino.events && window.Neutralino.events.onTrayMenuItemClicked) ";
-        js += "window.Neutralino.events.onTrayMenuItemClicked({";
+        string js = "Neutralino.events.dispatch('trayMenuItemClicked', {";
         js += "id: '" + std::string(item->id) + "',";
         js += "text: '" + std::string(item->text) + "',";
         js += "isChecked: " + std::string(item->checked ? "true" : "false") + ",";
