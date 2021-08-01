@@ -32,7 +32,7 @@ namespace permission {
         return methodParts[0];
     }
 
-    void registerBlockList() {
+    void __registerBlockList() {
         json config = settings::getConfig();
         if(config["nativeBlockList"].is_null())
             return;
@@ -52,7 +52,7 @@ namespace permission {
         shouldCheckBlockList = true;
     }
     
-    void registerAllowList() {
+    void __registerAllowList() {
         json config = settings::getConfig();
         if(config["nativeAllowList"].is_null())
             return;
@@ -116,7 +116,7 @@ namespace permission {
     }
     
     void init() {
-        registerAllowList();
-        registerBlockList();
+        __registerAllowList();
+        __registerBlockList();
     }
 }
