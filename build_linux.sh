@@ -40,6 +40,7 @@ g++ $FLAGS resources.cpp \
     api/storage/storage.cpp \
     api/app/app.cpp \
     api/window/window.cpp \
+    api/events/events.cpp \
     -pthread \
     -std=c++17 \
     -DELPP_NO_DEFAULT_LOG_FILE=1 \

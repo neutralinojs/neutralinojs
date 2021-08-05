@@ -35,12 +35,12 @@
 
 #include "lib/tray/tray.h"
 #include "../../helpers.h"
-#include "api/window/window.h"
+#include "settings.h"
+#include "resources.h"
+#include "api/events/events.h"
 #include "api/filesystem/filesystem.h"
 #include "api/debug/debug.h"
 #include "api/os/os.h"
-#include "settings.h"
-#include "resources.h"
 
 #define MAX_TRAY_MENU_ITEMS 50
 
@@ -436,13 +436,13 @@ namespace controllers {
         (void)item;
         if(item->id == nullptr)
             return;
-        string js = "Neutralino.events.dispatch('trayMenuItemClicked', {";
-        js += "id: '" + std::string(item->id) + "',";
-        js += "text: '" + std::string(item->text) + "',";
-        js += "isChecked: " + std::string(item->checked ? "true" : "false") + ",";
-        js += "isDisabled: " + std::string(item->disabled ? "true" : "false");
-        js += "});";
-    	window::executeJavaScript(js);
+        string eventData = "{";
+        eventData += "id: '" + std::string(item->id) + "',";
+        eventData += "text: '" + std::string(item->text) + "',";
+        eventData += "isChecked: " + std::string(item->checked ? "true" : "false") + ",";
+        eventData += "isDisabled: " + std::string(item->disabled ? "true" : "false");
+        eventData += "}";
+    	events::dispatch("trayMenuItemClicked", eventData);
     }
     
     json setTray(json input) {
