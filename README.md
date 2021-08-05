@@ -91,7 +91,7 @@ Install the latest Visual Studio IDE. Neutralinojs compilation on Windows will u
 Compiling Neutralino server on Windows
 
 ```bash
-$ ./build_windows.bat
+$ ./build_windows.bat # [ia32, x64]
 ```
 
 **macOS**
@@ -101,7 +101,7 @@ Install Xcode Command Line Tools.
 Compiling Neutralino server on MacOS
 
 ```bash
-$ bash build_macos.sh
+$ bash build_macos.sh # [ia32, x64]
 ```
 
 ## Sponsors and Donators
