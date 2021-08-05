@@ -4,7 +4,7 @@ if [ "$ARCH" == "" ]; then
     ARCH="x64"
 fi
 
-NEU_BIN="neutralino-linux_$ARCH"
+NEU_BIN="./bin/neutralino-linux_$ARCH"
 
 if [ "$ARCH" == "ia32" ]; then
     export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
@@ -16,8 +16,8 @@ else
     exit 1
 fi
 
-if [ -e bin/$NEU_BIN ]; then
-    rm bin/$NEU_BIN
+if [ -e $NEU_BIN ]; then
+    rm $NEU_BIN
 fi
 
 echo "Compiling Neutralinojs $ARCH..."
@@ -46,13 +46,13 @@ g++ $FLAGS resources.cpp \
     -DELPP_NO_DEFAULT_LOG_FILE=1 \
     -DWEBVIEW_GTK=1 \
     `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0 glib-2.0 appindicator3-0.1` \
-    -o bin/$NEU_BIN \
+    -o $NEU_BIN \
     -no-pie \
     -Os \
      -I .
 
-if [ -e bin/$NEU_BIN ]; then
-    echo "OK: Neutralino binary is compiled in to bin/$NEU_BIN"
+if [ -e $NEU_BIN ]; then
+    echo "OK: Neutralino binary is compiled in to $NEU_BIN"
 else
     echo "ERR: Neutralino binary is not compiled"
     exit 1
