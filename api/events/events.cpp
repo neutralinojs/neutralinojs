@@ -8,4 +8,4 @@ namespace events {
                     "', " + data + ");";
     	window::executeJavaScript(js);
     }
-} // namespace app
+} // namespace events
