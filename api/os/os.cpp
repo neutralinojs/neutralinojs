@@ -41,6 +41,7 @@
 #include "api/filesystem/filesystem.h"
 #include "api/debug/debug.h"
 #include "api/os/os.h"
+#include "api/window/window.h"
 
 #define MAX_TRAY_MENU_ITEMS 50
 

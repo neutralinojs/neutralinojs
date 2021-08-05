@@ -1,10 +1,27 @@
-echo "Compiling Neutralinojs..."
-
-if [ -e bin/neutralino-mac ]; then
-    rm bin/neutralino-mac
+ARCH=$1
+# Trigger x64 build by default
+if [ "$ARCH" == "" ]; then
+    ARCH="x64"
 fi
 
-c++ -arch x86_64 resources.cpp \
+NEU_BIN="./bin/neutralino-mac_$ARCH"
+
+if [ "$ARCH" == "ia32" ]; then
+    FLAGS="-arch i386"
+elif [ "$ARCH" == "x64" ]; then
+    FLAGS="-arch x86_64"
+else
+    echo "Unsupported instruction set architecture: $ARCH"
+    exit 1
+fi
+
+if [ -e $NEU_BIN ]; then
+    rm $NEU_BIN
+fi
+
+echo "Compiling Neutralinojs $ARCH..."
+
+c++ $FLAGS resources.cpp \
     server/router.cpp \
     server/ping.cpp \
     server/neuserver.cpp \
@@ -22,6 +39,7 @@ c++ -arch x86_64 resources.cpp \
     api/storage/storage.cpp \
     api/app/app.cpp \
     api/window/window.cpp \
+    api/events/events.cpp \
     -I . \
     -std=c++17 \
     -pthread \
@@ -31,10 +49,11 @@ c++ -arch x86_64 resources.cpp \
     -DWEBVIEW_COCOA=1 \
     -DOBJC_OLD_DISPATCH_PROTOTYPES=1 \
     -Os \
-    -o bin/neutralino-mac 
+    -o $NEU_BIN 
 
-if [ -e bin/neutralino-mac ]; then
-    echo "OK: Neutralino binary is compiled in to bin/neutralino-mac"
+if [ -e $NEU_BIN ]; then
+    echo "OK: Neutralino binary is compiled in to $NEU_BIN"
 else
     echo "ERR: Neutralino binary is not compiled"
+    exit 1
 fi
