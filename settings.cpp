@@ -21,7 +21,7 @@
 #elif defined(__FreeBSD__)
 #define OS_NAME "FreeBSD"
 #endif
-#define NL_VERSION "2.5.0"
+#define NL_VERSION "2.6.0"
 
 #define APP_CONFIG_FILE "/neutralino.config.json"
 
