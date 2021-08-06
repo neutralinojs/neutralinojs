@@ -4,7 +4,7 @@ echo Looking for vswhere.exe...
 set "vswhere=%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe"
 if not exist "%vswhere%" set "vswhere=%ProgramFiles%\Microsoft Visual Studio\Installer\vswhere.exe"
 if not exist "%vswhere%" (
-	echo ERROR: Failed to find vswhere.exe
+	echo ERR: Failed to find vswhere.exe
 	exit 1
 )
 echo Found %vswhere%
@@ -14,18 +14,38 @@ for /f "usebackq tokens=*" %%i in (`"%vswhere%" -latest -products * -requires Mi
   set vc_dir=%%i
 )
 if not exist "%vc_dir%\Common7\Tools\vsdevcmd.bat" (
-	echo ERROR: Failed to find VC tools x86/x64
+	echo ERR: Failed to find VC tools x86/x64
 	exit 1
 )
 echo Found %vc_dir%
 
-call "%vc_dir%\Common7\Tools\vsdevcmd.bat" -arch=x64 -host_arch=x64
+set ARCH=%1
 
-echo Compiling Neutralinojs...
-
-if EXIST bin\neutralino.exe (
-    del /f bin\neutralino-win.exe
+REM Trigger x64 build by default
+if "%ARCH%" == "" (
+    set ARCH=x64
 )
+
+set NEU_BIN=bin\neutralino-win_%ARCH%.exe
+
+if %ARCH% == ia32 (
+  set FLAGS=-arch=i386
+)
+if %ARCH% == x64 (
+  set FLAGS=-arch=x64
+) 
+if not %ARCH% == ia32 if not %ARCH% == x64 (
+    echo Unsupported instruction set architecture: %ARCH%
+    exit 1
+)
+
+call "%vc_dir%\Common7\Tools\vsdevcmd.bat" %FLAGS% -host_arch=x64
+
+if exist %NEU_BIN% (
+    del /f %NEU_BIN%
+)
+
+echo Compiling Neutralinojs %ARCH%...
 
 cl /std:c++17 ^
 /I . ^
@@ -50,13 +70,12 @@ api/storage/storage.cpp ^
 api/debug/debug.cpp ^
 api/app/app.cpp ^
 api/window/window.cpp ^
+api/events/events.cpp ^
 /DELPP_NO_DEFAULT_LOG_FILE ^
-/link platform/windows/webview2/WebView2Loader.dll.lib "/OUT:bin\neutralino-win.exe"
+/link platform/windows/webview2/WebView2Loader.dll.lib /OUT:%NEU_BIN%
 
-if EXIST bin\neutralino-win.exe (
-    echo OK: Neutralino binary is compiled in to bin/netralino-win.exe
-)
-
-if NOT EXIST bin\neutralino-win.exe (
+if exist %NEU_BIN% (
+    echo OK: Neutralino binary is compiled into %NEU_BIN%
+) else (
     echo ERR: Neutralino binary is not compiled
 )

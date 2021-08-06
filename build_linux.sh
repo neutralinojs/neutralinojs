@@ -52,7 +52,7 @@ g++ $FLAGS resources.cpp \
      -I .
 
 if [ -e $NEU_BIN ]; then
-    echo "OK: Neutralino binary is compiled in to $NEU_BIN"
+    echo "OK: Neutralino binary is compiled into $NEU_BIN"
 else
     echo "ERR: Neutralino binary is not compiled"
     exit 1
