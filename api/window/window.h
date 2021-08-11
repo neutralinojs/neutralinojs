@@ -18,6 +18,11 @@ using json = nlohmann::json;
 using namespace std;
 
 namespace window {
+    
+namespace handlers {
+    void onClose();
+} // namespace handlers
+
     void executeJavaScript(string js);
     bool isMaximized();
     void maximize();

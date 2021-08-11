@@ -137,6 +137,9 @@ WEBVIEW_API void webview_return(webview_t w, const char *seq, int status,
 
 namespace webview {
 using dispatch_fn_t = std::function<void()>;
+using onCloseHandler_t = std::function<void()>;
+
+static onCloseHandler_t onCloseHandler;
 
 // Convert ASCII hex digit to a nibble (four bits, 0 - 15).
 //
@@ -457,6 +460,13 @@ public:
                        std::exit(0);
                      }),
                      this);
+    g_signal_connect(G_OBJECT(m_window), "delete-event",
+                     G_CALLBACK(+[](GtkWidget *, gpointer arg) {
+                       if(onCloseHandler)
+                         onCloseHandler();
+                       return true;
+                     }),
+                     nullptr);
     // Initialize webview widget
     m_webview = webkit_web_view_new();
     WebKitUserContentManager *manager =
@@ -1345,6 +1355,10 @@ public:
              seq + "] = undefined");
       }
     });
+  }
+  
+  void setOnCloseHandler(onCloseHandler_t handler) {
+    onCloseHandler = handler;
   }
 
 private:

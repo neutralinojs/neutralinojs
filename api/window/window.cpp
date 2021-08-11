@@ -23,6 +23,7 @@
 #define WEBVIEW_IMPLEMENTATION
 #include "lib/webview/webview.h"
 #include "api/window/window.h"
+#include "api/events/events.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -65,6 +66,13 @@ struct WindowOptions {
 };
 
 namespace window {
+
+namespace handlers {
+    void onClose() {
+        events::dispatch("windowClose", "null");
+    }
+} // namespace handlers
+
     void executeJavaScript(string js) {
         if(nativeWindow)
             nativeWindow->eval(js);
@@ -294,6 +302,7 @@ namespace controllers {
         nativeWindow->set_size(windowProps.width, windowProps.height, windowProps.minWidth,
                         windowProps.minHeight, windowProps.maxWidth, windowProps.maxHeight, 
                         windowProps.resizable);
+        nativeWindow->setOnCloseHandler(&window::handlers::onClose);
                         
         #if defined(__linux__) || defined(__FreeBSD__)
         windowHandle = (GtkWidget*) nativeWindow->window();
