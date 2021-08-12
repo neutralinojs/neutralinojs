@@ -1128,7 +1128,8 @@ public:
               w->m_browser->resize(hwnd);
               break;
             case WM_CLOSE:
-              DestroyWindow(hwnd);
+              if(onCloseHandler)
+                onCloseHandler();
               break;
             case WM_DESTROY:
               w->terminate();
