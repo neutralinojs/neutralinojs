@@ -634,7 +634,7 @@ public:
         objc_allocateClassPair((Class) "NSResponder"_cls, "AppDelegate", 0);
     class_addProtocol(cls, objc_getProtocol("NSTouchBarProvider"));
     class_addMethod(cls, "applicationShouldTerminateAfterLastWindowClosed:"_sel,
-                    (IMP)(+[](id, SEL, id) -> BOOL { return 1; }), "c@:@");
+                    (IMP)(+[](id, SEL, id) -> BOOL { return 0; }), "c@:@");
     class_addMethod(cls, "userContentController:didReceiveScriptMessage:"_sel,
                     (IMP)(+[](id self, SEL, id, id msg) {
                       auto w =
@@ -664,6 +664,23 @@ public:
     } else {
       m_window = (id)window;
     }
+
+    // Main window delegate
+    auto wcls =
+        objc_allocateClassPair((Class) "NSResponder"_cls, "WindowDelegate", 0);
+    class_addMethod(wcls, "windowShouldClose:"_sel,
+                    (IMP)(+[](id, SEL, id) -> BOOL { 
+                      if(onCloseHandler)
+                        onCloseHandler();
+                      return 0;
+                     }), "c@:@");
+    objc_registerClassPair(wcls);
+
+    auto wdelegate = ((id(*)(id, SEL))objc_msgSend)((id)wcls, "new"_sel);
+    objc_setAssociatedObject(delegate, "webview", (id)this,
+                             OBJC_ASSOCIATION_ASSIGN);
+    ((void (*)(id, SEL, id))objc_msgSend)(m_window, sel_registerName("setDelegate:"),
+                                          wdelegate);
 
     // Webview
     auto config =
