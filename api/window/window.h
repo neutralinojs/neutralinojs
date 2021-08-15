@@ -60,6 +60,8 @@ namespace handlers {
     void setIcon(string icon);
     void setAwaysOnTop();
     void setBorderless();
+    
+    void _close();
 
 namespace controllers {
     json init(json input);

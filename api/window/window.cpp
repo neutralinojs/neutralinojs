@@ -276,6 +276,11 @@ namespace handlers {
                         SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
         #endif
     }
+    
+    void _close() {
+        if(nativeWindow)
+            nativeWindow->terminate();
+    }
 
 namespace controllers {
     void __createWindow() {

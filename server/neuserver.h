@@ -11,11 +11,14 @@ class NeuServer {
     int port = 0;
     bool usingRandomPort = false;
     string hostName = "127.0.0.1";
+private:
+    NeuServer();
 
 public:
     string init();
     void run();
     void stop();
+    static NeuServer *getInstance();
 };
 
 #endif // NEUSERVER_H

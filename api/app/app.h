@@ -9,6 +9,7 @@ namespace app {
 
 namespace controllers {
     json exit(json input);
+    json killProcess(json input);
     json open(json input);
     json keepAlive(json input);
     json getConfig(json input);

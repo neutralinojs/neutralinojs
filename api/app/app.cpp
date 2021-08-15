@@ -13,19 +13,23 @@
 #include "server/ping.h"
 #include "settings.h"
 #include "api/app/app.h"
+#include "api/window/window.h"
+#include "server/neuserver.h"
 
 using namespace std;
 using json = nlohmann::json;
 
 namespace app {
     void exit() {
-        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-        kill(getpid(),SIGINT);
-        #elif defined(_WIN32)
-        DWORD pid = GetCurrentProcessId();
-        HANDLE hnd = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, TRUE, pid);
-        TerminateProcess(hnd, 0);
-        #endif
+        json options = settings::getConfig();
+        if(!options["enableHTTPServer"].is_null() && options["enableHTTPServer"].get<bool>()) {
+            NeuServer::getInstance()->stop();
+        }
+        
+        if(settings::getMode() == "window")
+            window::_close(); 
+        
+        std::exit(0);
     }
     
     void open(string url) {
@@ -41,6 +45,17 @@ namespace app {
 namespace controllers {
     json exit(json input) {
         app::exit();
+        return nullptr;
+    }
+    
+    json killProcess(json input) {
+        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+        kill(getpid(),SIGINT);
+        #elif defined(_WIN32)
+        DWORD pid = GetCurrentProcessId();
+        HANDLE hnd = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, TRUE, pid);
+        TerminateProcess(hnd, 0);
+        #endif
         return nullptr;
     }
 

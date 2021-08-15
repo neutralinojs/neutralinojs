@@ -63,7 +63,7 @@ int main(int argc, char ** argv)
     ping::startPingReceiver();
     permission::init();
 
-    NeuServer *server = new NeuServer();
+    NeuServer *server = NeuServer::getInstance();
     string navigationUrl = options["url"];
     if(!options["enableHTTPServer"].is_null())
         enableHTTPServer = options["enableHTTPServer"];

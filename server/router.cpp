@@ -47,6 +47,7 @@ namespace router {
         map <string, NativeMethod> methodMap = {
             // Neutralino.app
             {"app.exit", app::controllers::exit},
+            {"app.killProcess", app::controllers::killProcess},
             {"app.getConfig", app::controllers::getConfig},
             {"app.keepAlive", app::controllers::keepAlive},
             {"app.open", app::controllers::open},

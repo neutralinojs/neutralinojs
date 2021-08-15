@@ -60,6 +60,13 @@ void NeuServer::run() {
 }
 
 void NeuServer::stop() {
+    this->svr->stop();
     delete this->svr;
 }
 
+NeuServer *NeuServer::getInstance() {
+    static NeuServer instance;
+    return &instance;
+}
+
+NeuServer::NeuServer() {}
