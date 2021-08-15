@@ -20,16 +20,14 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace app {
-    void exit() {
+    void exit(int code) {
         json options = settings::getConfig();
         if(!options["enableHTTPServer"].is_null() && options["enableHTTPServer"].get<bool>()) {
             NeuServer::getInstance()->stop();
         }
-        
         if(settings::getMode() == "window")
             window::_close(); 
-        
-        std::exit(0);
+        std::exit(code);
     }
     
     void open(string url) {
@@ -44,7 +42,10 @@ namespace app {
 
 namespace controllers {
     json exit(json input) {
-        app::exit();
+        int code = 0;
+        if(!input["code"].is_null())
+            code = input["code"];
+        app::exit(code);
         return nullptr;
     }
     

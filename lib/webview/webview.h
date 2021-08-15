@@ -516,7 +516,7 @@ public:
   }
   void *window() { return (void *)m_window; }
   void run() { gtk_main(); }
-  void terminate() { dispatch(gtk_main_quit); } // Guranteed that always called from a child thread.
+  void terminate() { gtk_window_close(GTK_WINDOW(m_window)); }
   void dispatch(std::function<void()> f) {
     g_idle_add_full(G_PRIORITY_HIGH_IDLE, (GSourceFunc)([](void *f) -> int {
                       (*static_cast<dispatch_fn_t *>(f))();

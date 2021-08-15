@@ -4,7 +4,7 @@
 using namespace std;
 
 namespace app {
-    void exit();
+    void exit(int code = 0);
     void open(string url);
 
 namespace controllers {
