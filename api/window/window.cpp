@@ -45,25 +45,7 @@ RECT savedRect;
 HWND windowHandle;
 #endif
 
-struct WindowOptions {
-    int width = 800;
-    int height = 600;
-    int minWidth = -1;
-    int minHeight = -1;
-    int maxWidth = -1;
-    int maxHeight = -1;
-    bool fullScreen = false;
-    bool alwaysOnTop = false;
-    bool enableInspector = false;
-    bool borderless= false;
-    bool maximize = false;
-    bool hidden = false;
-    bool resizable = true;
-    bool maximizable = true;
-    string title = "Neutralinojs window";
-    string url = "https://neutralino.js.org";
-    string icon = "";
-};
+window::WindowOptions windowProps;
 
 namespace window {
 
@@ -296,12 +278,12 @@ namespace handlers {
     }
 
 namespace controllers {
-    void __createWindow(WindowOptions windowProps) {
+    void __createWindow() {
         nativeWindow = new webview::webview(windowProps.enableInspector, nullptr);
         nativeWindow->set_title(windowProps.title);
-        nativeWindow->set_size(windowProps.width, windowProps.height, windowProps.minWidth,
-                        windowProps.minHeight, windowProps.maxWidth, windowProps.maxHeight, 
-                        windowProps.resizable);
+        nativeWindow->set_size(windowProps.sizeOptions.width, windowProps.sizeOptions.height, windowProps.sizeOptions.minWidth,
+                        windowProps.sizeOptions.minHeight, windowProps.sizeOptions.maxWidth, windowProps.sizeOptions.maxHeight, 
+                        windowProps.sizeOptions.resizable);
         nativeWindow->setOnCloseHandler(&window::handlers::onClose);
                         
         #if defined(__linux__) || defined(__FreeBSD__)
@@ -342,6 +324,37 @@ namespace controllers {
 
         nativeWindow->navigate(windowProps.url);
         nativeWindow->run();
+    }
+
+    window::SizeOptions __jsonToSizeOptions(json input, bool useDefaultRect = false) {
+        window::SizeOptions sizeOptions;
+        
+        if(useDefaultRect) {
+            sizeOptions.width = 800;
+            sizeOptions.height = 600;
+        }
+        
+        if(!input["width"].is_null())
+            sizeOptions.width = input["width"];
+
+        if(!input["height"].is_null())
+            sizeOptions.height = input["height"];
+            
+        if(!input["minWidth"].is_null())
+            sizeOptions.minWidth = input["minWidth"];
+
+        if(!input["minHeight"].is_null())
+            sizeOptions.minHeight = input["minHeight"];
+            
+        if(!input["maxWidth"].is_null())
+            sizeOptions.maxWidth = input["maxWidth"];
+
+        if(!input["maxHeight"].is_null())
+            sizeOptions.maxHeight = input["maxHeight"];
+
+        if(!input["resizable"].is_null())
+            sizeOptions.resizable = input["resizable"];
+        return sizeOptions;
     }
 
     json setTitle(json input) {
@@ -481,28 +494,22 @@ namespace controllers {
         return output;
     }
     
-    json init(json input) {
-        WindowOptions windowProps;
+    json setSize(json input) {
         json output;
-
-        if(!input["width"].is_null())
-            windowProps.width = input["width"];
-
-        if(!input["height"].is_null())
-            windowProps.height = input["height"];
+        window::SizeOptions sizeOptions = __jsonToSizeOptions(input);
             
-        if(!input["minWidth"].is_null())
-            windowProps.minWidth = input["minWidth"];
-
-        if(!input["minHeight"].is_null())
-            windowProps.minHeight = input["minHeight"];
-            
-        if(!input["maxWidth"].is_null())
-            windowProps.maxWidth = input["maxWidth"];
-
-        if(!input["maxHeight"].is_null())
-            windowProps.maxHeight = input["maxHeight"];
-
+        nativeWindow->set_size(sizeOptions.width, sizeOptions.height, sizeOptions.minWidth,
+                        sizeOptions.minHeight, sizeOptions.maxWidth, sizeOptions.maxHeight, 
+                        sizeOptions.resizable);      
+        output["success"] = true;
+        return output;
+    }
+    
+    json init(json input) {
+        json output;
+        
+        windowProps.sizeOptions = __jsonToSizeOptions(input, true);
+        
         if(!input["fullScreen"].is_null())
             windowProps.fullScreen = input["fullScreen"];
 
@@ -529,11 +536,8 @@ namespace controllers {
 
         if(!input["hidden"].is_null())
             windowProps.hidden = input["hidden"];
-            
-        if(!input["resizable"].is_null())
-            windowProps.resizable = input["resizable"];
 
-        __createWindow(windowProps);
+        __createWindow();
         output["success"] = true;
         return output;
     }

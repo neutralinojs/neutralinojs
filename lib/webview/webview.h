@@ -550,10 +550,12 @@ public:
       gtk_window_set_geometry_hints(GTK_WINDOW(m_window), nullptr, &g, h);
     }
     gtk_window_set_resizable(GTK_WINDOW(m_window), resizable);
-    if(resizable)
-      gtk_window_resize(GTK_WINDOW(m_window), width, height);
-    else
-      gtk_widget_set_size_request(m_window, width, height);
+    if(width != -1 || height != -1) {
+      if(resizable)
+        gtk_window_resize(GTK_WINDOW(m_window), width, height);
+      else
+        gtk_widget_set_size_request(m_window, width, height);
+    }
   }
 
   void navigate(const std::string url) {

@@ -18,6 +18,30 @@ using json = nlohmann::json;
 using namespace std;
 
 namespace window {
+
+    struct SizeOptions {
+        int width = -1;
+        int height = -1;
+        int minWidth = -1;
+        int minHeight = -1;
+        int maxWidth = -1;
+        int maxHeight = -1;
+        bool resizable = true;
+    };
+    
+    struct WindowOptions {
+        SizeOptions sizeOptions;
+        bool fullScreen = false;
+        bool alwaysOnTop = false;
+        bool enableInspector = false;
+        bool borderless= false;
+        bool maximize = false;
+        bool hidden = false;
+        bool maximizable = true;
+        string title = "Neutralinojs window";
+        string url = "https://neutralino.js.org";
+        string icon = "";
+    };
     
 namespace handlers {
     void onClose();
@@ -53,6 +77,7 @@ namespace controllers {
     json focus(json input);
     json setIcon(json input);
     json move(json input);
+    json setSize(json input);
         
 } // namespace controllers
 } // namespace window

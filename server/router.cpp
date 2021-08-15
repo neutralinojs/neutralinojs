@@ -65,6 +65,7 @@ namespace router {
             {"window.focus", window::controllers::focus},
             {"window.setIcon", window::controllers::setIcon},
             {"window.move", window::controllers::move},
+            {"window.setSize", window::controllers::setSize},
             // Neutralino.computer
             {"computer.getRamUsage", computer::controllers::getRamUsage},
             // Neutralino.log

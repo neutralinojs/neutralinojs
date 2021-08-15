@@ -5,7 +5,7 @@
     "url": "/resources/",
     "enableHTTPServer": true,
     "enableNativeAPI": true,
-    "nativeBlockList": ["app.exit", "app.*"],
+    "nativeBlockList": [],
     "globalVariables": {
         "TEST": "Test Value"
     },
