@@ -796,10 +796,12 @@ public:
       ((void (*)(id, SEL, CGSize))objc_msgSend)(
           m_window, "setContentMaxSize:"_sel, CGSizeMake(maxWidth, maxHeight));
     }
-    ((void (*)(id, SEL, CGRect, BOOL, BOOL))objc_msgSend)(
-        m_window, "setFrame:display:animate:"_sel,
-        CGRectMake(0, 0, width, height), 1, 0);
-    ((void (*)(id, SEL))objc_msgSend)(m_window, "center"_sel);
+    if(width != -1 || height != -1) {
+      ((void (*)(id, SEL, CGRect, BOOL, BOOL))objc_msgSend)(
+          m_window, "setFrame:display:animate:"_sel,
+          CGRectMake(0, 0, width, height), 1, 0);
+      ((void (*)(id, SEL))objc_msgSend)(m_window, "center"_sel);
+    }
   }
   void navigate(const std::string url) {
     auto nsurl = ((id(*)(id, SEL, id))objc_msgSend)(
