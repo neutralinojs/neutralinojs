@@ -140,6 +140,7 @@ using dispatch_fn_t = std::function<void()>;
 using onCloseHandler_t = std::function<void()>;
 
 static onCloseHandler_t onCloseHandler;
+static int processExitCode = 0;
 
 // Convert ASCII hex digit to a nibble (four bits, 0 - 15).
 //
@@ -1005,6 +1006,7 @@ public:
                                    }
                                    else {
                                       m_settings->put_AreDevToolsEnabled(FALSE);
+                                      m_settings->put_IsStatusBarEnabled(FALSE);
                                    }
                                    flag.clear();
                                  }));
@@ -1153,7 +1155,10 @@ public:
                 onCloseHandler();
               break;
             case WM_DESTROY:
-              w->terminate();
+              PostQuitMessage(processExitCode);
+              break;
+            case WM_QUIT:
+              ExitProcess(wp);
               break;
             // ---- Begin Tray lib related --------
             case WM_TRAY_PASS_MENU_REF:
@@ -1243,13 +1248,18 @@ public:
         (*f)();
         delete f;
       } else if (msg.message == WM_QUIT) {
-        std::exit(0);
+        ExitProcess(msg.wParam);
         return;
       }
     }
   }
   void *window() { return (void *)m_window; }
-  void terminate() { PostQuitMessage(0); }
+  void terminate(int exitCode = 0) { 
+    processExitCode = exitCode;
+    dispatch([=]() {
+        DestroyWindow(m_window);
+    });
+  }
   void dispatch(dispatch_fn_t f) {
     PostThreadMessage(m_main_thread, WM_APP, 0, (LPARAM) new dispatch_fn_t(f));
   }

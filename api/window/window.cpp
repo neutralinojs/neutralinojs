@@ -12,6 +12,7 @@
 #define NSWindowStyleMaskFullScreen 16384
 
 #elif defined(_WIN32)
+#define _WINSOCKAPI_
 #include <windows.h>
 #include <gdiplus.h>
 #pragma comment (lib,"Gdiplus.lib")
@@ -277,9 +278,9 @@ namespace handlers {
         #endif
     }
     
-    void _close() {
+    void _close(int exitCode) {
         if(nativeWindow)
-            nativeWindow->terminate();
+            nativeWindow->terminate(exitCode);
     }
 
 namespace controllers {

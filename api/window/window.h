@@ -61,7 +61,7 @@ namespace handlers {
     void setAwaysOnTop();
     void setBorderless();
     
-    void _close();
+    void _close(int exitCode);
 
 namespace controllers {
     json init(json input);

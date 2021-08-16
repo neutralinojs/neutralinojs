@@ -5,6 +5,7 @@
 #include <unistd.h>
 
 #elif defined(_WIN32)
+#define _WINSOCKAPI_
 #include <Shlwapi.h>
 #pragma comment (lib,"Shell32.lib")
 #endif
@@ -26,8 +27,9 @@ namespace app {
             NeuServer::getInstance()->stop();
         }
         if(settings::getMode() == "window")
-            window::_close(); 
-        std::exit(code);
+            window::_close(code);
+        else 
+            std::exit(code);
     }
     
     void open(string url) {

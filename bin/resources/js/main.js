@@ -12,4 +12,7 @@ window.myApp = {
 };
 
 Neutralino.init();
+Neutralino.events.on("windowClose", () => {
+    Neutralino.app.exit();
+});
 window.myApp.showInfo();
