@@ -1286,15 +1286,17 @@ public:
       m_minsz.x = minWidth;
       m_minsz.y = minHeight;
     }
-    RECT r;
-    r.left = r.top = 0;
-    r.right = width;
-    r.bottom = height;
-    AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, 0);
-    SetWindowPos(
-        m_window, NULL, r.left, r.top, r.right - r.left, r.bottom - r.top,
-        SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_FRAMECHANGED);
-    m_browser->resize(m_window);
+    if(width != -1 || height != -1) {
+      RECT r;
+      r.left = r.top = 0;
+      r.right = width;
+      r.bottom = height;
+      AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, 0);
+      SetWindowPos(
+          m_window, NULL, r.left, r.top, r.right - r.left, r.bottom - r.top,
+          SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_FRAMECHANGED);
+      m_browser->resize(m_window);
+    }
   }
 
   void navigate(const std::string url) { m_browser->navigate(url); }
