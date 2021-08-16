@@ -457,8 +457,7 @@ public:
     }
     g_signal_connect(G_OBJECT(m_window), "destroy",
                      G_CALLBACK(+[](GtkWidget *, gpointer arg) {
-                       static_cast<gtk_webkit_engine *>(arg)->terminate();
-                       std::exit(0);
+                       std::exit(processExitCode);
                      }),
                      this);
     g_signal_connect(G_OBJECT(m_window), "delete-event",
@@ -517,7 +516,11 @@ public:
   }
   void *window() { return (void *)m_window; }
   void run() { gtk_main(); }
-  void terminate() { gtk_window_close(GTK_WINDOW(m_window)); }
+  void terminate(int exitCode = 0) {
+    processExitCode = exitCode;
+    gtk_window_close(GTK_WINDOW(m_window)); 
+    gtk_widget_destroy(m_window);
+  }
   void dispatch(std::function<void()> f) {
     g_idle_add_full(G_PRIORITY_HIGH_IDLE, (GSourceFunc)([](void *f) -> int {
                       (*static_cast<dispatch_fn_t *>(f))();
