@@ -754,10 +754,11 @@ public:
   }
   ~cocoa_wkwebview_engine() { close(); }
   void *window() { return (void *)m_window; }
-  void terminate() {
+  void terminate(int exitCode = 0) {
     close();
     ((void (*)(id, SEL, id))objc_msgSend)("NSApp"_cls, "terminate:"_sel,
                                           nullptr);
+    std::exit(exitCode);
   }
   void run() {
     id app = ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls,
