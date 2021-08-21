@@ -148,18 +148,61 @@ namespace router {
         }
         string extension = split[split.size() - 1];
         map<string, string> mimeTypes = {
-            {"js", "text/javascript"},
+            // Plain text files
             {"css", "text/css"},
+            {"csv", "text/csv"},
+            {"txt", "text/plain"},
+            {"vtt", "text/vtt"},
+            {"htm", "text/html"},
             {"html", "text/html"},
-            {"jpg", "image/jpeg"},
+            
+            // Image files
+            {"apng", "image/apng"},
+            {"avif", "image/avif"},
+            {"bmp", "image/bmp"},
+            {"gif", "image/gif"},
             {"png", "image/png"},
             {"svg", "image/svg+xml"},
-            {"gif", "image/gif"},
+            {"webp", "image/webp"},
             {"ico", "image/x-icon"},
+            {"tif", "image/tiff"},
+            {"tiff", "image/tiff"},
+            {"jpg", "image/jpeg"},
+            {"jpeg", "image/jpeg"},
+            
+            // Video files
+            {"mp4", "video/mp4"},
+            {"mpeg", "video/mpeg"},
+            {"webm", "video/webm"},
+            
+            // Audio files
+            {"mp3", "audio/mp3"},
+            {"mpga", "audio/mpeg"},
+            {"weba", "audio/webm"},
+            {"wav", "audio/wave"},
+            
+            // Font files
+            {"otf", "font/otf"},
+            {"ttf", "font/ttf"},
+            {"woff", "font/woff"},
             {"woff2", "font/woff2"},
-            {"mp3", "audio/mpeg"},
+            
+            // Application-type files
+            {"7z", "application/x-7z-compressed"},
+            {"atom", "application/atom+xml"},
+            {"pdf", "application/pdf"},
+            {"js", "application/javascript"},
+            {"mjs", "application/javascript"},
+            {"json", "application/json"},
+            {"rss", "application/rss+xml"},
+            {"tar", "application/x-tar"},
+            {"xht", "application/xhtml+xml"},
+            {"xhtml", "application/xhtml+xml"},
+            {"xslt", "application/xslt+xml"},
             {"xml", "application/xml"},
-            {"json", "application/json"}
+            {"gz", "application/gzip"},
+            {"zip", "application/zip"},
+            {"wasm", "application/wasm"}
         };
 
         if(mimeTypes.find(extension) == mimeTypes.end())
