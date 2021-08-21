@@ -154,8 +154,7 @@ namespace router {
             {"txt", "text/plain"},
             {"vtt", "text/vtt"},
             {"htm", "text/html"},
-            {"html", "text/html"},
-            
+            {"html", "text/html"},   
             // Image files
             {"apng", "image/apng"},
             {"avif", "image/avif"},
@@ -168,25 +167,21 @@ namespace router {
             {"tif", "image/tiff"},
             {"tiff", "image/tiff"},
             {"jpg", "image/jpeg"},
-            {"jpeg", "image/jpeg"},
-            
+            {"jpeg", "image/jpeg"}, 
             // Video files
             {"mp4", "video/mp4"},
             {"mpeg", "video/mpeg"},
             {"webm", "video/webm"},
-            
             // Audio files
             {"mp3", "audio/mp3"},
             {"mpga", "audio/mpeg"},
             {"weba", "audio/webm"},
             {"wav", "audio/wave"},
-            
             // Font files
             {"otf", "font/otf"},
             {"ttf", "font/ttf"},
             {"woff", "font/woff"},
             {"woff2", "font/woff2"},
-            
             // Application-type files
             {"7z", "application/x-7z-compressed"},
             {"atom", "application/atom+xml"},
