@@ -43,7 +43,9 @@ Ask questions on StackOverflow using tag [neutralinojs](https://stackoverflow.co
 
 ### Collaboration and communication
 
-- We use Slack for quick discussions. [get your invite](https://join.slack.com/t/neutralinojs/shared_invite/zt-b7mbivj5-pKpO6U5drmeT68vKD_pc6w)
+- We use Slack and Discord for quick discussions. 
+  * [Join on Slack](https://join.slack.com/t/neutralinojs/shared_invite/zt-b7mbivj5-pKpO6U5drmeT68vKD_pc6w)
+  * [Join on Discord](https://discord.gg/cybpp4guTJ)
 - Join our [Google group](https://groups.google.com/forum/#!forum/neutralinojs) for feature proposals and long discussions.
 
 ## Framework Developer Guide
