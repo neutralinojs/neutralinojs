@@ -75,7 +75,9 @@ namespace router {
             {"filesystem.createDirectory", fs::controllers::createDirectory},
             {"filesystem.removeDirectory", fs::controllers::removeDirectory},
             {"filesystem.readFile", fs::controllers::readFile},
+            {"filesystem.readBinaryFile", fs::controllers::readBinaryFile},
             {"filesystem.writeFile", fs::controllers::writeFile},
+            {"filesystem.writeBinaryFile", fs::controllers::writeBinaryFile},
             {"filesystem.removeFile", fs::controllers::removeFile},
             {"filesystem.readDirectory", fs::controllers::readDirectory},
             // Neutralino.os

@@ -15,6 +15,7 @@
 #endif 
 
 #include "lib/json.hpp"
+#include "lib/base64.hpp"
 #include "settings.h"
 #include "api/filesystem/filesystem.h"
 
@@ -144,12 +145,38 @@ namespace controllers {
         }
         return output;
     }
+    
+    json readBinaryFile(json input) {
+        json output;
+        fs::FileReaderResult fileReaderResult;
+        fileReaderResult = fs::readFile(input["fileName"].get<std::string>());
+        if(fileReaderResult.hasError) {
+            output["error"] = fileReaderResult.error;
+        }
+        else {
+            output["returnValue"] = base64::to_base64(fileReaderResult.data);
+            output["success"] = true;
+        }
+        return output;
+    }
 
-     json writeFile(json input) {
+    json writeFile(json input) {
         json output;
         fs::FileWriterOptions fileWriterOptions;
         fileWriterOptions.filename = input["fileName"];
         fileWriterOptions.data = input["data"];
+        if(fs::writeFile(fileWriterOptions))
+            output["success"] = true;
+        else
+            output["error"] = "Unable to write file: " + fileWriterOptions.filename;
+        return output;
+    }
+    
+    json writeBinaryFile(json input) {
+        json output;
+        fs::FileWriterOptions fileWriterOptions;
+        fileWriterOptions.filename = input["fileName"];
+        fileWriterOptions.data = base64::from_base64(input["data"].get<std::string>());
         if(fs::writeFile(fileWriterOptions))
             output["success"] = true;
         else
