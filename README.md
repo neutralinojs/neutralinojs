@@ -120,6 +120,7 @@ If you like to support our work, you can donate to Neutralinojs via [Patreon](ht
 - Cross-platform webview library: MIT from [webview/webview](https://github.com/webview/webview). Copyright (c) 2017 Serge Zaitsev. 
 - Cross-platform tray library: MIT from [zserge/tray](https://github.com/zserge/tray). Copyright (c) 2017 Serge Zaitsev. 
 - Cross-platform message box library: MIT from [aaronmjacobs/Boxer](https://github.com/aaronmjacobs/Boxer). Copyright (c) 2014 Aaron Jacobs.
+- Base64 encoder/decoder library: MIT from [tobiaslocker/base64](https://github.com/tobiaslocker/base64). Copyright (c) 2019 Tobias Locker.
 - Logo design credits: [IconsPng](https://www.iconspng.com/image/2688/atom-orange). Copyright free as mentioned in their website. 
 
 Please check all licenses from [this](LICENSE) link.
