@@ -80,6 +80,8 @@ namespace router {
             {"filesystem.writeBinaryFile", fs::controllers::writeBinaryFile},
             {"filesystem.removeFile", fs::controllers::removeFile},
             {"filesystem.readDirectory", fs::controllers::readDirectory},
+            {"filesystem.copyFile", fs::controllers::copyFile},
+            {"filesystem.moveFile", fs::controllers::moveFile},
             // Neutralino.os
             {"os.execCommand", os::controllers::execCommand},
             {"os.getEnvar", os::controllers::getEnvar},

@@ -18,6 +18,7 @@
 #include "lib/base64.hpp"
 #include "settings.h"
 #include "api/filesystem/filesystem.h"
+#include "api/os/os.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -245,5 +246,48 @@ namespace controllers {
         #endif
         return output;
     }
+   
+    json copyFile(json input) {
+        json output;
+        string source = input["source"];
+        string destination = input["destination"];
+        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+        string command = "cp -r \"" + source + "\" \"" + destination + "\"";
+        string commandOutput = os::execCommand(command, true);
+        if(commandOutput.empty()) {
+
+        #elif defined(_WIN32)
+        
+        #endif
+            output["success"] = true;
+            output["message"] = "File copy operation was successful";
+        }
+        else{
+            output["error"] = "Cannot copy " + source + " to " + destination;
+        }
+        return output;
+    } 
+    
+    json moveFile(json input) {
+        json output;
+        string source = input["source"];
+        string destination = input["destination"];
+        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+        string command = "mv \"" + source + "\" \"" + destination + "\"";
+        string commandOutput = os::execCommand(command, true);
+        if(commandOutput.empty()) {
+
+        #elif defined(_WIN32)
+        
+        #endif
+            output["success"] = true;
+            output["message"] = "File move operation was successful";
+        }
+        else{
+            output["error"] = "Cannot move " + source + " to " + destination;
+        }
+        return output;
+    } 
+    
 } // namespace controllers
 } // namespace fs

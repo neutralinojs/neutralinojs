@@ -56,7 +56,6 @@ struct tray tray;
 bool isTrayCreated = false;
 
 namespace os {
-
     string execCommand(string command, bool shouldCombineErrorStream) {
         if(shouldCombineErrorStream)
             command += " 2>&1";

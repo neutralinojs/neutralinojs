@@ -31,6 +31,8 @@ namespace controllers {
     json readBinaryFile(json input);
     json removeFile(json input);
     json readDirectory(json input);
+    json copyFile(json input);
+    json moveFile(json input);
 } // namespace controllers
 } // namespace fs
 
