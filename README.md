@@ -3,7 +3,7 @@
 </div>
 
 [![GitHub (pre-)release](https://img.shields.io/github/release/neutralinojs/neutralinojs/all.svg)](https://github.com/neutralinojs/neutralinojs/releases)
-[![GitHub last commit](https://img.shields.io/github/last-commit/neutralinojs/neutralinojs.svg)](https://github.com/neutralinojs/neutralinojs/commits/master)
+[![GitHub last commit](https://img.shields.io/github/last-commit/neutralinojs/neutralinojs.svg)](https://github.com/neutralinojs/neutralinojs/commits/main)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fneutralinojs%2Fneutralinojs.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fneutralinojs%2Fneutralinojs?ref=badge_shield)
 [![Twitter](https://img.shields.io/twitter/url/https/github.com/neutralinojs/neutralinojs.svg?style=social)](https://twitter.com/intent/tweet?text=NeutralinoJs%20is%20a%20portable%20and%20lightweight%20framework%20which%20lets%20you%20to%20develop%20apps%20with%20native%20functions%20that%20can%20run%20inside%20web%20browsers.%20Check%20it%20out:&url=https%3A%2F%2Fgithub.com%2Fneutralinojs%2Fneutralinojs)
 [![OpenCollective](https://opencollective.com/neutralinojs/backers/badge.svg)](#backers) 
@@ -11,7 +11,8 @@
 
 Neutralinojs is a lightweight and portable desktop application development framework. It lets you develop lightweight cross-platform desktop applications using JavaScript, HTML and CSS. Apps built with Neutralinojs can run on Linux, macOS, Windows, and Web.
 
-- [Neutralinojs vs Electron vs NW.js](https://github.com/neutralinojs/evaluation)
+- [Neutralinojs vs Electron vs NW.JS vs Tauri vs NodeGui vs Flutter vs .Net MAUI](https://github.com/Elanis/web-to-desktop-framework-comparison)
+- [Neutralinojs vs Electron vs NW.js (2018)](https://github.com/neutralinojs/evaluation)
 - [Roadmap for 2021](https://github.com/neutralinojs/roadmap#roadmapplan-2021)
 
 Get started with the neu CLI.
@@ -42,7 +43,9 @@ Ask questions on StackOverflow using tag [neutralinojs](https://stackoverflow.co
 
 ### Collaboration and communication
 
-- We use Slack for quick discussions. [get your invite](https://join.slack.com/t/neutralinojs/shared_invite/zt-b7mbivj5-pKpO6U5drmeT68vKD_pc6w)
+- We use Slack and Discord for quick discussions. 
+  * [Join on Slack](https://join.slack.com/t/neutralinojs/shared_invite/zt-b7mbivj5-pKpO6U5drmeT68vKD_pc6w)
+  * [Join on Discord](https://discord.gg/cybpp4guTJ)
 - Join our [Google group](https://groups.google.com/forum/#!forum/neutralinojs) for feature proposals and long discussions.
 
 ## Framework Developer Guide
@@ -120,6 +123,7 @@ If you like to support our work, you can donate to Neutralinojs via [Patreon](ht
 - Cross-platform webview library: MIT from [webview/webview](https://github.com/webview/webview). Copyright (c) 2017 Serge Zaitsev. 
 - Cross-platform tray library: MIT from [zserge/tray](https://github.com/zserge/tray). Copyright (c) 2017 Serge Zaitsev. 
 - Cross-platform message box library: MIT from [aaronmjacobs/Boxer](https://github.com/aaronmjacobs/Boxer). Copyright (c) 2014 Aaron Jacobs.
+- Base64 encoder/decoder library: MIT from [tobiaslocker/base64](https://github.com/tobiaslocker/base64). Copyright (c) 2019 Tobias Locker.
 - Logo design credits: [IconsPng](https://www.iconspng.com/image/2688/atom-orange). Copyright free as mentioned in their website. 
 
 Please check all licenses from [this](LICENSE) link.
