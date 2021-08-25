@@ -253,7 +253,7 @@ namespace controllers {
         string source = input["source"];
         string destination = input["destination"];
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-        string command = "cp -r \"" + source + "\" \"" + destination + "\"";
+        string command = "cp \"" + source + "\" \"" + destination + "\"";
         string commandOutput = os::execCommand(command, true);
         if(commandOutput.empty()) {
 
