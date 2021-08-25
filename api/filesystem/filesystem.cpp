@@ -12,6 +12,7 @@
 #include <windows.h>
 #include <atlstr.h>
 #include <shlwapi.h>
+#include <winbase.h>
 #endif 
 
 #include "lib/json.hpp"
@@ -257,7 +258,7 @@ namespace controllers {
         if(commandOutput.empty()) {
 
         #elif defined(_WIN32)
-        
+        if(CopyFile(source.c_str(), destination.c_str(), false) == 1) {
         #endif
             output["success"] = true;
             output["message"] = "File copy operation was successful";
@@ -278,7 +279,7 @@ namespace controllers {
         if(commandOutput.empty()) {
 
         #elif defined(_WIN32)
-        
+        if(MoveFile(source.c_str(), destination.c_str()) == 1) {
         #endif
             output["success"] = true;
             output["message"] = "File move operation was successful";

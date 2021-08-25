@@ -49,7 +49,7 @@ echo Compiling Neutralinojs %ARCH%...
 
 cl /std:c++17 ^
 /I . ^
-/I platform/windows/webview2 ^
+/I lib/webview/windows ^
 /EHsc ^
 /Os ^
 main.cpp ^
@@ -72,7 +72,7 @@ api/app/app.cpp ^
 api/window/window.cpp ^
 api/events/events.cpp ^
 /DELPP_NO_DEFAULT_LOG_FILE ^
-/link platform/windows/webview2/WebView2Loader.dll.lib /OUT:%NEU_BIN%
+/link lib/webview/windows/WebView2Loader.dll.lib /OUT:%NEU_BIN%
 
 if exist %NEU_BIN% (
     echo OK: Neutralino binary is compiled into %NEU_BIN%
