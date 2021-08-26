@@ -13,6 +13,14 @@ namespace fs {
         string filename;
         string data;
     };
+    
+    struct FileStats {
+        bool hasError = false;
+        string error;
+        long long size;
+        bool isDirectory;
+        bool isFile;
+    }; 
 
     bool createDirectory(string path);
     bool removeFile(string filename);
@@ -21,6 +29,7 @@ namespace fs {
     string getDirectoryName(string filename);
     string getCurrentDirectory();
     string getFullPathFromRelative(string path);
+    fs::FileStats getStats(string path);
 
 namespace controllers {
     json createDirectory(json input);
@@ -33,6 +42,7 @@ namespace controllers {
     json readDirectory(json input);
     json copyFile(json input);
     json moveFile(json input);
+    json getStats(json input);
 } // namespace controllers
 } // namespace fs
 

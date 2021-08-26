@@ -102,6 +102,25 @@ namespace fs {
         writer.close();
         return true;
     }
+    
+    fs::FileStats getStats(string path) {
+        fs::FileStats fileStats;
+        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+        struct stat statBuffer;
+        if(stat(path.c_str(), &statBuffer) == 0) {
+            fileStats.size = statBuffer.st_size;
+            fileStats.isFile = S_ISREG(statBuffer.st_mode);
+            fileStats.isDirectory = S_ISDIR(statBuffer.st_mode);
+        }
+        else {
+            fileStats.hasError = true;
+            fileStats.error = path + " doesn't exists or access error";
+        }
+        #elif defined(_WIN32)
+ 
+        #endif
+        return fileStats;
+    }
 
 namespace controllers {
     json createDirectory(json input) {
@@ -286,6 +305,22 @@ namespace controllers {
         }
         else{
             output["error"] = "Cannot move " + source + " to " + destination;
+        }
+        return output;
+    } 
+    
+    json getStats(json input) {
+        json output;
+        string path = input["path"];
+        fs::FileStats fileStats = fs::getStats(path);
+        if(!fileStats.hasError) {
+            output["success"] = true;
+            output["size"] = fileStats.size;
+            output["isFile"] = fileStats.isFile;
+            output["isDirectory"] = fileStats.isDirectory;
+        }
+        else{
+            output["error"] = fileStats.error;
         }
         return output;
     } 
