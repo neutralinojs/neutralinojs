@@ -112,12 +112,29 @@ namespace fs {
             fileStats.isFile = S_ISREG(statBuffer.st_mode);
             fileStats.isDirectory = S_ISDIR(statBuffer.st_mode);
         }
+
+        #elif defined(_WIN32)
+        HANDLE hFile = CreateFile(path.c_str(), GENERIC_READ, 
+                        FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 
+                        FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL);
+
+        LARGE_INTEGER size;
+        FILE_BASIC_INFO basicInfo;
+        if(GetFileSizeEx(hFile, &size) && 
+            GetFileInformationByHandleEx(hFile, FileBasicInfo, &basicInfo, sizeof(basicInfo))
+        ) {
+            fileStats.size = size.QuadPart;
+            fileStats.isFile = !(basicInfo.FileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+            fileStats.isDirectory = basicInfo.FileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+        }
+
+        #endif
         else {
             fileStats.hasError = true;
             fileStats.error = path + " doesn't exists or access error";
         }
-        #elif defined(_WIN32)
- 
+        #if defined(_WIN32)
+        CloseHandle(hFile);
         #endif
         return fileStats;
     }
