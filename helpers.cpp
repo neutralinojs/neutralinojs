@@ -18,7 +18,7 @@ namespace helpers {
     }
 
     string generateToken() {
-        srand (time(NULL));
+        srand(time(NULL));
 
         string s = "";
         static const char alphanum[] =
