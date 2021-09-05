@@ -84,7 +84,9 @@ namespace settings {
                 
                 patches.push_back(patch);
             }
-            options = options.patch(patches);
+            if(!patches.is_null()) {
+                options = options.patch(patches);
+            }
         }
         catch(exception e){
             debug::log("ERROR", "Unable to load: " + std::string(APP_CONFIG_FILE));
