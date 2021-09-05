@@ -56,19 +56,24 @@ struct tray tray;
 bool isTrayCreated = false;
 
 namespace os {
-    string execCommand(string command, bool shouldCombineErrorStream) {
+    string execCommand(string command, bool shouldCombineErrorStream, 
+        bool shouldRunInBackground) {
         if(shouldCombineErrorStream)
             command += " 2>&1";
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+        
+        if(shouldRunInBackground)        
+            command += " &";
+        
         std::array<char, 128> buffer;
         std::string result = "";
         std::shared_ptr<FILE> pipe(popen(command.c_str(), "r"), pclose);
         if (!pipe) {
             debug::log("ERROR", "Pipe open failed.");
         }
-        else {
-            while (!feof(pipe.get())) {
-                if (fgets(buffer.data(), 128, pipe.get()) != nullptr)
+        else if(!shouldRunInBackground) {
+            while( !feof(pipe.get())) {
+                if(fgets(buffer.data(), 128, pipe.get()) != nullptr)
                     result += buffer.data();
             }
         }
@@ -188,7 +193,11 @@ namespace controllers {
     json execCommand(json input) {
         json output;
         string command = input["command"];
-        output["output"] = os::execCommand(command, true);
+        bool shouldRunInBackground = false;
+        if(!input["shouldRunInBackground"].is_null())
+            shouldRunInBackground = input["shouldRunInBackground"];
+
+        output["output"] = os::execCommand(command, true, shouldRunInBackground);
         output["success"] = true;
         return output;
     }

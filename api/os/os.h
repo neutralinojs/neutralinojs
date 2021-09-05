@@ -13,7 +13,9 @@ namespace os {
         string error;
         bool yesButtonClicked = false;
     };
-    string execCommand(string command, bool shouldCombineErrorStream = false);
+
+    string execCommand(string command, bool shouldCombineErrorStream = false,
+                        bool shouldRunInBackground = false);
     MessageBoxResult showMessageBox(MessageBoxOptions options);
 
 namespace controllers {
