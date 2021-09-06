@@ -83,6 +83,8 @@ namespace os {
         return result;
 
         #elif defined(_WIN32)
+        if(shouldRunInBackground)
+            command = "start \"\" /b " + command;
         // A modified version of https://stackoverflow.com/a/59523254
         string output = "";
         HANDLE g_hChildStd_OUT_Rd = NULL;
@@ -129,7 +131,7 @@ namespace os {
         DWORD dwRead;
         CHAR chBuf[EXEC_BUFSIZE];
         bool bSuccess2 = FALSE;
-        for (;;) { // read stdout
+        for (;!shouldRunInBackground;) { // read stdout
             bSuccess2 = ReadFile(g_hChildStd_OUT_Rd, chBuf, EXEC_BUFSIZE, &dwRead, NULL);
             if(!bSuccess2 || dwRead == 0) break;
             std::string s(chBuf, dwRead);
@@ -139,6 +141,11 @@ namespace os {
         // The remaining open handles are cleaned up when this process terminates.
         // To avoid resource leaks in a larger application,
         // close handles explicitly.
+        
+        // Erase ending new line charactors
+        if (output.length() >= 2 &&  output[output.length() - 2] == '\r' && 
+            output[output.length() - 1] == '\n')
+            output.erase(output.length() - 2, 2);
         return output;
         #endif
     }
