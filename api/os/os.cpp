@@ -502,9 +502,8 @@ namespace controllers {
                 fullIconPath = fs::getFullPathFromRelative(settings::joinAppPath("")) + iconPath;
             }
             else {
-                json createDirParams;
-                createDirParams["path"] = settings::joinAppPath("/.tmp");
-                fs::createDirectory(createDirParams);
+                string tempDirPath = settings::joinAppPath("/.tmp");
+                fs::createDirectory(tempDirPath);
                 string tempIconPath = settings::joinAppPath("/.tmp/tray_icon_linux.png");
                 resources::extractFile(iconPath, tempIconPath);
                 fullIconPath = fs::getFullPathFromRelative(tempIconPath);
