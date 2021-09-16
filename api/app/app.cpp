@@ -41,6 +41,14 @@ namespace app {
         ShellExecute(0, 0, url.c_str(), 0, 0, SW_SHOW );
         #endif
     }
+    
+    unsigned int getProcessId() {
+        #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
+        return getpid();
+        #elif defined(_WIN32)
+        return 1;
+        #endif
+    }
 
 namespace controllers {
     json exit(json input) {

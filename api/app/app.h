@@ -6,6 +6,7 @@ using namespace std;
 namespace app {
     void exit(int code = 0);
     void open(string url);
+    unsigned int getProcessId();
 
 namespace controllers {
     json exit(json input);

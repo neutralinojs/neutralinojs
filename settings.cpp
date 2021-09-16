@@ -9,6 +9,7 @@
 #include "helpers.h"
 #include "api/filesystem/filesystem.h"
 #include "api/debug/debug.h"
+#include "api/app/app.h"
 
 #if defined(__linux__)
 #define OS_NAME "Linux"
@@ -104,6 +105,7 @@ namespace settings {
         jsSnippet += "var NL_CWD='" + fs::getCurrentDirectory() + "';";
         jsSnippet += "var NL_ARGS=" + globalArgs.dump() + ";";
         jsSnippet += "var NL_PATH='" + appPath + "';";
+        jsSnippet += "var NL_PID=" + std::to_string(app::getProcessId()) + ";";
 
         if(!options["globalVariables"].is_null()) {
             for ( auto it: options["globalVariables"].items()) {
