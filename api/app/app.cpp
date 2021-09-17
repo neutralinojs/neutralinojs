@@ -46,7 +46,7 @@ namespace app {
         #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
         return getpid();
         #elif defined(_WIN32)
-        return 1;
+        return GetCurrentProcessId();
         #endif
     }
 

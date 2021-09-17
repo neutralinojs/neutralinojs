@@ -6,15 +6,13 @@ fi
 
 NEU_BIN="./bin/neutralino-linux_$ARCH"
 
-
-
 if [ -e $NEU_BIN ]; then
     rm $NEU_BIN
 fi
 
 echo "Compiling Neutralinojs $ARCH..."
 
-g++ $FLAGS resources.cpp \
+g++ resources.cpp \
     helpers.cpp \
     main.cpp \
     server/router.cpp \
