@@ -6,15 +6,7 @@ fi
 
 NEU_BIN="./bin/neutralino-linux_$ARCH"
 
-if [ "$ARCH" == "ia32" ]; then
-    export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
-    FLAGS="-m32"
-elif [ "$ARCH" == "x64" ]; then
-    export PKG_CONFIG_PATH=/usr/lib/pkgconfig
-else
-    echo "Unsupported instruction set architecture: $ARCH"
-    exit 1
-fi
+
 
 if [ -e $NEU_BIN ]; then
     rm $NEU_BIN
