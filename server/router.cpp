@@ -84,9 +84,9 @@ namespace router {
             {"filesystem.getStats", fs::controllers::getStats},
             // Neutralino.os
             {"os.execCommand", os::controllers::execCommand},
-            {"os.getEnvar", os::controllers::getEnvar},
-            {"os.dialogOpen", os::controllers::dialogOpen},
-            {"os.dialogSave", os::controllers::dialogSave},
+            {"os.getEnv", os::controllers::getEnv},
+            {"os.showOpenDialog", os::controllers::showOpenDialog},
+            {"os.showSaveDialog", os::controllers::showSaveDialog},
             {"os.showNotification", os::controllers::showNotification},
             {"os.showMessageBox", os::controllers::showMessageBox},
             {"os.setTray", os::controllers::setTray},

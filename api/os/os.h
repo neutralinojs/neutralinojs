@@ -21,9 +21,9 @@ namespace os {
 
 namespace controllers {
     json execCommand(json input);
-    json getEnvar(json input);
-    json dialogOpen(json input);
-    json dialogSave(json input);
+    json getEnv(json input);
+    json showOpenDialog(json input);
+    json showSaveDialog(json input);
     json showNotification(json input);
     json showMessageBox(json input);
     json setTray(json input);

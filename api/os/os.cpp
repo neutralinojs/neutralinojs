@@ -219,7 +219,7 @@ namespace controllers {
         return output;
     }
 
-    json getEnvar(json input) {
+    json getEnv(json input) {
         json output;
         string varKey = input["key"];
         char *varValue;
@@ -228,13 +228,13 @@ namespace controllers {
             output["error"] =  varKey + " is not defined";
         }
         else {
-            output["value"] = varValue;
+            output["returnValue"] = varValue;
             output["success"] = true;
         }
         return output;
     }
 
-    json dialogOpen(json input) {
+    json showOpenDialog(json input) {
         json output;
         bool isDirectoryMode = false;
         if(!input["isDirectoryMode"].is_null() && input["isDirectoryMode"].get<bool>())
@@ -257,9 +257,9 @@ namespace controllers {
 	    
         string commandOutput = os::execCommand(command);
         if(!commandOutput.empty())
-            output["selectedEntry"] = commandOutput;
+            output["returnValue"] = commandOutput;
         else
-            output["selectedEntry"] = nullptr;
+            output["returnValue"] = nullptr;
         
         #elif defined(__APPLE__)
         string command = "osascript -e 'POSIX path of (choose ";
@@ -284,9 +284,9 @@ namespace controllers {
 
         string commandOutput = os::execCommand(command);
         if(!commandOutput.empty())
-            output["selectedEntry"] = commandOutput;
+            output["returnValue"] = commandOutput;
         else
-            output["selectedEntry"] = nullptr;
+            output["returnValue"] = nullptr;
         
         #elif defined(_WIN32)
         string title = input["title"];
@@ -306,10 +306,10 @@ namespace controllers {
             LPITEMIDLIST lpItem = SHBrowseForFolder(&bInfo);
             if( lpItem != nullptr ) {
                 SHGetPathFromIDList(lpItem, szDir );
-                output["selectedEntry"] = szDir;
+                output["returnValue"] = szDir;
             }
             else {
-                output["selectedEntry"] = nullptr;
+                output["returnValue"] = nullptr;
             }
         }
         else {
@@ -339,10 +339,10 @@ namespace controllers {
             ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
             if (GetOpenFileName(&ofn)) {
-                output["selectedEntry"] = ofn.lpstrFile;
+                output["returnValue"] = ofn.lpstrFile;
             }
             else {
-                output["selectedEntry"] = nullptr;
+                output["returnValue"] = nullptr;
             }
         }
         #endif
@@ -351,7 +351,7 @@ namespace controllers {
         return output;
     }
 
-    json dialogSave(json input) {
+    json showSaveDialog(json input) {
         json output;
         #if defined(__linux__) || defined(__FreeBSD__)
         string command = "zenity --file-selection --save";
@@ -360,9 +360,9 @@ namespace controllers {
 
         string commandOutput = os::execCommand(command);
         if(!commandOutput.empty())
-            output["selectedEntry"] = commandOutput;
+            output["returnValue"] = commandOutput;
         else
-            output["selectedEntry"] = nullptr;
+            output["returnValue"] = nullptr;
         
         #elif defined(__APPLE__)
         string command = "osascript -e 'POSIX path of (choose file name";
@@ -371,9 +371,9 @@ namespace controllers {
         command += ")'";
         string commandOutput = os::execCommand(command);
         if(!commandOutput.empty())
-            output["selectedEntry"] = commandOutput;
+            output["returnValue"] = commandOutput;
         else
-            output["selectedEntry"] = nullptr;
+            output["returnValue"] = nullptr;
         
         #elif defined(_WIN32)
         string title = input["title"];
@@ -393,10 +393,10 @@ namespace controllers {
         ofn.Flags = OFN_PATHMUSTEXIST;
 
         if (GetSaveFileName(&ofn)) {
-            output["selectedEntry"] = ofn.lpstrFile;
+            output["returnValue"] = ofn.lpstrFile;
         }
         else {
-            output["selectedEntry"] = nullptr;
+            output["returnValue"] = nullptr;
         }
         #endif
         output["success"] = true;
@@ -406,8 +406,8 @@ namespace controllers {
     json showNotification(json input) {
         json output;
         #if defined(__linux__) || defined(__FreeBSD__)
-        string command = "notify-send \"" + input["summary"].get<string>() + "\" \"" +
-                            input["body"].get<string>() + "\"";
+        string command = "notify-send \"" + input["title"].get<string>() + "\" \"" +
+                            input["content"].get<string>() + "\"";
         if(system(command.c_str()) == 0) {
             output["success"] = true;
             output["message"] = "Notification was sent to the system";
@@ -417,9 +417,9 @@ namespace controllers {
         
         #elif defined(__APPLE__)
         string command = "osascript -e 'display notification \"" + 
-        input["body"].get<std::string>() + "\"";
-        if(!input["summary"].is_null())
-            command += " with title \"" + input["summary"].get<std::string>() + "\"";
+        input["content"].get<std::string>() + "\"";
+        if(!input["title"].is_null())
+            command += " with title \"" + input["title"].get<std::string>() + "\"";
         command += "'";
         os::execCommand(command);
         output["success"] = true;
