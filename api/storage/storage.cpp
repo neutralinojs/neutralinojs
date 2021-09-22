@@ -7,53 +7,53 @@
 
 #define STORAGE_DIR "/.storage"
 #define STORAGE_EXT ".neustorage"
-#define STORAGE_BUCKET_REGEX "^[a-zA-Z-_0-9]{2,50}$"
+#define STORAGE_KEY_REGEX "^[a-zA-Z-_0-9]{1,50}$"
 
 using namespace std;
 using json = nlohmann::json;
 
 namespace storage {
 namespace controllers {
-    json __validateStorageBucket(string bucketName) {
-        if(regex_match(bucketName, regex(STORAGE_BUCKET_REGEX)))
+    json __validateStorageBucket(string key) {
+        if(regex_match(key, regex(STORAGE_KEY_REGEX)))
             return nullptr;
         json output;
-        output["error"] = "Invalid storage bucket identifer";
+        output["error"] = "Invalid storage key";
         return output;
     }
     
     json getData(json input) {
         json output;
-        string bucket = input["bucket"];
-        json errorPayload = __validateStorageBucket(bucket);
+        string key = input["key"];
+        json errorPayload = __validateStorageBucket(key);
         if(!errorPayload.is_null()) 
             return errorPayload;
         string bucketPath = settings::joinAppPath(STORAGE_DIR);
-        string filename = bucketPath + "/" + bucket + STORAGE_EXT;
+        string filename = bucketPath + "/" + key + STORAGE_EXT;
         
         fs::FileReaderResult fileReaderResult;
         fileReaderResult = fs::readFile(filename);
         if(fileReaderResult.hasError) {
-            output["error"] = "Unable to open storage bucket: " + bucket +
+            output["error"] = "Unable to find storage key: " + key +
                                  ". " + fileReaderResult.error;
             return output;
         }
-        output["data"] = fileReaderResult.data;
+        output["returnValue"] = fileReaderResult.data;
         output["success"] = true;
         return output;
     }
 
-    json putData(json input) {
+    json setData(json input) {
         json output;
-        string bucket = input["bucket"];
-        json errorPayload = __validateStorageBucket(bucket);
+        string key = input["key"];
+        json errorPayload = __validateStorageBucket(key);
         if(!errorPayload.is_null()) 
             return errorPayload;
         string bucketPath = settings::joinAppPath(STORAGE_DIR);
 
         fs::createDirectory(bucketPath);
         
-        string filename = bucketPath + "/" + bucket + STORAGE_EXT;
+        string filename = bucketPath + "/" + key + STORAGE_EXT;
         if(input["data"].is_null()) {
             fs::removeFile(filename);
         }
@@ -63,7 +63,7 @@ namespace controllers {
             fileWriterOptions.filename = filename;
     
             if(!fs::writeFile(fileWriterOptions)) {
-                output["error"] = "Unable to write storage bucket: " + bucket;
+                output["error"] = "Unable to write data to key: " + key;
                 return output;
             }
         }

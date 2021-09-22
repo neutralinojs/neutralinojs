@@ -67,7 +67,7 @@ namespace router {
             {"window.move", window::controllers::move},
             {"window.setSize", window::controllers::setSize},
             // Neutralino.computer
-            {"computer.getRamUsage", computer::controllers::getRamUsage},
+            {"computer.getMemoryInfo", computer::controllers::getMemoryInfo},
             // Neutralino.log
             {"debug.log", debug::controllers::log},
             // Neutralino.filesystem
@@ -92,7 +92,7 @@ namespace router {
             {"os.setTray", os::controllers::setTray},
             {"os.open", os::controllers::open},
             // Neutralino.storage
-            {"storage.putData", storage::controllers::putData},
+            {"storage.setData", storage::controllers::setData},
             {"storage.getData", storage::controllers::getData}
         };
 

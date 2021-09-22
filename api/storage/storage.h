@@ -5,7 +5,7 @@ using namespace std;
 
 namespace storage {
 namespace controllers {
-    json putData(json input);
+    json setData(json input);
     json getData(json input);
 } // namespace controllers
 } // namespace storage

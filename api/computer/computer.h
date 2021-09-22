@@ -3,7 +3,7 @@
 
 namespace computer {
 namespace controllers {
-    json getRamUsage(json input);
+    json getMemoryInfo(json input);
 } // namespace controllers
 } // namespace computer
 

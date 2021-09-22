@@ -21,12 +21,12 @@ using json = nlohmann::json;
 
 namespace computer {
 namespace controllers {
-    json getRamUsage(json input) {
+    json getMemoryInfo(json input) {
         json output;
         #if defined(__linux__)
         struct sysinfo sys_info;
         sysinfo(&sys_info);
-        output["ram"] = {
+        output["returnValue"] = {
             { "total", (sys_info.totalram * sys_info.mem_unit) / DIV },
             { "available", (sys_info.freeram * sys_info.mem_unit) / DIV }
         };
@@ -45,7 +45,7 @@ namespace controllers {
         mib[1] = HW_MEMSIZE;
         size_t length = sizeof(int64_t);
         sysctl(mib, 2, &physical_memory, &length, NULL, 0);
-        output["ram"] = {
+        output["returnValue"] = {
             { "total", (pages * page_size) / DIV },
             { "available", 0 / DIV } // TODO: implement
         };
@@ -55,7 +55,7 @@ namespace controllers {
         statex.dwLength = sizeof (statex);
 
         GlobalMemoryStatusEx (&statex);
-        output["ram"] = {
+        output["returnValue"] = {
             {"total", statex.ullTotalPhys / DIV },
             {"available", statex.ullAvailPhys / DIV },
         };

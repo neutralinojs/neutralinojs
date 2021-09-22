@@ -12,7 +12,7 @@ namespace debug {
             LOG(INFO) << message;
         else if(type == "ERROR")
             LOG(ERROR)  << message;
-        else if(type == "WARN")
+        else if(type == "WARNING")
             LOG(WARNING)  << message;
         else
             LOG(DEBUG) << message;
