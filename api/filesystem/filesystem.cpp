@@ -173,12 +173,12 @@ namespace controllers {
     json readFile(json input) {
         json output;
         fs::FileReaderResult fileReaderResult;
-        fileReaderResult = fs::readFile(input["fileName"].get<std::string>());
+        fileReaderResult = fs::readFile(input["path"].get<std::string>());
         if(fileReaderResult.hasError) {
             output["error"] = fileReaderResult.error;
         }
         else {
-            output["data"] = fileReaderResult.data;
+            output["returnValue"] = fileReaderResult.data;
             output["success"] = true;
         }
         return output;
@@ -187,7 +187,7 @@ namespace controllers {
     json readBinaryFile(json input) {
         json output;
         fs::FileReaderResult fileReaderResult;
-        fileReaderResult = fs::readFile(input["fileName"].get<std::string>());
+        fileReaderResult = fs::readFile(input["path"].get<std::string>());
         if(fileReaderResult.hasError) {
             output["error"] = fileReaderResult.error;
         }
@@ -201,7 +201,7 @@ namespace controllers {
     json writeFile(json input) {
         json output;
         fs::FileWriterOptions fileWriterOptions;
-        fileWriterOptions.filename = input["fileName"];
+        fileWriterOptions.filename = input["path"];
         fileWriterOptions.data = input["data"];
         if(fs::writeFile(fileWriterOptions))
             output["success"] = true;
@@ -213,7 +213,7 @@ namespace controllers {
     json writeBinaryFile(json input) {
         json output;
         fs::FileWriterOptions fileWriterOptions;
-        fileWriterOptions.filename = input["fileName"];
+        fileWriterOptions.filename = input["path"];
         fileWriterOptions.data = base64::from_base64(input["data"].get<std::string>());
         if(fs::writeFile(fileWriterOptions))
             output["success"] = true;
@@ -224,7 +224,7 @@ namespace controllers {
 
     json removeFile(json input) {
         json output;
-        string filename = input["fileName"];
+        string filename = input["path"];
         if(fs::removeFile(filename)) {
             output["success"] = true;
             output["message"] = filename + " was deleted";
@@ -254,7 +254,7 @@ namespace controllers {
                     {"entry", directory->d_name},
                     {"type", type},
                 };
-                output["entries"].push_back(file);
+                output["returnValue"].push_back(file);
             }
             closedir(dirp);
             output["success"] = true;
@@ -275,7 +275,7 @@ namespace controllers {
                     {"entry", fd.cFileName},
                     {"type", type}
                 };
-                output["entries"].push_back(file);
+                output["returnValue"].push_back(file);
             } while(FindNextFile(hFind, &fd));
             FindClose(hFind);
             output["success"] = true;
