@@ -14,6 +14,7 @@ namespace os {
         bool yesButtonClicked = false;
     };
 
+    void open(string url);
     string execCommand(string command, bool shouldCombineErrorStream = false,
                         bool shouldRunInBackground = false);
     MessageBoxResult showMessageBox(MessageBoxOptions options);
@@ -26,6 +27,7 @@ namespace controllers {
     json showNotification(json input);
     json showMessageBox(json input);
     json setTray(json input);
+    json open(json input);
 } // namespace controllers
 } // namespace os
 

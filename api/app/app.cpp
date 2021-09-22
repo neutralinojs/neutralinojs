@@ -5,9 +5,7 @@
 #include <unistd.h>
 
 #elif defined(_WIN32)
-#define _WINSOCKAPI_
-#include <Shlwapi.h>
-#pragma comment (lib,"Shell32.lib")
+#include <windows.h>
 #endif
 
 #include "lib/json.hpp"
@@ -30,16 +28,6 @@ namespace app {
             window::_close(code);
         else 
             std::exit(code);
-    }
-    
-    void open(string url) {
-        #if defined(__linux__) || defined(__FreeBSD__)
-        int status = system(("xdg-open \"" + url + "\"").c_str());
-        #elif defined(__APPLE__)
-        system(("open \"" + url + "\"").c_str());
-        #elif defined(_WIN32)
-        ShellExecute(0, 0, url.c_str(), 0, 0, SW_SHOW );
-        #endif
     }
     
     unsigned int getProcessId() {
@@ -81,14 +69,6 @@ namespace controllers {
     json getConfig(json input) {
         json output;
         output["returnValue"] = settings::getConfig();
-        output["success"] = true;
-        return output;
-    }
-
-    json open(json input) {
-        json output;
-        string url = input["url"];
-        app::open(url);
         output["success"] = true;
         return output;
     }

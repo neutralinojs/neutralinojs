@@ -56,6 +56,16 @@ struct tray tray;
 bool isTrayCreated = false;
 
 namespace os {
+    void open(string url) {
+        #if defined(__linux__) || defined(__FreeBSD__)
+        int status = system(("xdg-open \"" + url + "\"").c_str());
+        #elif defined(__APPLE__)
+        system(("open \"" + url + "\"").c_str());
+        #elif defined(_WIN32)
+        ShellExecute(0, 0, url.c_str(), 0, 0, SW_SHOW );
+        #endif
+    }
+    
     string execCommand(string command, bool shouldCombineErrorStream, 
         bool shouldRunInBackground) {
         if(shouldCombineErrorStream)
@@ -542,6 +552,14 @@ namespace controllers {
         #if defined(_WIN32)
         GdiplusShutdown(gdiplusToken);
         #endif
+        output["success"] = true;
+        return output;
+    }
+    
+    json open(json input) {
+        json output;
+        string url = input["url"];
+        os::open(url);
         output["success"] = true;
         return output;
     }

@@ -50,7 +50,6 @@ namespace router {
             {"app.killProcess", app::controllers::killProcess},
             {"app.getConfig", app::controllers::getConfig},
             {"app.keepAlive", app::controllers::keepAlive},
-            {"app.open", app::controllers::open},
             // Neutralino.window
             {"window.setTitle", window::controllers::setTitle},
             {"window.maximize", window::controllers::maximize},
@@ -91,6 +90,7 @@ namespace router {
             {"os.showNotification", os::controllers::showNotification},
             {"os.showMessageBox", os::controllers::showMessageBox},
             {"os.setTray", os::controllers::setTray},
+            {"os.open", os::controllers::open},
             // Neutralino.storage
             {"storage.putData", storage::controllers::putData},
             {"storage.getData", storage::controllers::getData}

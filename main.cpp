@@ -85,7 +85,7 @@ int main(int argc, char ** argv)
 
     string mode = settings::getMode();
     if(mode == "browser") {
-        app::open(navigationUrl);
+        os::open(navigationUrl);
         while(true);
     }
     else if(mode == "window") {
