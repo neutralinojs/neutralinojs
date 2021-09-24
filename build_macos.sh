@@ -10,6 +10,8 @@ if [ "$ARCH" == "ia32" ]; then
     FLAGS="-arch i386"
 elif [ "$ARCH" == "x64" ]; then
     FLAGS="-arch x86_64"
+elif [ "$ARCH" == "arm64" ]; then
+    FLAGS="-arch arm64"
 else
     echo "Unsupported instruction set architecture: $ARCH"
     exit 1
