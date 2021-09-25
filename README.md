@@ -104,7 +104,7 @@ Install Xcode Command Line Tools.
 Compiling Neutralino server on MacOS
 
 ```bash
-$ bash build_macos.sh # [ia32, x64]
+$ bash build_macos.sh # [ia32, x64, arm64]
 ```
 
 ## Sponsors and Donators
