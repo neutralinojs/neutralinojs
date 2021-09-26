@@ -3,8 +3,10 @@
 #include <sstream>
 #include <time.h>
 #include <ctype.h>
+#include "lib/json.hpp"
 
 using namespace std;
+using json = nlohmann::json;
 
 namespace helpers {
     vector<string> split(const string &s, char delim) {
@@ -73,5 +75,12 @@ namespace helpers {
         std::copy(str.begin(), str.end(), text);
         text[str.size()] = '\0';
         return text;
+    }
+    
+    json makeErrorPayload(string code, string message) {
+        json error;
+        error["code"] = code;
+        error["message"] = message;
+        return error;
     }
 }

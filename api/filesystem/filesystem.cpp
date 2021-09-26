@@ -18,6 +18,7 @@
 #include "lib/json.hpp"
 #include "lib/base64.hpp"
 #include "settings.h"
+#include "helpers.h"
 #include "api/filesystem/filesystem.h"
 #include "api/os/os.h"
 
@@ -148,7 +149,8 @@ namespace controllers {
             output["message"] = "Directory " + path + " was created";
         }
         else{
-            output["error"] = "Cannot create a directory in " + path;
+            output["error"] = helpers::makeErrorPayload("NE_FS_DIRCRER", 
+                                "Cannot create a directory in " + path);
         }
         return output;
     }
@@ -165,7 +167,8 @@ namespace controllers {
             output["message"] = "Directory " + path + " was removed";
         }
         else{
-            output["error"] = "Cannot remove " + path;
+            output["error"] = helpers::makeErrorPayload("NE_FS_RMDIRER", 
+                                "Cannot remove " + path);
         }
         return output;
     }
@@ -175,7 +178,7 @@ namespace controllers {
         fs::FileReaderResult fileReaderResult;
         fileReaderResult = fs::readFile(input["path"].get<std::string>());
         if(fileReaderResult.hasError) {
-            output["error"] = fileReaderResult.error;
+            output["error"] = helpers::makeErrorPayload("NE_FS_FILRDER", fileReaderResult.error);
         }
         else {
             output["returnValue"] = fileReaderResult.data;
@@ -189,7 +192,7 @@ namespace controllers {
         fs::FileReaderResult fileReaderResult;
         fileReaderResult = fs::readFile(input["path"].get<std::string>());
         if(fileReaderResult.hasError) {
-            output["error"] = fileReaderResult.error;
+            output["error"] = helpers::makeErrorPayload("NE_FS_FILRDER", fileReaderResult.error);
         }
         else {
             output["returnValue"] = base64::to_base64(fileReaderResult.data);
@@ -206,7 +209,8 @@ namespace controllers {
         if(fs::writeFile(fileWriterOptions))
             output["success"] = true;
         else
-            output["error"] = "Unable to write file: " + fileWriterOptions.filename;
+            output["error"] = helpers::makeErrorPayload("NE_FS_FILWRER", 
+                                "Unable to write file: " + fileWriterOptions.filename);
         return output;
     }
     
@@ -218,7 +222,8 @@ namespace controllers {
         if(fs::writeFile(fileWriterOptions))
             output["success"] = true;
         else
-            output["error"] = "Unable to write file: " + fileWriterOptions.filename;
+            output["error"] = helpers::makeErrorPayload("NE_FS_FILWRER", 
+                                "Unable to write file: " + fileWriterOptions.filename);
         return output;
     }
 
@@ -230,7 +235,8 @@ namespace controllers {
             output["message"] = filename + " was deleted";
         }
         else{
-            output["error"] = "Cannot remove " + filename;
+            output["error"] = helpers::makeErrorPayload("NE_FS_FILRMER", 
+                                "Cannot remove " + filename);
         }
         return output;
     }
@@ -238,6 +244,11 @@ namespace controllers {
     json readDirectory(json input) {
         json output;
         string path = input["path"];
+        fs::FileStats fileStats = fs::getStats(path);
+        if(fileStats.hasError) {
+            output["error"] = helpers::makeErrorPayload("NE_FS_NOPATHE", fileStats.error);
+            return output;
+        }
         
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         DIR *dirp;
@@ -300,7 +311,8 @@ namespace controllers {
             output["message"] = "File copy operation was successful";
         }
         else{
-            output["error"] = "Cannot copy " + source + " to " + destination;
+            output["error"] = helpers::makeErrorPayload("NE_FS_COPYFER",
+                                "Cannot copy " + source + " to " + destination);
         }
         return output;
     } 
@@ -321,7 +333,8 @@ namespace controllers {
             output["message"] = "File move operation was successful";
         }
         else{
-            output["error"] = "Cannot move " + source + " to " + destination;
+            output["error"] = helpers::makeErrorPayload("NE_FS_MOVEFER",
+                                "Cannot move " + source + " to " + destination);
         }
         return output;
     } 
@@ -337,7 +350,7 @@ namespace controllers {
             output["isDirectory"] = fileStats.isDirectory;
         }
         else{
-            output["error"] = fileStats.error;
+            output["error"] = helpers::makeErrorPayload("NE_FS_NOPATHE", fileStats.error);
         }
         return output;
     } 
