@@ -37,12 +37,18 @@ namespace router {
         json inputPayload;
         #endif
 
-        if(!authbasic::verifyToken(request.token))
-            return router::makeNativeFailResponse("Invalid or expired NL_TOKEN value from client");
-        if(!permission::hasMethodAccess(nativeMethodId))
-            return router::makeNativeFailResponse("Missing permission to execute the native method");
-        if(!permission::hasAPIAccess(nativeMethodId))
-            return router::makeNativeFailResponse("Missing permission to access Native API");
+        if(!authbasic::verifyToken(request.token)) {
+            return router::makeNativeFailResponse("NE_RT_INVTOKN",
+                            "Invalid or expired NL_TOKEN value from client");
+        }
+        if(!permission::hasMethodAccess(nativeMethodId)) {
+            return router::makeNativeFailResponse("NE_RT_NATPRME", 
+                            "Missing permission to execute the native method");
+        }
+        if(!permission::hasAPIAccess(nativeMethodId)) {
+            return router::makeNativeFailResponse("NE_RT_APIPRME",
+                            "Missing permission to access Native API");
+        }
 
         map <string, NativeMethod> methodMap = {
             // Neutralino.app
@@ -124,11 +130,13 @@ namespace router {
                 return router::makeNativeResponse(output);
             }
             catch(exception e){
-                return router::makeNativeFailResponse("Native method execution error occurred");
+                return router::makeNativeFailResponse("NE_RT_NATRTER", 
+                        "Native method execution error occurred. Failed because of: " + std::string(e.what()));
             }
         }
         else {
-            return router::makeNativeFailResponse(nativeMethodId + " is not implemented in the Neutralinojs server");
+            return router::makeNativeFailResponse("NE_RT_NATNTIM",
+                        nativeMethodId + " is not implemented in the Neutralinojs server");
         }
     }
     
@@ -139,8 +147,11 @@ namespace router {
         return response;
     }
     
-    router::Response makeNativeFailResponse(string errorMessage) {
-        return router::makeNativeResponse("{\"error\":\"" + errorMessage + "\"}");
+    router::Response makeNativeFailResponse(string errorCode, string errorMessage) {
+        json error;
+        error["code"] = errorCode;
+        error["message"] = errorMessage;
+        return router::makeNativeResponse("{\"error\":" + error.dump() + "}");
     }
 
     router::Response getAsset(string path, string prependData) {
@@ -206,7 +217,8 @@ namespace router {
         };
 
         if(mimeTypes.find(extension) == mimeTypes.end())
-            return router::makeNativeFailResponse("File extension: " + extension + " is not supported");
+            return router::makeNativeFailResponse("NE_RT_FILNOTS",
+                    "File extension: " + extension + " is not supported");
 
         response.data = settings::getFileContent(path);
         if(prependData != "")

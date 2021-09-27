@@ -3,7 +3,8 @@
 #include <regex>
 #include "lib/json.hpp"
 #include "settings.h"
-#include "../filesystem/filesystem.h"
+#include "api/filesystem/filesystem.h"
+#include "helpers.h"
 
 #define STORAGE_DIR "/.storage"
 #define STORAGE_EXT ".neustorage"
@@ -18,7 +19,8 @@ namespace controllers {
         if(regex_match(key, regex(STORAGE_KEY_REGEX)))
             return nullptr;
         json output;
-        output["error"] = "Invalid storage key";
+        output["error"] = helpers::makeErrorPayload("NE_ST_INVSTKY", 
+                            "Invalid storage key format. The key should match regex: ^[a-zA-Z-_0-9]{1,50}$");
         return output;
     }
     
@@ -34,8 +36,8 @@ namespace controllers {
         fs::FileReaderResult fileReaderResult;
         fileReaderResult = fs::readFile(filename);
         if(fileReaderResult.hasError) {
-            output["error"] = "Unable to find storage key: " + key +
-                                 ". " + fileReaderResult.error;
+            output["error"] = helpers::makeErrorPayload("NE_ST_NOSTKEX", "Unable to find storage key: " + key +
+                                 ". " + fileReaderResult.error);
             return output;
         }
         output["returnValue"] = fileReaderResult.data;
@@ -63,7 +65,8 @@ namespace controllers {
             fileWriterOptions.filename = filename;
     
             if(!fs::writeFile(fileWriterOptions)) {
-                output["error"] = "Unable to write data to key: " + key;
+                output["error"] = helpers::makeErrorPayload("NE_ST_STKEYWE", 
+                                    "Unable to write data to key: " + key);
                 return output;
             }
         }

@@ -225,7 +225,8 @@ namespace controllers {
         char *varValue;
         varValue = getenv(varKey.c_str());
         if(varValue == nullptr) {
-            output["error"] =  varKey + " is not defined";
+            output["error"] = helpers::makeErrorPayload("NE_OS_ENVNOEX",
+                                        varKey + " is not defined");
         }
         else {
             output["returnValue"] = varValue;
@@ -408,12 +409,10 @@ namespace controllers {
         #if defined(__linux__) || defined(__FreeBSD__)
         string command = "notify-send \"" + input["title"].get<string>() + "\" \"" +
                             input["content"].get<string>() + "\"";
-        if(system(command.c_str()) == 0) {
-            output["success"] = true;
-            output["message"] = "Notification was sent to the system";
-        }
-        else
-            output["error"] = "An error thrown while sending the notification";
+
+        os::execCommand(command);
+        output["success"] = true;
+        output["message"] = "Notification was sent to the system";
         
         #elif defined(__APPLE__)
         string command = "osascript -e 'display notification \"" + 
@@ -432,8 +431,7 @@ namespace controllers {
                         "$notify.Visible = $true;"
                         "$notify.ShowBalloonTip(0 ,'"+ input["summary"].get<string>() + "','" + input["body"].get<string>() + "',[System.Windows.Forms.TooltipIcon]::None)}\"";
 
-        string commandOutput = os::execCommand(command);
-
+        os::execCommand(command);
         output["success"] = true;
         #endif
         return output;
@@ -448,7 +446,7 @@ namespace controllers {
         msgBoxOptions.content = input["content"];
         msgBoxResult = os::showMessageBox(msgBoxOptions);
         if(msgBoxResult.hasError) {
-            output["error"] = msgBoxResult.error;
+            output["error"] = helpers::makeErrorPayload("NE_OS_INVMSGT", msgBoxResult.error);
         }
         else {
             if(msgBoxOptions.type == "QUESTION")
