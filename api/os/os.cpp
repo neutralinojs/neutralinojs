@@ -58,9 +58,9 @@ bool isTrayCreated = false;
 namespace os {
     void open(string url) {
         #if defined(__linux__) || defined(__FreeBSD__)
-        int status = system(("xdg-open \"" + url + "\"").c_str());
+        os::execCommand("xdg-open \"" + url + "\"");
         #elif defined(__APPLE__)
-        system(("open \"" + url + "\"").c_str());
+        os::execCommand("open \"" + url + "\"");
         #elif defined(_WIN32)
         ShellExecute(0, 0, url.c_str(), 0, 0, SW_SHOW );
         #endif
