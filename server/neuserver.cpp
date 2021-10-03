@@ -16,16 +16,11 @@ using json = nlohmann::json;
 std::string NeuServer::init() {
     this->svr = new httplib::Server();
 
-    this->svr->Get(".*", [](const httplib::Request &req, httplib::Response &res) {
-      router::Response routerResponse = router::handle({req.path, "", req.get_header_value("Authorization")});
-      res.status = routerResponse.status;
-      res.set_content(routerResponse.data, routerResponse.contentType.c_str());
+    this->svr->Get(".*", [&](const httplib::Request &req, httplib::Response &res) {
+        this->handle(req, res);
     });
-
-    this->svr->Post(".*", [](const httplib::Request &req, httplib::Response &res) {
-      router::Response routerResponse = router::handle({req.path, req.body, req.get_header_value("Authorization")});
-      res.status = routerResponse.status;
-      res.set_content(routerResponse.data, routerResponse.contentType.c_str());
+    this->svr->Post(".*", [&](const httplib::Request &req, httplib::Response &res) {
+        this->handle(req, res);
     });
 
     json options = settings::getConfig();
@@ -65,6 +60,12 @@ void NeuServer::run() {
 void NeuServer::stop() {
     this->svr->stop();
     delete this->svr;
+}
+
+void NeuServer::handle(const httplib::Request &req, httplib::Response &res) {
+    router::Response routerResponse = router::handle({req.path, req.body, req.get_header_value("Authorization")});
+    res.status = routerResponse.status;
+    res.set_content(routerResponse.data, routerResponse.contentType.c_str());
 }
 
 NeuServer *NeuServer::getInstance() {

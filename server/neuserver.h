@@ -19,6 +19,7 @@ public:
     string init();
     void run();
     void stop();
+    void handle(const httplib::Request &req, httplib::Response &res);
     static NeuServer *getInstance();
 };
 
