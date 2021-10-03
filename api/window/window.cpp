@@ -1,3 +1,4 @@
+#include <string>
 #include <iostream>
 
 #if defined(__linux__) || defined(__FreeBSD__)
@@ -20,9 +21,8 @@
 #endif
 
 #include "lib/json.hpp"
-#include "settings.h"
-#define WEBVIEW_IMPLEMENTATION
 #include "lib/webview/webview.h"
+#include "settings.h"
 #include "api/window/window.h"
 #include "api/events/events.h"
 #include "api/filesystem/filesystem.h"

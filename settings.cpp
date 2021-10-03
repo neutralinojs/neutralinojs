@@ -1,12 +1,14 @@
+#include <string>
 #include <iostream>
 #include <fstream>
 #include <algorithm>
 #include <regex>
+
 #include "lib/json.hpp"
-#include "auth/authbasic.h"
 #include "settings.h"
 #include "resources.h"
 #include "helpers.h"
+#include "auth/authbasic.h"
 #include "api/filesystem/filesystem.h"
 #include "api/debug/debug.h"
 #include "api/app/app.h"

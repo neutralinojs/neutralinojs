@@ -2,6 +2,7 @@
 #define NEUSERVER_H
 
 #include <string>
+
 #include "lib/httplib.h"
 
 using namespace std;

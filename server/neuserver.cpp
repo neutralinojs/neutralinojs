@@ -3,10 +3,11 @@
 #include <string>
 #include <regex>
 #include <map>
+
 #include "lib/json.hpp"
 #include "lib/httplib.h"
-#include "server/neuserver.h"
 #include "settings.h"
+#include "server/neuserver.h"
 #include "server/router.h"
 
 using namespace std;

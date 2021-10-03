@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <string>
 
 #if defined(__linux__)
 #include <sys/sysinfo.h>

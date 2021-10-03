@@ -1,3 +1,5 @@
+#include <string>
+
 #include "api/window/window.h"
 
 using namespace std;

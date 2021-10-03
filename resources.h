@@ -1,3 +1,5 @@
+#include <string>
+
 #include "lib/json.hpp"
 #include "api/filesystem/filesystem.h"
 

@@ -3,11 +3,13 @@
 #include <fstream>
 #include <regex>
 #include <vector>
+
+#include "lib/json.hpp"
 #include "helpers.h"
 #include "settings.h"
-#include "lib/json.hpp"
 #include "auth/authbasic.h"
 #include "auth/permission.h"
+#include "server/router.h"
 #include "api/filesystem/filesystem.h"
 #include "api/os/os.h"
 #include "api/computer/computer.h"
@@ -15,7 +17,6 @@
 #include "api/debug/debug.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
-#include "server/router.h"
 
 #if defined(__APPLE__)
 #include <dispatch/dispatch.h>
