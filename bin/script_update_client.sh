@@ -11,7 +11,7 @@ fi
 
 echo "Building client..."
 cd ../neutralino.js
-npm run build
+npm run build -- --dev
 
 echo "Updating client..."
 cp ./dist/neutralino.js  ../neutralinojs/bin/resources/js/neutralino.js

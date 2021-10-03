@@ -1,1 +1,731 @@
-var Neutralino=function(e){"use strict";function t(e,t,n,i){return new(n||(n=Promise))((function(r,o){function a(e){try{s(i.next(e))}catch(e){o(e)}}function u(e){try{s(i.throw(e))}catch(e){o(e)}}function s(e){var t;e.done?r(e.value):(t=e.value,t instanceof n?t:new n((function(e){e(t)}))).then(a,u)}s((i=i.apply(e,t||[])).next())}))}function n(e,t){return new Promise(((n,i)=>{let r=new CustomEvent(e,{detail:t});window.dispatchEvent(r),n()}))}var i,r=Object.freeze({__proto__:null,on:function(e,t){return new Promise(((n,i)=>{window.addEventListener(e,t),n()}))},off:function(e,t){return new Promise(((n,i)=>{window.removeEventListener(e,t),n()}))},dispatch:n});function o(e){return new Promise(((i,r)=>{e.isNativeMethod&&(e.url="http://localhost:"+window.NL_PORT+"/__nativeMethod_"+e.url),e.data&&(e.data=JSON.stringify(e.data));let o=new Headers;o.append("Content-Type","application/json"),o.append("Authorization","Basic "+window.NL_TOKEN),fetch(e.url,{method:e.type,headers:o,body:e.data}).then((e=>t(this,void 0,void 0,(function*(){let t=yield e.text(),n=null;t&&(n=JSON.parse(t)),n&&n.success&&i(n.hasOwnProperty("returnValue")?n.returnValue:n),n&&n.error&&r(n.error)})))).catch((e=>{let t={code:"NE_CL_NSEROFF",message:"Neutralino server is offline. Try restarting the application"};n("serverOffline",t),r(t)}))}))}!function(e){e.GET="GET",e.POST="POST"}(i||(i={}));var a,u=Object.freeze({__proto__:null,createDirectory:function(e){return o({url:"filesystem.createDirectory",type:i.POST,data:{path:e},isNativeMethod:!0})},removeDirectory:function(e){return o({url:"filesystem.removeDirectory",type:i.POST,data:{path:e},isNativeMethod:!0})},writeFile:function(e,t){return o({url:"filesystem.writeFile",type:i.POST,data:{path:e,data:t},isNativeMethod:!0})},writeBinaryFile:function(e,t){let n=new Uint8Array(t),r="";for(let e of n)r+=String.fromCharCode(e);return o({url:"filesystem.writeBinaryFile",type:i.POST,data:{path:e,data:window.btoa(r)},isNativeMethod:!0})},readFile:function(e){return o({url:"filesystem.readFile",type:i.POST,data:{path:e},isNativeMethod:!0})},readBinaryFile:function(e){return new Promise(((t,n)=>{o({url:"filesystem.readBinaryFile",type:i.POST,data:{path:e},isNativeMethod:!0}).then((e=>{let n=window.atob(e),i=n.length,r=new Uint8Array(i);for(let e=0;e<i;e++)r[e]=n.charCodeAt(e);t(r.buffer)})).catch((e=>{n(e)}))}))},removeFile:function(e){return o({url:"filesystem.removeFile",type:i.POST,data:{path:e},isNativeMethod:!0})},readDirectory:function(e){return o({url:"filesystem.readDirectory",type:i.POST,data:{path:e},isNativeMethod:!0})},copyFile:function(e,t){return o({url:"filesystem.copyFile",type:i.POST,data:{source:e,destination:t},isNativeMethod:!0})},moveFile:function(e,t){return o({url:"filesystem.moveFile",type:i.POST,data:{source:e,destination:t},isNativeMethod:!0})},getStats:function(e){return o({url:"filesystem.getStats",type:i.POST,data:{path:e},isNativeMethod:!0})}});!function(e){e.WARN="WARN",e.ERROR="ERROR",e.INFO="INFO",e.QUESTION="QUESTION"}(a||(a={}));var s=Object.freeze({__proto__:null,get MessageBoxType(){return a},execCommand:function(e,t){return o({url:"os.execCommand",type:i.POST,data:Object.assign({command:e},t),isNativeMethod:!0})},getEnv:function(e){return o({url:"os.getEnv",type:i.POST,data:{key:e},isNativeMethod:!0})},showOpenDialog:function(e,t){return o({url:"os.showOpenDialog",type:i.POST,data:Object.assign({title:e},t),isNativeMethod:!0})},showSaveDialog:function(e){return o({url:"os.showSaveDialog",type:i.POST,data:{title:e},isNativeMethod:!0})},showNotification:function(e,t){return o({url:"os.showNotification",type:i.POST,data:{title:e,content:t},isNativeMethod:!0})},showMessageBox:function(e,t,n){return o({url:"os.showMessageBox",type:i.POST,data:{title:e,content:t,type:n},isNativeMethod:!0})},setTray:function(e){return o({url:"os.setTray",type:i.POST,data:e,isNativeMethod:!0})},open:function(e){return o({url:"os.open",type:i.POST,data:{url:e},isNativeMethod:!0})}});var d=Object.freeze({__proto__:null,getMemoryInfo:function(){return o({url:"computer.getMemoryInfo",type:i.GET,isNativeMethod:!0})}});var l,c=Object.freeze({__proto__:null,setData:function(e,t){return o({url:"storage.setData",type:i.POST,data:{key:e,data:t},isNativeMethod:!0})},getData:function(e){return o({url:"storage.getData",type:i.POST,data:{key:e},isNativeMethod:!0})}});!function(e){e.WARNING="WARNING",e.ERROR="ERROR",e.INFO="INFO"}(l||(l={}));var p=Object.freeze({__proto__:null,get LoggerType(){return l},log:function(e,t){return o({url:"debug.log",type:i.POST,data:{message:e,type:t},isNativeMethod:!0})}});function f(){return o({url:"app.keepAlive",type:i.GET,isNativeMethod:!0})}var v=Object.freeze({__proto__:null,exit:function(e){return o({url:"app.exit",type:i.POST,data:{code:e},isNativeMethod:!0})},killProcess:function(){return o({url:"app.killProcess",type:i.GET,isNativeMethod:!0})},restartProcess:function(){return new Promise(((e,n)=>t(this,void 0,void 0,(function*(){let t=window.NL_ARGS.reduce(((e,t,n)=>e+=" "+t),"");yield Neutralino.os.execCommand(t,{shouldRunInBackground:!0}),Neutralino.app.exit(),e()}))))},keepAlive:f,getConfig:function(){return o({url:"app.getConfig",type:i.GET,isNativeMethod:!0})}});var h=Object.freeze({__proto__:null,setTitle:function(e){return o({url:"window.setTitle",type:i.POST,data:{title:e},isNativeMethod:!0})},maximize:function(){return o({url:"window.maximize",type:i.GET,isNativeMethod:!0})},unmaximize:function(){return o({url:"window.unmaximize",type:i.GET,isNativeMethod:!0})},isMaximized:function(){return o({url:"window.isMaximized",type:i.GET,isNativeMethod:!0})},minimize:function(){return o({url:"window.minimize",type:i.GET,isNativeMethod:!0})},setFullScreen:function(){return o({url:"window.setFullScreen",type:i.GET,isNativeMethod:!0})},exitFullScreen:function(){return o({url:"window.exitFullScreen",type:i.GET,isNativeMethod:!0})},isFullScreen:function(){return o({url:"window.isFullScreen",type:i.GET,isNativeMethod:!0})},show:function(){return o({url:"window.show",type:i.GET,isNativeMethod:!0})},hide:function(){return o({url:"window.hide",type:i.GET,isNativeMethod:!0})},isVisible:function(){return o({url:"window.isVisible",type:i.GET,isNativeMethod:!0})},focus:function(){return o({url:"window.focus",type:i.GET,isNativeMethod:!0})},setIcon:function(e){return o({url:"window.setIcon",type:i.POST,isNativeMethod:!0,data:{icon:e}})},move:function(e,t){return o({url:"window.move",type:i.POST,isNativeMethod:!0,data:{x:e,y:t}})},setDraggableRegion:function(e){return new Promise(((n,i)=>{let r=document.getElementById(e),o=0,a=0;function u(e){return t(this,void 0,void 0,(function*(){yield Neutralino.window.move(e.screenX-o,e.screenY-a)}))}r||i(`Unable to find dom element: #${e}`),r.addEventListener("pointerdown",(e=>{o=e.clientX,a=e.clientY,r.addEventListener("pointermove",u),r.setPointerCapture(e.pointerId)})),r.addEventListener("pointerup",(e=>{r.removeEventListener("pointermove",u),r.releasePointerCapture(e.pointerId)})),n()}))},setSize:function(e){return o({url:"window.setSize",type:i.POST,isNativeMethod:!0,data:e})},create:function(e,t){return new Promise(((n,i)=>{function r(e){return"string"!=typeof e||(e=e.trim()).includes(" ")&&(e=`"${e}"`),e}let o=window.NL_ARGS.reduce(((e,t,n)=>((t.includes("--path=")||t.includes("--debug-mode")||t.includes("--load-dir-res")||0==n)&&(e+=" "+r(t)),e)),"");o+=" --url="+r(e);for(let e in t){if("processArgs"==e)continue;o+=` --window${e.replace(/[A-Z]|^[a-z]/g,(e=>"-"+e.toLowerCase()))}=${r(t[e])}`}t.processArgs&&(o+=" "+t.processArgs),Neutralino.os.execCommand({command:o,shouldRunInBackground:!0}).then((()=>{n()})).catch((e=>{i(e)}))}))}});let w=()=>{setInterval((()=>t(void 0,void 0,void 0,(function*(){try{yield f()}catch(e){console.error("Unable to keep Neutralino server online. The server is not reachable.")}}))),5e3)},y={start:function(){setInterval((()=>t(this,void 0,void 0,(function*(){try{(yield o({url:"http://localhost:5050",type:i.GET})).needsReload&&location.reload()}catch(e){console.error("Unable to communicate with neu devServer")}}))),1e3)}};return e.app=v,e.computer=d,e.debug=p,e.events=r,e.filesystem=u,e.init=function(){if(window.NL_MODE&&"browser"==window.NL_MODE&&w(),void 0!==window.NL_ARGS)for(let e=0;e<window.NL_ARGS.length;e++)if("--debug-mode"==window.NL_ARGS[e]){y.start();break}window.NL_CVERSION="1.5.0"},e.os=s,e.storage=c,e.window=h,Object.defineProperty(e,"__esModule",{value:!0}),e}({});
+var Neutralino = (function (exports) {
+    'use strict';
+
+    /*! *****************************************************************************
+    Copyright (c) Microsoft Corporation.
+
+    Permission to use, copy, modify, and/or distribute this software for any
+    purpose with or without fee is hereby granted.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+    REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+    AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+    INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+    LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+    OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+    PERFORMANCE OF THIS SOFTWARE.
+    ***************************************************************************** */
+
+    function __awaiter(thisArg, _arguments, P, generator) {
+        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+        return new (P || (P = Promise))(function (resolve, reject) {
+            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+            step((generator = generator.apply(thisArg, _arguments || [])).next());
+        });
+    }
+
+    function on(event, handler) {
+        return new Promise((resolve, reject) => {
+            window.addEventListener(event, handler);
+            resolve();
+        });
+    }
+    function off(event, handler) {
+        return new Promise((resolve, reject) => {
+            window.removeEventListener(event, handler);
+            resolve();
+        });
+    }
+    function dispatch(event, data) {
+        return new Promise((resolve, reject) => {
+            let customEvent = new CustomEvent(event, { detail: data });
+            window.dispatchEvent(customEvent);
+            resolve();
+        });
+    }
+
+    var events = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        on: on,
+        off: off,
+        dispatch: dispatch
+    });
+
+    var RequestType;
+    (function (RequestType) {
+        RequestType["GET"] = "GET";
+        RequestType["POST"] = "POST";
+    })(RequestType || (RequestType = {}));
+    function request(options) {
+        return new Promise((resolve, reject) => {
+            if (options.isNativeMethod)
+                options.url = 'http://localhost:' + window.NL_PORT + '/__nativeMethod_' + options.url;
+            if (options.data)
+                options.data = JSON.stringify(options.data);
+            let headers = new Headers();
+            headers.append('Content-Type', 'application/json');
+            headers.append('Authorization', 'Basic ' + window.NL_TOKEN);
+            fetch(options.url, {
+                method: options.type,
+                headers,
+                body: options.data
+            })
+                .then((resp) => __awaiter(this, void 0, void 0, function* () {
+                let respData = yield resp.text();
+                let respObj = null;
+                if (respData) {
+                    respObj = JSON.parse(respData);
+                }
+                if (respObj && respObj.success) {
+                    resolve(respObj.hasOwnProperty('returnValue')
+                        ? respObj.returnValue
+                        : respObj);
+                }
+                if (respObj && respObj.error)
+                    reject(respObj.error);
+            }))
+                .catch((e) => {
+                let error = {
+                    code: 'NE_CL_NSEROFF',
+                    message: 'Neutralino server is offline. Try restarting the application'
+                };
+                dispatch('serverOffline', error);
+                reject(error);
+            });
+        });
+    }
+
+    function createDirectory(path) {
+        return request({
+            url: 'filesystem.createDirectory',
+            type: RequestType.POST,
+            data: {
+                path
+            },
+            isNativeMethod: true
+        });
+    }
+    function removeDirectory(path) {
+        return request({
+            url: 'filesystem.removeDirectory',
+            type: RequestType.POST,
+            data: {
+                path
+            },
+            isNativeMethod: true
+        });
+    }
+    function writeFile(path, data) {
+        return request({
+            url: 'filesystem.writeFile',
+            type: RequestType.POST,
+            data: {
+                path,
+                data
+            },
+            isNativeMethod: true
+        });
+    }
+    function writeBinaryFile(path, data) {
+        let bytes = new Uint8Array(data);
+        let asciiStr = '';
+        for (let byte of bytes) {
+            asciiStr += String.fromCharCode(byte);
+        }
+        return request({
+            url: 'filesystem.writeBinaryFile',
+            type: RequestType.POST,
+            data: {
+                path,
+                data: window.btoa(asciiStr)
+            },
+            isNativeMethod: true
+        });
+    }
+    function readFile(path) {
+        return request({
+            url: 'filesystem.readFile',
+            type: RequestType.POST,
+            data: {
+                path
+            },
+            isNativeMethod: true
+        });
+    }
+    function readBinaryFile(path) {
+        return new Promise((resolve, reject) => {
+            request({
+                url: 'filesystem.readBinaryFile',
+                type: RequestType.POST,
+                data: {
+                    path
+                },
+                isNativeMethod: true
+            })
+                .then((base64Data) => {
+                let binaryData = window.atob(base64Data);
+                let len = binaryData.length;
+                let bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryData.charCodeAt(i);
+                }
+                resolve(bytes.buffer);
+            })
+                .catch((error) => {
+                reject(error);
+            });
+        });
+    }
+    function removeFile(path) {
+        return request({
+            url: 'filesystem.removeFile',
+            type: RequestType.POST,
+            data: {
+                path
+            },
+            isNativeMethod: true
+        });
+    }
+    function readDirectory(path) {
+        return request({
+            url: 'filesystem.readDirectory',
+            type: RequestType.POST,
+            data: {
+                path
+            },
+            isNativeMethod: true
+        });
+    }
+    function copyFile(source, destination) {
+        return request({
+            url: 'filesystem.copyFile',
+            type: RequestType.POST,
+            data: {
+                source,
+                destination
+            },
+            isNativeMethod: true
+        });
+    }
+    function moveFile(source, destination) {
+        return request({
+            url: 'filesystem.moveFile',
+            type: RequestType.POST,
+            data: {
+                source,
+                destination
+            },
+            isNativeMethod: true
+        });
+    }
+    function getStats(path) {
+        return request({
+            url: 'filesystem.getStats',
+            type: RequestType.POST,
+            data: {
+                path
+            },
+            isNativeMethod: true
+        });
+    }
+
+    var filesystem = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        createDirectory: createDirectory,
+        removeDirectory: removeDirectory,
+        writeFile: writeFile,
+        writeBinaryFile: writeBinaryFile,
+        readFile: readFile,
+        readBinaryFile: readBinaryFile,
+        removeFile: removeFile,
+        readDirectory: readDirectory,
+        copyFile: copyFile,
+        moveFile: moveFile,
+        getStats: getStats
+    });
+
+    var MessageBoxType;
+    (function (MessageBoxType) {
+        MessageBoxType["WARN"] = "WARN";
+        MessageBoxType["ERROR"] = "ERROR";
+        MessageBoxType["INFO"] = "INFO";
+        MessageBoxType["QUESTION"] = "QUESTION";
+    })(MessageBoxType || (MessageBoxType = {}));
+    function execCommand(command, options) {
+        return request({
+            url: 'os.execCommand',
+            type: RequestType.POST,
+            data: Object.assign({ command }, options),
+            isNativeMethod: true
+        });
+    }
+    function getEnv(key) {
+        return request({
+            url: 'os.getEnv',
+            type: RequestType.POST,
+            data: {
+                key
+            },
+            isNativeMethod: true
+        });
+    }
+    function showOpenDialog(title, options) {
+        return request({
+            url: 'os.showOpenDialog',
+            type: RequestType.POST,
+            data: Object.assign({ title }, options),
+            isNativeMethod: true
+        });
+    }
+    function showSaveDialog(title) {
+        return request({
+            url: 'os.showSaveDialog',
+            type: RequestType.POST,
+            data: {
+                title
+            },
+            isNativeMethod: true
+        });
+    }
+    function showNotification(title, content) {
+        return request({
+            url: 'os.showNotification',
+            type: RequestType.POST,
+            data: {
+                title,
+                content
+            },
+            isNativeMethod: true
+        });
+    }
+    function showMessageBox(title, content, type) {
+        return request({
+            url: 'os.showMessageBox',
+            type: RequestType.POST,
+            data: {
+                title,
+                content,
+                type
+            },
+            isNativeMethod: true
+        });
+    }
+    function setTray(options) {
+        return request({
+            url: 'os.setTray',
+            type: RequestType.POST,
+            data: options,
+            isNativeMethod: true
+        });
+    }
+    function open(url) {
+        return request({
+            url: 'os.open',
+            type: RequestType.POST,
+            data: {
+                url
+            },
+            isNativeMethod: true
+        });
+    }
+
+    var os = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        get MessageBoxType () { return MessageBoxType; },
+        execCommand: execCommand,
+        getEnv: getEnv,
+        showOpenDialog: showOpenDialog,
+        showSaveDialog: showSaveDialog,
+        showNotification: showNotification,
+        showMessageBox: showMessageBox,
+        setTray: setTray,
+        open: open
+    });
+
+    function getMemoryInfo() {
+        return request({
+            url: 'computer.getMemoryInfo',
+            type: RequestType.GET,
+            isNativeMethod: true
+        });
+    }
+
+    var computer = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        getMemoryInfo: getMemoryInfo
+    });
+
+    function setData(key, data) {
+        return request({
+            url: 'storage.setData',
+            type: RequestType.POST,
+            data: {
+                key,
+                data
+            },
+            isNativeMethod: true
+        });
+    }
+    function getData(key) {
+        return request({
+            url: 'storage.getData',
+            type: RequestType.POST,
+            data: {
+                key
+            },
+            isNativeMethod: true
+        });
+    }
+
+    var storage = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        setData: setData,
+        getData: getData
+    });
+
+    var LoggerType;
+    (function (LoggerType) {
+        LoggerType["WARNING"] = "WARNING";
+        LoggerType["ERROR"] = "ERROR";
+        LoggerType["INFO"] = "INFO";
+    })(LoggerType || (LoggerType = {}));
+    function log(message, type) {
+        return request({
+            url: 'debug.log',
+            type: RequestType.POST,
+            data: {
+                message,
+                type
+            },
+            isNativeMethod: true
+        });
+    }
+
+    var debug = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        get LoggerType () { return LoggerType; },
+        log: log
+    });
+
+    function exit(code) {
+        return request({
+            url: 'app.exit',
+            type: RequestType.POST,
+            data: {
+                code
+            },
+            isNativeMethod: true
+        });
+    }
+    function killProcess() {
+        return request({
+            url: 'app.killProcess',
+            type: RequestType.GET,
+            isNativeMethod: true
+        });
+    }
+    function restartProcess(options) {
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            let command = window.NL_ARGS.reduce((acc, arg, index) => {
+                acc += ' ' + arg;
+                return acc;
+            }, '');
+            if (options.args) {
+                command += '' + options.args;
+            }
+            yield Neutralino.os.execCommand(command, { shouldRunInBackground: true });
+            Neutralino.app.exit();
+            resolve();
+        }));
+    }
+    function keepAlive() {
+        return request({
+            url: 'app.keepAlive',
+            type: RequestType.GET,
+            isNativeMethod: true
+        });
+    }
+    function getConfig() {
+        return request({
+            url: 'app.getConfig',
+            type: RequestType.GET,
+            isNativeMethod: true
+        });
+    }
+
+    var app = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        exit: exit,
+        killProcess: killProcess,
+        restartProcess: restartProcess,
+        keepAlive: keepAlive,
+        getConfig: getConfig
+    });
+
+    function setTitle(title) {
+        return request({
+            url: 'window.setTitle',
+            type: RequestType.POST,
+            data: {
+                title
+            },
+            isNativeMethod: true
+        });
+    }
+    function maximize() {
+        return request({
+            url: 'window.maximize',
+            type: RequestType.GET,
+            isNativeMethod: true
+        });
+    }
+    function unmaximize() {
+        return request({
+            url: 'window.unmaximize',
+            type: RequestType.GET,
+            isNativeMethod: true
+        });
+    }
+    function isMaximized() {
+        return request({
+            url: 'window.isMaximized',
+            type: RequestType.GET,
+            isNativeMethod: true
+        });
+    }
+    function minimize() {
+        return request({
+            url: 'window.minimize',
+            type: RequestType.GET,
+            isNativeMethod: true
+        });
+    }
+    function setFullScreen() {
+        return request({
+            url: 'window.setFullScreen',
+            type: RequestType.GET,
+            isNativeMethod: true
+        });
+    }
+    function exitFullScreen() {
+        return request({
+            url: 'window.exitFullScreen',
+            type: RequestType.GET,
+            isNativeMethod: true
+        });
+    }
+    function isFullScreen() {
+        return request({
+            url: 'window.isFullScreen',
+            type: RequestType.GET,
+            isNativeMethod: true
+        });
+    }
+    function show() {
+        return request({
+            url: 'window.show',
+            type: RequestType.GET,
+            isNativeMethod: true
+        });
+    }
+    function hide() {
+        return request({
+            url: 'window.hide',
+            type: RequestType.GET,
+            isNativeMethod: true
+        });
+    }
+    function isVisible() {
+        return request({
+            url: 'window.isVisible',
+            type: RequestType.GET,
+            isNativeMethod: true
+        });
+    }
+    function focus() {
+        return request({
+            url: 'window.focus',
+            type: RequestType.GET,
+            isNativeMethod: true
+        });
+    }
+    function setIcon(icon) {
+        return request({
+            url: 'window.setIcon',
+            type: RequestType.POST,
+            isNativeMethod: true,
+            data: {
+                icon
+            }
+        });
+    }
+    function move(x, y) {
+        return request({
+            url: 'window.move',
+            type: RequestType.POST,
+            isNativeMethod: true,
+            data: {
+                x, y
+            }
+        });
+    }
+    function setDraggableRegion(domId) {
+        return new Promise((resolve, reject) => {
+            let draggableRegion = document.getElementById(domId);
+            let initialClientX = 0;
+            let initialClientY = 0;
+            if (!draggableRegion)
+                reject(`Unable to find dom element: #${domId}`);
+            draggableRegion.addEventListener('pointerdown', (evt) => {
+                initialClientX = evt.clientX;
+                initialClientY = evt.clientY;
+                draggableRegion.addEventListener('pointermove', onPointerMove);
+                draggableRegion.setPointerCapture(evt.pointerId);
+            });
+            draggableRegion.addEventListener('pointerup', (evt) => {
+                draggableRegion.removeEventListener('pointermove', onPointerMove);
+                draggableRegion.releasePointerCapture(evt.pointerId);
+            });
+            function onPointerMove(evt) {
+                return __awaiter(this, void 0, void 0, function* () {
+                    yield Neutralino.window.move(evt.screenX - initialClientX, evt.screenY - initialClientY);
+                });
+            }
+            resolve();
+        });
+    }
+    function setSize(options) {
+        return request({
+            url: 'window.setSize',
+            type: RequestType.POST,
+            isNativeMethod: true,
+            data: options
+        });
+    }
+    function create(url, options) {
+        return new Promise((resolve, reject) => {
+            function normalize(arg) {
+                if (typeof arg != "string")
+                    return arg;
+                arg = arg.trim();
+                if (arg.includes(" ")) {
+                    arg = `"${arg}"`;
+                }
+                return arg;
+            }
+            let command = window.NL_ARGS.reduce((acc, arg, index) => {
+                if (arg.includes("--path=") || arg.includes("--debug-mode") ||
+                    arg.includes("--load-dir-res") || index == 0) {
+                    acc += " " + normalize(arg);
+                }
+                return acc;
+            }, "");
+            command += " --url=" + normalize(url);
+            for (let key in options) {
+                if (key == "processArgs")
+                    continue;
+                let cliKey = key.replace(/[A-Z]|^[a-z]/g, (token) => ("-" + token.toLowerCase()));
+                command += ` --window${cliKey}=${normalize(options[key])}`;
+            }
+            if (options.processArgs)
+                command += " " + options.processArgs;
+            Neutralino.os.execCommand({
+                command,
+                shouldRunInBackground: true
+            })
+                .then(() => {
+                resolve();
+            })
+                .catch((error) => {
+                reject(error);
+            });
+        });
+    }
+
+    var window$1 = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        setTitle: setTitle,
+        maximize: maximize,
+        unmaximize: unmaximize,
+        isMaximized: isMaximized,
+        minimize: minimize,
+        setFullScreen: setFullScreen,
+        exitFullScreen: exitFullScreen,
+        isFullScreen: isFullScreen,
+        show: show,
+        hide: hide,
+        isVisible: isVisible,
+        focus: focus,
+        setIcon: setIcon,
+        move: move,
+        setDraggableRegion: setDraggableRegion,
+        setSize: setSize,
+        create: create
+    });
+
+    const PING_INTERVAL_MS = 5000;
+    let ping = {
+        start: () => {
+            setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
+                try {
+                    yield keepAlive();
+                }
+                catch (e) {
+                    console.error('Unable to keep Neutralino server online. The server is not reachable.');
+                }
+            }), PING_INTERVAL_MS);
+        }
+    };
+
+    let devClient = {
+        start: function () {
+            setInterval(() => __awaiter(this, void 0, void 0, function* () {
+                try {
+                    let response = yield request({
+                        url: 'http://localhost:5050',
+                        type: RequestType.GET
+                    });
+                    if (response.needsReload) {
+                        location.reload();
+                    }
+                }
+                catch (e) {
+                    console.error('Unable to communicate with neu devServer');
+                }
+            }), 1000);
+        }
+    };
+
+    var version = "1.5.0";
+
+    function init() {
+        if (window.NL_MODE && window.NL_MODE == 'browser')
+            ping.start();
+        if (typeof window.NL_ARGS != 'undefined') {
+            for (let i = 0; i < window.NL_ARGS.length; i++) {
+                if (window.NL_ARGS[i] == '--debug-mode') {
+                    devClient.start();
+                    break;
+                }
+            }
+        }
+        window.NL_CVERSION = version;
+    }
+
+    exports.app = app;
+    exports.computer = computer;
+    exports.debug = debug;
+    exports.events = events;
+    exports.filesystem = filesystem;
+    exports.init = init;
+    exports.os = os;
+    exports.storage = storage;
+    exports.window = window$1;
+
+    Object.defineProperty(exports, '__esModule', { value: true });
+
+    return exports;
+
+})({});
