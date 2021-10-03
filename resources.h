@@ -1,4 +1,5 @@
 #include "lib/json.hpp"
+#include "api/filesystem/filesystem.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -6,7 +7,6 @@ using json = nlohmann::json;
 namespace resources {
     pair<int, string> seekFilePos(string path);
     bool makeFileTree();
-    string getFileContent(string filename);
-    string getFileContentBinary(string filename);
+    fs::FileReaderResult getFileContent(string filename);
     void extractFile(string filename, string outputFilename);
 }

@@ -519,7 +519,8 @@ namespace controllers {
             tray.icon = helpers::cStrCopy(fullIconPath);
 
             #elif defined(_WIN32)
-            string iconDataStr = settings::getFileContent(iconPath);
+            fs::FileReaderResult fileReaderResult = settings::getFileContent(iconPath);
+            string iconDataStr = fileReaderResult.data;
             const char *iconData = iconDataStr.c_str();
             unsigned char *uiconData = reinterpret_cast<unsigned char*>(const_cast<char*>(iconData));
             IStream *pStream = SHCreateMemStream((BYTE *) uiconData, iconDataStr.length());
@@ -528,7 +529,8 @@ namespace controllers {
             pStream->Release();
 
             #elif defined(__APPLE__)
-            string iconDataStr = settings::getFileContent(iconPath);
+            fs::FileReaderResult fileReaderResult = settings::getFileContent(iconPath);
+            string iconDataStr = fileReaderResult.data;
             const char *iconData = iconDataStr.c_str();
             tray.icon =
                 ((id (*)(id, SEL))objc_msgSend)("NSImage"_cls, "alloc"_sel);

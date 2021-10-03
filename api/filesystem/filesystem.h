@@ -1,6 +1,11 @@
 #ifndef FILESYSTEM_H
 #define FILESYSTEM_H
 
+#include "lib/json.hpp"
+
+using json = nlohmann::json;
+using namespace std;
+
 namespace fs {
     
     struct FileReaderResult {

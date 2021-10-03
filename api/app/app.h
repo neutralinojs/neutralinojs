@@ -1,6 +1,9 @@
 #ifndef AP_H
 #define AP_H
 
+#include "lib/json.hpp"
+
+using json = nlohmann::json;
 using namespace std;
 
 namespace app {

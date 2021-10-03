@@ -1,9 +1,9 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#include <iostream>
-#include <map>
+#include "lib/json.hpp"
 
+using json = nlohmann::json;
 using namespace std;
 
 namespace debug {

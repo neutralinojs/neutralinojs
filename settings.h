@@ -1,4 +1,5 @@
 #include "lib/json.hpp"
+#include "api/filesystem/filesystem.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -18,7 +19,7 @@ namespace settings {
     };
 
     json getConfig();
-    string getFileContent(string filename);
+    fs::FileReaderResult getFileContent(string filename);
     string getGlobalVars();
     void setGlobalArgs(json args);
     string joinAppPath(string filename);

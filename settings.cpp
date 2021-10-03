@@ -43,18 +43,16 @@ namespace settings {
         return appPath + filename;
     }
 
-    string getFileContent(string filename) {
-        string content;
+    fs::FileReaderResult getFileContent(string filename) {
         if(!loadResFromDir)
             return resources::getFileContent(filename);
         filename = settings::joinAppPath(filename);
         fs::FileReaderResult fileReaderResult = fs::readFile(filename);
         
-        if(fileReaderResult.hasError)
+        if(fileReaderResult.hasError) {
             debug::log("ERROR", fileReaderResult.error);
-        else
-            content = fileReaderResult.data;
-        return content;
+        }
+        return fileReaderResult;
     }
 
     json getConfig() {
@@ -62,7 +60,8 @@ namespace settings {
             return options;
         json config;
         try {
-            config = json::parse(settings::getFileContent(APP_CONFIG_FILE));
+            fs::FileReaderResult fileReaderResult = settings::getFileContent(APP_CONFIG_FILE);
+            config = json::parse(fileReaderResult.data);
             options = config;
 
             // Apply config overrides
