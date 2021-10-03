@@ -1,17 +1,18 @@
 #include <cstdlib>
+#include <string>
+#include <thread>
 #if defined(_WIN32)
 #include <winsock2.h>
 #endif
-#include <string>
-#include <thread>
+
 #include "lib/json.hpp"
 #include "lib/easylogging/easylogging++.h"
 #include "settings.h"
 #include "resources.h"
 #include "auth/authbasic.h"
+#include "server/neuserver.h"
 #include "server/ping.h"
 #include "auth/permission.h"
-#include "server/neuserver.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
 #include "api/os/os.h"

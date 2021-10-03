@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include "lib/json.hpp"
 #include <stdlib.h>
 #include <cstdio>
 #include <iostream>
@@ -19,6 +18,7 @@
 #define TRAY_APPKIT 1
 
 #elif defined(_WIN32)
+#define _WINSOCKAPI_
 #include <windows.h>
 #include <shlobj.h>
 #include <shobjidl.h>
@@ -33,8 +33,9 @@
 #pragma comment (lib,"Gdiplus.lib")
 #endif
 
+#include "lib/json.hpp"
 #include "lib/tray/tray.h"
-#include "../../helpers.h"
+#include "helpers.h"
 #include "settings.h"
 #include "resources.h"
 #include "api/events/events.h"

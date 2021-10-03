@@ -1,6 +1,8 @@
 #ifndef OS_H
 #define OS_H
 
+#include <string>
+
 #include "lib/json.hpp"
 
 using json = nlohmann::json;

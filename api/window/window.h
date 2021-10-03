@@ -1,5 +1,8 @@
 #ifndef WI_H
 #define WI_H
+
+#include <string>
+
 #include "lib/json.hpp"
 
 #if defined(__APPLE__)

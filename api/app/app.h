@@ -1,6 +1,8 @@
 #ifndef AP_H
 #define AP_H
 
+#include <string>
+
 #include "lib/json.hpp"
 
 using json = nlohmann::json;

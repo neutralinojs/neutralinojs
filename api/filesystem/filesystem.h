@@ -1,6 +1,8 @@
 #ifndef FILESYSTEM_H
 #define FILESYSTEM_H
 
+#include <string>
+
 #include "lib/json.hpp"
 
 using json = nlohmann::json;

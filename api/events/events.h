@@ -1,6 +1,8 @@
 #ifndef EVT_H
 #define EVT_H
 
+#include <string>
+
 using namespace std;
 
 namespace events {

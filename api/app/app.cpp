@@ -1,19 +1,21 @@
 #include <iostream>
+#include <string>
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 #include <signal.h>
 #include <unistd.h>
 
 #elif defined(_WIN32)
+#define _WINSOCKAPI_
 #include <windows.h>
 #endif
 
 #include "lib/json.hpp"
-#include "server/ping.h"
 #include "settings.h"
+#include "server/ping.h"
+#include "server/neuserver.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
-#include "server/neuserver.h"
 
 using namespace std;
 using json = nlohmann::json;

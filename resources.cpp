@@ -1,8 +1,10 @@
+#include <string>
 #include <iostream>
 #include <fstream>
 #include <regex>
 #include <vector>
 #include <limits.h>
+
 #include "lib/easylogging/easylogging++.h"
 #include "lib/json.hpp"
 #include "helpers.h"
