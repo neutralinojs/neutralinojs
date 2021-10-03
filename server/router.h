@@ -5,7 +5,8 @@ using namespace std;
 namespace router {
     
     struct Response {
-        string header;
+        int status = 200;
+        string contentType = "application/octet-stream";
         string data;
     };
     

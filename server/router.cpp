@@ -143,7 +143,7 @@ namespace router {
     router::Response makeNativeResponse(string data) {
         router::Response response;
         response.data = data;
-        response.header = "application/json";
+        response.contentType = "application/json";
         return response;
     }
     
@@ -216,14 +216,16 @@ namespace router {
             {"wasm", "application/wasm"}
         };
 
-        if(mimeTypes.find(extension) == mimeTypes.end())
-            return router::makeNativeFailResponse("NE_RT_FILNOTS",
-                    "File extension: " + extension + " is not supported");
-
-        response.data = settings::getFileContent(path);
+        fs::FileReaderResult fileReaderResult = settings::getFileContent(path);
+        response.data = fileReaderResult.data;
+        response.status = fileReaderResult.hasError ? 404 : 200;
         if(prependData != "")
             response.data = prependData + response.data;
-        response.header = mimeTypes[extension];
+        
+        // If MIME-type is not defined in neuserver, application/octet-stream will be used by default.
+        if(mimeTypes.find(extension) != mimeTypes.end()) {
+            response.contentType = mimeTypes[extension];
+        }
         return response;
     }
 

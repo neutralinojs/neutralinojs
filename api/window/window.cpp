@@ -25,6 +25,7 @@
 #include "lib/webview/webview.h"
 #include "api/window/window.h"
 #include "api/events/events.h"
+#include "api/filesystem/filesystem.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -203,7 +204,8 @@ namespace handlers {
     }
     
     void setIcon(string iconFile) {
-        string iconDataStr = settings::getFileContent(iconFile);
+        fs::FileReaderResult fileReaderResult = settings::getFileContent(iconFile);
+        string iconDataStr = fileReaderResult.data;
         #if defined(__linux__) || defined(__FreeBSD__)
         GdkPixbuf *icon = nullptr;
         GdkPixbufLoader *loader;

@@ -1,6 +1,11 @@
 #ifndef OS_H
 #define OS_H
 
+#include "lib/json.hpp"
+
+using json = nlohmann::json;
+using namespace std;
+
 namespace os {
     struct MessageBoxOptions {
         string type;

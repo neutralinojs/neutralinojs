@@ -33,7 +33,8 @@ namespace resources {
         return make_pair<int, string>(-1, "");
     }
 
-    string getFileContent(string filename) {
+    fs::FileReaderResult getFileContent(string filename) {
+        fs::FileReaderResult fileReaderResult;
         pair<int, string> p = seekFilePos(filename, fileTree, "");
         if(p.first != -1) {
             std::ifstream asarArchive;
@@ -42,7 +43,8 @@ namespace resources {
             asarArchive.open(resFileName, std::ios::binary);
             if (!asarArchive) {
                 debug::log("ERROR", "Resource file tree generation error: " + resFileName + " is missing.");
-                return "";
+                fileReaderResult.hasError = true;
+                return fileReaderResult;
             }
             unsigned int uSize = p.first;
             unsigned int uOffset = std::stoi(p.second);
@@ -51,11 +53,12 @@ namespace resources {
             asarArchive.seekg(asarHeaderSize + uOffset);
             asarArchive.read(fileBuf.data(), uSize);
             std::string fileContent(fileBuf.begin(), fileBuf.end());
-            return fileContent;
+            fileReaderResult.data = fileContent;
        }
        else {
-           return "";
+            fileReaderResult.hasError = true;
        }
+       return fileReaderResult;
     }
 
     bool makeFileTree() {
@@ -91,10 +94,10 @@ namespace resources {
     }
     
     void extractFile(string filename, string outputFilename) {
-        string fileContent = resources::getFileContent(filename);
+        fs::FileReaderResult fileReaderResult = resources::getFileContent(filename);
         fs::FileWriterOptions fileWriterOptions;
         fileWriterOptions.filename = outputFilename;
-        fileWriterOptions.data = fileContent;
+        fileWriterOptions.data = fileReaderResult.data;
         fs::writeFile(fileWriterOptions);
     }
 

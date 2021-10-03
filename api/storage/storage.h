@@ -1,6 +1,9 @@
 #ifndef STORAGE_H
 #define STORAGE_H
 
+#include "lib/json.hpp"
+
+using json = nlohmann::json;
 using namespace std;
 
 namespace storage {
