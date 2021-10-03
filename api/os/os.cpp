@@ -18,6 +18,7 @@
 #define TRAY_APPKIT 1
 
 #elif defined(_WIN32)
+#define _WINSOCKAPI_
 #include <windows.h>
 #include <shlobj.h>
 #include <shobjidl.h>

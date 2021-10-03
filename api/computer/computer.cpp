@@ -10,6 +10,7 @@
 #include <sys/sysctl.h>
 
 #elif defined(_WIN32)
+#define _WINSOCKAPI_
 #include <windows.h>
 #endif
 
