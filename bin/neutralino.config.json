@@ -23,7 +23,8 @@
             "borderless": false,
             "maximize": false,
             "hidden": false,
-            "resizable": true
+            "resizable": true,
+            "exitProcessOnClose": false
         },
         "browser": {},
         "cloud": {}

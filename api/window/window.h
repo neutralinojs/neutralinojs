@@ -41,6 +41,7 @@ namespace window {
         bool maximize = false;
         bool hidden = false;
         bool maximizable = true;
+        bool exitProcessOnClose = true;
         string title = "Neutralinojs window";
         string url = "https://neutralino.js.org";
         string icon = "";

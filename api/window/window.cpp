@@ -23,6 +23,7 @@
 #include "lib/json.hpp"
 #include "lib/webview/webview.h"
 #include "settings.h"
+#include "api/app/app.h"
 #include "api/window/window.h"
 #include "api/events/events.h"
 #include "api/filesystem/filesystem.h"
@@ -53,7 +54,12 @@ namespace window {
 
 namespace handlers {
     void onClose() {
-        events::dispatch("windowClose", "null");
+        if(windowProps.exitProcessOnClose) {
+            app::exit();
+        }
+        else {
+            events::dispatch("windowClose", "null");
+        }
     }
 } // namespace handlers
 
@@ -544,6 +550,9 @@ namespace controllers {
 
         if(!input["hidden"].is_null())
             windowProps.hidden = input["hidden"];
+            
+        if(!input["exitProcessOnClose"].is_null())
+            windowProps.exitProcessOnClose = input["exitProcessOnClose"];
 
         __createWindow();
         output["success"] = true;
