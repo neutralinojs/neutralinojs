@@ -63,6 +63,7 @@ server/ping.cpp ^
 helpers.cpp ^
 lib/easylogging/easylogging++.cc ^
 lib/boxer/boxer_win.cpp ^
+lib/platformfolders/platform_folders.cpp ^
 api/computer/computer.cpp ^
 api/filesystem/filesystem.cpp ^
 api/os/os.cpp ^

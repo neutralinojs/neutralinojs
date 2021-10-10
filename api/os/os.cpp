@@ -10,6 +10,8 @@
 #include <map>
 #include <cstring>
 
+#include <lib/platformfolders/platform_folders.h>
+
 #if defined(__linux__) || defined(__FreeBSD__)
 #define TRAY_APPINDICATOR 1
 
@@ -205,6 +207,30 @@ namespace os {
         
         #endif
         return result;
+    }
+    
+    string getPath(string name) {
+        if(name == "config")
+            return sago::getConfigHome();
+        if(name == "data")
+            return sago::getDataHome();
+        if(name == "cache")
+            return sago::getCacheDir();  
+        if(name == "documents")
+            return sago::getDocumentsFolder();  
+        if(name == "pictures")
+            return sago::getPicturesFolder();
+        if(name == "music")
+            return sago::getMusicFolder();
+        if(name == "video")
+            return sago::getVideoFolder();  
+        if(name == "downloads")
+            return sago::getDownloadFolder();     
+        if(name == "saveGames1")
+            return sago::getSaveGamesFolder1();  
+        if(name == "saveGames2")
+            return sago::getSaveGamesFolder2();     
+        return string();
     }
     
 namespace controllers {
@@ -562,6 +588,21 @@ namespace controllers {
         string url = input["url"];
         os::open(url);
         output["success"] = true;
+        return output;
+    }
+    
+    json getPath(json input) {
+        json output;
+        string name = input["name"];
+        string path = os::getPath(name);
+        if(!path.empty()) {
+            output["returnValue"] = path;
+            output["success"] = true;
+        }
+        else {
+            output["error"] = helpers::makeErrorPayload("NE_OS_INVKNPT", 
+                                    "Invalid platform path name: " + name);
+        }
         return output;
     }
 } // namespace controllers

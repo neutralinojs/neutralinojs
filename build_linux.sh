@@ -23,6 +23,7 @@ g++ resources.cpp \
     auth/permission.cpp \
     lib/boxer/boxer_linux.cpp \
     lib/easylogging/easylogging++.cc \
+    lib/platformfolders/platform_folders.cpp \
     api/filesystem/filesystem.cpp \
     api/os/os.cpp \
     api/computer/computer.cpp \
