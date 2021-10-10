@@ -98,6 +98,7 @@ namespace router {
             {"os.showMessageBox", os::controllers::showMessageBox},
             {"os.setTray", os::controllers::setTray},
             {"os.open", os::controllers::open},
+            {"os.getPath", os::controllers::getPath},
             // Neutralino.storage
             {"storage.setData", storage::controllers::setData},
             {"storage.getData", storage::controllers::getData}

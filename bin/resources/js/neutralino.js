@@ -315,6 +315,16 @@ var Neutralino = (function (exports) {
             isNativeMethod: true
         });
     }
+    function getPath(name) {
+        return request({
+            url: 'os.getPath',
+            type: RequestType.POST,
+            data: {
+                name
+            },
+            isNativeMethod: true
+        });
+    }
 
     var os = /*#__PURE__*/Object.freeze({
         __proto__: null,
@@ -326,7 +336,8 @@ var Neutralino = (function (exports) {
         showNotification: showNotification,
         showMessageBox: showMessageBox,
         setTray: setTray,
-        open: open
+        open: open,
+        getPath: getPath
     });
 
     function getMemoryInfo() {

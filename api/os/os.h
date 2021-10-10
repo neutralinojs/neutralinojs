@@ -25,6 +25,7 @@ namespace os {
     string execCommand(string command, bool shouldCombineErrorStream = false,
                         bool shouldRunInBackground = false);
     MessageBoxResult showMessageBox(MessageBoxOptions options);
+    string getPath(string name);
 
 namespace controllers {
     json execCommand(json input);
@@ -35,6 +36,7 @@ namespace controllers {
     json showMessageBox(json input);
     json setTray(json input);
     json open(json input);
+    json getPath(json input);
 } // namespace controllers
 } // namespace os
 
