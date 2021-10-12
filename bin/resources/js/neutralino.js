@@ -627,10 +627,7 @@ var Neutralino = (function (exports) {
             }
             if (options.processArgs)
                 command += " " + options.processArgs;
-            Neutralino.os.execCommand({
-                command,
-                shouldRunInBackground: true
-            })
+            Neutralino.os.execCommand(command, { shouldRunInBackground: true })
                 .then(() => {
                 resolve();
             })
