@@ -189,6 +189,7 @@ namespace settings {
             {"--window-hidden", {"/modes/window/hidden", "bool"}},
             {"--window-resizable", {"/modes/window/resizable", "bool"}},
             {"--window-maximizable", {"/modes/window/maximizable", "bool"}},
+            {"--window-exit-process-on-close", {"/modes/window/exitProcessOnClose", "bool"}},
             {"--window-icon", {"/modes/window/icon", "string"}}
         }; 
         if(cliMappings.find(arg.key) != cliMappings.end()) {
