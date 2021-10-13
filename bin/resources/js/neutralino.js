@@ -600,7 +600,7 @@ var Neutralino = (function (exports) {
             data: options
         });
     }
-    function create(url, options) {
+    function create(url, options = {}) {
         return new Promise((resolve, reject) => {
             function normalize(arg) {
                 if (typeof arg != "string")
