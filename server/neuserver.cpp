@@ -26,8 +26,9 @@ std::string NeuServer::init() {
     json options = settings::getConfig();
     string mode = settings::getMode();
 
-    if(!options["port"].is_null())
-        this->port = options["port"];
+    json jPort = settings::getOptionForCurrentMode("port");
+    if(!jPort.is_null())
+        this->port = jPort.get<int>();
         
     if(mode == "cloud")
         this->hostName = "0.0.0.0";
@@ -38,15 +39,16 @@ std::string NeuServer::init() {
         this->usingRandomPort = true;
     }
 
-    string navigationUrl = "http://localhost:" + std::to_string(port);
-    if(!options["url"].is_null()) {
-        string url = options["url"];
+    string navigationUrl = "http://localhost:" + std::to_string(this->port);
+    json jUrl = settings::getOptionForCurrentMode("url");
+
+    if(!jUrl.is_null()) {
+        string url = jUrl.get<string>();
         if (regex_match(url, regex("^/.*")))
             navigationUrl += url;
         else
             navigationUrl = url;
     }
-
     return navigationUrl;
 }
 

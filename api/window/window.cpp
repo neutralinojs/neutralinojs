@@ -349,25 +349,25 @@ namespace controllers {
         }
         
         if(!input["width"].is_null())
-            sizeOptions.width = input["width"];
+            sizeOptions.width = input["width"].get<int>();
 
         if(!input["height"].is_null())
-            sizeOptions.height = input["height"];
+            sizeOptions.height = input["height"].get<int>();
             
         if(!input["minWidth"].is_null())
-            sizeOptions.minWidth = input["minWidth"];
+            sizeOptions.minWidth = input["minWidth"].get<int>();
 
         if(!input["minHeight"].is_null())
-            sizeOptions.minHeight = input["minHeight"];
+            sizeOptions.minHeight = input["minHeight"].get<int>();
             
         if(!input["maxWidth"].is_null())
-            sizeOptions.maxWidth = input["maxWidth"];
+            sizeOptions.maxWidth = input["maxWidth"].get<int>();
 
         if(!input["maxHeight"].is_null())
-            sizeOptions.maxHeight = input["maxHeight"];
+            sizeOptions.maxHeight = input["maxHeight"].get<int>();
 
         if(!input["resizable"].is_null())
-            sizeOptions.resizable = input["resizable"];
+            sizeOptions.resizable = input["resizable"].get<bool>();
         return sizeOptions;
     }
 
@@ -375,7 +375,7 @@ namespace controllers {
         json output;
         string title = "";
         if(!input["title"].is_null()) 
-            title = input["title"];
+            title = input["title"].get<string>();
         nativeWindow->set_title(title);
         output["success"] = true;
         return output;
@@ -480,7 +480,7 @@ namespace controllers {
     
     json setIcon(json input) {
         json output;
-        string icon = input["icon"];
+        string icon = input["icon"].get<string>();
         window::setIcon(icon);
         output["success"] = true;
         return output;
@@ -488,8 +488,8 @@ namespace controllers {
     
     json move(json input) {
         json output; 
-        int x = input["x"];
-        int y = input["y"];
+        int x = input["x"].get<int>();
+        int y = input["y"].get<int>();
         #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_move(GTK_WINDOW(windowHandle), x, y);
         #elif defined(__APPLE__)
@@ -525,34 +525,34 @@ namespace controllers {
         windowProps.sizeOptions = __jsonToSizeOptions(input, true);
         
         if(!input["fullScreen"].is_null())
-            windowProps.fullScreen = input["fullScreen"];
+            windowProps.fullScreen = input["fullScreen"].get<bool>();
 
         if(!input["alwaysOnTop"].is_null())
-            windowProps.alwaysOnTop = input["alwaysOnTop"];
+            windowProps.alwaysOnTop = input["alwaysOnTop"].get<bool>();
 
         if(!input["title"].is_null())
-            windowProps.title = input["title"];
+            windowProps.title = input["title"].get<string>();
 
         if(!input["url"].is_null())
-            windowProps.url = input["url"];
+            windowProps.url = input["url"].get<string>();
 
         if(!input["icon"].is_null())
-            windowProps.icon = input["icon"];
+            windowProps.icon = input["icon"].get<string>();
 
         if(!input["enableInspector"].is_null())
-            windowProps.enableInspector = input["enableInspector"];
+            windowProps.enableInspector = input["enableInspector"].get<bool>();
 
         if(!input["borderless"].is_null())
-            windowProps.borderless = input["borderless"];
+            windowProps.borderless = input["borderless"].get<bool>();
 
         if(!input["maximize"].is_null())
-            windowProps.maximize = input["maximize"];
+            windowProps.maximize = input["maximize"].get<bool>();
 
         if(!input["hidden"].is_null())
-            windowProps.hidden = input["hidden"];
+            windowProps.hidden = input["hidden"].get<bool>();
             
         if(!input["exitProcessOnClose"].is_null())
-            windowProps.exitProcessOnClose = input["exitProcessOnClose"];
+            windowProps.exitProcessOnClose = input["exitProcessOnClose"].get<bool>();
 
         __createWindow();
         output["success"] = true;

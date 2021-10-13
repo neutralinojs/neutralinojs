@@ -26,8 +26,15 @@
             "resizable": true,
             "exitProcessOnClose": false
         },
-        "browser": {},
-        "cloud": {}
+        "browser": {
+            "globalVariables": {
+                "TEST": "Test value browser"
+            },
+            "nativeBlockList": ["filesystem.*"]
+        },
+        "cloud": {
+            "url": "/resources/#cloud"
+        }
     },
     "cli": {
         "binaryName": "neutralino",

@@ -21,8 +21,8 @@ namespace debug {
 namespace controllers {
     json log(json input) {
         json output;
-        string type = input["type"];
-        string message = input["message"];
+        string type = input["type"].get<string>();
+        string message = input["message"].get<string>();
 
         debug::log(type, message);
         output["message"] = "Wrote to the log file: neutralino.log";

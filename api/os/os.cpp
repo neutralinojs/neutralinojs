@@ -78,9 +78,9 @@ namespace os {
         if(shouldRunInBackground)        
             command += " &";
         
-        std::array<char, 128> buffer;
-        std::string result = "";
-        std::shared_ptr<FILE> pipe(popen(command.c_str(), "r"), pclose);
+        array<char, 128> buffer;
+        string result = "";
+        shared_ptr<FILE> pipe(popen(command.c_str(), "r"), pclose);
         if (!pipe) {
             debug::log("ERROR", "Pipe open failed.");
         }
@@ -147,7 +147,7 @@ namespace os {
         for (;!shouldRunInBackground;) { // read stdout
             bSuccess2 = ReadFile(g_hChildStd_OUT_Rd, chBuf, EXEC_BUFSIZE, &dwRead, NULL);
             if(!bSuccess2 || dwRead == 0) break;
-            std::string s(chBuf, dwRead);
+            string s(chBuf, dwRead);
             output += s;
         }
 
@@ -180,7 +180,7 @@ namespace os {
                             msgboxOptions.content + "\" && echo $?";
         string response = os::execCommand(command);
         if(messageType == "QUESTION")
-            result.yesButtonClicked =  response.find("0") != std::string::npos;
+            result.yesButtonClicked =  response.find("0") != string::npos;
         
         #elif defined(__APPLE__) || defined(_WIN32)
             string title = msgboxOptions.title;
@@ -236,7 +236,7 @@ namespace os {
 namespace controllers {
     json execCommand(json input) {
         json output;
-        string command = input["command"];
+        string command = input["command"].get<string>();
         bool shouldRunInBackground = false;
         if(!input["shouldRunInBackground"].is_null())
             shouldRunInBackground = input["shouldRunInBackground"];
@@ -248,7 +248,7 @@ namespace controllers {
 
     json getEnv(json input) {
         json output;
-        string varKey = input["key"];
+        string varKey = input["key"].get<string>();
         char *varValue;
         varValue = getenv(varKey.c_str());
         if(varValue == nullptr) {
@@ -272,12 +272,12 @@ namespace controllers {
         string command = "zenity --file-selection";
 
         if(!input["title"].is_null())
-            command += " --title \"" + input["title"].get<std::string>() + "\"";
+            command += " --title \"" + input["title"].get<string>() + "\"";
         if(isDirectoryMode)
             command += " --directory";
 
         if(!isDirectoryMode && !input["filter"].is_null()) {
-            vector<string> filters = input["filter"];
+            vector<string> filters = input["filter"].get<vector<string>>();
             for(int i = 0; i < filters.size(); i++) {
                 command += " --file-filter=\"*." + filters[i] + "\"";
             }
@@ -297,11 +297,11 @@ namespace controllers {
         else
             command += "file";
         if(!input["title"].is_null())
-            command += " with prompt \"" + input["title"].get<std::string>() + "\"";
+            command += " with prompt \"" + input["title"].get<string>() + "\"";
 
         if(!isDirectoryMode && !input["filter"].is_null()) {
             string filterCommand = "of type {\"\"";
-            vector<string> filters = input["filter"];
+            vector<string> filters = input["filter"].get<vector<string>>();
             for(int i = 0; i < filters.size(); i++) {
                 filterCommand += ", \"" + filters[i] + "\"";
             }
@@ -317,7 +317,7 @@ namespace controllers {
             output["returnValue"] = nullptr;
         
         #elif defined(_WIN32)
-        string title = input["title"];
+        string title = input["title"].get<string>();
         if(isDirectoryMode) {
             TCHAR szDir[MAX_PATH];
             BROWSEINFO bInfo;
@@ -352,7 +352,7 @@ namespace controllers {
             ofn.nMaxFile = sizeof(szFile);
             ofn.nFilterIndex = 1;
             if(!input["filter"].is_null()) {
-                vector<string> filters = input["filter"];
+                vector<string> filters = input["filter"].get<vector<string>>();
                 for(int i = 0; i < filters.size(); i++) {
                    filterStr.append("." + filters[i] + " files");
                    filterStr.push_back('\0');
@@ -384,7 +384,7 @@ namespace controllers {
         #if defined(__linux__) || defined(__FreeBSD__)
         string command = "zenity --file-selection --save";
         if(!input["title"].is_null())
-            command += " --title \"" + input["title"].get<std::string>() + "\"";
+            command += " --title \"" + input["title"].get<string>() + "\"";
 
         string commandOutput = os::execCommand(command);
         if(!commandOutput.empty())
@@ -395,7 +395,7 @@ namespace controllers {
         #elif defined(__APPLE__)
         string command = "osascript -e 'POSIX path of (choose file name";
         if(!input["title"].is_null())
-            command += " with prompt \"" + input["title"].get<std::string>() + "\"";
+            command += " with prompt \"" + input["title"].get<string>() + "\"";
         command += ")'";
         string commandOutput = os::execCommand(command);
         if(!commandOutput.empty())
@@ -404,7 +404,7 @@ namespace controllers {
             output["returnValue"] = nullptr;
         
         #elif defined(_WIN32)
-        string title = input["title"];
+        string title = input["title"].get<string>();
         OPENFILENAME ofn;
         TCHAR szFile[260] = { 0 };
 
@@ -443,9 +443,9 @@ namespace controllers {
         
         #elif defined(__APPLE__)
         string command = "osascript -e 'display notification \"" + 
-        input["content"].get<std::string>() + "\"";
+        input["content"].get<string>() + "\"";
         if(!input["title"].is_null())
-            command += " with title \"" + input["title"].get<std::string>() + "\"";
+            command += " with title \"" + input["title"].get<string>() + "\"";
         command += "'";
         os::execCommand(command);
         output["success"] = true;
@@ -468,9 +468,9 @@ namespace controllers {
         json output;
         os::MessageBoxOptions msgBoxOptions;
         os::MessageBoxResult msgBoxResult;
-        msgBoxOptions.type = input["type"];
-        msgBoxOptions.title = input["title"];
-        msgBoxOptions.content = input["content"];
+        msgBoxOptions.type = input["type"].get<string>();
+        msgBoxOptions.title = input["title"].get<string>();
+        msgBoxOptions.content = input["content"].get<string>();
         msgBoxResult = os::showMessageBox(msgBoxOptions);
         if(msgBoxResult.hasError) {
             output["error"] = helpers::makeErrorPayload("NE_OS_INVMSGT", msgBoxResult.error);
@@ -488,10 +488,10 @@ namespace controllers {
         if(item->id == nullptr)
             return;
         string eventData = "{";
-        eventData += "id: '" + std::string(item->id) + "',";
-        eventData += "text: '" + std::string(item->text) + "',";
-        eventData += "isChecked: " + std::string(item->checked ? "true" : "false") + ",";
-        eventData += "isDisabled: " + std::string(item->disabled ? "true" : "false");
+        eventData += "id: '" + string(item->id) + "',";
+        eventData += "text: '" + string(item->text) + "',";
+        eventData += "isChecked: " + string(item->checked ? "true" : "false") + ",";
+        eventData += "isDisabled: " + string(item->disabled ? "true" : "false");
         eventData += "}";
     	events::dispatch("trayMenuItemClicked", eventData);
     }
@@ -514,11 +514,11 @@ namespace controllers {
         int i = 0;
         for (auto &menuItem: input["menuItems"]) {
             char *id = nullptr;
-            char *text = helpers::cStrCopy(menuItem["text"].get<std::string>());
+            char *text = helpers::cStrCopy(menuItem["text"].get<string>());
             int disabled = 0;
             int checked = 0;
             if(!menuItem["id"].is_null())
-                id = helpers::cStrCopy(menuItem["id"].get<std::string>());
+                id = helpers::cStrCopy(menuItem["id"].get<string>());
             if(!menuItem["isDisabled"].is_null() && menuItem["isDisabled"].get<bool>())
                 disabled = 1;
             if(!menuItem["isChecked"].is_null() && menuItem["isChecked"].get<bool>())
@@ -530,7 +530,7 @@ namespace controllers {
         tray.menu = menus;
 
         if(!input["icon"].is_null()) {
-            string iconPath = input["icon"];
+            string iconPath = input["icon"].get<string>();
             #if defined(__linux__)
             string fullIconPath;
             if(loadResFromDir) {
@@ -585,7 +585,7 @@ namespace controllers {
     
     json open(json input) {
         json output;
-        string url = input["url"];
+        string url = input["url"].get<string>();
         os::open(url);
         output["success"] = true;
         return output;
@@ -593,7 +593,7 @@ namespace controllers {
     
     json getPath(json input) {
         json output;
-        string name = input["name"];
+        string name = input["name"].get<string>();
         string path = os::getPath(name);
         if(!path.empty()) {
             output["returnValue"] = path;

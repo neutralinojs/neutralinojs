@@ -31,7 +31,7 @@ namespace resources {
             json = json["files"][pathSegment];
         }
         if(!json.is_null())
-            return make_pair<int, string>(json["size"].get<int>(), json["offset"].get<std::string>());
+            return make_pair<int, string>(json["size"].get<int>(), json["offset"].get<string>());
         return make_pair<int, string>(-1, "");
     }
 
@@ -39,22 +39,22 @@ namespace resources {
         fs::FileReaderResult fileReaderResult;
         pair<int, string> p = seekFilePos(filename, fileTree, "");
         if(p.first != -1) {
-            std::ifstream asarArchive;
-            std::string resFileName = APP_RES_FILE;
+            ifstream asarArchive;
+            string resFileName = APP_RES_FILE;
             resFileName = settings::joinAppPath(resFileName);
-            asarArchive.open(resFileName, std::ios::binary);
+            asarArchive.open(resFileName, ios::binary);
             if (!asarArchive) {
                 debug::log("ERROR", "Resource file tree generation error: " + resFileName + " is missing.");
                 fileReaderResult.hasError = true;
                 return fileReaderResult;
             }
             unsigned int uSize = p.first;
-            unsigned int uOffset = std::stoi(p.second);
+            unsigned int uOffset = stoi(p.second);
 
-            std::vector<char>fileBuf ( uSize );
+            vector<char>fileBuf ( uSize );
             asarArchive.seekg(asarHeaderSize + uOffset);
             asarArchive.read(fileBuf.data(), uSize);
-            std::string fileContent(fileBuf.begin(), fileBuf.end());
+            string fileContent(fileBuf.begin(), fileBuf.end());
             fileReaderResult.data = fileContent;
        }
        else {
@@ -64,10 +64,10 @@ namespace resources {
     }
 
     bool makeFileTree() {
-        std::ifstream asarArchive;
-        std::string resFileName = APP_RES_FILE;
+        ifstream asarArchive;
+        string resFileName = APP_RES_FILE;
         resFileName = settings::joinAppPath(resFileName);
-        asarArchive.open(resFileName, std::ios::binary);
+        asarArchive.open(resFileName, ios::binary);
         if (!asarArchive) {
             debug::log("ERROR", "Resource file tree generation error: " + resFileName + " is missing.");
             return false;
@@ -80,11 +80,11 @@ namespace resources {
         delete[] sizeBuf;
 
         asarHeaderSize = uSize + 16;
-        std::vector<char> headerBuf(uSize);
+        vector<char> headerBuf(uSize);
         asarArchive.seekg(16);
         asarArchive.read(headerBuf.data(), uSize);
         json files;
-        std::string headerContent(headerBuf.begin(), headerBuf.end());
+        string headerContent(headerBuf.begin(), headerBuf.end());
         try {
             files = json::parse(headerContent);
         }
