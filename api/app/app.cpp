@@ -23,13 +23,14 @@ using json = nlohmann::json;
 namespace app {
     void exit(int code) {
         json options = settings::getConfig();
-        if(!options["enableHTTPServer"].is_null() && options["enableHTTPServer"].get<bool>()) {
+        json jEnableHTTPServer = settings::getOptionForCurrentMode("enableHTTPServer");
+        if(!jEnableHTTPServer.is_null() && jEnableHTTPServer.get<bool>()) {
             NeuServer::getInstance()->stop();
         }
         if(settings::getMode() == "window")
             window::_close(code);
         else 
-            std::exit(code);
+            exit(code);
     }
     
     unsigned int getProcessId() {
@@ -44,7 +45,7 @@ namespace controllers {
     json exit(json input) {
         int code = 0;
         if(!input["code"].is_null())
-            code = input["code"];
+            code = input["code"].get<int>();
         app::exit(code);
         return nullptr;
     }

@@ -28,7 +28,7 @@ namespace controllers {
     
     json getData(json input) {
         json output;
-        string key = input["key"];
+        string key = input["key"].get<string>();
         json errorPayload = __validateStorageBucket(key);
         if(!errorPayload.is_null()) 
             return errorPayload;
@@ -49,7 +49,7 @@ namespace controllers {
 
     json setData(json input) {
         json output;
-        string key = input["key"];
+        string key = input["key"].get<string>();
         json errorPayload = __validateStorageBucket(key);
         if(!errorPayload.is_null()) 
             return errorPayload;
@@ -63,7 +63,7 @@ namespace controllers {
         }
         else {
             fs::FileWriterOptions fileWriterOptions;
-            fileWriterOptions.data = input["data"];
+            fileWriterOptions.data = input["data"].get<string>();
             fileWriterOptions.filename = filename;
     
             if(!fs::writeFile(fileWriterOptions)) {

@@ -70,7 +70,9 @@ namespace settings {
             json patches;
             for(auto cfgOverride: configOverrides) {
                 json patch;
-                patch["op"] = "replace";
+
+                patch["op"] = options[json::json_pointer(cfgOverride.key)].is_null() 
+                                    ? "add" : "replace";
                 patch["path"] = cfgOverride.key;
                 
                 // String to actual types
@@ -86,31 +88,33 @@ namespace settings {
                 
                 patches.push_back(patch);
             }
+
             if(!patches.is_null()) {
                 options = options.patch(patches);
             }
         }
         catch(exception e){
-            debug::log("ERROR", "Unable to load: " + std::string(APP_CONFIG_FILE));
+            debug::log("ERROR", "Unable to load: " + string(APP_CONFIG_FILE));
         }
         return options;
     }
 
     string getGlobalVars(){
-        string jsSnippet = "var NL_OS='" + std::string(OS_NAME) + "';";
-        jsSnippet += "var NL_VERSION='" + std::string(NL_VERSION) + "';";
-        jsSnippet += "var NL_APPID='" + options["applicationId"].get<std::string>() + "';";
-        jsSnippet += "var NL_PORT=" + std::to_string(options["port"].get<int>()) + ";";
-        jsSnippet += "var NL_MODE='" + options["defaultMode"].get<std::string>() + "';";
+        string jsSnippet = "var NL_OS='" + string(OS_NAME) + "';";
+        jsSnippet += "var NL_VERSION='" + string(NL_VERSION) + "';";
+        jsSnippet += "var NL_APPID='" + options["applicationId"].get<string>() + "';";
+        jsSnippet += "var NL_PORT=" + to_string(settings::getOptionForCurrentMode("port").get<int>()) + ";";
+        jsSnippet += "var NL_MODE='" + options["defaultMode"].get<string>() + "';";
         jsSnippet += "var NL_TOKEN='" + authbasic::getToken() + "';";
         jsSnippet += "var NL_CWD='" + fs::getCurrentDirectory() + "';";
         jsSnippet += "var NL_ARGS=" + globalArgs.dump() + ";";
         jsSnippet += "var NL_PATH='" + appPath + "';";
-        jsSnippet += "var NL_PID=" + std::to_string(app::getProcessId()) + ";";
+        jsSnippet += "var NL_PID=" + to_string(app::getProcessId()) + ";";
 
-        if(!options["globalVariables"].is_null()) {
-            for ( auto it: options["globalVariables"].items()) {
-                jsSnippet += "var NL_" + it.key() +  "='" + it.value().get<std::string>() + "';";
+        json jGlobalVariables = settings::getOptionForCurrentMode("globalVariables");
+        if(!jGlobalVariables.is_null()) {
+            for ( auto it: jGlobalVariables.items()) {
+                jsSnippet += "var NL_" + it.key() +  "='" + it.value().get<string>() + "';";
             }
         }
         return jsSnippet;
@@ -147,7 +151,7 @@ namespace settings {
     }
 
     string getMode() {
-        return options["defaultMode"].get<std::string>();
+        return options["defaultMode"].get<string>();
     }
 
     void setPort(int port) {
@@ -191,7 +195,13 @@ namespace settings {
             {"--window-maximizable", {"/modes/window/maximizable", "bool"}},
             {"--window-exit-process-on-close", {"/modes/window/exitProcessOnClose", "bool"}},
             {"--window-icon", {"/modes/window/icon", "string"}}
-        }; 
+        };
+        
+        map<string, vector<string>> cliMappingAliases = {
+            {"/port", {"/modes/window/port", "/modes/browser/port", "/modes/cloud/port"}},
+            {"/url", {"/modes/window/url", "/modes/browser/url", "/modes/cloud/url"}},
+        };
+        
         if(cliMappings.find(arg.key) != cliMappings.end()) {
             if(arg.key == "--mode") {
                 if(arg.value != "browser" && arg.value != "window" && arg.value != "cloud") {
@@ -203,12 +213,33 @@ namespace settings {
             cfgOverride.key = cliMappings[arg.key][0];
             cfgOverride.convertTo = cliMappings[arg.key][1];
             cfgOverride.value = arg.value;
+
             // Make cases like --window-full-screen -> window-full-screen=true
             if(cfgOverride.convertTo == "bool" && cfgOverride.value.empty()) {
                 cfgOverride.value = "true";
             }
+            
+            // Add original
             configOverrides.push_back(cfgOverride);
+            
+            // Add aliases
+            for(string alias: cliMappingAliases[cfgOverride.key]) {
+                settings::ConfigOverride cfgOverrideAlias = cfgOverride;
+                cfgOverrideAlias.key = alias;
+
+                configOverrides.push_back(cfgOverrideAlias);
+            }
         }
+    }
+    
+    // Priority: mode -> root -> null
+    json getOptionForCurrentMode(string key) {
+        string mode = settings::getMode();
+        json value = options["modes"][mode][key];
+        if(value.is_null()) {
+            value = options[key]; 
+        }
+        return value;
     }
 
 }

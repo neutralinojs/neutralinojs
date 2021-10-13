@@ -34,11 +34,10 @@ namespace permission {
     }
 
     void __registerBlockList() {
-        json config = settings::getConfig();
-        if(config["nativeBlockList"].is_null())
+        json jNativeBlockList = settings::getOptionForCurrentMode("nativeBlockList");
+        if(jNativeBlockList.is_null())
             return;
-        json blockListOptions = config["nativeBlockList"];
-        vector<string> blockListVector = blockListOptions;
+        vector<string> blockListVector = jNativeBlockList.get<vector<string>>();
         
         for(int i = 0; i < blockListVector.size(); i++) {
             // Adding blocked modules
@@ -54,11 +53,10 @@ namespace permission {
     }
     
     void __registerAllowList() {
-        json config = settings::getConfig();
-        if(config["nativeAllowList"].is_null())
+        json jNativeAllowList = settings::getOptionForCurrentMode("nativeAllowList");
+        if(jNativeAllowList.is_null())
             return;
-        json allowListOptions = config["nativeAllowList"];
-        vector<string> allowListVector = allowListOptions;
+        vector<string> allowListVector = jNativeAllowList.get<vector<string>>();
         
         for(int i = 0; i < allowListVector.size(); i++) {
             // Adding allowed modules
@@ -111,8 +109,9 @@ namespace permission {
     bool hasAPIAccess(string nativeMethod) {
         if(__isPingMethod(nativeMethod))
             return true;
-        if(!settings::getConfig()["enableNativeAPI"].is_null())
-            return settings::getConfig()["enableNativeAPI"].get<bool>();
+        json jEnableNativeAPI = settings::getOptionForCurrentMode("enableNativeAPI");
+        if(!jEnableNativeAPI.is_null())
+            return jEnableNativeAPI.get<bool>();
         return false;
     }
     

@@ -7,12 +7,12 @@
 
 #include "lib/json.hpp"
 #include "lib/easylogging/easylogging++.h"
-#include "settings.h"
-#include "resources.h"
+#include "auth/permission.h"
 #include "auth/authbasic.h"
 #include "server/neuserver.h"
 #include "server/ping.h"
-#include "auth/permission.h"
+#include "settings.h"
+#include "resources.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
 #include "api/os/os.h"
@@ -65,12 +65,14 @@ int main(int argc, char ** argv)
     permission::init();
 
     NeuServer *server = NeuServer::getInstance();
-    string navigationUrl = options["url"];
-    if(!options["enableHTTPServer"].is_null())
-        enableHTTPServer = options["enableHTTPServer"];
+    string navigationUrl = settings::getOptionForCurrentMode("url").get<string>();
+    json jEnableHTTPServer = settings::getOptionForCurrentMode("enableHTTPServer");
+
+    if(!jEnableHTTPServer.is_null())
+        enableHTTPServer = jEnableHTTPServer.get<bool>();
     if(enableHTTPServer) {
         navigationUrl = server->init();
-        std::thread serverThread([&](){ server->run(); });
+        thread serverThread([&](){ server->run(); });
         serverThread.detach();
     }
 
@@ -96,7 +98,7 @@ int main(int argc, char ** argv)
     }
     else if(mode == "cloud") {
         if(enableHTTPServer)
-            debug::log("INFO", options["applicationId"].get<std::string>() +
+            debug::log("INFO", options["applicationId"].get<string>() +
                      " is available at " + navigationUrl);
         while(true);
     }

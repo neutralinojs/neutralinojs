@@ -29,5 +29,6 @@ namespace settings {
     void setPort(int port);
     settings::CliArg _parseArg(string arg);
     void applyConfigOverride(settings::CliArg arg);
+    json getOptionForCurrentMode(string key);
 }
 

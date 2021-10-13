@@ -49,8 +49,8 @@ namespace fs {
         #elif defined(_WIN32)
         LPSTR pathToReplace = const_cast<char *>(filename.c_str());
         PathRemoveFileSpecA(pathToReplace);
-        std::string directory(pathToReplace);
-        std::replace(directory.begin(), directory.end(), '\\', '/');
+        string directory(pathToReplace);
+        replace(directory.begin(), directory.end(), '\\', '/');
         return directory;
         #endif 
     }
@@ -61,8 +61,8 @@ namespace fs {
         #elif defined(_WIN32)
         TCHAR currentDir[MAX_PATH];
         GetCurrentDirectory(MAX_PATH, currentDir);   
-        std::string currentDirStr(currentDir);
-        std::replace(currentDirStr.begin(), currentDirStr.end(), '\\', '/');     
+        string currentDirStr(currentDir);
+        replace(currentDirStr.begin(), currentDirStr.end(), '\\', '/');     
         return currentDirStr;
         #endif
     }
@@ -144,7 +144,7 @@ namespace fs {
 namespace controllers {
     json createDirectory(json input) {
         json output;
-        string path = input["path"];
+        string path = input["path"].get<string>();
         if(fs::createDirectory(path)) {
             output["success"] = true;
             output["message"] = "Directory " + path + " was created";
@@ -158,7 +158,7 @@ namespace controllers {
 
     json removeDirectory(json input) {
         json output;
-        string path = input["path"];
+        string path = input["path"].get<string>();
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         if(rmdir(path.c_str()) == 0) {
         #elif defined(_WIN32)
@@ -177,7 +177,7 @@ namespace controllers {
     json readFile(json input) {
         json output;
         fs::FileReaderResult fileReaderResult;
-        fileReaderResult = fs::readFile(input["path"].get<std::string>());
+        fileReaderResult = fs::readFile(input["path"].get<string>());
         if(fileReaderResult.hasError) {
             output["error"] = helpers::makeErrorPayload("NE_FS_FILRDER", fileReaderResult.error);
         }
@@ -191,7 +191,7 @@ namespace controllers {
     json readBinaryFile(json input) {
         json output;
         fs::FileReaderResult fileReaderResult;
-        fileReaderResult = fs::readFile(input["path"].get<std::string>());
+        fileReaderResult = fs::readFile(input["path"].get<string>());
         if(fileReaderResult.hasError) {
             output["error"] = helpers::makeErrorPayload("NE_FS_FILRDER", fileReaderResult.error);
         }
@@ -205,8 +205,8 @@ namespace controllers {
     json writeFile(json input) {
         json output;
         fs::FileWriterOptions fileWriterOptions;
-        fileWriterOptions.filename = input["path"];
-        fileWriterOptions.data = input["data"];
+        fileWriterOptions.filename = input["path"].get<string>();
+        fileWriterOptions.data = input["data"].get<string>();
         if(fs::writeFile(fileWriterOptions))
             output["success"] = true;
         else
@@ -218,8 +218,8 @@ namespace controllers {
     json writeBinaryFile(json input) {
         json output;
         fs::FileWriterOptions fileWriterOptions;
-        fileWriterOptions.filename = input["path"];
-        fileWriterOptions.data = base64::from_base64(input["data"].get<std::string>());
+        fileWriterOptions.filename = input["path"].get<string>();
+        fileWriterOptions.data = base64::from_base64(input["data"].get<string>());
         if(fs::writeFile(fileWriterOptions))
             output["success"] = true;
         else
@@ -230,7 +230,7 @@ namespace controllers {
 
     json removeFile(json input) {
         json output;
-        string filename = input["path"];
+        string filename = input["path"].get<string>();
         if(fs::removeFile(filename)) {
             output["success"] = true;
             output["message"] = filename + " was deleted";
@@ -244,7 +244,7 @@ namespace controllers {
 
     json readDirectory(json input) {
         json output;
-        string path = input["path"];
+        string path = input["path"].get<string>();
         fs::FileStats fileStats = fs::getStats(path);
         if(fileStats.hasError) {
             output["error"] = helpers::makeErrorPayload("NE_FS_NOPATHE", fileStats.error);
@@ -298,8 +298,8 @@ namespace controllers {
    
     json copyFile(json input) {
         json output;
-        string source = input["source"];
-        string destination = input["destination"];
+        string source = input["source"].get<string>();
+        string destination = input["destination"].get<string>();
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         string command = "cp \"" + source + "\" \"" + destination + "\"";
         string commandOutput = os::execCommand(command, true);
@@ -320,8 +320,8 @@ namespace controllers {
     
     json moveFile(json input) {
         json output;
-        string source = input["source"];
-        string destination = input["destination"];
+        string source = input["source"].get<string>();
+        string destination = input["destination"].get<string>();
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         string command = "mv \"" + source + "\" \"" + destination + "\"";
         string commandOutput = os::execCommand(command, true);
@@ -342,7 +342,7 @@ namespace controllers {
     
     json getStats(json input) {
         json output;
-        string path = input["path"];
+        string path = input["path"].get<string>();
         fs::FileStats fileStats = fs::getStats(path);
         if(!fileStats.hasError) {
             output["success"] = true;
