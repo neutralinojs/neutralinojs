@@ -93,6 +93,7 @@ namespace router {
             {"os.execCommand", os::controllers::execCommand},
             {"os.getEnv", os::controllers::getEnv},
             {"os.showOpenDialog", os::controllers::showOpenDialog},
+            {"os.showFolderDialog", os::controllers::showFolderDialog},
             {"os.showSaveDialog", os::controllers::showSaveDialog},
             {"os.showNotification", os::controllers::showNotification},
             {"os.showMessageBox", os::controllers::showMessageBox},

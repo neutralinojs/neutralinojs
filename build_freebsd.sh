@@ -12,7 +12,6 @@ c++ resources.cpp \
     settings.cpp \
     auth/authbasic.cpp \
     auth/permission.cpp \
-    lib/boxer/boxer_freebsd.cpp \
     lib/easylogging/easylogging++.cc \
     api/filesystem/filesystem.cpp \
     api/os/os.cpp \

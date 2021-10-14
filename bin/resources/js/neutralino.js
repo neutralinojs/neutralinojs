@@ -231,13 +231,22 @@ var Neutralino = (function (exports) {
         getStats: getStats
     });
 
-    var MessageBoxType;
-    (function (MessageBoxType) {
-        MessageBoxType["WARN"] = "WARN";
-        MessageBoxType["ERROR"] = "ERROR";
-        MessageBoxType["INFO"] = "INFO";
-        MessageBoxType["QUESTION"] = "QUESTION";
-    })(MessageBoxType || (MessageBoxType = {}));
+    var Icon;
+    (function (Icon) {
+        Icon["WARNING"] = "WARNING";
+        Icon["ERROR"] = "ERROR";
+        Icon["INFO"] = "INFO";
+        Icon["QUESTION"] = "QUESTION";
+    })(Icon || (Icon = {}));
+    var MessageBoxChoice;
+    (function (MessageBoxChoice) {
+        MessageBoxChoice["OK"] = "OK";
+        MessageBoxChoice["OK_CANCEL"] = "OK_CANCEL";
+        MessageBoxChoice["YES_NO"] = "YES_NO";
+        MessageBoxChoice["YES_NO_CANCEL"] = "YES_NO_CANCEL";
+        MessageBoxChoice["RETRY_CANCEL"] = "RETRY_CANCEL";
+        MessageBoxChoice["ABORT_RETRY_IGNORE"] = "ABORT_RETRY_IGNORE";
+    })(MessageBoxChoice || (MessageBoxChoice = {}));
     function execCommand(command, options) {
         return request({
             url: 'os.execCommand',
@@ -264,9 +273,9 @@ var Neutralino = (function (exports) {
             isNativeMethod: true
         });
     }
-    function showSaveDialog(title) {
+    function showFolderDialog(title) {
         return request({
-            url: 'os.showSaveDialog',
+            url: 'os.showFolderDialog',
             type: RequestType.POST,
             data: {
                 title
@@ -274,25 +283,35 @@ var Neutralino = (function (exports) {
             isNativeMethod: true
         });
     }
-    function showNotification(title, content) {
+    function showSaveDialog(title, options) {
+        return request({
+            url: 'os.showSaveDialog',
+            type: RequestType.POST,
+            data: Object.assign({ title }, options),
+            isNativeMethod: true
+        });
+    }
+    function showNotification(title, content, icon) {
         return request({
             url: 'os.showNotification',
             type: RequestType.POST,
             data: {
                 title,
-                content
+                content,
+                icon
             },
             isNativeMethod: true
         });
     }
-    function showMessageBox(title, content, type) {
+    function showMessageBox(title, content, choice, icon) {
         return request({
             url: 'os.showMessageBox',
             type: RequestType.POST,
             data: {
                 title,
                 content,
-                type
+                choice,
+                icon
             },
             isNativeMethod: true
         });
@@ -328,10 +347,12 @@ var Neutralino = (function (exports) {
 
     var os = /*#__PURE__*/Object.freeze({
         __proto__: null,
-        get MessageBoxType () { return MessageBoxType; },
+        get Icon () { return Icon; },
+        get MessageBoxChoice () { return MessageBoxChoice; },
         execCommand: execCommand,
         getEnv: getEnv,
         showOpenDialog: showOpenDialog,
+        showFolderDialog: showFolderDialog,
         showSaveDialog: showSaveDialog,
         showNotification: showNotification,
         showMessageBox: showMessageBox,
@@ -600,7 +621,7 @@ var Neutralino = (function (exports) {
             data: options
         });
     }
-    function create(url, options = {}) {
+    function create(url, options) {
         return new Promise((resolve, reject) => {
             function normalize(arg) {
                 if (typeof arg != "string")
@@ -625,7 +646,7 @@ var Neutralino = (function (exports) {
                 let cliKey = key.replace(/[A-Z]|^[a-z]/g, (token) => ("-" + token.toLowerCase()));
                 command += ` --window${cliKey}=${normalize(options[key])}`;
             }
-            if (options.processArgs)
+            if (options && options.processArgs)
                 command += " " + options.processArgs;
             Neutralino.os.execCommand(command, { shouldRunInBackground: true })
                 .then(() => {

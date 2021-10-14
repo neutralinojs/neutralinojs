@@ -7,6 +7,7 @@
 
 #include "lib/json.hpp"
 #include "lib/easylogging/easylogging++.h"
+#include "lib/portable-file-dialogs.h"
 #include "auth/permission.h"
 #include "auth/authbasic.h"
 #include "server/neuserver.h"
@@ -52,11 +53,10 @@ int main(int argc, char ** argv)
 
     json options = settings::getConfig();
     if(options.is_null()) {
-        os::MessageBoxOptions msgBoxOptions;
-        msgBoxOptions.type = "ERROR";
-        msgBoxOptions.title = "Unable to load app configuration";
-        msgBoxOptions.content = "neutralino.config.json file is missing or corrupted.";
-        os::showMessageBox(msgBoxOptions);
+        pfd::message("Unable to load app configuration",
+                        "neutralino.config.json file is missing or corrupted.",
+                        pfd::choice::ok,
+                        pfd::icon::error);
         app::exit();
     }
 

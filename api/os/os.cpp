@@ -10,13 +10,13 @@
 #include <map>
 #include <cstring>
 
-#include <lib/platformfolders/platform_folders.h>
+#include "lib/platformfolders/platform_folders.h"
+#include "lib/portable-file-dialogs.h"
 
 #if defined(__linux__) || defined(__FreeBSD__)
 #define TRAY_APPINDICATOR 1
 
 #elif defined(__APPLE__)
-#include <lib/boxer/boxer.h>
 #define TRAY_APPKIT 1
 
 #elif defined(_WIN32)
@@ -24,7 +24,6 @@
 #include <windows.h>
 #include <shlobj.h>
 #include <shobjidl.h>
-#include <lib/boxer/boxer.h>
 #include <gdiplus.h>
 #include <shlwapi.h>
 #define TRAY_WINAPI 1
@@ -163,52 +162,6 @@ namespace os {
         #endif
     }
     
-    os::MessageBoxResult showMessageBox(os::MessageBoxOptions msgboxOptions) {
-        MessageBoxResult result;
-        #if defined(__linux__) || defined(__FreeBSD__)
-        map <string, string> messageTypes = {{"INFO", "info"}, {"WARN", "warning"},
-                                            {"ERROR", "error"}, {"QUESTION", "question"}};
-        string messageType;
-        messageType = msgboxOptions.type;
-        if(messageTypes.find(messageType) == messageTypes.end()) {
-            result.hasError = true;
-            result.error = "Invalid message type: '" + messageType + "' provided";
-            return result;
-        }
-        string command = "zenity --no-wrap --" + messageTypes[messageType] + " --title=\"" +
-                            msgboxOptions.title + "\" --text=\"" +
-                            msgboxOptions.content + "\" && echo $?";
-        string response = os::execCommand(command);
-        if(messageType == "QUESTION")
-            result.yesButtonClicked =  response.find("0") != string::npos;
-        
-        #elif defined(__APPLE__) || defined(_WIN32)
-            string title = msgboxOptions.title;
-            string content = msgboxOptions.content;
-            string type = msgboxOptions.type;
-
-            boxer::Selection msgSel;
-
-            if(type == "INFO")
-                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Info);
-            else if(type == "WARN")
-                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Warning);
-            else if(type == "ERROR")
-                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Error);
-            else if(type == "QUESTION") {
-                msgSel = boxer::show(content.c_str(), title.c_str(), boxer::Style::Question,
-                                    boxer::Buttons::YesNo);
-                result.yesButtonClicked =  msgSel == boxer::Selection::Yes;
-            }
-            else {
-                result.hasError = true;
-                result.error = "Invalid message type: '" + type + "' provided";
-            }
-        
-        #endif
-        return result;
-    }
-    
     string getPath(string name) {
         if(name == "config")
             return sago::getConfigHome();
@@ -234,6 +187,20 @@ namespace os {
     }
     
 namespace controllers {
+
+    vector<string> __extensionsToVector(json filters) {
+        vector <string> filtersV = {};
+        for (auto &filter: filters) {
+            filtersV.push_back(filter["name"]);
+            string extensions = "";
+            for (auto &extension: filter["extensions"]) {
+                extensions += "*." + extension.get<string>();
+            }
+            filtersV.push_back(extensions);
+        }
+        return filtersV;
+    }
+
     json execCommand(json input) {
         json output;
         string command = input["command"].get<string>();
@@ -264,221 +231,148 @@ namespace controllers {
 
     json showOpenDialog(json input) {
         json output;
-        bool isDirectoryMode = false;
-        if(!input["isDirectoryMode"].is_null() && input["isDirectoryMode"].get<bool>())
-            isDirectoryMode = true;
+        string title = "Open a file";
+        vector <string> filters = {"All files", "*"};
+        pfd::opt option = pfd::opt::none;
         
-        #if defined(__linux__) || defined(__FreeBSD__)
-        string command = "zenity --file-selection";
-
-        if(!input["title"].is_null())
-            command += " --title \"" + input["title"].get<string>() + "\"";
-        if(isDirectoryMode)
-            command += " --directory";
-
-        if(!isDirectoryMode && !input["filter"].is_null()) {
-            vector<string> filters = input["filter"].get<vector<string>>();
-            for(int i = 0; i < filters.size(); i++) {
-                command += " --file-filter=\"*." + filters[i] + "\"";
-            }
+        if(!input["title"].is_null()) {
+            title = input["title"].get<string>();
         }
-	    
-        string commandOutput = os::execCommand(command);
-        if(!commandOutput.empty())
-            output["returnValue"] = commandOutput;
-        else
-            output["returnValue"] = nullptr;
         
-        #elif defined(__APPLE__)
-        string command = "osascript -e 'POSIX path of (choose ";
-
-        if(isDirectoryMode)
-            command += "folder";
-        else
-            command += "file";
-        if(!input["title"].is_null())
-            command += " with prompt \"" + input["title"].get<string>() + "\"";
-
-        if(!isDirectoryMode && !input["filter"].is_null()) {
-            string filterCommand = "of type {\"\"";
-            vector<string> filters = input["filter"].get<vector<string>>();
-            for(int i = 0; i < filters.size(); i++) {
-                filterCommand += ", \"" + filters[i] + "\"";
-            }
-            filterCommand += "}";
-            command += " " + filterCommand;
-	    }
-        command += ")'";
-
-        string commandOutput = os::execCommand(command);
-        if(!commandOutput.empty())
-            output["returnValue"] = commandOutput;
-        else
-            output["returnValue"] = nullptr;
-        
-        #elif defined(_WIN32)
-        string title = input["title"].get<string>();
-        if(isDirectoryMode) {
-            TCHAR szDir[MAX_PATH];
-            BROWSEINFO bInfo;
-            ZeroMemory(&bInfo, sizeof(bInfo));
-            bInfo.hwndOwner = GetForegroundWindow();
-            bInfo.pidlRoot = nullptr;
-            bInfo.pszDisplayName = szDir;
-            bInfo.lpszTitle = const_cast<char *>(title.c_str());
-            bInfo.ulFlags = 0 ;
-            bInfo.lpfn = nullptr;
-            bInfo.lParam = 0;
-            bInfo.iImage = -1;
-
-            LPITEMIDLIST lpItem = SHBrowseForFolder(&bInfo);
-            if( lpItem != nullptr ) {
-                SHGetPathFromIDList(lpItem, szDir );
-                output["returnValue"] = szDir;
-            }
-            else {
-                output["returnValue"] = nullptr;
-            }
+        if(!input["multiSelections"].is_null() && input["multiSelections"].get<bool>()) {
+            option = pfd::opt::multiselect;
         }
-        else {
-            string filterStr = "";
-            OPENFILENAME ofn;
-            TCHAR szFile[MAX_PATH] = { 0 };
-            ZeroMemory(&ofn, sizeof(ofn));
-            ofn.hwndOwner = GetForegroundWindow();
-            ofn.lpstrTitle = const_cast<char *>(title.c_str());
-            ofn.lStructSize = sizeof(ofn);
-            ofn.lpstrFile = szFile;
-            ofn.nMaxFile = sizeof(szFile);
-            ofn.nFilterIndex = 1;
-            if(!input["filter"].is_null()) {
-                vector<string> filters = input["filter"].get<vector<string>>();
-                for(int i = 0; i < filters.size(); i++) {
-                   filterStr.append("." + filters[i] + " files");
-                   filterStr.push_back('\0');
-                   filterStr.append("*." + filters[i]);
-                   filterStr.push_back('\0');
-                }
-                ofn.lpstrFilter = filterStr.c_str();
-            }
-            ofn.lpstrFileTitle = nullptr;
-            ofn.nMaxFileTitle = 0;
-            ofn.lpstrInitialDir = nullptr;
-            ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-            if (GetOpenFileName(&ofn)) {
-                output["returnValue"] = ofn.lpstrFile;
-            }
-            else {
-                output["returnValue"] = nullptr;
-            }
-        }
-        #endif
         
+        if(!input["filters"].is_null()) {
+            filters.clear();
+            filters = __extensionsToVector(input["filters"]);
+        }
+        
+        vector<string> selectedEntries = pfd::open_file(title, "", filters, option).result();
+
+        output["returnValue"] = selectedEntries;
+        output["success"] = true;
+        return output;
+    }
+    
+    json showFolderDialog(json input) {
+        json output;
+        string title = "Select a folder";
+        
+        if(!input["title"].is_null()) {
+            title = input["title"].get<string>();
+        }
+        
+        string selectedEntry = pfd::select_folder(title, "", pfd::opt::none).result();
+
+        output["returnValue"] = selectedEntry;
         output["success"] = true;
         return output;
     }
 
     json showSaveDialog(json input) {
         json output;
-        #if defined(__linux__) || defined(__FreeBSD__)
-        string command = "zenity --file-selection --save";
-        if(!input["title"].is_null())
-            command += " --title \"" + input["title"].get<string>() + "\"";
-
-        string commandOutput = os::execCommand(command);
-        if(!commandOutput.empty())
-            output["returnValue"] = commandOutput;
-        else
-            output["returnValue"] = nullptr;
+        string title = "Save a file";
+        vector <string> filters = {"All files", "*"};
+        pfd::opt option = pfd::opt::none;
         
-        #elif defined(__APPLE__)
-        string command = "osascript -e 'POSIX path of (choose file name";
-        if(!input["title"].is_null())
-            command += " with prompt \"" + input["title"].get<string>() + "\"";
-        command += ")'";
-        string commandOutput = os::execCommand(command);
-        if(!commandOutput.empty())
-            output["returnValue"] = commandOutput;
-        else
-            output["returnValue"] = nullptr;
+        if(!input["title"].is_null()) {
+            title = input["title"].get<string>();
+        }
         
-        #elif defined(_WIN32)
-        string title = input["title"].get<string>();
-        OPENFILENAME ofn;
-        TCHAR szFile[260] = { 0 };
-
-        ZeroMemory(&ofn, sizeof(ofn));
-        ofn.hwndOwner = GetForegroundWindow();
-        ofn.lpstrTitle = const_cast<char *>(title.c_str());
-        ofn.lStructSize = sizeof(ofn);
-        ofn.lpstrFile = szFile;
-        ofn.nMaxFile = sizeof(szFile);
-        ofn.nFilterIndex = 1;
-        ofn.lpstrFileTitle = nullptr;
-        ofn.nMaxFileTitle = 0;
-        ofn.lpstrInitialDir = nullptr;
-        ofn.Flags = OFN_PATHMUSTEXIST;
-
-        if (GetSaveFileName(&ofn)) {
-            output["returnValue"] = ofn.lpstrFile;
+        if(!input["forceOverwrite"].is_null() && input["forceOverwrite"].get<bool>()) {
+            option = pfd::opt::force_overwrite;
         }
-        else {
-            output["returnValue"] = nullptr;
+        
+        if(!input["filters"].is_null()) {
+            filters.clear();
+            filters = __extensionsToVector(input["filters"]);
         }
-        #endif
+        
+        string selectedEntry = pfd::save_file(title, "", filters, option).result();
+
+        output["returnValue"] = selectedEntry;
         output["success"] = true;
         return output;
     }
 
     json showNotification(json input) {
         json output;
-        #if defined(__linux__) || defined(__FreeBSD__)
-        string command = "notify-send \"" + input["title"].get<string>() + "\" \"" +
-                            input["content"].get<string>() + "\"";
-
-        os::execCommand(command);
-        output["success"] = true;
-        output["message"] = "Notification was sent to the system";
+        string title = input["title"].get<string>();
+        string content = input["content"].get<string>();
+        string icon = "INFO";
         
-        #elif defined(__APPLE__)
-        string command = "osascript -e 'display notification \"" + 
-        input["content"].get<string>() + "\"";
-        if(!input["title"].is_null())
-            command += " with title \"" + input["title"].get<string>() + "\"";
-        command += "'";
-        os::execCommand(command);
-        output["success"] = true;
+        if(!input["icon"].is_null()) {
+            icon = input["icon"].get<string>();
+        }
         
-        #elif defined(_WIN32)
-        string command = "powershell -Command \"& {Add-Type -AssemblyName System.Windows.Forms;"
-                        "Add-Type -AssemblyName System.Drawing;"
-                        "$notify = New-Object System.Windows.Forms.NotifyIcon;"
-                        "$notify.Icon = [System.Drawing.SystemIcons]::Information;"
-                        "$notify.Visible = $true;"
-                        "$notify.ShowBalloonTip(0 ,'"+ input["summary"].get<string>() + "','" + input["body"].get<string>() + "',[System.Windows.Forms.TooltipIcon]::None)}\"";
-
-        os::execCommand(command);
+        map<string, pfd::icon> iconMap = {
+            {"INFO", pfd::icon::info},
+            {"WARNING", pfd::icon::warning},
+            {"ERROR", pfd::icon::error},
+            {"QUESTION", pfd::icon::question}
+        };
+        
+        if(iconMap.find(icon) != iconMap.end()) {
+            pfd::notify(title, content, iconMap[icon]);
+        }
+        else {
+            output["error"] = helpers::makeErrorPayload("NE_OS_INVNOTA", 
+                                    "Invalid notification style arguments: " + icon);
+        }
         output["success"] = true;
-        #endif
         return output;
     }
 
     json showMessageBox(json input) {
         json output;
-        os::MessageBoxOptions msgBoxOptions;
-        os::MessageBoxResult msgBoxResult;
-        msgBoxOptions.type = input["type"].get<string>();
-        msgBoxOptions.title = input["title"].get<string>();
-        msgBoxOptions.content = input["content"].get<string>();
-        msgBoxResult = os::showMessageBox(msgBoxOptions);
-        if(msgBoxResult.hasError) {
-            output["error"] = helpers::makeErrorPayload("NE_OS_INVMSGT", msgBoxResult.error);
+        string icon = "INFO";
+        string choice = "OK";
+        string title = input["title"].get<string>();
+        string content = input["content"].get<string>();
+        
+        if(!input["icon"].is_null()) {
+            icon = input["icon"].get<string>();
+        }
+        
+        if(!input["choice"].is_null()) {
+            choice = input["choice"].get<string>();
+        }
+        
+        map<string, pfd::choice> choiceMap = {
+            {"OK", pfd::choice::ok},
+            {"OK_CANCEL", pfd::choice::ok_cancel},
+            {"YES_NO", pfd::choice::yes_no},
+            {"YES_NO_CANCEL", pfd::choice::yes_no_cancel},
+            {"RETRY_CANCEL", pfd::choice::retry_cancel},
+            {"ABORT_RETRY_IGNORE", pfd::choice::abort_retry_ignore}
+        };
+        
+        map<string, pfd::icon> iconMap = {
+            {"INFO", pfd::icon::info},
+            {"WARNING", pfd::icon::warning},
+            {"ERROR", pfd::icon::error},
+            {"QUESTION", pfd::icon::question}
+        };
+        
+        if(choiceMap.find(choice) != choiceMap.end() &&  iconMap.find(icon) != iconMap.end()) {
+            pfd::button button = pfd::message(title, content, choiceMap[choice], iconMap[icon]).result();
+            string selectedBtn = "IGNORE";
+            switch(button) {
+                case pfd::button::cancel: selectedBtn = "CANCEL"; break;
+                case pfd::button::ok: selectedBtn = "OK"; break;
+                case pfd::button::yes: selectedBtn = "YES"; break;
+                case pfd::button::no: selectedBtn = "NO"; break;
+                case pfd::button::abort: selectedBtn = "ABORT"; break;
+                case pfd::button::retry: selectedBtn = "RETRY"; break;
+                case pfd::button::ignore: selectedBtn = "IGNORE"; break;
+            }
+            output["returnValue"] = selectedBtn;
+            output["success"] = true;
         }
         else {
-            if(msgBoxOptions.type == "QUESTION")
-                output["yesButtonClicked"] = msgBoxResult.yesButtonClicked;
-            output["success"] = true;
+            output["error"] = helpers::makeErrorPayload("NE_OS_INVMSGA", 
+                                    "Invalid message box style arguments: " + choice + " or/and " + icon);
         }
         return output;
     }

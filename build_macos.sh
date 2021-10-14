@@ -32,7 +32,6 @@ c++ $FLAGS resources.cpp \
     settings.cpp \
     auth/authbasic.cpp \
     auth/permission.cpp \
-    lib/boxer/boxer_osx.mm \
     lib/easylogging/easylogging++.cc \
     lib/platformfolders/platform_folders.cpp \
     api/filesystem/filesystem.cpp \
