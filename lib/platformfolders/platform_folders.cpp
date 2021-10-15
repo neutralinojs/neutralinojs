@@ -26,7 +26,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "lib/platformfolders/platform_folders.h"
+#include "platform_folders.h"
 #include <iostream>
 #include <stdexcept>
 #include <cstdio>
