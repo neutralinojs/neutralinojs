@@ -22,6 +22,13 @@ jobs:
   build-osx:
     runs-on: macos-latest
     steps:
+    - name: Install boost
+      uses: MarkusJx/install-boost@v2.0.0
+      id: install-boost
+      with:
+        boost_version: 1.76.0
+        # platform_version: 10.15
+        boost_install_dir: /opt/homebrew/Cellar/boost
     - uses: actions/checkout@v1
     - name: build
       run: bash build_macos.sh
