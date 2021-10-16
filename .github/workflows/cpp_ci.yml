@@ -22,15 +22,10 @@ jobs:
   build-osx:
     runs-on: macos-latest
     steps:
-    - name: Init boost setup
-      run: sudo mkdir -p /opt/homebrew/Cellar
+    - name: Install brew
+      run: sudo /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     - name: Install boost
-      uses: MarkusJx/install-boost@v2.0.0
-      id: install-boost
-      with:
-        boost_version: 1.76.0
-        # platform_version: 10.15
-        boost_install_dir: /opt/homebrew/Cellar
+      run: brew install boost@1.76
     - uses: actions/checkout@v1
     - name: build
       run: bash build_macos.sh
