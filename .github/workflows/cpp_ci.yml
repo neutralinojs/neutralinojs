@@ -23,7 +23,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Init boost setup
-      run: mkdir -p /opt/homebrew/Cellar
+      run: sudo mkdir -p /opt/homebrew/Cellar
     - name: Install boost
       uses: MarkusJx/install-boost@v2.0.0
       id: install-boost
