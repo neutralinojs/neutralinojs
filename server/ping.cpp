@@ -3,7 +3,6 @@
 #include <thread>
 #include <vector>
 
-#include "settings.h"
 #include "api/app/app.h"
 
 using namespace std;
@@ -22,7 +21,7 @@ namespace ping {
         pingThread.detach();
     }
 
-    void receivePing() {
+    void pingReceived() {
         isActive = true;
     }
 
@@ -33,12 +32,10 @@ namespace ping {
         isActive = false;
     }
 
-    void startPingReceiver() {
-        if(settings::getMode() == "browser") {
-            __setInterval([]() {
-                pingTick();
-            });
-        }
+    void start() {
+        __setInterval([]() {
+            pingTick();
+        });
     }
 
 }

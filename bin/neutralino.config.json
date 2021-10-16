@@ -3,7 +3,7 @@
     "defaultMode": "window",
     "port": 0,
     "url": "/resources/",
-    "enableHTTPServer": true,
+    "enableServer": true,
     "enableNativeAPI": true,
     "nativeBlockList": [],
     "globalVariables": {

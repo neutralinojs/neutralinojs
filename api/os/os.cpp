@@ -381,12 +381,11 @@ namespace controllers {
         (void)item;
         if(item->id == nullptr)
             return;
-        string eventData = "{";
-        eventData += "id: '" + string(item->id) + "',";
-        eventData += "text: '" + string(item->text) + "',";
-        eventData += "isChecked: " + string(item->checked ? "true" : "false") + ",";
-        eventData += "isDisabled: " + string(item->disabled ? "true" : "false");
-        eventData += "}";
+        json eventData;
+        eventData["id"] = string(item->id);
+        eventData["text"] = string(item->text);
+        eventData["isChecked"] = item->checked == 1;
+        eventData["isDisabled"] = item->disabled == 1;
     	events::dispatch("trayMenuItemClicked", eventData);
     }
     

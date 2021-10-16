@@ -1,16 +1,6 @@
 var Neutralino = (function (exports) {
     'use strict';
 
-    function __awaiter(thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
-    }
-
     function on(event, handler) {
         return new Promise((resolve, reject) => {
             window.addEventListener(event, handler);
@@ -38,80 +28,64 @@ var Neutralino = (function (exports) {
         dispatch: dispatch
     });
 
-    var RequestType;
-    (function (RequestType) {
-        RequestType["GET"] = "GET";
-        RequestType["POST"] = "POST";
-    })(RequestType || (RequestType = {}));
-    function request(options) {
+    let nativeCalls = {};
+    let ws;
+    function init$1() {
+        ws = new WebSocket(`ws://${window.location.hostname}:${window.NL_PORT}`);
+        ws.addEventListener('message', (event) => {
+            const message = JSON.parse(event.data);
+            if (message.id && message.id in nativeCalls) {
+                // Native call response
+                if (message.data.error) {
+                    nativeCalls[message.id].reject(message.data.error);
+                }
+                else if (message.data.success) {
+                    nativeCalls[message.id]
+                        .resolve(message.data.returnValue ? message.data.returnValue
+                        : message.data);
+                }
+                delete nativeCalls[message.id];
+            }
+            else if (message.event) {
+                // Event from process
+                dispatch(message.event, message.data);
+            }
+        });
+    }
+    function sendMessage(method, data) {
         return new Promise((resolve, reject) => {
-            if (options.isNativeMethod)
-                options.url = 'http://localhost:' + window.NL_PORT + '/__nativeMethod_' + options.url;
-            if (options.data)
-                options.data = JSON.stringify(options.data);
-            let headers = new Headers();
-            headers.append('Content-Type', 'application/json');
-            headers.append('Authorization', 'Basic ' + window.NL_TOKEN);
-            fetch(options.url, {
-                method: options.type,
-                headers,
-                body: options.data
-            })
-                .then((resp) => __awaiter(this, void 0, void 0, function* () {
-                let respData = yield resp.text();
-                let respObj = null;
-                if (respData) {
-                    respObj = JSON.parse(respData);
-                }
-                if (respObj && respObj.success) {
-                    resolve(respObj.hasOwnProperty('returnValue')
-                        ? respObj.returnValue
-                        : respObj);
-                }
-                if (respObj && respObj.error)
-                    reject(respObj.error);
-            }))
-                .catch((e) => {
+            if (ws.readyState != WebSocket.OPEN) {
                 let error = {
                     code: 'NE_CL_NSEROFF',
                     message: 'Neutralino server is offline. Try restarting the application'
                 };
                 dispatch('serverOffline', error);
-                reject(error);
-            });
+                return reject(error);
+            }
+            const id = uuidv4();
+            const accessToken = window.NL_TOKEN;
+            nativeCalls[id] = { resolve, reject };
+            ws.send(JSON.stringify({
+                id,
+                method,
+                data,
+                accessToken
+            }));
         });
+    }
+    // From: https://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid
+    function uuidv4() {
+        return "10000000-1000-4000-8000-100000000000".replace(/[018]/g, (c) => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
     }
 
     function createDirectory(path) {
-        return request({
-            url: 'filesystem.createDirectory',
-            type: RequestType.POST,
-            data: {
-                path
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('filesystem.createDirectory', { path });
     }
     function removeDirectory(path) {
-        return request({
-            url: 'filesystem.removeDirectory',
-            type: RequestType.POST,
-            data: {
-                path
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('filesystem.removeDirectory', { path });
     }
     function writeFile(path, data) {
-        return request({
-            url: 'filesystem.writeFile',
-            type: RequestType.POST,
-            data: {
-                path,
-                data
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('filesystem.writeFile', { path, data });
     }
     function writeBinaryFile(path, data) {
         let bytes = new Uint8Array(data);
@@ -119,36 +93,17 @@ var Neutralino = (function (exports) {
         for (let byte of bytes) {
             asciiStr += String.fromCharCode(byte);
         }
-        return request({
-            url: 'filesystem.writeBinaryFile',
-            type: RequestType.POST,
-            data: {
-                path,
-                data: window.btoa(asciiStr)
-            },
-            isNativeMethod: true
+        return sendMessage('filesystem.writeBinaryFile', {
+            path,
+            data: window.btoa(asciiStr)
         });
     }
     function readFile(path) {
-        return request({
-            url: 'filesystem.readFile',
-            type: RequestType.POST,
-            data: {
-                path
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('filesystem.readFile', { path });
     }
     function readBinaryFile(path) {
         return new Promise((resolve, reject) => {
-            request({
-                url: 'filesystem.readBinaryFile',
-                type: RequestType.POST,
-                data: {
-                    path
-                },
-                isNativeMethod: true
-            })
+            sendMessage('filesystem.readBinaryFile', { path })
                 .then((base64Data) => {
                 let binaryData = window.atob(base64Data);
                 let len = binaryData.length;
@@ -164,56 +119,19 @@ var Neutralino = (function (exports) {
         });
     }
     function removeFile(path) {
-        return request({
-            url: 'filesystem.removeFile',
-            type: RequestType.POST,
-            data: {
-                path
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('filesystem.removeFile', { path });
     }
     function readDirectory(path) {
-        return request({
-            url: 'filesystem.readDirectory',
-            type: RequestType.POST,
-            data: {
-                path
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('filesystem.readDirectory', { path });
     }
     function copyFile(source, destination) {
-        return request({
-            url: 'filesystem.copyFile',
-            type: RequestType.POST,
-            data: {
-                source,
-                destination
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('filesystem.copyFile', { source, destination });
     }
     function moveFile(source, destination) {
-        return request({
-            url: 'filesystem.moveFile',
-            type: RequestType.POST,
-            data: {
-                source,
-                destination
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('filesystem.moveFile', { source, destination });
     }
     function getStats(path) {
-        return request({
-            url: 'filesystem.getStats',
-            type: RequestType.POST,
-            data: {
-                path
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('filesystem.getStats', { path });
     }
 
     var filesystem = /*#__PURE__*/Object.freeze({
@@ -248,101 +166,34 @@ var Neutralino = (function (exports) {
         MessageBoxChoice["ABORT_RETRY_IGNORE"] = "ABORT_RETRY_IGNORE";
     })(MessageBoxChoice || (MessageBoxChoice = {}));
     function execCommand(command, options) {
-        return request({
-            url: 'os.execCommand',
-            type: RequestType.POST,
-            data: Object.assign({ command }, options),
-            isNativeMethod: true
-        });
+        return sendMessage('os.execCommand', Object.assign({ command }, options));
     }
     function getEnv(key) {
-        return request({
-            url: 'os.getEnv',
-            type: RequestType.POST,
-            data: {
-                key
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('os.getEnv', { key });
     }
     function showOpenDialog(title, options) {
-        return request({
-            url: 'os.showOpenDialog',
-            type: RequestType.POST,
-            data: Object.assign({ title }, options),
-            isNativeMethod: true
-        });
+        return sendMessage('os.showOpenDialog', Object.assign({ title }, options));
     }
     function showFolderDialog(title) {
-        return request({
-            url: 'os.showFolderDialog',
-            type: RequestType.POST,
-            data: {
-                title
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('os.showFolderDialog', { title });
     }
     function showSaveDialog(title, options) {
-        return request({
-            url: 'os.showSaveDialog',
-            type: RequestType.POST,
-            data: Object.assign({ title }, options),
-            isNativeMethod: true
-        });
+        return sendMessage('os.showSaveDialog', Object.assign({ title }, options));
     }
     function showNotification(title, content, icon) {
-        return request({
-            url: 'os.showNotification',
-            type: RequestType.POST,
-            data: {
-                title,
-                content,
-                icon
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('os.showNotification', { title, content, icon });
     }
     function showMessageBox(title, content, choice, icon) {
-        return request({
-            url: 'os.showMessageBox',
-            type: RequestType.POST,
-            data: {
-                title,
-                content,
-                choice,
-                icon
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('os.showMessageBox', { title, content, choice, icon });
     }
     function setTray(options) {
-        return request({
-            url: 'os.setTray',
-            type: RequestType.POST,
-            data: options,
-            isNativeMethod: true
-        });
+        return sendMessage('os.setTray', options);
     }
     function open(url) {
-        return request({
-            url: 'os.open',
-            type: RequestType.POST,
-            data: {
-                url
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('os.open', { url });
     }
     function getPath(name) {
-        return request({
-            url: 'os.getPath',
-            type: RequestType.POST,
-            data: {
-                name
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('os.getPath', { name });
     }
 
     var os = /*#__PURE__*/Object.freeze({
@@ -362,11 +213,7 @@ var Neutralino = (function (exports) {
     });
 
     function getMemoryInfo() {
-        return request({
-            url: 'computer.getMemoryInfo',
-            type: RequestType.GET,
-            isNativeMethod: true
-        });
+        return sendMessage('computer.getMemoryInfo');
     }
 
     var computer = /*#__PURE__*/Object.freeze({
@@ -375,25 +222,10 @@ var Neutralino = (function (exports) {
     });
 
     function setData(key, data) {
-        return request({
-            url: 'storage.setData',
-            type: RequestType.POST,
-            data: {
-                key,
-                data
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('storage.setData', { key, data });
     }
     function getData(key) {
-        return request({
-            url: 'storage.getData',
-            type: RequestType.POST,
-            data: {
-                key
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('storage.getData', { key });
     }
 
     var storage = /*#__PURE__*/Object.freeze({
@@ -409,15 +241,7 @@ var Neutralino = (function (exports) {
         LoggerType["INFO"] = "INFO";
     })(LoggerType || (LoggerType = {}));
     function log(message, type) {
-        return request({
-            url: 'debug.log',
-            type: RequestType.POST,
-            data: {
-                message,
-                type
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('debug.log', { message, type });
     }
 
     var debug = /*#__PURE__*/Object.freeze({
@@ -426,22 +250,21 @@ var Neutralino = (function (exports) {
         log: log
     });
 
-    function exit(code) {
-        return request({
-            url: 'app.exit',
-            type: RequestType.POST,
-            data: {
-                code
-            },
-            isNativeMethod: true
+    function __awaiter(thisArg, _arguments, P, generator) {
+        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+        return new (P || (P = Promise))(function (resolve, reject) {
+            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+            step((generator = generator.apply(thisArg, _arguments || [])).next());
         });
     }
+
+    function exit(code) {
+        return sendMessage('app.exit', { code });
+    }
     function killProcess() {
-        return request({
-            url: 'app.killProcess',
-            type: RequestType.GET,
-            isNativeMethod: true
-        });
+        return sendMessage('app.killProcess');
     }
     function restartProcess(options) {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
@@ -458,18 +281,10 @@ var Neutralino = (function (exports) {
         }));
     }
     function keepAlive() {
-        return request({
-            url: 'app.keepAlive',
-            type: RequestType.GET,
-            isNativeMethod: true
-        });
+        return sendMessage('app.keepAlive');
     }
     function getConfig() {
-        return request({
-            url: 'app.getConfig',
-            type: RequestType.GET,
-            isNativeMethod: true
-        });
+        return sendMessage('app.getConfig');
     }
 
     var app = /*#__PURE__*/Object.freeze({
@@ -482,111 +297,46 @@ var Neutralino = (function (exports) {
     });
 
     function setTitle(title) {
-        return request({
-            url: 'window.setTitle',
-            type: RequestType.POST,
-            data: {
-                title
-            },
-            isNativeMethod: true
-        });
+        return sendMessage('window.setTitle', { title });
     }
     function maximize() {
-        return request({
-            url: 'window.maximize',
-            type: RequestType.GET,
-            isNativeMethod: true
-        });
+        return sendMessage('window.maximize');
     }
     function unmaximize() {
-        return request({
-            url: 'window.unmaximize',
-            type: RequestType.GET,
-            isNativeMethod: true
-        });
+        return sendMessage('window.unmaximize');
     }
     function isMaximized() {
-        return request({
-            url: 'window.isMaximized',
-            type: RequestType.GET,
-            isNativeMethod: true
-        });
+        return sendMessage('window.isMaximized');
     }
     function minimize() {
-        return request({
-            url: 'window.minimize',
-            type: RequestType.GET,
-            isNativeMethod: true
-        });
+        return sendMessage('window.minimize');
     }
     function setFullScreen() {
-        return request({
-            url: 'window.setFullScreen',
-            type: RequestType.GET,
-            isNativeMethod: true
-        });
+        return sendMessage('window.setFullScreen');
     }
     function exitFullScreen() {
-        return request({
-            url: 'window.exitFullScreen',
-            type: RequestType.GET,
-            isNativeMethod: true
-        });
+        return sendMessage('window.exitFullScreen');
     }
     function isFullScreen() {
-        return request({
-            url: 'window.isFullScreen',
-            type: RequestType.GET,
-            isNativeMethod: true
-        });
+        return sendMessage('window.isFullScreen');
     }
     function show() {
-        return request({
-            url: 'window.show',
-            type: RequestType.GET,
-            isNativeMethod: true
-        });
+        return sendMessage('window.show');
     }
     function hide() {
-        return request({
-            url: 'window.hide',
-            type: RequestType.GET,
-            isNativeMethod: true
-        });
+        return sendMessage('window.hide');
     }
     function isVisible() {
-        return request({
-            url: 'window.isVisible',
-            type: RequestType.GET,
-            isNativeMethod: true
-        });
+        return sendMessage('window.isVisible');
     }
     function focus() {
-        return request({
-            url: 'window.focus',
-            type: RequestType.GET,
-            isNativeMethod: true
-        });
+        return sendMessage('window.focus');
     }
     function setIcon(icon) {
-        return request({
-            url: 'window.setIcon',
-            type: RequestType.POST,
-            isNativeMethod: true,
-            data: {
-                icon
-            }
-        });
+        return sendMessage('window.setIcon', { icon });
     }
     function move(x, y) {
-        return request({
-            url: 'window.move',
-            type: RequestType.POST,
-            isNativeMethod: true,
-            data: {
-                x, y
-            }
-        });
+        return sendMessage('window.move', { x, y });
     }
     function setDraggableRegion(domId) {
         return new Promise((resolve, reject) => {
@@ -614,12 +364,7 @@ var Neutralino = (function (exports) {
         });
     }
     function setSize(options) {
-        return request({
-            url: 'window.setSize',
-            type: RequestType.POST,
-            isNativeMethod: true,
-            data: options
-        });
+        return sendMessage('window.setSize', options);
     }
     function create(url, options) {
         return new Promise((resolve, reject) => {
@@ -679,48 +424,42 @@ var Neutralino = (function (exports) {
         create: create
     });
 
-    const PING_INTERVAL_MS = 5000;
-    let ping = {
-        start: () => {
-            setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
-                try {
-                    yield keepAlive();
-                }
-                catch (e) {
-                    console.error('Unable to keep Neutralino server online. The server is not reachable.');
-                }
-            }), PING_INTERVAL_MS);
-        }
-    };
+    function startAsync$1() {
+        setInterval(() => __awaiter(this, void 0, void 0, function* () {
+            try {
+                yield keepAlive();
+            }
+            catch (e) {
+                console.error('Unable to keep Neutralino server online. The server is not reachable.');
+            }
+        }), 5000);
+    }
 
-    let devClient = {
-        start: function () {
-            setInterval(() => __awaiter(this, void 0, void 0, function* () {
-                try {
-                    let response = yield request({
-                        url: 'http://localhost:5050',
-                        type: RequestType.GET
-                    });
-                    if (response.needsReload) {
-                        location.reload();
-                    }
+    function startAsync() {
+        setInterval(() => __awaiter(this, void 0, void 0, function* () {
+            try {
+                let fetchResponse = yield fetch('http://localhost:5050');
+                let response = JSON.parse(yield fetchResponse.text());
+                if (response.needsReload) {
+                    location.reload();
                 }
-                catch (e) {
-                    console.error('Unable to communicate with neu devServer');
-                }
-            }), 1000);
-        }
-    };
+            }
+            catch (e) {
+                console.error('Unable to communicate with neu devServer');
+            }
+        }), 1000);
+    }
 
     var version = "1.5.0";
 
     function init() {
+        init$1();
         if (window.NL_MODE && window.NL_MODE == 'browser')
-            ping.start();
+            startAsync$1();
         if (typeof window.NL_ARGS != 'undefined') {
             for (let i = 0; i < window.NL_ARGS.length; i++) {
                 if (window.NL_ARGS[i] == '--debug-mode') {
-                    devClient.start();
+                    startAsync();
                     break;
                 }
             }

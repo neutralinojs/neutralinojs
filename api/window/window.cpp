@@ -58,7 +58,7 @@ namespace handlers {
             app::exit();
         }
         else {
-            events::dispatch("windowClose", "null");
+            events::dispatch("windowClose", nullptr);
         }
     }
 } // namespace handlers

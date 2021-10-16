@@ -39,7 +39,9 @@ g++ resources.cpp \
     -o $NEU_BIN \
     -no-pie \
     -Os \
-     -I .
+    -I . \
+    -I lib \
+    -L lib
 
 if [ -e $NEU_BIN ]; then
     echo "OK: Neutralino binary is compiled into $NEU_BIN"

@@ -26,6 +26,74 @@ INITIALIZE_EASYLOGGINGPP
 using namespace std;
 using json = nlohmann::json;
 
+bool enableServer = false;
+string navigationUrl = "";
+
+void startApp() {
+    json options = settings::getConfig();
+    string mode = settings::getMode();
+    if(mode == "browser") {
+        ping::start();
+        os::open(navigationUrl);
+        while(true);
+    }
+    else if(mode == "window") {
+        json windowOptions = options["modes"]["window"];
+        windowOptions["url"] = navigationUrl;
+        window::controllers::init(windowOptions);
+    }
+    else if(mode == "cloud") {
+        if(enableServer)
+            debug::log("INFO", options["applicationId"].get<string>() +
+                     " is available at " + navigationUrl);
+        while(true);
+    }
+}
+
+void configureLogger() {
+    el::Configurations defaultConf;
+    defaultConf.setToDefault();
+    defaultConf.setGlobally(
+            el::ConfigurationType::Filename, settings::joinAppPath(APP_LOG_FILE));
+    defaultConf.setGlobally(
+            el::ConfigurationType::Format, APP_LOG_FORMAT);
+    defaultConf.setGlobally(
+            el::ConfigurationType::ToFile, "TRUE");
+    el::Loggers::reconfigureLogger("default", defaultConf);
+}
+
+void startServerAsync() {
+    navigationUrl = settings::getOptionForCurrentMode("url").get<string>();
+    json jEnableServer = settings::getOptionForCurrentMode("enableServer");
+
+    if(!jEnableServer.is_null() && jEnableServer.get<bool>()) {
+        enableServer = true;
+        navigationUrl = neuserver::init();
+        neuserver::startAsync();
+    }
+}
+
+void initFramework(json args) {
+    settings::setGlobalArgs(args);
+    json options = settings::getConfig();
+    if(options.is_null()) {
+        pfd::message("Unable to load app configuration",
+                        "neutralino.config.json file is missing or corrupted.",
+                        pfd::choice::ok,
+                        pfd::icon::error);
+        app::exit();
+    }
+    if (!loadResFromDir) {
+        bool resourceLoaderStatus = resources::makeFileTree();
+        if(!resourceLoaderStatus)
+            loadResFromDir = true;
+    }
+
+    authbasic::generateToken();
+    permission::init();
+}
+
+
 #if defined(_WIN32)
 #define ARG_C __argc
 #define ARG_V __argv 
@@ -38,70 +106,14 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 #define ARG_V argv 
 int main(int argc, char ** argv)
 #endif
-                                {
+                                 {
     json args;
     for (int i = 0; i < ARG_C; i++) {
         args.push_back(ARG_V[i]);
     }
-    bool enableHTTPServer = false;
-    settings::setGlobalArgs(args);
-    if (!loadResFromDir) {
-        bool resourceLoaderStatus = resources::makeFileTree();
-        if(!resourceLoaderStatus)
-            loadResFromDir = true;
-    }
-
-    json options = settings::getConfig();
-    if(options.is_null()) {
-        pfd::message("Unable to load app configuration",
-                        "neutralino.config.json file is missing or corrupted.",
-                        pfd::choice::ok,
-                        pfd::icon::error);
-        app::exit();
-    }
-
-    authbasic::generateToken();
-    ping::startPingReceiver();
-    permission::init();
-
-    NeuServer *server = NeuServer::getInstance();
-    string navigationUrl = settings::getOptionForCurrentMode("url").get<string>();
-    json jEnableHTTPServer = settings::getOptionForCurrentMode("enableHTTPServer");
-
-    if(!jEnableHTTPServer.is_null())
-        enableHTTPServer = jEnableHTTPServer.get<bool>();
-    if(enableHTTPServer) {
-        navigationUrl = server->init();
-        thread serverThread([&](){ server->run(); });
-        serverThread.detach();
-    }
-
-    el::Configurations defaultConf;
-    defaultConf.setToDefault();
-    defaultConf.setGlobally(
-            el::ConfigurationType::Filename, settings::joinAppPath(APP_LOG_FILE));
-    defaultConf.setGlobally(
-            el::ConfigurationType::Format, APP_LOG_FORMAT);
-    defaultConf.setGlobally(
-            el::ConfigurationType::ToFile, "TRUE");
-    el::Loggers::reconfigureLogger("default", defaultConf);
-
-    string mode = settings::getMode();
-    if(mode == "browser") {
-        os::open(navigationUrl);
-        while(true);
-    }
-    else if(mode == "window") {
-        json windowOptions = options["modes"]["window"];
-        windowOptions["url"] = navigationUrl;
-        window::controllers::init(windowOptions);
-    }
-    else if(mode == "cloud") {
-        if(enableHTTPServer)
-            debug::log("INFO", options["applicationId"].get<string>() +
-                     " is available at " + navigationUrl);
-        while(true);
-    }
-    delete server;
+    initFramework(args);
+    startServerAsync();
+    configureLogger();
+    startApp();
     return 0;
 }

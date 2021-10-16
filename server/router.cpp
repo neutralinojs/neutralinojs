@@ -4,6 +4,8 @@
 #include <regex>
 #include <vector>
 
+#include <websocketpp/server.hpp>
+
 #include "lib/json.hpp"
 #include "auth/authbasic.h"
 #include "auth/permission.h"
@@ -27,28 +29,26 @@ using json = nlohmann::json;
 typedef json (*NativeMethod)(json);
 
 namespace router {
-    router::Response executeNativeMethod(router::Request request) {
-        string nativeMethodId = regex_replace(request.path, std::regex("/__nativeMethod_"), "");
+    router::NativeMessage executeNativeMethod(router::NativeMessage request) {
+        string nativeMethodId = request.method;
+        router::NativeMessage response;
+        response.id = request.id;
+        response.method = request.method;
 
-        #if (__APPLE__)
-        __block string output = "";
-        __block json inputPayload;
-        #else
-        string output = "";
-        json inputPayload;
-        #endif
-
-        if(!authbasic::verifyToken(request.token)) {
-            return router::makeNativeFailResponse("NE_RT_INVTOKN",
-                            "Invalid or expired NL_TOKEN value from client");
+        if(!authbasic::verifyToken(request.accessToken)) {
+            response.data = helpers::makeErrorPayload("NE_RT_INVTOKN",
+                            "Invalid or expired NL_TOKEN value from client").dump();
+            return response;
         }
         if(!permission::hasMethodAccess(nativeMethodId)) {
-            return router::makeNativeFailResponse("NE_RT_NATPRME", 
-                            "Missing permission to execute the native method");
+            response.data = helpers::makeErrorPayload("NE_RT_NATPRME", 
+                            "Missing permission to execute the native method").dump();
+            return response;
         }
         if(!permission::hasAPIAccess(nativeMethodId)) {
-            return router::makeNativeFailResponse("NE_RT_APIPRME",
-                            "Missing permission to access Native API");
+            response.data = helpers::makeErrorPayload("NE_RT_APIPRME",
+                            "Missing permission to access Native API").dump();
+            return response;
         }
 
         map <string, NativeMethod> methodMap = {
@@ -107,8 +107,6 @@ namespace router {
 
         if(methodMap.find(nativeMethodId) != methodMap.end()) {
             try {
-                if(request.data != "")
-                    inputPayload = json::parse(request.data);
                 NativeMethod nativeMethod = methodMap[nativeMethodId];
                 #if defined(__linux__) || defined(_WIN32) || defined(__FreeBSD__)
                 json apiOutput;
@@ -120,26 +118,28 @@ namespace router {
                     regex_match(nativeMethodId, regex("^window.*")) || 
                     nativeMethodId == "os.setTray") {
                     dispatch_sync(dispatch_get_main_queue(), ^{
-                        apiOutput = (*nativeMethod)(inputPayload);
+                        apiOutput = (*nativeMethod)(request.data);
                     });
                 }
                 else {
-                    apiOutput = (*nativeMethod)(inputPayload);
+                    apiOutput = (*nativeMethod)(request.data);
                 }
                 #else
-                    apiOutput = (*nativeMethod)(inputPayload);
+                    apiOutput = (*nativeMethod)(request.data);
                 #endif
-                output = apiOutput.dump();
-                return router::makeNativeResponse(output);
+                response.data = apiOutput;
+                return response;
             }
             catch(exception e){
-                return router::makeNativeFailResponse("NE_RT_NATRTER", 
+                response.data = helpers::makeErrorPayload("NE_RT_NATRTER", 
                         "Native method execution error occurred. Failed because of: " + std::string(e.what()));
+                return response;
             }
         }
         else {
-            return router::makeNativeFailResponse("NE_RT_NATNTIM",
+            response.data = helpers::makeErrorPayload("NE_RT_NATNTIM",
                         nativeMethodId + " is not implemented in the Neutralinojs server");
+            return response;
         }
     }
     
@@ -221,7 +221,8 @@ namespace router {
 
         fs::FileReaderResult fileReaderResult = settings::getFileContent(path);
         response.data = fileReaderResult.data;
-        response.status = fileReaderResult.hasError ? 404 : 200;
+        response.status = fileReaderResult.hasError ? websocketpp::http::status_code::not_found
+                                    : websocketpp::http::status_code::ok;
         if(prependData != "")
             response.data = prependData + response.data;
         
@@ -232,24 +233,20 @@ namespace router {
         return response;
     }
 
-   router::Response handle(router::Request request) {
-        char *originalPath = (char *) request.path.c_str();
+   router::Response serve(string path) {
+        char *originalPath = (char *) path.c_str();
         char *decodedPath = new char[strlen(originalPath) + 1];
         helpers::urldecode(decodedPath, originalPath);
-        request.path = string(decodedPath);
+        path = string(decodedPath);
         delete []decodedPath;
 
-        bool isNativeMethod = regex_match(request.path, regex(".*/__nativeMethod_.*"));
-        bool isClientLibrary = regex_match(request.path, regex(".*neutralino.js$"));
+        bool isClientLibrary = regex_match(path, regex(".*neutralino.js$"));
 
-        if(isNativeMethod) {
-            return executeNativeMethod(request);
-        }
-        else if(isClientLibrary) {
-            return getAsset(request.path, settings::getGlobalVars());
+        if(isClientLibrary) {
+            return getAsset(path, settings::getGlobalVars());
         }
         else {
-            return getAsset(request.path);
+            return getAsset(path);
         }
     }
 

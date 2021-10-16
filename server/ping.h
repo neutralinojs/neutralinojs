@@ -1,5 +1,5 @@
 namespace ping {
-    void receivePing();
-    void startPingReceiver();
+    void pingReceived();
+    void start();
     void pingTick();
 }
