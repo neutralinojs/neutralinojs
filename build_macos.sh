@@ -43,6 +43,9 @@ c++ $FLAGS resources.cpp \
     api/window/window.cpp \
     api/events/events.cpp \
     -I . \
+    -I /opt/homebrew/Cellar/boost/1.76.0/include \
+    -I lib \
+    -L lib \
     -std=c++17 \
     -pthread \
     -framework WebKit \
