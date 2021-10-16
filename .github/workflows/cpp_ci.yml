@@ -23,7 +23,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Install brew
-      run: sudo /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     - name: Install boost
       run: brew install boost@1.76
     - uses: actions/checkout@v1
