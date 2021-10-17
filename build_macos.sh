@@ -51,6 +51,7 @@ c++ $FLAGS resources.cpp \
     -framework WebKit \
     -framework Cocoa \
     -DELPP_NO_DEFAULT_LOG_FILE=1 \
+    -DBOOST_ALL_NO_LIB \
     -DWEBVIEW_COCOA=1 \
     -DOBJC_OLD_DISPATCH_PROTOTYPES=1 \
     -Os \
