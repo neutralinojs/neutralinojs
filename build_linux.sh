@@ -39,6 +39,7 @@ g++ resources.cpp \
     `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0 glib-2.0 appindicator3-0.1` \
     -o $NEU_BIN \
     -no-pie \
+    -lboost_system \
     -Os \
     -I . \
     -I lib \
