@@ -1,26 +1,23 @@
-#ifndef NEUSERVER_H
-#define NEUSERVER_H
+#ifndef NEU_SERVER_H
+#define NEU_SERVER_H
 
 #include <string>
 
-#include "lib/httplib.h"
+#include <websocketpp/config/asio_no_tls.hpp>
+#include <websocketpp/server.hpp>
+
+#include "lib/json/json.hpp"
 
 using namespace std;
+using json = nlohmann::json;
 
-class NeuServer {
-    httplib::Server *svr;
-    int port = 0;
-    bool usingRandomPort = false;
-    string hostName = "127.0.0.1";
-private:
-    NeuServer();
-
-public:
+namespace neuserver {
     string init();
-    void run();
+    void startAsync();
     void stop();
-    void handle(const httplib::Request &req, httplib::Response &res);
-    static NeuServer *getInstance();
-};
+    void handleMessage(websocketpp::connection_hdl handler, websocketpp::server<websocketpp::config::asio>::message_ptr msg);
+    void handleHTTP(websocketpp::connection_hdl handler);
+    void broadcast(json message);
+} // namespace neuserver
 
-#endif // NEUSERVER_H
+#endif // #define NEU_SERVER_H

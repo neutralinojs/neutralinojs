@@ -1,5 +1,4 @@
 #include <string>
-#include <vector>
 
 #include "helpers.h"
 
@@ -16,8 +15,7 @@ namespace authbasic {
         return token;
     }
 
-    bool verifyToken(string resToken) {
-        vector<string> tokenparts = helpers::split(resToken,  ' ');
-        return token == tokenparts[1];
+    bool verifyToken(string accessToken) {
+        return token == accessToken;
     }
-}
+} // namespace authbasic

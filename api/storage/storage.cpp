@@ -3,7 +3,7 @@
 #include <fstream>
 #include <regex>
 
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 #include "settings.h"
 #include "helpers.h"
 #include "api/filesystem/filesystem.h"

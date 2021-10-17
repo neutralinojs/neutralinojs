@@ -1,9 +1,9 @@
-#ifndef AP_H
-#define AP_H
+#ifndef NEU_APP_H
+#define NEU_APP_H
 
 #include <string>
 
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 
 using json = nlohmann::json;
 using namespace std;
@@ -20,4 +20,4 @@ namespace controllers {
 
 } // namespace controllers
 } // namespace app
-#endif
+#endif // define NEU_APP_H

@@ -10,7 +10,7 @@
 #include <windows.h>
 #endif
 
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 #include "settings.h"
 #include "server/ping.h"
 #include "server/neuserver.h"
@@ -22,10 +22,9 @@ using json = nlohmann::json;
 
 namespace app {
     void exit(int code) {
-        json options = settings::getConfig();
-        json jEnableHTTPServer = settings::getOptionForCurrentMode("enableHTTPServer");
-        if(!jEnableHTTPServer.is_null() && jEnableHTTPServer.get<bool>()) {
-            NeuServer::getInstance()->stop();
+        json jEnableServer = settings::getOptionForCurrentMode("enableServer");
+        if(!jEnableServer.is_null() && jEnableServer.get<bool>()) {
+            neuserver::stop();
         }
         if(settings::getMode() == "window")
             window::_close(code);
@@ -63,7 +62,7 @@ namespace controllers {
 
     json keepAlive(json input) {
         json output;
-        ping::receivePing();
+        ping::pingReceived();
         output["message"] = "Keep alive call was successful. Server will not be terminated automatically.";
         output["success"] = true;
         return output;

@@ -1,6 +1,9 @@
+#ifndef NEU_SETTINGS_H
+#define NEU_SETTINGS_H
+
 #include <string>
 
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 #include "api/filesystem/filesystem.h"
 
 using namespace std;
@@ -30,5 +33,7 @@ namespace settings {
     settings::CliArg _parseArg(string arg);
     void applyConfigOverride(settings::CliArg arg);
     json getOptionForCurrentMode(string key);
-}
+} // namesapce settings
+
+#endif // #define NEU_SETTINGS_H
 

@@ -1,24 +1,33 @@
+#ifndef NEU_ROUTER_H
+#define NEU_ROUTER_H
+
 #include <string>
 
+#include <websocketpp/server.hpp>
+
+#include "lib/json/json.hpp"
+
 using namespace std;
+using json = nlohmann::json;
 
 namespace router {
     
     struct Response {
-        int status = 200;
+        websocketpp::http::status_code::value status = websocketpp::http::status_code::ok;
         string contentType = "application/octet-stream";
         string data;
     };
     
-    struct Request {
-        string path;
-        string data;
-        string token;
+    struct NativeMessage {
+        string id;
+        string method;
+        string accessToken;
+        json data;
     };
 
-    router::Response handle(router::Request request);
-    router::Response executeNativeMethod(router::Request request);
-    router::Response makeNativeResponse(string data);
-    router::Response makeNativeFailResponse(string errorCode, string errorMessage);
+    router::Response serve(string path);
+    router::NativeMessage executeNativeMethod(router::NativeMessage request);
     router::Response getAsset(string path, string prependData = "");
-}
+} // namespace router
+
+#endif // #define NEU_ROUTER_H

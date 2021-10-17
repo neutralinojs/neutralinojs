@@ -5,7 +5,8 @@
 #include <vector>
 #include <regex>
 #include <algorithm>
-#include "lib/json.hpp"
+
+#include "lib/json/json.hpp"
 #include "settings.h"
 #include "helpers.h"
 

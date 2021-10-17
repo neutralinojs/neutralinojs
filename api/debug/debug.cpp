@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
-#include "lib/json.hpp"
+
+#include "lib/json/json.hpp"
 #include "lib/easylogging/easylogging++.h"
 
 using namespace std;
@@ -21,7 +22,11 @@ namespace debug {
 namespace controllers {
     json log(json input) {
         json output;
-        string type = input["type"].get<string>();
+        string type = "INFO";
+        if(!input["type"].is_null()) {
+            type = input["type"].get<string>();
+        }
+
         string message = input["message"].get<string>();
 
         debug::log(type, message);

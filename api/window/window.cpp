@@ -20,7 +20,7 @@
 #pragma comment(lib, "WebView2Loader.dll.lib")
 #endif
 
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 #include "lib/webview/webview.h"
 #include "settings.h"
 #include "api/app/app.h"
@@ -58,7 +58,7 @@ namespace handlers {
             app::exit();
         }
         else {
-            events::dispatch("windowClose", "null");
+            events::dispatch("windowClose", nullptr);
         }
     }
 } // namespace handlers

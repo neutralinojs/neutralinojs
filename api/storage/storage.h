@@ -1,7 +1,7 @@
-#ifndef STORAGE_H
-#define STORAGE_H
+#ifndef NEU_STORAGE_H
+#define NEU_STORAGE_H
 
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 
 using json = nlohmann::json;
 using namespace std;
@@ -13,4 +13,4 @@ namespace controllers {
 } // namespace controllers
 } // namespace storage
 
-#endif
+#endif // #define NEU_STORAGE_H

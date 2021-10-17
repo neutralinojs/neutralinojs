@@ -1,7 +1,7 @@
-#ifndef DEBUG_H
-#define DEBUG_H
+#ifndef NEU_DEBUG_H
+#define NEU_DEBUG_H
 
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 
 using json = nlohmann::json;
 using namespace std;
@@ -14,4 +14,4 @@ namespace controllers {
 } // namespace controllers
 } // namespace debug
 
-#endif
+#endif // #define NEU_DEBUG_H

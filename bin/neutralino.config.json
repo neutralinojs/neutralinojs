@@ -3,8 +3,12 @@
     "defaultMode": "window",
     "port": 0,
     "url": "/resources/",
-    "enableHTTPServer": true,
+    "enableServer": true,
     "enableNativeAPI": true,
+    "logging": {
+        "enabled": true,
+        "writeToLogFile": true
+    },
     "nativeBlockList": [],
     "globalVariables": {
         "TEST": "Test Value"
