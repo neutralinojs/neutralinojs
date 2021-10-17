@@ -32,7 +32,7 @@ This documentation is for contributors. If you would like to learn Neutralinojs 
  
 ## Why Neutralinojs? 
 
-In Electron and NWjs, you have to install NodeJs and hundreds of dependency libraries. Embedded Chromium and Node make simple apps bloaty. Neutralinojs offers a lightweight and portable SDK which is an alternative for Electron and NW.js. Neutralinojs doesn't bundle Chromium and uses the existing web browser library in the operating system (Eg: gtk-webkit2 on Linux). Neutralinojs implements a RESTful API for native operations and embeds a static web server to serve the web content. Also, it offers a built-in [JavaScript client library](https://github.com/neutralinojs/neutralino.js) for developers.
+In Electron and NWjs, you have to install NodeJs and hundreds of dependency libraries. Embedded Chromium and Node make simple apps bloaty. Neutralinojs offers a lightweight and portable SDK which is an alternative for Electron and NW.js. Neutralinojs doesn't bundle Chromium and uses the existing web browser library in the operating system (Eg: gtk-webkit2 on Linux). Neutralinojs implements a WebSocket connection for native operations and embeds a static web server to serve the web content. Also, it offers a built-in [JavaScript client library](https://github.com/neutralinojs/neutralino.js) for developers.
 
 Ask questions on StackOverflow using tag [neutralinojs](https://stackoverflow.com/questions/tagged/neutralinojs)
 
@@ -63,7 +63,8 @@ Install GTk and webkit libraries
 If you are using a newer version of Ubuntu, some libraries may be pre-installed.
 
 ```bash
-$ sudo apt-get install \ 
+sudo apt-get install \ 
+    libboost-all-dev \
     libgtk-3-dev \ 
     libwebkit2gtk-4.0-37 \ 
     libwebkit2gtk-4.0-dev \
@@ -73,7 +74,7 @@ $ sudo apt-get install \
 **Fedora**
 
 ```bash
-$ sudo dnf install \
+sudo dnf install \
     @development-tools \
     libappindicator-gtk3.x86_64 \
     gtk3 \
@@ -84,27 +85,35 @@ $ sudo dnf install \
 Compiling Neutralino server on Linux
 
 ```bash
-$ bash build_linux.sh # [ia32, x64, armhf, arm64]
+bash build_linux.sh # [ia32, x64, armhf, arm64]
 ```
 
 **Windows**
 
-Install the latest Visual Studio IDE. Neutralinojs compilation on Windows will use MSVC (aka `cl.exe`) C++ compiler. 
+Install the latest Visual Studio IDE. Neutralinojs compilation on Windows will use MSVC (aka `cl.exe`) C++ compiler. Install Boost libraries via Chocolatey.
+
+```bash
+choco install boost-msvc-14.1
+```
 
 Compiling Neutralino server on Windows
 
 ```bash
-$ ./build_windows.bat # [ia32, x64]
+./build_windows.bat # [ia32, x64]
 ```
 
 **macOS**
 
-Install Xcode Command Line Tools.
+Install Xcode Command Line Tools. Install Boost libraries via Homebrew.
+
+```bash
+brew install boost@1.76
+```
 
 Compiling Neutralino server on MacOS
 
 ```bash
-$ bash build_macos.sh # [ia32, x64, arm64]
+bash build_macos.sh # [ia32, x64, arm64]
 ```
 
 ## Sponsors and Donators
