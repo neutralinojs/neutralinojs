@@ -50,6 +50,8 @@ echo Compiling Neutralinojs %ARCH%...
 cl /std:c++17 ^
 /I . ^
 /I lib/webview/windows ^
+/I lib ^
+/I C:/local/boost_1_74_0 ^
 /EHsc ^
 /Os ^
 main.cpp ^
@@ -72,6 +74,7 @@ api/app/app.cpp ^
 api/window/window.cpp ^
 api/events/events.cpp ^
 /DELPP_NO_DEFAULT_LOG_FILE ^
+/DBOOST_ALL_NO_LIB ^
 /link lib/webview/windows/WebView2Loader.dll.lib /OUT:%NEU_BIN%
 
 if exist %NEU_BIN% (
