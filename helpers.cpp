@@ -4,7 +4,7 @@
 #include <time.h>
 #include <ctype.h>
 
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 
 using namespace std;
 using json = nlohmann::json;
@@ -84,4 +84,4 @@ namespace helpers {
         error["message"] = message;
         return error;
     }
-}
+} // namespace helpers

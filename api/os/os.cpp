@@ -11,7 +11,7 @@
 #include <cstring>
 
 #include "lib/platformfolders/platform_folders.h"
-#include "lib/portable-file-dialogs.h"
+#include "lib/filedialogs/portable-file-dialogs.h"
 
 #if defined(__linux__) || defined(__FreeBSD__)
 #define TRAY_APPINDICATOR 1
@@ -34,7 +34,7 @@
 #pragma comment (lib,"Gdiplus.lib")
 #endif
 
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 #include "lib/tray/tray.h"
 #include "helpers.h"
 #include "settings.h"

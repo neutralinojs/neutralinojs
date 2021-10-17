@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <regex>
 
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 #include "settings.h"
 #include "resources.h"
 #include "helpers.h"
@@ -177,6 +177,8 @@ namespace settings {
             {"--mode", {"/defaultMode", "string"}},
             {"--url", {"/url", "string"}},
             {"--port", {"/port", "int"}},
+            {"--logging-enabled", {"/logging/enabled", "bool"}},
+            {"--logging-write-to-log-file", {"/logging/writeToLogFile", "bool"}},
             // Window mode
             {"--window-title", {"/modes/window/title", "string"}},
             {"--window-width", {"/modes/window/width", "int"}},
@@ -200,6 +202,20 @@ namespace settings {
         map<string, vector<string>> cliMappingAliases = {
             {"/port", {"/modes/window/port", "/modes/browser/port", "/modes/cloud/port"}},
             {"/url", {"/modes/window/url", "/modes/browser/url", "/modes/cloud/url"}},
+            {"/logging/enabled", 
+                {
+                "/modes/window/logging/enabled",
+                "/modes/browser/logging/enabled",
+                "/modes/cloud/logging/enabled"
+                }
+            },
+            {"/logging/writeToLogFile", 
+                {
+                "/modes/window/logging/writeToLogFile", 
+                "/modes/browser/logging/writeToLogFile", 
+                "/modes/cloud/logging/writeToLogFile"
+                }
+            },
         };
         
         if(cliMappings.find(arg.key) != cliMappings.end()) {
@@ -242,4 +258,4 @@ namespace settings {
         return value;
     }
 
-}
+} // namespace settings

@@ -6,7 +6,7 @@
 #include <limits.h>
 
 #include "lib/easylogging/easylogging++.h"
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 #include "helpers.h"
 #include "settings.h"
 #include "api/debug/debug.h"
@@ -103,4 +103,4 @@ namespace resources {
         fs::writeFile(fileWriterOptions);
     }
 
-}
+} // namespace resources

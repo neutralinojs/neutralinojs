@@ -5,9 +5,9 @@
 #include <winsock2.h>
 #endif
 
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 #include "lib/easylogging/easylogging++.h"
-#include "lib/portable-file-dialogs.h"
+#include "lib/filedialogs/portable-file-dialogs.h"
 #include "auth/permission.h"
 #include "auth/authbasic.h"
 #include "server/neuserver.h"
@@ -29,7 +29,7 @@ using json = nlohmann::json;
 bool enableServer = false;
 string navigationUrl = "";
 
-void startApp() {
+void __startApp() {
     json options = settings::getConfig();
     string mode = settings::getMode();
     if(mode == "browser") {
@@ -50,7 +50,18 @@ void startApp() {
     }
 }
 
-void configureLogger() {
+void __configureLogger() {
+    bool enableLogging = true;
+    bool enableLogFile = true;
+
+    json logging = settings::getOptionForCurrentMode("logging");
+    if(!logging["enabled"].is_null()) {
+        enableLogging = logging["enabled"].get<bool>();
+    }
+    if(!logging["writeToLogFile"].is_null()) {
+        enableLogFile = logging["writeToLogFile"].get<bool>();
+    }
+
     el::Configurations defaultConf;
     defaultConf.setToDefault();
     defaultConf.setGlobally(
@@ -58,11 +69,13 @@ void configureLogger() {
     defaultConf.setGlobally(
             el::ConfigurationType::Format, APP_LOG_FORMAT);
     defaultConf.setGlobally(
-            el::ConfigurationType::ToFile, "TRUE");
+            el::ConfigurationType::ToFile, enableLogFile ? "TRUE" : "FALSE");
+    defaultConf.setGlobally(
+            el::ConfigurationType::Enabled, enableLogging ? "TRUE" : "FALSE");
     el::Loggers::reconfigureLogger("default", defaultConf);
 }
 
-void startServerAsync() {
+void __startServerAsync() {
     navigationUrl = settings::getOptionForCurrentMode("url").get<string>();
     json jEnableServer = settings::getOptionForCurrentMode("enableServer");
 
@@ -73,7 +86,7 @@ void startServerAsync() {
     }
 }
 
-void initFramework(json args) {
+void __initFramework(json args) {
     settings::setGlobalArgs(args);
     json options = settings::getConfig();
     if(options.is_null()) {
@@ -111,9 +124,9 @@ int main(int argc, char ** argv)
     for (int i = 0; i < ARG_C; i++) {
         args.push_back(ARG_V[i]);
     }
-    initFramework(args);
-    startServerAsync();
-    configureLogger();
-    startApp();
+    __initFramework(args);
+    __startServerAsync();
+    __configureLogger();
+    __startApp();
     return 0;
 }

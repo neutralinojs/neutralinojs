@@ -10,7 +10,7 @@
 #include <windows.h>
 #endif
 
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 #include "settings.h"
 #include "server/ping.h"
 #include "server/neuserver.h"

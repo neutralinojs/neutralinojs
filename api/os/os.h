@@ -1,9 +1,9 @@
-#ifndef OS_H
-#define OS_H
+#ifndef NEU_OS_H
+#define NEU_OS_H
 
 #include <string>
 
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 
 using json = nlohmann::json;
 using namespace std;
@@ -28,4 +28,4 @@ namespace controllers {
 } // namespace controllers
 } // namespace os
 
-#endif
+#endif // #define NEU_OS_H

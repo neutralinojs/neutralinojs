@@ -6,7 +6,7 @@
 
 #include <websocketpp/server.hpp>
 
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 #include "auth/authbasic.h"
 #include "auth/permission.h"
 #include "server/router.h"
@@ -131,30 +131,17 @@ namespace router {
                 return response;
             }
             catch(exception e){
-                response.data = helpers::makeErrorPayload("NE_RT_NATRTER", 
-                        "Native method execution error occurred. Failed because of: " + std::string(e.what()));
+                response.data["error"] = helpers::makeErrorPayload("NE_RT_NATRTER", 
+                        "Native method execution error occurred. Failed because of: " + std::string(e.what()) + 
+                        ". Make sure that you've provided required parameters properly.");
                 return response;
             }
         }
         else {
-            response.data = helpers::makeErrorPayload("NE_RT_NATNTIM",
+            response.data["error"] = helpers::makeErrorPayload("NE_RT_NATNTIM",
                         nativeMethodId + " is not implemented in the Neutralinojs server");
             return response;
         }
-    }
-    
-    router::Response makeNativeResponse(string data) {
-        router::Response response;
-        response.data = data;
-        response.contentType = "application/json";
-        return response;
-    }
-    
-    router::Response makeNativeFailResponse(string errorCode, string errorMessage) {
-        json error;
-        error["code"] = errorCode;
-        error["message"] = errorMessage;
-        return router::makeNativeResponse("{\"error\":" + error.dump() + "}");
     }
 
     router::Response getAsset(string path, string prependData) {
@@ -250,4 +237,4 @@ namespace router {
         }
     }
 
-}
+} // namespace router

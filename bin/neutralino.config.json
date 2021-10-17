@@ -5,6 +5,10 @@
     "url": "/resources/",
     "enableServer": true,
     "enableNativeAPI": true,
+    "logging": {
+        "enabled": true,
+        "writeToLogFile": true
+    },
     "nativeBlockList": [],
     "globalVariables": {
         "TEST": "Test Value"

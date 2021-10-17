@@ -18,4 +18,4 @@ namespace authbasic {
     bool verifyToken(string accessToken) {
         return token == accessToken;
     }
-}
+} // namespace authbasic

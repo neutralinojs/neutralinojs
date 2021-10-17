@@ -1,9 +1,11 @@
+#ifndef NEU_ROUTER_H
+#define NEU_ROUTER_H
+
 #include <string>
 
 #include <websocketpp/server.hpp>
 
-
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 
 using namespace std;
 using json = nlohmann::json;
@@ -25,7 +27,7 @@ namespace router {
 
     router::Response serve(string path);
     router::NativeMessage executeNativeMethod(router::NativeMessage request);
-    router::Response makeNativeResponse(string data);
-    router::Response makeNativeFailResponse(string errorCode, string errorMessage);
     router::Response getAsset(string path, string prependData = "");
-}
+} // namespace router
+
+#endif // #define NEU_ROUTER_H

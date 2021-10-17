@@ -9,11 +9,12 @@
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
 
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 #include "settings.h"
 #include "server/neuserver.h"
 #include "server/router.h"
 #include "api/debug/debug.h"
+#include "api/events/events.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -35,16 +36,18 @@ string init() {
     server = new websocketserver();
 
     server->set_message_handler([&](websocketpp::connection_hdl handler, websocketserver::message_ptr msg) {
-        neuserver::handle(handler, msg);
+        neuserver::handleMessage(handler, msg);
     });
     server->set_http_handler([&](websocketpp::connection_hdl handler) {
         neuserver::handleHTTP(handler);
     });
-    server->set_open_handler([&](websocketpp::connection_hdl handler) {
+    server->set_open_handler([&](websocketpp::connection_hdl handler) { 
         connections.insert(handler);
+        events::dispatch("clientConnect", connections.size());
     });
     server->set_close_handler([&](websocketpp::connection_hdl handler) {
         connections.erase(handler);
+        events::dispatch("clientDisconnect", connections.size());
     });
     
     server->set_access_channels(websocketpp::log::alevel::none);
@@ -57,7 +60,8 @@ string init() {
     if(settings::getMode() == "cloud") {
         hostAddress = "0.0.0.0";
     }
-    websocketpp::lib::asio::ip::tcp::endpoint endpoint(websocketpp::lib::asio::ip::address::from_string(hostAddress), port);
+    websocketpp::lib::asio::ip::tcp::endpoint 
+        endpoint(websocketpp::lib::asio::ip::address::from_string(hostAddress), port);
 
     server->listen(endpoint);
     server->start_accept();
@@ -92,7 +96,7 @@ void stop() {
     server->stop_listening();
 }
 
-void handle(websocketpp::connection_hdl handler, websocketserver::message_ptr msg) {
+void handleMessage(websocketpp::connection_hdl handler, websocketserver::message_ptr msg) {
     json nativeMessage;
     try {
         nativeMessage = json::parse(msg->get_payload());

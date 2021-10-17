@@ -1,9 +1,9 @@
-#ifndef WI_H
-#define WI_H
+#ifndef NEU_WINDOW_H
+#define NEU_WINDOW_H
 
 #include <string>
 
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 
 #if defined(__APPLE__)
 #include <objc/objc-runtime.h>
@@ -88,4 +88,4 @@ namespace controllers {
 } // namespace controllers
 } // namespace window
 
-#endif
+#endif // #define NEU_WINDOW_H

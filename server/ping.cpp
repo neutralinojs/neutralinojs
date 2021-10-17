@@ -38,4 +38,4 @@ namespace ping {
         });
     }
 
-}
+} // namespace ping

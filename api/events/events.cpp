@@ -1,8 +1,7 @@
 #include <string>
 
 #include "server/neuserver.h"
-
-#include "lib/json.hpp"
+#include "lib/json/json.hpp"
 
 using namespace std;
 using json = nlohmann::json;
