@@ -19,13 +19,13 @@ Get started with the neu CLI.
 
 ```bash
  # Creating a new app
- $ npm i -g @neutralinojs/neu
- $ neu create hello-world
- $ cd hello-world
- $ neu run
+ npm i -g @neutralinojs/neu
+ neu create hello-world
+ cd hello-world
+ neu run
  
- # Building your app
- $ neu build
+ # Building your app (No compilation - takes a second)
+ neu build
 ```
 
 This documentation is for contributors. If you would like to learn Neutralinojs application development, please check [this](https://neutralino.js.org/docs) documentation.
