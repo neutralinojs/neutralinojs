@@ -100,7 +100,7 @@ choco install boost-msvc-14.1
 Compiling Neutralino server on Windows
 
 ```bash
-./build_windows.bat # [ia32, x64]
+./build_windows.bat # [ia32, x64, armhf, arm64]
 ```
 
 **macOS**
@@ -114,7 +114,7 @@ brew install boost@1.76
 Compiling Neutralino server on macOS
 
 ```bash
-bash build_macos.sh # [ia32, x64, arm64]
+bash build_macos.sh # [ia32, x64, armhf, arm64]
 ```
 
 ## Sponsors and Donators
