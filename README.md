@@ -19,13 +19,13 @@ Get started with the neu CLI.
 
 ```bash
  # Creating a new app
- $ npm i -g @neutralinojs/neu
- $ neu create hello-world
- $ cd hello-world
- $ neu run
+ npm i -g @neutralinojs/neu
+ neu create hello-world
+ cd hello-world
+ neu run
  
- # Building your app
- $ neu build
+ # Building your app (No compilation - takes a second)
+ neu build
 ```
 
 This documentation is for contributors. If you would like to learn Neutralinojs application development, please check [this](https://neutralino.js.org/docs) documentation.
@@ -56,7 +56,7 @@ Ask questions on StackOverflow using tag [neutralinojs](https://stackoverflow.co
 
 No need for separate compilers because Linux distributions usually have GNU C/C++ compilers installed already.
 
-Install GTk and webkit libraries
+Install GTK, webkit, boost and other required libraries
 
 **Ubuntu**
 
@@ -79,7 +79,8 @@ sudo dnf install \
     libappindicator-gtk3.x86_64 \
     gtk3 \
     webkit2gtk3.x86_64 \
-    webkit2gtk3-devel.x86_64
+    webkit2gtk3-devel.x86_64 \ 
+    boost-devel
 ```
 
 Compiling Neutralino server on Linux
@@ -99,7 +100,7 @@ choco install boost-msvc-14.1
 Compiling Neutralino server on Windows
 
 ```bash
-./build_windows.bat # [ia32, x64]
+./build_windows.bat # [ia32, x64, armhf, arm64]
 ```
 
 **macOS**
@@ -110,15 +111,15 @@ Install Xcode Command Line Tools. Install Boost libraries via Homebrew.
 brew install boost@1.76
 ```
 
-Compiling Neutralino server on MacOS
+Compiling Neutralino server on macOS
 
 ```bash
-bash build_macos.sh # [ia32, x64, arm64]
+bash build_macos.sh # [ia32, x64, armhf, arm64]
 ```
 
 ## Sponsors and Donators
 
-Organizations and individuals support Neutralinojs. See: https://codezri.org/sponsors
+Organizations and individuals support Neutralinojs development. See: https://codezri.org/sponsors
 
 If you like to support our work, you can donate to Neutralinojs via [Patreon](https://www.patreon.com/shalithasuranga).
 
