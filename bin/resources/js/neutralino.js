@@ -33,15 +33,16 @@ var Neutralino = (function (exports) {
     function init$1() {
         ws = new WebSocket(`ws://${window.location.hostname}:${window.NL_PORT}`);
         ws.addEventListener('message', (event) => {
+            var _a, _b;
             const message = JSON.parse(event.data);
             if (message.id && message.id in nativeCalls) {
                 // Native call response
-                if (message.data.error) {
+                if ((_a = message.data) === null || _a === void 0 ? void 0 : _a.error) {
                     nativeCalls[message.id].reject(message.data.error);
                 }
-                else if (message.data.success) {
+                else if ((_b = message.data) === null || _b === void 0 ? void 0 : _b.success) {
                     nativeCalls[message.id]
-                        .resolve(message.data.returnValue ? message.data.returnValue
+                        .resolve(message.data.hasOwnProperty('returnValue') ? message.data.returnValue
                         : message.data);
                 }
                 delete nativeCalls[message.id];
