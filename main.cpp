@@ -88,6 +88,11 @@ void __startServerAsync() {
 
 void __initFramework(json args) {
     settings::setGlobalArgs(args);
+    if (!loadResFromDir) {
+        bool resourceLoaderStatus = resources::makeFileTree();
+        if(!resourceLoaderStatus)
+            loadResFromDir = true;
+    }
     json options = settings::getConfig();
     if(options.is_null()) {
         pfd::message("Unable to load app configuration",
@@ -95,11 +100,6 @@ void __initFramework(json args) {
                         pfd::choice::ok,
                         pfd::icon::error);
         app::exit();
-    }
-    if (!loadResFromDir) {
-        bool resourceLoaderStatus = resources::makeFileTree();
-        if(!resourceLoaderStatus)
-            loadResFromDir = true;
     }
 
     authbasic::generateToken();
