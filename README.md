@@ -52,6 +52,13 @@ Ask questions on StackOverflow using tag [neutralinojs](https://stackoverflow.co
 
 ### Setup and compilation
 
+First, clone this repository.
+
+```bash
+git clone https://github.com/neutralinojs/neutralinojs.git
+cd neutralinojs
+```
+
 **Linux**
 
 No need for separate compilers because Linux distributions usually have GNU C/C++ compilers installed already.
@@ -83,7 +90,7 @@ sudo dnf install \
     boost-devel
 ```
 
-Compile the Neutralinojs framework with the following command.
+Compile the Neutralinojs framework.
 
 ```bash
 bash build_linux.sh # [ia32, x64, armhf, arm64]
@@ -97,7 +104,7 @@ Install the latest Visual Studio IDE. Neutralinojs compilation on Windows will u
 choco install boost-msvc-14.1
 ```
 
-Compile the Neutralinojs framework with the following command.
+Compile the Neutralinojs framework.
 
 ```bash
 ./build_windows.bat # [ia32, x64, armhf, arm64]
@@ -111,7 +118,7 @@ Install Xcode Command Line Tools. Install Boost libraries via Homebrew.
 brew install boost@1.76
 ```
 
-Compile the Neutralinojs framework with the following command.
+Compile the Neutralinojs framework.
 
 ```bash
 bash build_macos.sh # [ia32, x64, armhf, arm64]
