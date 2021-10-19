@@ -83,7 +83,7 @@ sudo dnf install \
     boost-devel
 ```
 
-Compiling Neutralino server on Linux
+Compile the Neutralinojs framework with the following command.
 
 ```bash
 bash build_linux.sh # [ia32, x64, armhf, arm64]
@@ -97,7 +97,7 @@ Install the latest Visual Studio IDE. Neutralinojs compilation on Windows will u
 choco install boost-msvc-14.1
 ```
 
-Compiling Neutralino server on Windows
+Compile the Neutralinojs framework with the following command.
 
 ```bash
 ./build_windows.bat # [ia32, x64, armhf, arm64]
@@ -111,7 +111,7 @@ Install Xcode Command Line Tools. Install Boost libraries via Homebrew.
 brew install boost@1.76
 ```
 
-Compiling Neutralino server on macOS
+Compile the Neutralinojs framework with the following command.
 
 ```bash
 bash build_macos.sh # [ia32, x64, armhf, arm64]
