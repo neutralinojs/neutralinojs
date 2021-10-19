@@ -24,7 +24,7 @@ Get started with the neu CLI.
  cd hello-world
  neu run
  
- # Building your app (No compilation - takes a second)
+ # Building your app (No compilation - takes less than a second)
  neu build
 ```
 
