@@ -276,7 +276,7 @@ var Neutralino = (function (exports) {
                 acc += ' ' + arg;
                 return acc;
             }, '');
-            if (options.args) {
+            if (options === null || options === void 0 ? void 0 : options.args) {
                 command += ' ' + options.args;
             }
             yield Neutralino.os.execCommand(command, { shouldRunInBackground: true });

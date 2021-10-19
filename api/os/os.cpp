@@ -191,10 +191,10 @@ namespace controllers {
     vector<string> __extensionsToVector(json filters) {
         vector <string> filtersV = {};
         for (auto &filter: filters) {
-            filtersV.push_back(filter["name"]);
+            filtersV.push_back(filter["name"].get<string>());
             string extensions = "";
             for (auto &extension: filter["extensions"]) {
-                extensions += "*." + extension.get<string>();
+                extensions += "*." + extension.get<string>() + " ";
             }
             filtersV.push_back(extensions);
         }
@@ -208,7 +208,7 @@ namespace controllers {
         if(!input["shouldRunInBackground"].is_null())
             shouldRunInBackground = input["shouldRunInBackground"];
 
-        output["output"] = os::execCommand(command, true, shouldRunInBackground);
+        output["returnValue"] = os::execCommand(command, true, shouldRunInBackground);
         output["success"] = true;
         return output;
     }

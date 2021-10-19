@@ -345,10 +345,12 @@ namespace controllers {
         string path = input["path"].get<string>();
         fs::FileStats fileStats = fs::getStats(path);
         if(!fileStats.hasError) {
+            json stats;
+            stats["size"] = fileStats.size;
+            stats["isFile"] = fileStats.isFile;
+            stats["isDirectory"] = fileStats.isDirectory;
+            output["returnValue"] = stats;
             output["success"] = true;
-            output["size"] = fileStats.size;
-            output["isFile"] = fileStats.isFile;
-            output["isDirectory"] = fileStats.isDirectory;
         }
         else{
             output["error"] = helpers::makeErrorPayload("NE_FS_NOPATHE", fileStats.error);
