@@ -19,7 +19,16 @@ if not exist "%vc_dir%\Common7\Tools\vsdevcmd.bat" (
 )
 echo Found %vc_dir%
 
-set ARCH=%1
+if "%1" == "--boost" (
+  set BOOST=%2
+  set ARCH=%3
+) else if "%2" == "--boost" (
+  set ARCH=%1
+  set BOOST=%3
+) else (
+  set ARCH=%1
+  set BOOST=C:/local/boost_1_74_0
+)
 
 REM Trigger x64 build by default
 if "%ARCH%" == "" (
@@ -51,7 +60,7 @@ cl /std:c++17 ^
 /I . ^
 /I lib/webview/windows ^
 /I lib ^
-/I C:/local/boost_1_74_0 ^
+/I %BOOST% ^
 /EHsc ^
 /Os ^
 main.cpp ^
