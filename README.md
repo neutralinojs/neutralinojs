@@ -98,11 +98,10 @@ bash build_linux.sh # [ia32, x64, armhf, arm64]
 
 **Windows**
 
-Install the latest Visual Studio IDE. Neutralinojs compilation on Windows will use MSVC (aka `cl.exe`) C++ compiler. Install Boost libraries via Chocolatey.
+Install the latest Visual Studio IDE. Neutralinojs compilation on Windows will use MSVC (aka `cl.exe`) C++ compiler. Install Boost libraries.
 
-```bash
-choco install boost-msvc-14.1
-```
+- [**x32** boost-msvc-14.1](https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.1-32.exe)
+- [**x64** boost-msvc-14.1](https://downloads.sourceforge.net/project/boost/boost-binaries/1.74.0/boost_1_74_0-msvc-14.1-64.exe)
 
 Compile the Neutralinojs framework.
 
