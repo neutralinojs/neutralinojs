@@ -29,7 +29,7 @@ namespace app {
         if(settings::getMode() == "window")
             window::_close(code);
         else 
-            exit(code);
+            std::exit(code);
     }
     
     unsigned int getProcessId() {

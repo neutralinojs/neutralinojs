@@ -75,6 +75,7 @@ namespace helpers {
         char *text = new char[str.size() + 1];
         copy(str.begin(), str.end(), text);
         text[str.size()] = '\0';
+        // delete[] text from the initiator 
         return text;
     }
     
