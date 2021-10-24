@@ -24,15 +24,15 @@ namespace settings {
     };
 
     json getConfig();
-    fs::FileReaderResult getFileContent(string filename);
+    fs::FileReaderResult getFileContent(const string &filename);
     string getGlobalVars();
-    void setGlobalArgs(json args);
-    string joinAppPath(string filename);
+    void setGlobalArgs(const json &args);
+    string joinAppPath(const string &filename);
     string getMode();
     void setPort(int port);
-    settings::CliArg _parseArg(string arg);
-    void applyConfigOverride(settings::CliArg arg);
-    json getOptionForCurrentMode(string key);
+    settings::CliArg _parseArg(const string &arg);
+    void applyConfigOverride(const settings::CliArg &arg);
+    json getOptionForCurrentMode(const string &key);
 } // namesapce settings
 
 #endif // #define NEU_SETTINGS_H

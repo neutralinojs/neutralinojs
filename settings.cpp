@@ -41,15 +41,14 @@ vector <settings::ConfigOverride> configOverrides;
 
 namespace settings {
 
-    string joinAppPath(string filename) {
+    string joinAppPath(const string &filename) {
         return appPath + filename;
     }
 
-    fs::FileReaderResult getFileContent(string filename) {
+    fs::FileReaderResult getFileContent(const string &filename) {
         if(!loadResFromDir)
             return resources::getFileContent(filename);
-        filename = settings::joinAppPath(filename);
-        fs::FileReaderResult fileReaderResult = fs::readFile(filename);
+        fs::FileReaderResult fileReaderResult = fs::readFile(settings::joinAppPath(filename));
         
         if(fileReaderResult.hasError) {
             debug::log("ERROR", fileReaderResult.error);
@@ -120,7 +119,7 @@ namespace settings {
         return jsSnippet;
     }
 
-    void setGlobalArgs(json args) {
+    void setGlobalArgs(const json &args) {
         int argIndex = 0;
         globalArgs = args;
         for(string arg: args) {
@@ -158,7 +157,7 @@ namespace settings {
       options["port"] = port;
     }
     
-    settings::CliArg _parseArg(string argStr) {
+    settings::CliArg _parseArg(const string &argStr) {
         settings::CliArg arg;
         vector<string> argParts = helpers::split(argStr, '=');
         if(argParts.size() == 2 && argParts[1].length() > 0) {
@@ -171,7 +170,7 @@ namespace settings {
         return arg;
     }
     
-    void applyConfigOverride(settings::CliArg arg) {
+    void applyConfigOverride(const settings::CliArg &arg) {
         map<string, vector<string>> cliMappings = {
             // Top level
             {"--mode", {"/defaultMode", "string"}},
@@ -249,7 +248,7 @@ namespace settings {
     }
     
     // Priority: mode -> root -> null
-    json getOptionForCurrentMode(string key) {
+    json getOptionForCurrentMode(const string &key) {
         string mode = settings::getMode();
         json value = options["modes"][mode][key];
         if(value.is_null()) {

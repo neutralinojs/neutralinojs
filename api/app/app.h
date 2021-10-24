@@ -13,10 +13,10 @@ namespace app {
     unsigned int getProcessId();
 
 namespace controllers {
-    json exit(json input);
-    json killProcess(json input);
-    json keepAlive(json input);
-    json getConfig(json input);
+    json exit(const json &input);
+    json killProcess(const json &input);
+    json keepAlive(const json &input);
+    json getConfig(const json &input);
 
 } // namespace controllers
 } // namespace app

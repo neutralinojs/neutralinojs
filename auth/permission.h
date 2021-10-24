@@ -7,8 +7,8 @@ using namespace std;
 
 namespace permission {
     void init();
-    bool hasMethodAccess(string func);
-    bool hasAPIAccess(string func);
+    bool hasMethodAccess(const string &func);
+    bool hasAPIAccess(const string &func);
 } // namespace permission
 
 #endif // #define NEU_PERMISSION_H

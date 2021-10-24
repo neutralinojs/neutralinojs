@@ -12,7 +12,7 @@ namespace debug {
     void log(const string &type, const string &message);
 
 namespace controllers {
-    json log(json input);
+    json log(const json &input);
 } // namespace controllers
 } // namespace debug
 
