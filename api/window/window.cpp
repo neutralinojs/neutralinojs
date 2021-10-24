@@ -287,8 +287,10 @@ namespace handlers {
     }
     
     void _close(int exitCode) {
-        if(nativeWindow)
+        if(nativeWindow) {
             nativeWindow->terminate(exitCode);
+            delete nativeWindow;
+        }
     }
 
 namespace controllers {

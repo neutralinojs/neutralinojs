@@ -93,6 +93,10 @@ void startAsync() {
 }
 
 void stop() {
+    for (auto connection: connections) {
+        websocketserver::connection_ptr con = server->get_con_from_hdl(connection);
+        con->close(websocketpp::close::status::normal, "Neutralino process is going to be terminated");
+    }
     server->stop_listening();
 }
 

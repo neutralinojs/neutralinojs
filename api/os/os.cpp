@@ -417,7 +417,10 @@ namespace controllers {
             if(!menuItem["isChecked"].is_null() && menuItem["isChecked"].get<bool>())
                 checked = 1;
                 
-            menus[i++] = { id, text, disabled, checked, __handleTrayMenuItem, nullptr };
+            delete[] menus[i].id;
+            delete[] menus[i].text;
+            menus[i] = { id, text, disabled, checked, __handleTrayMenuItem, nullptr };
+            i++;
         }
 
         tray.menu = menus;
@@ -436,6 +439,7 @@ namespace controllers {
                 resources::extractFile(iconPath, tempIconPath);
                 fullIconPath = fs::getFullPathFromRelative(tempIconPath);
             }
+            delete[] tray.icon;
             tray.icon = helpers::cStrCopy(fullIconPath);
 
             #elif defined(_WIN32)
