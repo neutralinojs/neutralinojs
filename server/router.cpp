@@ -29,7 +29,7 @@ using json = nlohmann::json;
 typedef json (*NativeMethod)(json);
 
 namespace router {
-    router::NativeMessage executeNativeMethod(router::NativeMessage request) {
+    router::NativeMessage executeNativeMethod(const router::NativeMessage &request) {
         string nativeMethodId = request.method;
         router::NativeMessage response;
         response.id = request.id;

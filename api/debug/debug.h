@@ -1,13 +1,15 @@
 #ifndef NEU_DEBUG_H
 #define NEU_DEBUG_H
 
+#include <string>
+
 #include "lib/json/json.hpp"
 
 using json = nlohmann::json;
 using namespace std;
 
 namespace debug {
-    void log(string type, string message);
+    void log(const string &type, const string &message);
 
 namespace controllers {
     json log(json input);

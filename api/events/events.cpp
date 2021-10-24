@@ -7,7 +7,7 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace events {
-    void dispatch(string event, json data) {
+    void dispatch(const string &event, const json &data) {
         json message;
         message["event"] = event;
         message["data"] = data;

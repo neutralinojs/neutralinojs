@@ -17,7 +17,7 @@ namespace neuserver {
     void stop();
     void handleMessage(websocketpp::connection_hdl handler, websocketpp::server<websocketpp::config::asio>::message_ptr msg);
     void handleHTTP(websocketpp::connection_hdl handler);
-    void broadcast(json message);
+    void broadcast(const json &message);
 } // namespace neuserver
 
 #endif // #define NEU_SERVER_H

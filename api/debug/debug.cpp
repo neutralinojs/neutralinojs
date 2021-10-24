@@ -8,7 +8,7 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace debug {
-    void log(string type, string message) {
+    void log(const string &type, const string &message) {
         if(type == "INFO")
             LOG(INFO) << message;
         else if(type == "ERROR")

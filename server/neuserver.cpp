@@ -137,7 +137,7 @@ void handleHTTP(websocketpp::connection_hdl handler) {
     con->replace_header("Content-Type", routerResponse.contentType);
 }
 
-void broadcast(json message) {
+void broadcast(const json &message) {
     for (auto connection: connections) {
         server->send(connection, message.dump(), websocketpp::frame::opcode::text);
     }
