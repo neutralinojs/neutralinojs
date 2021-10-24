@@ -4,6 +4,7 @@
 #include <time.h>
 #include <ctype.h>
 
+#include "helpers.h"
 #include "lib/json/json.hpp"
 
 using namespace std;
@@ -71,7 +72,7 @@ namespace helpers {
         *dst++ = '\0';
     }
     
-    char* cStrCopy(string str) {
+    char* cStrCopy(const string &str) {
         char *text = new char[str.size() + 1];
         copy(str.begin(), str.end(), text);
         text[str.size()] = '\0';
@@ -79,7 +80,11 @@ namespace helpers {
         return text;
     }
     
-    json makeErrorPayload(string code, string message) {
+    json makeMissingArgErrorPayload() {
+        return helpers::makeErrorPayload("NE_RT_NATRTER", "Missing mandatory arguments");
+    }
+    
+    json makeErrorPayload(const string &code, const string &message) {
         json error;
         error["code"] = code;
         error["message"] = message;

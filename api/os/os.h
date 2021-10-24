@@ -15,16 +15,16 @@ namespace os {
     string getPath(string name);
 
 namespace controllers {
-    json execCommand(json input);
-    json getEnv(json input);
-    json showOpenDialog(json input);
-    json showFolderDialog(json input);
-    json showSaveDialog(json input);
-    json showNotification(json input);
-    json showMessageBox(json input);
-    json setTray(json input);
-    json open(json input);
-    json getPath(json input);
+    json execCommand(const json &input);
+    json getEnv(const json &input);
+    json showOpenDialog(const json &input);
+    json showFolderDialog(const json &input);
+    json showSaveDialog(const json &input);
+    json showNotification(const json &input);
+    json showMessageBox(const json &input);
+    json setTray(const json &input);
+    json open(const json &input);
+    json getPath(const json &input);
 } // namespace controllers
 } // namespace os
 

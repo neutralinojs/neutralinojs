@@ -10,7 +10,7 @@ using namespace std;
 
 namespace computer {
 namespace controllers {
-    json getMemoryInfo(json input);
+    json getMemoryInfo(const json &input);
 } // namespace controllers
 } // namespace computer
 

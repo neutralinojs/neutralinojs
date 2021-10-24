@@ -51,7 +51,7 @@ namespace handlers {
     void onClose();
 } // namespace handlers
 
-    void executeJavaScript(string js);
+    void executeJavaScript(const string &js);
     bool isMaximized();
     void maximize();
     void minimize();
@@ -61,29 +61,29 @@ namespace handlers {
     void setFullScreen();
     void exitFullScreen();
     bool isFullScreen();
-    void setIcon(string icon);
+    void setIcon(const string &icon);
     void setAwaysOnTop();
     void setBorderless();
     
     void _close(int exitCode);
 
 namespace controllers {
-    json init(json input);
-    json setTitle(json input);
-    json maximize(json input); 
-    json unmaximize(json input);
-    json isMaximized(json input);
-    json minimize(json input);
-    json isVisible(json input);
-    json show(json input);
-    json hide(json input);
-    json setFullScreen(json input);
-    json exitFullScreen(json input);
-    json isFullScreen(json input);
-    json focus(json input);
-    json setIcon(json input);
-    json move(json input);
-    json setSize(json input);
+    json init(const json &input);
+    json setTitle(const json &input);
+    json maximize(const json &input); 
+    json unmaximize(const json &input);
+    json isMaximized(const json &input);
+    json minimize(const json &input);
+    json isVisible(const json &input);
+    json show(const json &input);
+    json hide(const json &input);
+    json setFullScreen(const json &input);
+    json exitFullScreen(const json &input);
+    json isFullScreen(const json &input);
+    json focus(const json &input);
+    json setIcon(const json &input);
+    json move(const json &input);
+    json setSize(const json &input);
         
 } // namespace controllers
 } // namespace window

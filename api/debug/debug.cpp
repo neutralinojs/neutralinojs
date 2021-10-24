@@ -3,12 +3,13 @@
 
 #include "lib/json/json.hpp"
 #include "lib/easylogging/easylogging++.h"
+#include "helpers.h"
 
 using namespace std;
 using json = nlohmann::json;
 
 namespace debug {
-    void log(string type, string message) {
+    void log(const string &type, const string &message) {
         if(type == "INFO")
             LOG(INFO) << message;
         else if(type == "ERROR")
@@ -20,10 +21,14 @@ namespace debug {
     }
     
 namespace controllers {
-    json log(json input) {
+    json log(const json &input) {
         json output;
         string type = "INFO";
-        if(!input["type"].is_null()) {
+        if(!input.contains("message")) {
+            output["error"] = helpers::makeMissingArgErrorPayload();
+            return output;
+        }
+        if(input.contains("type")) {
             type = input["type"].get<string>();
         }
 

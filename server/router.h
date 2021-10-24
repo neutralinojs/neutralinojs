@@ -26,7 +26,7 @@ namespace router {
     };
 
     router::Response serve(string path);
-    router::NativeMessage executeNativeMethod(router::NativeMessage request);
+    router::NativeMessage executeNativeMethod(const router::NativeMessage &request);
     router::Response getAsset(string path, string prependData = "");
 } // namespace router
 

@@ -41,15 +41,16 @@ namespace app {
     }
 
 namespace controllers {
-    json exit(json input) {
+    json exit(const json &input) {
         int code = 0;
-        if(!input["code"].is_null())
+        if(input.contains("code")) {
             code = input["code"].get<int>();
+        }
         app::exit(code);
         return nullptr;
     }
     
-    json killProcess(json input) {
+    json killProcess(const json &input) {
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         kill(getpid(),SIGINT);
         #elif defined(_WIN32)
@@ -60,7 +61,7 @@ namespace controllers {
         return nullptr;
     }
 
-    json keepAlive(json input) {
+    json keepAlive(const json &input) {
         json output;
         ping::pingReceived();
         output["message"] = "Keep alive call was successful. Server will not be terminated automatically.";
@@ -68,7 +69,7 @@ namespace controllers {
         return output;
     }
 
-    json getConfig(json input) {
+    json getConfig(const json &input) {
         json output;
         output["returnValue"] = settings::getConfig();
         output["success"] = true;

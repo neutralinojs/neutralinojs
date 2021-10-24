@@ -9,6 +9,6 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace events {
-    void dispatch(string event, json data);
+    void dispatch(const string &event, const json &data);
 } // namespace events
 #endif // #define NEU_EVENT_H

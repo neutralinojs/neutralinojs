@@ -21,7 +21,7 @@ unsigned int asarHeaderSize;
 
 namespace resources {
 
-    pair<int, string> seekFilePos(string path, json node, string curpath) {
+    pair<int, string> seekFilePos(const string &path, json node, const string &curpath) {
         vector <string> pathSegments = helpers::split(path, '/');
         string filename = pathSegments[pathSegments.size() - 1];
         json json = node;
@@ -35,7 +35,7 @@ namespace resources {
         return make_pair<int, string>(-1, "");
     }
 
-    fs::FileReaderResult getFileContent(string filename) {
+    fs::FileReaderResult getFileContent(const string &filename) {
         fs::FileReaderResult fileReaderResult;
         pair<int, string> p = seekFilePos(filename, fileTree, "");
         if(p.first != -1) {
@@ -95,7 +95,7 @@ namespace resources {
         return fileTree != nullptr;
     }
     
-    void extractFile(string filename, string outputFilename) {
+    void extractFile(const string &filename, const string &outputFilename) {
         fs::FileReaderResult fileReaderResult = resources::getFileContent(filename);
         fs::FileWriterOptions fileWriterOptions;
         fileWriterOptions.filename = outputFilename;
