@@ -98,7 +98,6 @@ void stop() {
         con->close(websocketpp::close::status::normal, "Neutralino process is going to be terminated");
     }
     server->stop_listening();
-    delete server;
 }
 
 void handleMessage(websocketpp::connection_hdl handler, websocketserver::message_ptr msg) {
