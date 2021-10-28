@@ -29,14 +29,14 @@ namespace fs {
         bool isFile;
     }; 
 
-    bool createDirectory(string path);
-    bool removeFile(string filename);
-    fs::FileReaderResult readFile(string filename);
+    bool createDirectory(const string &path);
+    bool removeFile(const string &filename);
+    fs::FileReaderResult readFile(const string &filename);
     bool writeFile(const fs::FileWriterOptions &fileWriterOptions);
-    string getDirectoryName(string filename);
+    string getDirectoryName(const string &filename);
     string getCurrentDirectory();
-    string getFullPathFromRelative(string path);
-    fs::FileStats getStats(string path);
+    string getFullPathFromRelative(const string &path);
+    fs::FileStats getStats(const string &path);
 
 namespace controllers {
     json createDirectory(const json &input);

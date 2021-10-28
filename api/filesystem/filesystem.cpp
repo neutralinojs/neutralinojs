@@ -27,7 +27,7 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace fs {
-    bool createDirectory(string path) {
+    bool createDirectory(const string &path) {
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         return mkdir(path.c_str(), 0700) == 0;
         #elif defined(_WIN32)
@@ -35,7 +35,7 @@ namespace fs {
         #endif
     }
     
-    bool removeFile(string filename) {
+    bool removeFile(const string &filename) {
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         return remove(filename.c_str()) == 0;
         #elif defined(_WIN32)
@@ -43,7 +43,7 @@ namespace fs {
         #endif
     }
     
-    string getDirectoryName(string filename){
+    string getDirectoryName(const string &filename){
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         return dirname((char*)filename.c_str());
         #elif defined(_WIN32)
@@ -67,7 +67,7 @@ namespace fs {
         #endif
     }
     
-    string getFullPathFromRelative(string path) {
+    string getFullPathFromRelative(const string &path) {
         #if defined(__linux__)
         return realpath(path.c_str(), nullptr);
         #else
@@ -75,7 +75,7 @@ namespace fs {
         #endif
     }
     
-    fs::FileReaderResult readFile(string filename) {
+    fs::FileReaderResult readFile(const string &filename) {
         fs::FileReaderResult fileReaderResult;
         ifstream reader(filename.c_str(), ios::binary | ios::ate);
         if(!reader.is_open()) {
@@ -105,7 +105,7 @@ namespace fs {
         return true;
     }
     
-    fs::FileStats getStats(string path) {
+    fs::FileStats getStats(const string &path) {
         fs::FileStats fileStats;
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         struct stat statBuffer;

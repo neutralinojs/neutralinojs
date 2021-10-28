@@ -144,7 +144,7 @@ namespace router {
         }
     }
 
-    router::Response getAsset(string path, string prependData) {
+    router::Response getAsset(string path, const string &prependData) {
         router::Response response;
         vector<string> split = helpers::split(path, '.');
         if(split.size() < 2) {

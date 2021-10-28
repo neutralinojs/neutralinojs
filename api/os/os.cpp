@@ -58,7 +58,7 @@ struct tray tray;
 bool isTrayCreated = false;
 
 namespace os {
-    void open(string url) {
+    void open(const string &url) {
         #if defined(__linux__) || defined(__FreeBSD__)
         os::execCommand("xdg-open \"" + url + "\"");
         #elif defined(__APPLE__)
@@ -162,7 +162,7 @@ namespace os {
         #endif
     }
     
-    string getPath(string name) {
+    string getPath(const string &name) {
         if(name == "config")
             return sago::getConfigHome();
         if(name == "data")
@@ -188,7 +188,7 @@ namespace os {
     
 namespace controllers {
 
-    vector<string> __extensionsToVector(json filters) {
+    vector<string> __extensionsToVector(const json &filters) {
         vector <string> filtersV = {};
         for (auto &filter: filters) {
             filtersV.push_back(filter["name"].get<string>());
