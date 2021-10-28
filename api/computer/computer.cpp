@@ -23,7 +23,7 @@ using json = nlohmann::json;
 
 namespace computer {
 namespace controllers {
-    json getMemoryInfo(json input) {
+    json getMemoryInfo(const json &input) {
         json output;
         #if defined(__linux__)
         struct sysinfo sys_info;

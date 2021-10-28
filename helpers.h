@@ -13,8 +13,9 @@ namespace helpers {
     vector<string> split(const string &s, char delim);
     string generateToken();
     void urldecode(char *dst, const char *src);
-    char* cStrCopy(string str);
-    json makeErrorPayload(string code, string message);
+    char* cStrCopy(const string &str);
+    json makeMissingArgErrorPayload();
+    json makeErrorPayload(const string &code, const string &message);
 } // namespace helpers
 
 #endif // #define NEU_HELPERS_H

@@ -201,20 +201,29 @@ namespace controllers {
         return filtersV;
     }
 
-    json execCommand(json input) {
+    json execCommand(const json &input) {
         json output;
+        if(!input.contains("command")) {
+            output["error"] = helpers::makeMissingArgErrorPayload();
+            return output;
+        }
         string command = input["command"].get<string>();
         bool shouldRunInBackground = false;
-        if(!input["shouldRunInBackground"].is_null())
+        if(input.contains("shouldRunInBackground")) {
             shouldRunInBackground = input["shouldRunInBackground"];
+        }
 
         output["returnValue"] = os::execCommand(command, true, shouldRunInBackground);
         output["success"] = true;
         return output;
     }
 
-    json getEnv(json input) {
+    json getEnv(const json &input) {
         json output;
+        if(!input.contains("key")) {
+            output["error"] = helpers::makeMissingArgErrorPayload();
+            return output;
+        }
         string varKey = input["key"].get<string>();
         char *varValue;
         varValue = getenv(varKey.c_str());
@@ -229,21 +238,21 @@ namespace controllers {
         return output;
     }
 
-    json showOpenDialog(json input) {
+    json showOpenDialog(const json &input) {
         json output;
         string title = "Open a file";
         vector <string> filters = {"All files", "*"};
         pfd::opt option = pfd::opt::none;
         
-        if(!input["title"].is_null()) {
+        if(input.contains("title")) {
             title = input["title"].get<string>();
         }
         
-        if(!input["multiSelections"].is_null() && input["multiSelections"].get<bool>()) {
+        if(input.contains("multiSelections") && input["multiSelections"].get<bool>()) {
             option = pfd::opt::multiselect;
         }
         
-        if(!input["filters"].is_null()) {
+        if(input.contains("filters")) {
             filters.clear();
             filters = __extensionsToVector(input["filters"]);
         }
@@ -255,11 +264,11 @@ namespace controllers {
         return output;
     }
     
-    json showFolderDialog(json input) {
+    json showFolderDialog(const json &input) {
         json output;
         string title = "Select a folder";
         
-        if(!input["title"].is_null()) {
+        if(input.contains("title")) {
             title = input["title"].get<string>();
         }
         
@@ -270,21 +279,21 @@ namespace controllers {
         return output;
     }
 
-    json showSaveDialog(json input) {
+    json showSaveDialog(const json &input) {
         json output;
         string title = "Save a file";
         vector <string> filters = {"All files", "*"};
         pfd::opt option = pfd::opt::none;
         
-        if(!input["title"].is_null()) {
+        if(input.contains("title")) {
             title = input["title"].get<string>();
         }
         
-        if(!input["forceOverwrite"].is_null() && input["forceOverwrite"].get<bool>()) {
+        if(input.contains("forceOverwrite") && input["forceOverwrite"].get<bool>()) {
             option = pfd::opt::force_overwrite;
         }
         
-        if(!input["filters"].is_null()) {
+        if(input.contains("filters")) {
             filters.clear();
             filters = __extensionsToVector(input["filters"]);
         }
@@ -296,13 +305,17 @@ namespace controllers {
         return output;
     }
 
-    json showNotification(json input) {
+    json showNotification(const json &input) {
         json output;
+        if(!input.contains("title") || !input.contains("content")) {
+            output["error"] = helpers::makeMissingArgErrorPayload();
+            return output;
+        }
         string title = input["title"].get<string>();
         string content = input["content"].get<string>();
         string icon = "INFO";
         
-        if(!input["icon"].is_null()) {
+        if(input.contains("icon")) {
             icon = input["icon"].get<string>();
         }
         
@@ -324,18 +337,22 @@ namespace controllers {
         return output;
     }
 
-    json showMessageBox(json input) {
+    json showMessageBox(const json &input) {
         json output;
+        if(!input.contains("title") || !input.contains("content")) {
+            output["error"] = helpers::makeMissingArgErrorPayload();
+            return output;
+        }
         string icon = "INFO";
         string choice = "OK";
         string title = input["title"].get<string>();
         string content = input["content"].get<string>();
         
-        if(!input["icon"].is_null()) {
+        if(input.contains("icon")) {
             icon = input["icon"].get<string>();
         }
         
-        if(!input["choice"].is_null()) {
+        if(input.contains("choice")) {
             choice = input["choice"].get<string>();
         }
         
@@ -389,7 +406,7 @@ namespace controllers {
     	events::dispatch("trayMenuItemClicked", eventData);
     }
     
-    json setTray(json input) {
+    json setTray(const json &input) {
         #if defined(_WIN32)
         GdiplusStartupInput gdiplusStartupInput;
         ULONG_PTR gdiplusToken;
@@ -398,7 +415,7 @@ namespace controllers {
         json output;
         int menuCount = 1;
             
-        if(!input["menuItems"].is_null()) {
+        if(input.contains("menuItems")) {
             menuCount += input["menuItems"].size();
         }
         
@@ -425,7 +442,7 @@ namespace controllers {
 
         tray.menu = menus;
 
-        if(!input["icon"].is_null()) {
+        if(input.contains("icon")) {
             string iconPath = input["icon"].get<string>();
             #if defined(__linux__)
             string fullIconPath;
@@ -480,16 +497,24 @@ namespace controllers {
         return output;
     }
     
-    json open(json input) {
+    json open(const json &input) {
         json output;
+        if(!input.contains("url")) {
+            output["error"] = helpers::makeMissingArgErrorPayload();
+            return output;
+        }
         string url = input["url"].get<string>();
         os::open(url);
         output["success"] = true;
         return output;
     }
     
-    json getPath(json input) {
+    json getPath(const json &input) {
         json output;
+        if(!input.contains("name")) {
+            output["error"] = helpers::makeMissingArgErrorPayload();
+            return output;
+        }
         string name = input["name"].get<string>();
         string path = os::getPath(name);
         if(!path.empty()) {

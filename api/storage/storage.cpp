@@ -17,7 +17,7 @@ using json = nlohmann::json;
 
 namespace storage {
 namespace controllers {
-    json __validateStorageBucket(string key) {
+    json __validateStorageBucket(const string &key) {
         if(regex_match(key, regex(STORAGE_KEY_REGEX)))
             return nullptr;
         json output;
@@ -26,8 +26,12 @@ namespace controllers {
         return output;
     }
     
-    json getData(json input) {
+    json getData(const json &input) {
         json output;
+        if(!input.contains("key")) {
+            output["error"] = helpers::makeMissingArgErrorPayload();
+            return output;
+        }
         string key = input["key"].get<string>();
         json errorPayload = __validateStorageBucket(key);
         if(!errorPayload.is_null()) 
@@ -47,8 +51,12 @@ namespace controllers {
         return output;
     }
 
-    json setData(json input) {
+    json setData(const json &input) {
         json output;
+        if(!input.contains("key")) {
+            output["error"] = helpers::makeMissingArgErrorPayload();
+            return output;
+        }
         string key = input["key"].get<string>();
         json errorPayload = __validateStorageBucket(key);
         if(!errorPayload.is_null()) 
@@ -58,7 +66,7 @@ namespace controllers {
         fs::createDirectory(bucketPath);
         
         string filename = bucketPath + "/" + key + STORAGE_EXT;
-        if(input["data"].is_null()) {
+        if(!input.contains("data")) {
             fs::removeFile(filename);
         }
         else {

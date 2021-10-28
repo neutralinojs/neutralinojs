@@ -21,15 +21,15 @@ namespace permission {
     bool shouldCheckBlockList = false;
     bool shouldCheckAllowList = false;
     
-    bool __isWildcardMatch(string methodMatch) {
+    bool __isWildcardMatch(const string &methodMatch) {
         return regex_match(methodMatch, regex(".*\\.\\*"));
     }
     
-    bool __isPingMethod(string methodMatch) {
+    bool __isPingMethod(const string &methodMatch) {
         return methodMatch == "app.keepAlive";
     }
     
-    string __getModuleFromMethod(string nativeMethod) {
+    string __getModuleFromMethod(const string &nativeMethod) {
         vector <string> methodParts = helpers::split(nativeMethod, '.');
         return methodParts[0];
     }
@@ -72,7 +72,7 @@ namespace permission {
         shouldCheckAllowList = true;
     }
 
-    bool hasMethodAccess(string nativeMethod) {
+    bool hasMethodAccess(const string &nativeMethod) {
         if(__isPingMethod(nativeMethod))
             return true;
         string module = __getModuleFromMethod(nativeMethod);
@@ -107,7 +107,7 @@ namespace permission {
         return true; // anything is allowed if no allow/block list defined
     }
 
-    bool hasAPIAccess(string nativeMethod) {
+    bool hasAPIAccess(const string &nativeMethod) {
         if(__isPingMethod(nativeMethod))
             return true;
         json jEnableNativeAPI = settings::getOptionForCurrentMode("enableNativeAPI");

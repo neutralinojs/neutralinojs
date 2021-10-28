@@ -23,6 +23,7 @@
 #include "lib/json/json.hpp"
 #include "lib/webview/webview.h"
 #include "settings.h"
+#include "helpers.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
 #include "api/events/events.h"
@@ -63,7 +64,7 @@ namespace handlers {
     }
 } // namespace handlers
 
-    void executeJavaScript(string js) {
+    void executeJavaScript(const string &js) {
         if(nativeWindow)
             nativeWindow->eval(js);
     }
@@ -209,7 +210,7 @@ namespace handlers {
         #endif
     }
     
-    void setIcon(string iconFile) {
+    void setIcon(const string &iconFile) {
         fs::FileReaderResult fileReaderResult = settings::getFileContent(iconFile);
         string iconDataStr = fileReaderResult.data;
         #if defined(__linux__) || defined(__FreeBSD__)
@@ -342,7 +343,7 @@ namespace controllers {
         nativeWindow->run();
     }
 
-    window::SizeOptions __jsonToSizeOptions(json input, bool useDefaultRect = false) {
+    window::SizeOptions __jsonToSizeOptions(const json &input, bool useDefaultRect = false) {
         window::SizeOptions sizeOptions;
         
         if(useDefaultRect) {
@@ -350,61 +351,62 @@ namespace controllers {
             sizeOptions.height = 600;
         }
         
-        if(!input["width"].is_null())
+        if(input.contains("width"))
             sizeOptions.width = input["width"].get<int>();
 
-        if(!input["height"].is_null())
+        if(input.contains("height"))
             sizeOptions.height = input["height"].get<int>();
             
-        if(!input["minWidth"].is_null())
+        if(input.contains("minWidth"))
             sizeOptions.minWidth = input["minWidth"].get<int>();
 
-        if(!input["minHeight"].is_null())
+        if(input.contains("minHeight"))
             sizeOptions.minHeight = input["minHeight"].get<int>();
             
-        if(!input["maxWidth"].is_null())
+        if(input.contains("maxWidth"))
             sizeOptions.maxWidth = input["maxWidth"].get<int>();
 
-        if(!input["maxHeight"].is_null())
+        if(input.contains("maxHeight"))
             sizeOptions.maxHeight = input["maxHeight"].get<int>();
 
-        if(!input["resizable"].is_null())
+        if(input.contains("resizable"))
             sizeOptions.resizable = input["resizable"].get<bool>();
         return sizeOptions;
     }
 
-    json setTitle(json input) {
+    json setTitle(const json &input) {
         json output;
         string title = "";
-        if(!input["title"].is_null()) 
+        if(input.contains("title")) {
             title = input["title"].get<string>();
+        }
         nativeWindow->set_title(title);
         output["success"] = true;
         return output;
     }
 
-    json maximize(json input) {
+    json maximize(const json &input) {
         json output;
         window::maximize();
         output["success"] = true;
         return output;
     }
 
-    json unmaximize(json input) {
+    json unmaximize(const json &input) {
         json output;
         window::unmaximize();
         output["success"] = true;
         return output;
     }
     
-    json isMaximized(json input) {
+    json isMaximized(const json &input) {
         json output;
         output["returnValue"] = window::isMaximized();
         output["success"] = true;
         return output;
     }
 
-    json minimize(json input) {
+    json minimize(const json &input) {
         json output; 
         #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_iconify(GTK_WINDOW(windowHandle));
@@ -418,7 +420,7 @@ namespace controllers {
         return output;
     }
     
-    json show(json input) {
+    json show(const json &input) {
         json output;
         #if defined(__linux__) || defined(__FreeBSD__)
         nativeWindow->dispatch([&]() {
@@ -431,42 +433,42 @@ namespace controllers {
         return output;
     }
 
-    json hide(json input) {
+    json hide(const json &input) {
         json output;
         window::hide();
         output["success"] = true;
         return output;
     }
     
-    json isVisible(json input) {
+    json isVisible(const json &input) {
         json output;
         output["returnValue"] = window::isVisible();
         output["success"] = true;
         return output;
     }
     
-    json setFullScreen(json input) {
+    json setFullScreen(const json &input) {
         json output;
         window::setFullScreen();
         output["success"] = true;
         return output;
     }
 
-    json exitFullScreen(json input) {
+    json exitFullScreen(const json &input) {
         json output;
         window::exitFullScreen();
         output["success"] = true;
         return output;
     }
     
-    json isFullScreen(json input) {
+    json isFullScreen(const json &input) {
         json output;
         output["returnValue"] = window::isFullScreen();
         output["success"] = true;
         return output;
     }
     
-    json focus(json input) {
+    json focus(const json &input) {
         json output; 
         #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_present(GTK_WINDOW(windowHandle));
@@ -480,16 +482,24 @@ namespace controllers {
         return output;
     }
     
-    json setIcon(json input) {
+    json setIcon(const json &input) {
         json output;
+        if(!input.contains("icon")) {
+            output["error"] = helpers::makeMissingArgErrorPayload();
+            return output;
+        }
         string icon = input["icon"].get<string>();
         window::setIcon(icon);
         output["success"] = true;
         return output;
     }
     
-    json move(json input) {
+    json move(const json &input) {
         json output; 
+        if(!input.contains("x") || !input.contains("y")) {
+            output["error"] = helpers::makeMissingArgErrorPayload();
+            return output;
+        }
         int x = input["x"].get<int>();
         int y = input["y"].get<int>();
         #if defined(__linux__) || defined(__FreeBSD__)
@@ -510,7 +520,7 @@ namespace controllers {
         return output;
     }
     
-    json setSize(json input) {
+    json setSize(const json &input) {
         json output;
         window::SizeOptions sizeOptions = __jsonToSizeOptions(input);
             
@@ -521,39 +531,39 @@ namespace controllers {
         return output;
     }
     
-    json init(json input) {
+    json init(const json &input) {
         json output;
         
         windowProps.sizeOptions = __jsonToSizeOptions(input, true);
         
-        if(!input["fullScreen"].is_null())
+        if(input.contains("fullScreen"))
             windowProps.fullScreen = input["fullScreen"].get<bool>();
 
-        if(!input["alwaysOnTop"].is_null())
+        if(input.contains("alwaysOnTop"))
             windowProps.alwaysOnTop = input["alwaysOnTop"].get<bool>();
 
-        if(!input["title"].is_null())
+        if(input.contains("title"))
             windowProps.title = input["title"].get<string>();
 
-        if(!input["url"].is_null())
+        if(input.contains("url"))
             windowProps.url = input["url"].get<string>();
 
-        if(!input["icon"].is_null())
+        if(input.contains("icon"))
             windowProps.icon = input["icon"].get<string>();
 
-        if(!input["enableInspector"].is_null())
+        if(input.contains("enableInspector"))
             windowProps.enableInspector = input["enableInspector"].get<bool>();
 
-        if(!input["borderless"].is_null())
+        if(input.contains("borderless"))
             windowProps.borderless = input["borderless"].get<bool>();
 
-        if(!input["maximize"].is_null())
+        if(input.contains("maximize"))
             windowProps.maximize = input["maximize"].get<bool>();
 
-        if(!input["hidden"].is_null())
+        if(input.contains("hidden"))
             windowProps.hidden = input["hidden"].get<bool>();
             
-        if(!input["exitProcessOnClose"].is_null())
+        if(input.contains("exitProcessOnClose"))
             windowProps.exitProcessOnClose = input["exitProcessOnClose"].get<bool>();
 
         __createWindow();

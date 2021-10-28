@@ -15,7 +15,7 @@ namespace authbasic {
         return token;
     }
 
-    bool verifyToken(string accessToken) {
+    bool verifyToken(const string &accessToken) {
         return token == accessToken;
     }
 } // namespace authbasic
