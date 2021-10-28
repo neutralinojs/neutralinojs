@@ -9,6 +9,8 @@
 #include <array>
 #include <map>
 #include <cstring>
+#include <vector>
+#include <boost/process.hpp>
 
 #include "lib/platformfolders/platform_folders.h"
 #include "lib/filedialogs/portable-file-dialogs.h"
@@ -68,98 +70,48 @@ namespace os {
         #endif
     }
     
-    string execCommand(string command, bool shouldCombineErrorStream, 
-        bool shouldRunInBackground) {
-        if(shouldCombineErrorStream)
-            command += " 2>&1";
-        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-        
-        if(shouldRunInBackground)        
-            command += " &";
-        
-        array<char, 128> buffer;
-        string result = "";
-        shared_ptr<FILE> pipe(popen(command.c_str(), "r"), pclose);
-        if (!pipe) {
-            debug::log("ERROR", "Pipe open failed.");
-        }
-        else if(!shouldRunInBackground) {
-            while( !feof(pipe.get())) {
-                if(fgets(buffer.data(), 128, pipe.get()) != nullptr)
-                    result += buffer.data();
-            }
-        }
-        // Erase ending new line charactor
-        if (!result.empty() && result[result.length() - 1] == '\n')
-            result.erase(result.length() - 1);
-        return result;
-
-        #elif defined(_WIN32)
-        if(shouldRunInBackground)
-            command = "start \"\" /b " + command;
-        // A modified version of https://stackoverflow.com/a/59523254
-        string output = "";
-        HANDLE g_hChildStd_OUT_Rd = NULL;
-        HANDLE g_hChildStd_OUT_Wr = NULL;
-
-        SECURITY_ATTRIBUTES sa;
-        // Set the bInheritHandle flag so pipe handles are inherited.
-        sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-        sa.bInheritHandle = TRUE;
-        sa.lpSecurityDescriptor = NULL;
-        if (!CreatePipe(&g_hChildStd_OUT_Rd, &g_hChildStd_OUT_Wr, &sa, 0))     { return output; } // Create a pipe for the child process's STDOUT.
-        if (!SetHandleInformation(g_hChildStd_OUT_Rd, HANDLE_FLAG_INHERIT, 0)) { return output; } // Ensure the read handle to the pipe for STDOUT is not inherited
-
-        PROCESS_INFORMATION piProcInfo;
-        STARTUPINFO siStartInfo;
-        bool bSuccess = FALSE;
-
-        // Set up members of the PROCESS_INFORMATION structure.
-        ZeroMemory(&piProcInfo, sizeof(PROCESS_INFORMATION));
-
-        // Set up members of the STARTUPINFO structure.
-        // This structure specifies the STDERR and STDOUT handles for redirection.
-        ZeroMemory(&siStartInfo, sizeof(STARTUPINFO));
-        siStartInfo.cb = sizeof(STARTUPINFO);
-        siStartInfo.hStdOutput = g_hChildStd_OUT_Wr;
-        siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
-
-        // Create the child process.
-        bSuccess = CreateProcess(
-            NULL,             // program name
-            (LPSTR)("cmd /c " + command).c_str(),       // command line
-            NULL,             // process security attributes
-            NULL,             // primary thread security attributes
-            TRUE,             // handles are inherited
-            CREATE_NO_WINDOW, // creation flags (this is what hides the window)
-            NULL,             // use parent's environment
-            NULL,             // use parent's current directory
-            &siStartInfo,     // STARTUPINFO pointer
-            &piProcInfo       // receives PROCESS_INFORMATION
-        );
-        CloseHandle(g_hChildStd_OUT_Wr);
-
-        // read output
-        DWORD dwRead;
-        CHAR chBuf[EXEC_BUFSIZE];
-        bool bSuccess2 = FALSE;
-        for (;!shouldRunInBackground;) { // read stdout
-            bSuccess2 = ReadFile(g_hChildStd_OUT_Rd, chBuf, EXEC_BUFSIZE, &dwRead, NULL);
-            if(!bSuccess2 || dwRead == 0) break;
-            string s(chBuf, dwRead);
-            output += s;
-        }
-
-        // The remaining open handles are cleaned up when this process terminates.
-        // To avoid resource leaks in a larger application,
-        // close handles explicitly.
-        
-        // Erase ending new line charactors
-        if (output.length() >= 2 &&  output[output.length() - 2] == '\r' && 
-            output[output.length() - 1] == '\n')
-            output.erase(output.length() - 2, 2);
-        return output;
+    os::CommandResult execCommand(string command, const string &input) {
+        #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
+        command = "bash -c \"" + command + "\"";
+        #elif define(_WIN32)
+        command = "cmd.exe /c \"" + command + "\"";
         #endif
+        
+        os::CommandResult commandResult;
+        
+        boost::process::opstream in;
+        boost::process::ipstream out;
+        boost::process::ipstream err;
+        
+        boost::process::child childProcess(command, 
+            boost::process::std_out > out, 
+            boost::process::std_in < in, 
+            boost::process::std_err > err
+        );
+
+        in << input << endl;
+        in.close();
+        in.pipe().close();
+
+        childProcess.wait();
+        
+        commandResult.stdOut = "";
+        commandResult.stdErr = "";
+        string line;
+
+        while(getline(out, line)) {
+            commandResult.stdOut += line + "\n";
+        }
+        while(getline(err, line)) {
+            commandResult.stdErr += line + "\n";
+        }
+
+        err.close();
+        out.close();
+        
+        commandResult.pid = childProcess.id();
+        commandResult.exitCode = childProcess.exit_code();
+        return commandResult;
     }
     
     string getPath(const string &name) {
@@ -208,12 +160,19 @@ namespace controllers {
             return output;
         }
         string command = input["command"].get<string>();
-        bool shouldRunInBackground = false;
-        if(input.contains("shouldRunInBackground")) {
-            shouldRunInBackground = input["shouldRunInBackground"];
+        string stdIn = "";
+        if(input.contains("stdIn")) {
+            stdIn = input["stdIn"].get<string>();
         }
+        os::CommandResult commandResult = os::execCommand(command, stdIn);
 
-        output["returnValue"] = os::execCommand(command, true, shouldRunInBackground);
+        json retVal;
+        retVal["pid"] = commandResult.pid;
+        retVal["exitCode"] = commandResult.exitCode;
+        retVal["stdOut"] = commandResult.stdOut;
+        retVal["stdErr"] = commandResult.stdErr;
+        
+        output["returnValue"] = retVal;
         output["success"] = true;
         return output;
     }

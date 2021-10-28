@@ -9,9 +9,16 @@ using json = nlohmann::json;
 using namespace std;
 
 namespace os {
+
+    struct CommandResult {
+        int pid;
+        int exitCode;
+        string stdErr;
+        string stdOut;
+    };
+
     void open(const string &url);
-    string execCommand(string command, bool shouldCombineErrorStream = false,
-                        bool shouldRunInBackground = false);
+    os::CommandResult execCommand(string command, const string &input = "");
     string getPath(const string &name);
 
 namespace controllers {
