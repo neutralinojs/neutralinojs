@@ -300,6 +300,7 @@ var Neutralino = (function (exports) {
         getConfig: getConfig
     });
 
+    const draggableRegions = new WeakMap();
     function setTitle(title) {
         return sendMessage('window.setTitle', { title });
     }
@@ -342,29 +343,74 @@ var Neutralino = (function (exports) {
     function move(x, y) {
         return sendMessage('window.move', { x, y });
     }
-    function setDraggableRegion(domId) {
+    function setDraggableRegion(domElementOrId) {
         return new Promise((resolve, reject) => {
-            let draggableRegion = document.getElementById(domId);
+            const draggableRegion = domElementOrId instanceof Element ?
+                domElementOrId : document.getElementById(domElementOrId);
             let initialClientX = 0;
             let initialClientY = 0;
-            if (!draggableRegion)
-                reject(`Unable to find dom element: #${domId}`);
-            draggableRegion.addEventListener('pointerdown', (evt) => {
-                initialClientX = evt.clientX;
-                initialClientY = evt.clientY;
-                draggableRegion.addEventListener('pointermove', onPointerMove);
-                draggableRegion.setPointerCapture(evt.pointerId);
-            });
-            draggableRegion.addEventListener('pointerup', (evt) => {
-                draggableRegion.removeEventListener('pointermove', onPointerMove);
-                draggableRegion.releasePointerCapture(evt.pointerId);
-            });
+            if (!draggableRegion) {
+                return reject({
+                    code: 'NE_WD_DOMNOTF',
+                    message: 'Unable to find DOM element'
+                });
+            }
+            if (draggableRegions.has(draggableRegion)) {
+                return reject({
+                    code: 'NE_WD_ALRDREL',
+                    message: 'This DOM element is already an active draggable region'
+                });
+            }
+            draggableRegion.addEventListener('pointerdown', startPointerCapturing);
+            draggableRegion.addEventListener('pointerup', endPointerCapturing);
+            draggableRegions.set(draggableRegion, { pointerdown: startPointerCapturing, pointerup: endPointerCapturing });
             function onPointerMove(evt) {
                 return __awaiter(this, void 0, void 0, function* () {
                     yield Neutralino.window.move(evt.screenX - initialClientX, evt.screenY - initialClientY);
                 });
             }
-            resolve();
+            function startPointerCapturing(evt) {
+                if (evt.button !== 0)
+                    return;
+                initialClientX = evt.clientX;
+                initialClientY = evt.clientY;
+                draggableRegion.addEventListener('pointermove', onPointerMove);
+                draggableRegion.setPointerCapture(evt.pointerId);
+            }
+            function endPointerCapturing(evt) {
+                draggableRegion.removeEventListener('pointermove', onPointerMove);
+                draggableRegion.releasePointerCapture(evt.pointerId);
+            }
+            resolve({
+                success: true,
+                message: 'Draggable region was activated'
+            });
+        });
+    }
+    function unsetDraggableRegion(domElementOrId) {
+        return new Promise((resolve, reject) => {
+            const draggableRegion = domElementOrId instanceof Element ?
+                domElementOrId : document.getElementById(domElementOrId);
+            if (!draggableRegion) {
+                return reject({
+                    code: 'NE_WD_DOMNOTF',
+                    message: 'Unable to find DOM element'
+                });
+            }
+            if (!draggableRegions.has(draggableRegion)) {
+                return reject({
+                    code: 'NE_WD_NOTDRRE',
+                    message: 'DOM element is not a active draggable region'
+                });
+            }
+            const { pointerdown, pointerup } = draggableRegions.get(draggableRegion);
+            draggableRegion.removeEventListener('pointerdown', pointerdown);
+            draggableRegion.removeEventListener('pointerup', pointerup);
+            draggableRegions.delete(draggableRegion);
+            resolve({
+                success: true,
+                message: 'Draggable region was deactivated'
+            });
         });
     }
     function setSize(options) {
@@ -399,7 +445,10 @@ var Neutralino = (function (exports) {
                 command += " " + options.processArgs;
             Neutralino.os.execCommand(command, { shouldRunInBackground: true })
                 .then(() => {
-                resolve();
+                resolve({
+                    success: true,
+                    message: 'New window instance created'
+                });
             })
                 .catch((error) => {
                 reject(error);
@@ -424,6 +473,7 @@ var Neutralino = (function (exports) {
         setIcon: setIcon,
         move: move,
         setDraggableRegion: setDraggableRegion,
+        unsetDraggableRegion: unsetDraggableRegion,
         setSize: setSize,
         create: create
     });
