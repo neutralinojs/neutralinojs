@@ -178,6 +178,7 @@ namespace settings {
             {"--port", {"/port", "int"}},
             {"--logging-enabled", {"/logging/enabled", "bool"}},
             {"--logging-write-to-log-file", {"/logging/writeToLogFile", "bool"}},
+            {"--enable-server", {"/enableServer", "bool"}},
             // Window mode
             {"--window-title", {"/modes/window/title", "string"}},
             {"--window-width", {"/modes/window/width", "int"}},
@@ -213,6 +214,13 @@ namespace settings {
                 "/modes/window/logging/writeToLogFile", 
                 "/modes/browser/logging/writeToLogFile", 
                 "/modes/cloud/logging/writeToLogFile"
+                }
+            },
+            {"/enableServer", 
+                {
+                "/modes/window/enableServer", 
+                "/modes/browser/enableServer", 
+                "/modes/cloud/enableServer"
                 }
             },
         };
