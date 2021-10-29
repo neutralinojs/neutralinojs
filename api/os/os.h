@@ -18,7 +18,7 @@ namespace os {
     };
 
     void open(const string &url);
-    os::CommandResult execCommand(string command, const string &input = "");
+    os::CommandResult execCommand(string command, const string &input = "", bool background = false);
     string getPath(const string &name);
 
 namespace controllers {

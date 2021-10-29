@@ -70,7 +70,7 @@ namespace os {
         #endif
     }
     
-    os::CommandResult execCommand(string command, const string &input) {
+    os::CommandResult execCommand(string command, const string &input, bool background) {
         #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
         command = "bash -c \"" + command + "\"";
         #elif define(_WIN32)
@@ -79,35 +79,40 @@ namespace os {
         
         os::CommandResult commandResult;
         
-        boost::process::opstream in;
-        boost::process::ipstream out;
-        boost::process::ipstream err;
+        boost::process::opstream inStream;
+        boost::process::ipstream outStream;
+        boost::process::ipstream errStream;
         
         boost::process::child childProcess(command, 
-            boost::process::std_out > out, 
-            boost::process::std_in < in, 
-            boost::process::std_err > err
+            boost::process::std_out > outStream, 
+            boost::process::std_in < inStream, 
+            boost::process::std_err > errStream
         );
-
-        in << input << endl;
-        in.close();
-        in.pipe().close();
-
-        childProcess.wait();
         
         commandResult.stdOut = "";
         commandResult.stdErr = "";
-        string line;
 
-        while(getline(out, line)) {
-            commandResult.stdOut += line + "\n";
-        }
-        while(getline(err, line)) {
-            commandResult.stdErr += line + "\n";
-        }
+        inStream << input << endl;
+        inStream.close();
+        inStream.pipe().close();
 
-        err.close();
-        out.close();
+        if(background) {
+            childProcess.detach();
+        }
+        else {
+            childProcess.wait();
+
+            string line;
+
+            while(getline(outStream, line)) {
+                commandResult.stdOut += line + "\n";
+            }
+            while(getline(errStream, line)) {
+                commandResult.stdErr += line + "\n";
+            }
+        }
+        errStream.close();
+        outStream.close();
         
         commandResult.pid = childProcess.id();
         commandResult.exitCode = childProcess.exit_code();
@@ -160,11 +165,15 @@ namespace controllers {
             return output;
         }
         string command = input["command"].get<string>();
+        bool background = false;
         string stdIn = "";
         if(input.contains("stdIn")) {
             stdIn = input["stdIn"].get<string>();
         }
-        os::CommandResult commandResult = os::execCommand(command, stdIn);
+        if(input.contains("background")) {
+            background = input["background"].get<bool>();
+        }
+        os::CommandResult commandResult = os::execCommand(command, stdIn, background);
 
         json retVal;
         retVal["pid"] = commandResult.pid;
