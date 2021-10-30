@@ -11,10 +11,10 @@ using namespace std;
 namespace os {
 
     struct CommandResult {
-        int pid;
-        int exitCode;
-        string stdErr;
-        string stdOut;
+        int pid = -1;
+        int exitCode = -1;
+        string stdErr = "";
+        string stdOut = "";
     };
 
     void open(const string &url);

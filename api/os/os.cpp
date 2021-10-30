@@ -12,6 +12,7 @@
 #include <vector>
 #include <boost/process.hpp>
 
+#include "lib/tinyprocess/process.hpp"
 #include "lib/platformfolders/platform_folders.h"
 #include "lib/filedialogs/portable-file-dialogs.h"
 
@@ -29,7 +30,6 @@
 #include <gdiplus.h>
 #include <shlwapi.h>
 #define TRAY_WINAPI 1
-#define EXEC_BUFSIZE 4096
 
 #pragma comment(lib, "Comdlg32.lib")
 #pragma comment(lib, "Shell32.lib")
@@ -71,51 +71,37 @@ namespace os {
     }
     
     os::CommandResult execCommand(string command, const string &input, bool background) {
-        #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
-        command = "bash -c \"" + command + "\"";
-        #elif define(_WIN32)
+        #if defined(_WIN32)
         command = "cmd.exe /c \"" + command + "\"";
         #endif
         
         os::CommandResult commandResult;
-        
-        boost::process::opstream inStream;
-        boost::process::ipstream outStream;
-        boost::process::ipstream errStream;
-        
-        boost::process::child childProcess(command, 
-            boost::process::std_out > outStream, 
-            boost::process::std_in < inStream, 
-            boost::process::std_err > errStream
-        );
-        
-        commandResult.stdOut = "";
-        commandResult.stdErr = "";
+        TinyProcessLib::Process *childProcess;
 
-        inStream << input << endl;
-        inStream.close();
-        inStream.pipe().close();
-
-        if(background) {
-            childProcess.detach();
-        }
+        if(!background) 
+            childProcess = new TinyProcessLib::Process(
+                command, "",
+                [&](const char *bytes, size_t n) {
+                    commandResult.stdOut += string(bytes, n);
+                },
+                [&](const char *bytes, size_t n) {
+                    commandResult.stdErr += string(bytes, n);
+                }, !input.empty()
+            );
         else {
-            childProcess.wait();
-
-            string line;
-
-            while(getline(outStream, line)) {
-                commandResult.stdOut += line + "\n";
-            }
-            while(getline(errStream, line)) {
-                commandResult.stdErr += line + "\n";
-            }
+            childProcess = new TinyProcessLib::Process(command, "", nullptr, nullptr);
         }
-        errStream.close();
-        outStream.close();
+
+        if(!background && !input.empty()) {
+            childProcess->write(input);
+            childProcess->close_stdin();
+        }
         
-        commandResult.pid = childProcess.id();
-        commandResult.exitCode = childProcess.exit_code();
+        commandResult.pid = childProcess->get_id();
+        if(!background) {
+            commandResult.exitCode = childProcess->get_exit_status(); // sync await
+        }
+        delete childProcess;
         return commandResult;
     }
     
