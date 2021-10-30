@@ -63,6 +63,8 @@ auth/authbasic.cpp ^
 auth/permission.cpp ^
 server/ping.cpp ^
 helpers.cpp ^
+lib/tinyprocess/process.cpp ^
+lib/tinyprocess/process_win.cpp ^
 lib/easylogging/easylogging++.cc ^
 lib/platformfolders/platform_folders.cpp ^
 api/computer/computer.cpp ^

@@ -400,7 +400,7 @@ var Neutralino = (function (exports) {
             if (!draggableRegions.has(draggableRegion)) {
                 return reject({
                     code: 'NE_WD_NOTDRRE',
-                    message: 'DOM element is not a active draggable region'
+                    message: 'DOM element is not an active draggable region'
                 });
             }
             const { pointerdown, pointerup } = draggableRegions.get(draggableRegion);
@@ -443,7 +443,7 @@ var Neutralino = (function (exports) {
             }
             if (options && options.processArgs)
                 command += " " + options.processArgs;
-            Neutralino.os.execCommand(command, { shouldRunInBackground: true })
+            Neutralino.os.execCommand(command, { background: true })
                 .then(() => {
                 resolve({
                     success: true,

@@ -338,8 +338,8 @@ namespace controllers {
         string destination = input["destination"].get<string>();
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         string command = "cp \"" + source + "\" \"" + destination + "\"";
-        string commandOutput = os::execCommand(command, true);
-        if(commandOutput.empty()) {
+        os::CommandResult commandResult = os::execCommand(command);
+        if(commandResult.stdErr.empty()) {
 
         #elif defined(_WIN32)
         if(CopyFile(source.c_str(), destination.c_str(), false) == 1) {
@@ -364,8 +364,8 @@ namespace controllers {
         string destination = input["destination"].get<string>();
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         string command = "mv \"" + source + "\" \"" + destination + "\"";
-        string commandOutput = os::execCommand(command, true);
-        if(commandOutput.empty()) {
+        os::CommandResult commandResult = os::execCommand(command);
+        if(commandResult.stdErr.empty()) {
 
         #elif defined(_WIN32)
         if(MoveFile(source.c_str(), destination.c_str()) == 1) {
