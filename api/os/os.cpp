@@ -87,7 +87,6 @@ namespace os {
         else {
             childProcess = new TinyProcessLib::Process(command, "", nullptr, nullptr);
         }
-        
         commandResult.pid = childProcess->get_id();
 
         if(!background) {
@@ -95,10 +94,8 @@ namespace os {
                 childProcess->write(input);
                 childProcess->close_stdin();
             }
-
-            commandResult.exitCode = childProcess->get_exit_status(); // sync await
+            commandResult.exitCode = childProcess->get_exit_status(); // sync wait
         }
-
         delete childProcess;
         return commandResult;
     }
