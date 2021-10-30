@@ -8,8 +8,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ### API | os.execCommand
 
-- Changed `shouldRunInBackground` option to `background`.
-- Supports `stdIn` as optional input.
+- Renamed `shouldRunInBackground` option to `background`.
+- Supports `stdIn` as an optional input.
 - Returns multiple values: `stdOut`, `stdErr`, `pid`, and `exitCode`.
 
 
