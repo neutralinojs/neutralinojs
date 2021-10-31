@@ -32,6 +32,8 @@ c++ $FLAGS resources.cpp \
     settings.cpp \
     auth/authbasic.cpp \
     auth/permission.cpp \
+    lib/tinyprocess/process.cpp \
+    lib/tinyprocess/process_unix.cpp \
     lib/easylogging/easylogging++.cc \
     lib/platformfolders/platform_folders.cpp \
     api/filesystem/filesystem.cpp \
