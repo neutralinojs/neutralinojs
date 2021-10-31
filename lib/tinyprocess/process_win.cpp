@@ -136,7 +136,7 @@ Process::id_type Process::open(const string_type &command, const string_type &pa
   }
   BOOL bSuccess = CreateProcess(nullptr, process_command.empty() ? nullptr : &process_command[0], nullptr, nullptr,
                                 stdin_fd || stdout_fd || stderr_fd || config.inherit_file_descriptors, // Cannot be false when stdout, stderr or stdin is used
-                                stdin_fd || stdout_fd || stderr_fd ? CREATE_NO_WINDOW : 0,             // CREATE_NO_WINDOW cannot be used when stdout or stderr is redirected to parent process
+                                CREATE_NO_WINDOW, // Always the process_command comes with cmd /c prex
                                 environment_str.empty() ? nullptr : &environment_str[0],
                                 path.empty() ? nullptr : path.c_str(),
                                 &startup_info, &process_info);

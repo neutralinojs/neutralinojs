@@ -10,7 +10,6 @@
 #include <map>
 #include <cstring>
 #include <vector>
-#include <boost/process.hpp>
 
 #include "lib/tinyprocess/process.hpp"
 #include "lib/platformfolders/platform_folders.h"
@@ -23,15 +22,12 @@
 #define TRAY_APPKIT 1
 
 #elif defined(_WIN32)
+#define TRAY_WINAPI 1
 #define _WINSOCKAPI_
 #include <windows.h>
-#include <shlobj.h>
-#include <shobjidl.h>
 #include <gdiplus.h>
 #include <shlwapi.h>
-#define TRAY_WINAPI 1
 
-#pragma comment(lib, "Comdlg32.lib")
 #pragma comment(lib, "Shell32.lib")
 #pragma comment (lib,"Gdiplus.lib")
 #endif
@@ -91,16 +87,18 @@ namespace os {
         else {
             childProcess = new TinyProcessLib::Process(command, "", nullptr, nullptr);
         }
-
-        if(!background && !input.empty()) {
-            childProcess->write(input);
-            childProcess->close_stdin();
-        }
         
         commandResult.pid = childProcess->get_id();
+
         if(!background) {
+            if(!input.empty()) {
+                childProcess->write(input);
+                childProcess->close_stdin();
+            }
+
             commandResult.exitCode = childProcess->get_exit_status(); // sync await
         }
+
         delete childProcess;
         return commandResult;
     }
