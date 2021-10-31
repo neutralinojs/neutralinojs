@@ -50,6 +50,8 @@ Ask questions on StackOverflow using tag [neutralinojs](https://stackoverflow.co
 
 ## Framework Developer Guide
 
+**NOTE**: The following setup guide is for building Neutralinojs from source. You don't need to do the following setup to create Neutralinojs applications. 
+
 ### Setup and compilation
 
 First, clone this repository.
