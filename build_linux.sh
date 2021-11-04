@@ -19,6 +19,7 @@ g++ resources.cpp \
     server/neuserver.cpp \
     server/ping.cpp \
     settings.cpp \
+    extensions.cpp \
     auth/authbasic.cpp \
     auth/permission.cpp \
     lib/tinyprocess/process.cpp \

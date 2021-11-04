@@ -43,6 +43,13 @@
     "cli": {
         "binaryName": "neutralino",
         "resourcesPath": "/resources/",
+        "extensionsPath": "/extensions/",
         "clientLibrary": "/resources/js/neutralino.js"
-    }
+    },
+    "extensions": [
+        {
+            "id": "js.neutralino.sampleextension",
+            "command": "node {NL_PATH}/extensions/sampleextension/main.js"
+        }
+    ]
 }

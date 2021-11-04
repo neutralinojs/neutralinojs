@@ -28,6 +28,7 @@ namespace settings {
     string getGlobalVars();
     void setGlobalArgs(const json &args);
     string joinAppPath(const string &filename);
+    string getAppPath();
     string getMode();
     void setPort(int port);
     settings::CliArg _parseArg(const string &arg);

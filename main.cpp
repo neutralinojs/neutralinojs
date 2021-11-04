@@ -14,6 +14,7 @@
 #include "server/ping.h"
 #include "settings.h"
 #include "resources.h"
+#include "extensions.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
 #include "api/os/os.h"
@@ -106,6 +107,9 @@ void __initFramework(const json &args) {
     permission::init();
 }
 
+void __initExtra() {
+    extensions::init();
+}
 
 #if defined(_WIN32)
 #define ARG_C __argc
@@ -127,6 +131,7 @@ int main(int argc, char ** argv)
     __initFramework(args);
     __startServerAsync();
     __configureLogger();
+    __initExtra();
     __startApp();
     return 0;
 }

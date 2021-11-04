@@ -44,6 +44,10 @@ namespace settings {
     string joinAppPath(const string &filename) {
         return appPath + filename;
     }
+    
+    string getAppPath() {
+        return appPath;
+    }
 
     fs::FileReaderResult getFileContent(const string &filename) {
         if(!loadResFromDir)
