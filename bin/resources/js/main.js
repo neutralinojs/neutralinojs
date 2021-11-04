@@ -4,7 +4,7 @@ function showInfo() {
 }
 
 function openDocs() {
-    Neutralino.app.open("https://neutralino.js.org/docs");
+    Neutralino.os.open("https://neutralino.js.org/docs");
 }
 
 Neutralino.init();
