@@ -13,22 +13,6 @@
 #include "api/debug/debug.h"
 #include "api/app/app.h"
 
-#if defined(__linux__)
-#define OS_NAME "Linux"
-
-#elif defined(_WIN32)
-#define OS_NAME "Windows"
-
-#elif defined(__APPLE__)
-#define OS_NAME "Darwin"
-
-#elif defined(__FreeBSD__)
-#define OS_NAME "FreeBSD"
-#endif
-#define NL_VERSION "3.0.0"
-
-#define APP_CONFIG_FILE "/neutralino.config.json"
-
 using namespace std;
 using json = nlohmann::json;
 
@@ -44,7 +28,7 @@ namespace settings {
     string joinAppPath(const string &filename) {
         return appPath + filename;
     }
-    
+
     string getAppPath() {
         return appPath;
     }
@@ -53,7 +37,7 @@ namespace settings {
         if(!loadResFromDir)
             return resources::getFileContent(filename);
         fs::FileReaderResult fileReaderResult = fs::readFile(settings::joinAppPath(filename));
-        
+
         if(fileReaderResult.hasError) {
             debug::log("ERROR", fileReaderResult.error);
         }
@@ -71,13 +55,13 @@ namespace settings {
 
             // Apply config overrides
             json patches;
-            for(auto cfgOverride: configOverrides) {
+            for(const auto &cfgOverride: configOverrides) {
                 json patch;
 
-                patch["op"] = options[json::json_pointer(cfgOverride.key)].is_null() 
+                patch["op"] = options[json::json_pointer(cfgOverride.key)].is_null()
                                     ? "add" : "replace";
                 patch["path"] = cfgOverride.key;
-                
+
                 // String to actual types
                 if(cfgOverride.convertTo == "int") {
                     patch["value"] = stoi(cfgOverride.value);
@@ -88,7 +72,7 @@ namespace settings {
                 else {
                     patch["value"] = cfgOverride.value;
                 }
-                
+
                 patches.push_back(patch);
             }
 
@@ -116,7 +100,7 @@ namespace settings {
 
         json jGlobalVariables = settings::getOptionForCurrentMode("globalVariables");
         if(!jGlobalVariables.is_null()) {
-            for ( auto it: jGlobalVariables.items()) {
+            for (const auto &it: jGlobalVariables.items()) {
                 jsSnippet += "var NL_" + it.key() +  "='" + it.value().get<string>() + "';";
             }
         }
@@ -126,8 +110,8 @@ namespace settings {
     void setGlobalArgs(const json &args) {
         int argIndex = 0;
         globalArgs = args;
-        for(string arg: args) {
-            settings::CliArg cliArg = _parseArg(arg); 
+        for(const string &arg: args) {
+            settings::CliArg cliArg = _parseArg(arg);
 
             // Set default path
             if(argIndex == 0) {
@@ -135,20 +119,20 @@ namespace settings {
                 if(appPath == "")
                     appPath = fs::getCurrentDirectory();
             }
-            
+
             // Resources read mode (res.neu or from directory)
             if(cliArg.key == "--load-dir-res") {
                 loadResFromDir = true;
             }
-            
+
             // Set app path context
             if(cliArg.key == "--path") {
                 appPath = cliArg.value;
             }
-            
+
             // Override app configs
             applyConfigOverride(cliArg);
-            
+
             argIndex++;
         }
     }
@@ -160,7 +144,7 @@ namespace settings {
     void setPort(int port) {
       options["port"] = port;
     }
-    
+
     settings::CliArg _parseArg(const string &argStr) {
         settings::CliArg arg;
         vector<string> argParts = helpers::split(argStr, '=');
@@ -173,7 +157,7 @@ namespace settings {
         }
         return arg;
     }
-    
+
     void applyConfigOverride(const settings::CliArg &arg) {
         map<string, vector<string>> cliMappings = {
             // Top level
@@ -202,33 +186,33 @@ namespace settings {
             {"--window-exit-process-on-close", {"/modes/window/exitProcessOnClose", "bool"}},
             {"--window-icon", {"/modes/window/icon", "string"}}
         };
-        
+
         map<string, vector<string>> cliMappingAliases = {
             {"/port", {"/modes/window/port", "/modes/browser/port", "/modes/cloud/port"}},
             {"/url", {"/modes/window/url", "/modes/browser/url", "/modes/cloud/url"}},
-            {"/logging/enabled", 
+            {"/logging/enabled",
                 {
                 "/modes/window/logging/enabled",
                 "/modes/browser/logging/enabled",
                 "/modes/cloud/logging/enabled"
                 }
             },
-            {"/logging/writeToLogFile", 
+            {"/logging/writeToLogFile",
                 {
-                "/modes/window/logging/writeToLogFile", 
-                "/modes/browser/logging/writeToLogFile", 
+                "/modes/window/logging/writeToLogFile",
+                "/modes/browser/logging/writeToLogFile",
                 "/modes/cloud/logging/writeToLogFile"
                 }
             },
-            {"/enableServer", 
+            {"/enableServer",
                 {
-                "/modes/window/enableServer", 
-                "/modes/browser/enableServer", 
+                "/modes/window/enableServer",
+                "/modes/browser/enableServer",
                 "/modes/cloud/enableServer"
                 }
             },
         };
-        
+
         if(cliMappings.find(arg.key) != cliMappings.end()) {
             if(arg.key == "--mode") {
                 if(arg.value != "browser" && arg.value != "window" && arg.value != "cloud") {
@@ -245,12 +229,12 @@ namespace settings {
             if(cfgOverride.convertTo == "bool" && cfgOverride.value.empty()) {
                 cfgOverride.value = "true";
             }
-            
+
             // Add original
             configOverrides.push_back(cfgOverride);
-            
+
             // Add aliases
-            for(string alias: cliMappingAliases[cfgOverride.key]) {
+            for(const string &alias: cliMappingAliases[cfgOverride.key]) {
                 settings::ConfigOverride cfgOverrideAlias = cfgOverride;
                 cfgOverrideAlias.key = alias;
 
@@ -258,13 +242,13 @@ namespace settings {
             }
         }
     }
-    
+
     // Priority: mode -> root -> null
     json getOptionForCurrentMode(const string &key) {
         string mode = settings::getMode();
         json value = options["modes"][mode][key];
         if(value.is_null()) {
-            value = options[key]; 
+            value = options[key];
         }
         return value;
     }

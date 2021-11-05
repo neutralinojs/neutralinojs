@@ -25,11 +25,16 @@ namespace extensions {
             return;
         vector<json> extensions = jExtensions.get<vector<json>>();
         for(json extension: extensions) {
-            if(!extension.contains("id") || !extension.contains("command")) {
+            string commandKeyForOs = "command" + string(OS_NAME);
+
+            if(!extension.contains("id") || (!extension.contains("command") &&
+                !extension.contains(commandKeyForOs)) ) {
                 continue;
             }
-            string command = extension["command"].get<string>();
-            command = regex_replace(command, regex("\\{NL_PATH\\}"), settings::getAppPath());
+
+            string command = extension.contains(commandKeyForOs) ? extension[commandKeyForOs].get<string>()
+                                : extension["command"].get<string>();
+            command = regex_replace(command, regex("\\$\\{NL_PATH\\}"), settings::getAppPath());
             command += " " + __buildExtensionArgs();
 
             os::execCommand(command, "", true); // async

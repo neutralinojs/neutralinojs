@@ -25,7 +25,7 @@ namespace resources {
         vector <string> pathSegments = helpers::split(path, '/');
         string filename = pathSegments[pathSegments.size() - 1];
         json json = node;
-        for(auto pathSegment: pathSegments) {
+        for(const auto &pathSegment: pathSegments) {
             if(pathSegment.length() == 0 || json.is_null() || json["files"].is_null())
                 continue;
             json = json["files"][pathSegment];
@@ -94,7 +94,7 @@ namespace resources {
         fileTree = files;
         return fileTree != nullptr;
     }
-    
+
     void extractFile(const string &filename, const string &outputFilename) {
         fs::FileReaderResult fileReaderResult = resources::getFileContent(filename);
         fs::FileWriterOptions fileWriterOptions;

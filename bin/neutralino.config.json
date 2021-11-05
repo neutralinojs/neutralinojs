@@ -48,8 +48,14 @@
     },
     "extensions": [
         {
+            "id": "js.neutralino.simplecall",
+            "command": "echo Hello"
+        },
+        {
             "id": "js.neutralino.sampleextension",
-            "command": "node {NL_PATH}/extensions/sampleextension/main.js"
+            "commandLinux": "node ${NL_PATH}/extensions/sampleextension/main.js --linux",
+            "commandDarwin": "node ${NL_PATH}/extensions/sampleextension/main.js --darwin",
+            "commandWindows": "node ${NL_PATH}/extensions/sampleextension/main.js --windows"
         }
     ]
 }

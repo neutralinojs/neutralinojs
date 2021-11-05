@@ -65,16 +65,16 @@ namespace os {
         ShellExecute(0, 0, url.c_str(), 0, 0, SW_SHOW );
         #endif
     }
-    
+
     os::CommandResult execCommand(string command, const string &input, bool background) {
         #if defined(_WIN32)
         command = "cmd.exe /c \"" + command + "\"";
         #endif
-        
+
         os::CommandResult commandResult;
         TinyProcessLib::Process *childProcess;
 
-        if(!background) 
+        if(!background)
             childProcess = new TinyProcessLib::Process(
                 command, "",
                 [&](const char *bytes, size_t n) {
@@ -99,31 +99,31 @@ namespace os {
         delete childProcess;
         return commandResult;
     }
-    
+
     string getPath(const string &name) {
         if(name == "config")
             return sago::getConfigHome();
         if(name == "data")
             return sago::getDataHome();
         if(name == "cache")
-            return sago::getCacheDir();  
+            return sago::getCacheDir();
         if(name == "documents")
-            return sago::getDocumentsFolder();  
+            return sago::getDocumentsFolder();
         if(name == "pictures")
             return sago::getPicturesFolder();
         if(name == "music")
             return sago::getMusicFolder();
         if(name == "video")
-            return sago::getVideoFolder();  
+            return sago::getVideoFolder();
         if(name == "downloads")
-            return sago::getDownloadFolder();     
+            return sago::getDownloadFolder();
         if(name == "saveGames1")
-            return sago::getSaveGamesFolder1();  
+            return sago::getSaveGamesFolder1();
         if(name == "saveGames2")
-            return sago::getSaveGamesFolder2();     
+            return sago::getSaveGamesFolder2();
         return string();
     }
-    
+
 namespace controllers {
 
     vector<string> __extensionsToVector(const json &filters) {
@@ -161,7 +161,7 @@ namespace controllers {
         retVal["exitCode"] = commandResult.exitCode;
         retVal["stdOut"] = commandResult.stdOut;
         retVal["stdErr"] = commandResult.stdErr;
-        
+
         output["returnValue"] = retVal;
         output["success"] = true;
         return output;
@@ -192,35 +192,35 @@ namespace controllers {
         string title = "Open a file";
         vector <string> filters = {"All files", "*"};
         pfd::opt option = pfd::opt::none;
-        
+
         if(input.contains("title")) {
             title = input["title"].get<string>();
         }
-        
+
         if(input.contains("multiSelections") && input["multiSelections"].get<bool>()) {
             option = pfd::opt::multiselect;
         }
-        
+
         if(input.contains("filters")) {
             filters.clear();
             filters = __extensionsToVector(input["filters"]);
         }
-        
+
         vector<string> selectedEntries = pfd::open_file(title, "", filters, option).result();
 
         output["returnValue"] = selectedEntries;
         output["success"] = true;
         return output;
     }
-    
+
     json showFolderDialog(const json &input) {
         json output;
         string title = "Select a folder";
-        
+
         if(input.contains("title")) {
             title = input["title"].get<string>();
         }
-        
+
         string selectedEntry = pfd::select_folder(title, "", pfd::opt::none).result();
 
         output["returnValue"] = selectedEntry;
@@ -233,20 +233,20 @@ namespace controllers {
         string title = "Save a file";
         vector <string> filters = {"All files", "*"};
         pfd::opt option = pfd::opt::none;
-        
+
         if(input.contains("title")) {
             title = input["title"].get<string>();
         }
-        
+
         if(input.contains("forceOverwrite") && input["forceOverwrite"].get<bool>()) {
             option = pfd::opt::force_overwrite;
         }
-        
+
         if(input.contains("filters")) {
             filters.clear();
             filters = __extensionsToVector(input["filters"]);
         }
-        
+
         string selectedEntry = pfd::save_file(title, "", filters, option).result();
 
         output["returnValue"] = selectedEntry;
@@ -263,23 +263,23 @@ namespace controllers {
         string title = input["title"].get<string>();
         string content = input["content"].get<string>();
         string icon = "INFO";
-        
+
         if(input.contains("icon")) {
             icon = input["icon"].get<string>();
         }
-        
+
         map<string, pfd::icon> iconMap = {
             {"INFO", pfd::icon::info},
             {"WARNING", pfd::icon::warning},
             {"ERROR", pfd::icon::error},
             {"QUESTION", pfd::icon::question}
         };
-        
+
         if(iconMap.find(icon) != iconMap.end()) {
             pfd::notify(title, content, iconMap[icon]);
         }
         else {
-            output["error"] = helpers::makeErrorPayload("NE_OS_INVNOTA", 
+            output["error"] = helpers::makeErrorPayload("NE_OS_INVNOTA",
                                     "Invalid notification style arguments: " + icon);
         }
         output["success"] = true;
@@ -296,15 +296,15 @@ namespace controllers {
         string choice = "OK";
         string title = input["title"].get<string>();
         string content = input["content"].get<string>();
-        
+
         if(input.contains("icon")) {
             icon = input["icon"].get<string>();
         }
-        
+
         if(input.contains("choice")) {
             choice = input["choice"].get<string>();
         }
-        
+
         map<string, pfd::choice> choiceMap = {
             {"OK", pfd::choice::ok},
             {"OK_CANCEL", pfd::choice::ok_cancel},
@@ -313,14 +313,14 @@ namespace controllers {
             {"RETRY_CANCEL", pfd::choice::retry_cancel},
             {"ABORT_RETRY_IGNORE", pfd::choice::abort_retry_ignore}
         };
-        
+
         map<string, pfd::icon> iconMap = {
             {"INFO", pfd::icon::info},
             {"WARNING", pfd::icon::warning},
             {"ERROR", pfd::icon::error},
             {"QUESTION", pfd::icon::question}
         };
-        
+
         if(choiceMap.find(choice) != choiceMap.end() &&  iconMap.find(icon) != iconMap.end()) {
             pfd::button button = pfd::message(title, content, choiceMap[choice], iconMap[icon]).result();
             string selectedBtn = "IGNORE";
@@ -337,12 +337,12 @@ namespace controllers {
             output["success"] = true;
         }
         else {
-            output["error"] = helpers::makeErrorPayload("NE_OS_INVMSGA", 
+            output["error"] = helpers::makeErrorPayload("NE_OS_INVMSGA",
                                     "Invalid message box style arguments: " + choice + " or/and " + icon);
         }
         return output;
     }
-    
+
     void __handleTrayMenuItem(struct tray_menu *item) {
         (void)item;
         if(item->id == nullptr)
@@ -354,7 +354,7 @@ namespace controllers {
         eventData["isDisabled"] = item->disabled == 1;
     	events::dispatch("trayMenuItemClicked", eventData);
     }
-    
+
     json setTray(const json &input) {
         #if defined(_WIN32)
         GdiplusStartupInput gdiplusStartupInput;
@@ -363,26 +363,29 @@ namespace controllers {
         #endif
         json output;
         int menuCount = 1;
-            
+
         if(input.contains("menuItems")) {
             menuCount += input["menuItems"].size();
         }
-        
+
         menus[menuCount - 1] = { nullptr, nullptr, 0, 0, nullptr, nullptr };
-        
+
         int i = 0;
-        for (auto &menuItem: input["menuItems"]) {
+        for (const auto &menuItem: input["menuItems"]) {
             char *id = nullptr;
             char *text = helpers::cStrCopy(menuItem["text"].get<string>());
             int disabled = 0;
             int checked = 0;
-            if(!menuItem["id"].is_null())
+            if(menuItem.contains("id")) {
                 id = helpers::cStrCopy(menuItem["id"].get<string>());
-            if(!menuItem["isDisabled"].is_null() && menuItem["isDisabled"].get<bool>())
-                disabled = 1;
-            if(!menuItem["isChecked"].is_null() && menuItem["isChecked"].get<bool>())
-                checked = 1;
-                
+            }
+            if(menuItem.contains("isDisabled")) {
+                disabled = menuItem["isDisabled"].get<bool>() ? 1 : 0;
+            }
+            if(menuItem.contains("isChecked")) {
+                checked = menuItem["isChecked"].get<bool>() ? 1 : 0;
+            }
+
             delete[] menus[i].id;
             delete[] menus[i].text;
             menus[i] = { id, text, disabled, checked, __handleTrayMenuItem, nullptr };
@@ -424,14 +427,14 @@ namespace controllers {
             const char *iconData = iconDataStr.c_str();
             tray.icon =
                 ((id (*)(id, SEL))objc_msgSend)("NSImage"_cls, "alloc"_sel);
-            
+
             id nsIconData = ((id (*)(id, SEL, const char*, int))objc_msgSend)("NSData"_cls,
                         "dataWithBytes:length:"_sel, iconData, iconDataStr.length());
 
             ((void (*)(id, SEL, id))objc_msgSend)(tray.icon, "initWithData:"_sel, nsIconData);
             #endif
         }
-        
+
         if(!isTrayCreated) {
             tray_init(&tray);
             isTrayCreated = true;
@@ -445,7 +448,7 @@ namespace controllers {
         output["success"] = true;
         return output;
     }
-    
+
     json open(const json &input) {
         json output;
         if(!input.contains("url")) {
@@ -457,7 +460,7 @@ namespace controllers {
         output["success"] = true;
         return output;
     }
-    
+
     json getPath(const json &input) {
         json output;
         if(!input.contains("name")) {
@@ -471,7 +474,7 @@ namespace controllers {
             output["success"] = true;
         }
         else {
-            output["error"] = helpers::makeErrorPayload("NE_OS_INVKNPT", 
+            output["error"] = helpers::makeErrorPayload("NE_OS_INVKNPT",
                                     "Invalid platform path name: " + name);
         }
         return output;

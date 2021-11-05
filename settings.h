@@ -1,6 +1,22 @@
 #ifndef NEU_SETTINGS_H
 #define NEU_SETTINGS_H
 
+#if defined(__linux__)
+#define OS_NAME "Linux"
+
+#elif defined(_WIN32)
+#define OS_NAME "Windows"
+
+#elif defined(__APPLE__)
+#define OS_NAME "Darwin"
+
+#elif defined(__FreeBSD__)
+#define OS_NAME "FreeBSD"
+#endif
+#define NL_VERSION "3.0.0"
+
+#define APP_CONFIG_FILE "/neutralino.config.json"
+
 #include <string>
 
 #include "lib/json/json.hpp"
@@ -11,12 +27,12 @@ using json = nlohmann::json;
 extern bool loadResFromDir;
 
 namespace settings {
-    
+
     struct CliArg {
         string key;
         string value;
     };
-    
+
     struct ConfigOverride {
         string key;
         string value;
