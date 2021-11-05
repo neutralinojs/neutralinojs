@@ -172,7 +172,7 @@ void handleDisconnect(websocketpp::connection_hdl handler) {
     if(__isExtensionEndpoint(url)) {
         string extensionId = __getExtensionIdFromUrl(url);
         extConnections.erase(extensionId);
-        events::dispatch("extClientDisonnect", extConnections.size());
+        events::dispatch("extClientDisconnect", extConnections.size());
     }
     else {
         appConnections.erase(handler);
