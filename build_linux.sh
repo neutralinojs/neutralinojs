@@ -19,6 +19,7 @@ g++ resources.cpp \
     server/neuserver.cpp \
     server/ping.cpp \
     settings.cpp \
+    extensions.cpp \
     auth/authbasic.cpp \
     auth/permission.cpp \
     lib/tinyprocess/process.cpp \
@@ -33,6 +34,7 @@ g++ resources.cpp \
     api/app/app.cpp \
     api/window/window.cpp \
     api/events/events.cpp \
+    api/extensions/extensions.cpp \
     -pthread \
     -std=c++17 \
     -DELPP_NO_DEFAULT_LOG_FILE=1 \

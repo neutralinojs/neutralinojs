@@ -30,6 +30,7 @@ c++ $FLAGS resources.cpp \
     main.cpp \
     helpers.cpp \
     settings.cpp \
+    extensions.cpp \
     auth/authbasic.cpp \
     auth/permission.cpp \
     lib/tinyprocess/process.cpp \
@@ -44,6 +45,7 @@ c++ $FLAGS resources.cpp \
     api/app/app.cpp \
     api/window/window.cpp \
     api/events/events.cpp \
+    api/extensions/extensions.cpp \
     -I . \
     -I /opt/homebrew/Cellar/boost/1.76.0/include \
     -I lib \
@@ -57,7 +59,7 @@ c++ $FLAGS resources.cpp \
     -DWEBVIEW_COCOA=1 \
     -DOBJC_OLD_DISPATCH_PROTOTYPES=1 \
     -Os \
-    -o $NEU_BIN 
+    -o $NEU_BIN
 
 if [ -e $NEU_BIN ]; then
     echo "OK: Neutralino binary is compiled into $NEU_BIN"

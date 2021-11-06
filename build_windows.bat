@@ -33,7 +33,7 @@ if %ARCH% == ia32 (
 )
 if %ARCH% == x64 (
   set FLAGS=-arch=x64
-) 
+)
 if not %ARCH% == ia32 if not %ARCH% == x64 (
     echo Unsupported instruction set architecture: %ARCH%
     exit 1
@@ -56,6 +56,7 @@ cl /std:c++17 ^
 /Os ^
 main.cpp ^
 settings.cpp ^
+extensions.cpp ^
 resources.cpp ^
 server/neuserver.cpp ^
 server/router.cpp ^
@@ -75,6 +76,7 @@ api/debug/debug.cpp ^
 api/app/app.cpp ^
 api/window/window.cpp ^
 api/events/events.cpp ^
+api/extensions/extensions.cpp ^
 /DELPP_NO_DEFAULT_LOG_FILE ^
 /DBOOST_ALL_NO_LIB ^
 /link lib/webview/windows/WebView2Loader.dll.lib /OUT:%NEU_BIN%

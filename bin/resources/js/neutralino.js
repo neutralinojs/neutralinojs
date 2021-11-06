@@ -13,20 +13,13 @@ var Neutralino = (function (exports) {
             resolve();
         });
     }
-    function dispatch(event, data) {
+    function dispatch$1(event, data) {
         return new Promise((resolve, reject) => {
             let customEvent = new CustomEvent(event, { detail: data });
             window.dispatchEvent(customEvent);
             resolve();
         });
     }
-
-    var events = /*#__PURE__*/Object.freeze({
-        __proto__: null,
-        on: on,
-        off: off,
-        dispatch: dispatch
-    });
 
     let nativeCalls = {};
     let ws;
@@ -49,11 +42,11 @@ var Neutralino = (function (exports) {
             }
             else if (message.event) {
                 // Event from process
-                dispatch(message.event, message.data);
+                dispatch$1(message.event, message.data);
             }
         });
         ws.addEventListener('open', (event) => {
-            dispatch('ready');
+            dispatch$1('ready');
         });
     }
     function sendMessage(method, data) {
@@ -63,7 +56,7 @@ var Neutralino = (function (exports) {
                     code: 'NE_CL_NSEROFF',
                     message: 'Neutralino server is offline. Try restarting the application'
                 };
-                dispatch('serverOffline', error);
+                dispatch$1('serverOffline', error);
                 return reject(error);
             }
             const id = uuidv4();
@@ -290,6 +283,9 @@ var Neutralino = (function (exports) {
     function getConfig() {
         return sendMessage('app.getConfig');
     }
+    function broadcast$2(event, data) {
+        return sendMessage('app.broadcast', { event, data });
+    }
 
     var app = /*#__PURE__*/Object.freeze({
         __proto__: null,
@@ -297,7 +293,8 @@ var Neutralino = (function (exports) {
         killProcess: killProcess,
         restartProcess: restartProcess,
         keepAlive: keepAlive,
-        getConfig: getConfig
+        getConfig: getConfig,
+        broadcast: broadcast$2
     });
 
     const draggableRegions = new WeakMap();
@@ -478,6 +475,31 @@ var Neutralino = (function (exports) {
         create: create
     });
 
+    function broadcast$1(event, data) {
+        return sendMessage('events.broadcast', { event, data });
+    }
+
+    var events = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        broadcast: broadcast$1,
+        on: on,
+        off: off,
+        dispatch: dispatch$1
+    });
+
+    function dispatch(extensionId, event, data) {
+        return sendMessage('extensions.dispatch', { extensionId, event, data });
+    }
+    function broadcast(event, data) {
+        return sendMessage('extensions.broadcast', { event, data });
+    }
+
+    var extensions = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        dispatch: dispatch,
+        broadcast: broadcast
+    });
+
     function startAsync$1() {
         setInterval(() => __awaiter(this, void 0, void 0, function* () {
             try {
@@ -525,6 +547,7 @@ var Neutralino = (function (exports) {
     exports.computer = computer;
     exports.debug = debug;
     exports.events = events;
+    exports.extensions = extensions;
     exports.filesystem = filesystem;
     exports.init = init;
     exports.os = os;

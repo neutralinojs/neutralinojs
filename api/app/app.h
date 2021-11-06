@@ -17,6 +17,7 @@ namespace controllers {
     json killProcess(const json &input);
     json keepAlive(const json &input);
     json getConfig(const json &input);
+    json broadcast(const json &input);
 
 } // namespace controllers
 } // namespace app
