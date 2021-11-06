@@ -1,8 +1,8 @@
 #include <string>
 
+#include "server/neuserver.h"
 #include "lib/json/json.hpp"
 #include "helpers.h"
-#include "server/neuserver.h"
 #include "api/events/events.h"
 
 using namespace std;
