@@ -34,6 +34,7 @@ g++ resources.cpp \
     api/app/app.cpp \
     api/window/window.cpp \
     api/events/events.cpp \
+    api/extensions/extensions.cpp \
     -pthread \
     -std=c++17 \
     -DELPP_NO_DEFAULT_LOG_FILE=1 \

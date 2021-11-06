@@ -36,7 +36,7 @@ bool __isExtensionEndpoint(const string &url) {
 string __getExtensionIdFromUrl(const string &url) {
     string id = "";
     smatch matches;
-    if(regex_search(url, matches, regex("extensionId=([\\w]+)"))) {
+    if(regex_search(url, matches, regex("extensionId=([\\w.]+)"))) {
         if(matches.size() >= 2) {
             id = matches[1].str();
         }
@@ -182,10 +182,26 @@ void handleDisconnect(websocketpp::connection_hdl handler) {
 }
 
 void broadcast(const json &message) {
-   for (const auto &connection: appConnections) {
+   neuserver::broadcastToAllApps(message);
+   neuserver::broadcastToAllExtensions(message);
+}
+
+bool sendToExtension(const string &extensionId, const json &message) {
+    if(extConnections.find(extensionId) != extConnections.end()) {
+        server->send(extConnections[extensionId], message.dump(), websocketpp::frame::opcode::text);
+        return true;
+    }
+    return false;
+}
+
+void broadcastToAllExtensions(const json &message) {
+   for (const auto &[_, connection]: extConnections) {
        server->send(connection, message.dump(), websocketpp::frame::opcode::text);
    }
-   for (const auto &[_, connection]: extConnections) {
+}
+
+void broadcastToAllApps(const json &message) {
+   for (const auto &connection: appConnections) {
        server->send(connection, message.dump(), websocketpp::frame::opcode::text);
    }
 }

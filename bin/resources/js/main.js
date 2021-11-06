@@ -7,6 +7,10 @@ function openDocs() {
     Neutralino.os.open("https://neutralino.js.org/docs");
 }
 
+function openInBrowser() {
+    Neutralino.os.open(window.location.href);
+}
+
 Neutralino.init();
 Neutralino.events.on("ready", () => {
     // Immediate native calls

@@ -12,10 +12,12 @@
 
 #include "lib/json/json.hpp"
 #include "settings.h"
+#include "helpers.h"
 #include "server/ping.h"
 #include "server/neuserver.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
+#include "api/events/events.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -28,10 +30,10 @@ namespace app {
         }
         if(settings::getMode() == "window")
             window::_close(code);
-        else 
+        else
             std::exit(code);
     }
-    
+
     unsigned int getProcessId() {
         #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
         return getpid();
@@ -49,7 +51,7 @@ namespace controllers {
         app::exit(code);
         return nullptr;
     }
-    
+
     json killProcess(const json &input) {
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         kill(getpid(),SIGINT);
@@ -75,6 +77,25 @@ namespace controllers {
         output["success"] = true;
         return output;
     }
-    
+
+    json broadcast(const json &input) {
+        json output;
+        if(!input.contains("event")) {
+            output["error"] = helpers::makeMissingArgErrorPayload();
+            return output;
+        }
+        string event = input["event"].get<string>();
+        json data = nullptr;
+
+        if(input.contains("data")) {
+            data = input["data"];
+        }
+
+        events::dispatchToAllApps(event, data);
+        output["success"] = true;
+
+        return output;
+    }
+
 } // namespace controllers
 } // namespace app

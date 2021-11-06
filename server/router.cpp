@@ -19,6 +19,8 @@
 #include "api/debug/debug.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
+#include "api/events/events.h"
+#include "api/extensions/extensions.h"
 
 #if defined(__APPLE__)
 #include <dispatch/dispatch.h>
@@ -41,7 +43,7 @@ namespace router {
             return response;
         }
         if(!permission::hasMethodAccess(nativeMethodId)) {
-            response.data = helpers::makeErrorPayload("NE_RT_NATPRME", 
+            response.data = helpers::makeErrorPayload("NE_RT_NATPRME",
                             "Missing permission to execute the native method").dump();
             return response;
         }
@@ -57,6 +59,7 @@ namespace router {
             {"app.killProcess", app::controllers::killProcess},
             {"app.getConfig", app::controllers::getConfig},
             {"app.keepAlive", app::controllers::keepAlive},
+            {"app.broadcast", app::controllers::broadcast},
             // Neutralino.window
             {"window.setTitle", window::controllers::setTitle},
             {"window.maximize", window::controllers::maximize},
@@ -102,7 +105,12 @@ namespace router {
             {"os.getPath", os::controllers::getPath},
             // Neutralino.storage
             {"storage.setData", storage::controllers::setData},
-            {"storage.getData", storage::controllers::getData}
+            {"storage.getData", storage::controllers::getData},
+            // Neutralino.events
+            {"events.broadcast", events::controllers::broadcast},
+            // Neutralino.extensions
+            {"extensions.dispatch", extensions::controllers::dispatch},
+            {"extensions.broadcast", extensions::controllers::broadcast}
         };
 
         if(methodMap.find(nativeMethodId) != methodMap.end()) {
@@ -114,8 +122,8 @@ namespace router {
                 #if defined(__APPLE__)
                 __block json apiOutput;
                 // In macos, child threads cannot run UI logic
-                if(nativeMethodId == "os.showMessageBox" || 
-                    regex_match(nativeMethodId, regex("^window.*")) || 
+                if(nativeMethodId == "os.showMessageBox" ||
+                    regex_match(nativeMethodId, regex("^window.*")) ||
                     nativeMethodId == "os.setTray") {
                     dispatch_sync(dispatch_get_main_queue(), ^{
                         apiOutput = (*nativeMethod)(request.data);
@@ -131,8 +139,8 @@ namespace router {
                 return response;
             }
             catch(exception e){
-                response.data["error"] = helpers::makeErrorPayload("NE_RT_NATRTER", 
-                        "Native method execution error occurred. Failed because of: " + std::string(e.what()) + 
+                response.data["error"] = helpers::makeErrorPayload("NE_RT_NATRTER",
+                        "Native method execution error occurred. Failed because of: " + std::string(e.what()) +
                         ". Make sure that you've provided required parameters properly.");
                 return response;
             }
@@ -160,7 +168,7 @@ namespace router {
             {"txt", "text/plain"},
             {"vtt", "text/vtt"},
             {"htm", "text/html"},
-            {"html", "text/html"},   
+            {"html", "text/html"},
             // Image files
             {"apng", "image/apng"},
             {"avif", "image/avif"},
@@ -173,7 +181,7 @@ namespace router {
             {"tif", "image/tiff"},
             {"tiff", "image/tiff"},
             {"jpg", "image/jpeg"},
-            {"jpeg", "image/jpeg"}, 
+            {"jpeg", "image/jpeg"},
             // Video files
             {"mp4", "video/mp4"},
             {"mpeg", "video/mpeg"},
@@ -212,7 +220,7 @@ namespace router {
                                     : websocketpp::http::status_code::ok;
         if(prependData != "")
             response.data = prependData + response.data;
-        
+
         // If MIME-type is not defined in neuserver, application/octet-stream will be used by default.
         if(mimeTypes.find(extension) != mimeTypes.end()) {
             response.contentType = mimeTypes[extension];

@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "settings.h"
+#include "auth/authbasic.h"
 #include "api/os/os.h"
 
 using namespace std;
@@ -14,8 +15,8 @@ using json = nlohmann::json;
 namespace extensions {
     string __buildExtensionArgs() {
         string options = "";
-        options += "--nl-port=" + to_string(settings::getOptionForCurrentMode("port").get<int>());
-
+        options += " --nl-port=" + to_string(settings::getOptionForCurrentMode("port").get<int>());
+        options += " --nl-token=" + authbasic::getToken();
         return options;
     }
 
@@ -35,7 +36,7 @@ namespace extensions {
             string command = extension.contains(commandKeyForOs) ? extension[commandKeyForOs].get<string>()
                                 : extension["command"].get<string>();
             command = regex_replace(command, regex("\\$\\{NL_PATH\\}"), settings::getAppPath());
-            command += " " + __buildExtensionArgs();
+            command += __buildExtensionArgs();
 
             os::execCommand(command, "", true); // async
         }
