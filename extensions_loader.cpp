@@ -19,7 +19,7 @@ namespace extensions {
         string options = "";
         options += " --nl-port=" + to_string(settings::getOptionForCurrentMode("port").get<int>());
         options += " --nl-token=" + authbasic::getToken();
-        options += " --nl-extensionId=" + extensionId;
+        options += " --nl-extension-id=" + extensionId;
         return options;
     }
 
