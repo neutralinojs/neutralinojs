@@ -18,7 +18,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
   processes properly.
 - `extension` setting has 4 fields: `id`, `command`, `commandLinux`,`commandDarwin`, and `commandWindows`.
 - The `command`'s (platform-specific command's) value accepts `${NL_PATH}` global variable.
-- Each extension process instance is called with two CLI args: `--nl-port={}` and `--nl-token={}`
+- Each extension process instance is called with three CLI args: `--nl-port={}`, `--nl-extension-id={}` and `--nl-token={}`
 
 ### API: app.broadcast
 - Sends an event to all app clients. This method is for extension developers.
@@ -30,3 +30,4 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### API: extensions
 - `dispatch`: Sends an event to a specific extension.
 - `broadcast`: Sends an event to all connected extensions. Useful for sending shutdown signals.
+- `getStats`: Returns details about loaded extensions and connected extensions.
