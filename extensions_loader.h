@@ -2,6 +2,7 @@
 #define NEU_EXTENSIONS_H
 
 #include <string>
+#include <vector>
 
 #include "lib/json/json.hpp"
 
@@ -10,6 +11,7 @@ using json = nlohmann::json;
 
 namespace extensions {
     void init();
+    vector<string> getLoaded();
 } // namesapce extensions
 
 #endif // #define NEU_EXTENSIONS_H

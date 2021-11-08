@@ -56,7 +56,7 @@ cl /std:c++17 ^
 /Os ^
 main.cpp ^
 settings.cpp ^
-extensions.cpp ^
+extensions_loader.cpp ^
 resources.cpp ^
 server/neuserver.cpp ^
 server/router.cpp ^

@@ -14,7 +14,7 @@
 #include "server/ping.h"
 #include "settings.h"
 #include "resources.h"
-#include "extensions.h"
+#include "extensions_loader.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
 #include "api/os/os.h"
@@ -113,14 +113,14 @@ void __initExtra() {
 
 #if defined(_WIN32)
 #define ARG_C __argc
-#define ARG_V __argv 
+#define ARG_V __argv
 int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPTSTR    lpCmdLine,
                      int       nCmdShow)
 #elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 #define ARG_C argc
-#define ARG_V argv 
+#define ARG_V argv
 int main(int argc, char ** argv)
 #endif
                                  {

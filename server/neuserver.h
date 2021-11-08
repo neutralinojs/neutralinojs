@@ -2,6 +2,7 @@
 #define NEU_SERVER_H
 
 #include <string>
+#include <vector>
 
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
@@ -23,6 +24,7 @@ namespace neuserver {
     void broadcastToAllExtensions(const json &message);
     void broadcastToAllApps(const json &message);
     bool sendToExtension(const string &extensionId, const json &message);
+    vector<string> getConnectedExtensions();
 } // namespace neuserver
 
 #endif // #define NEU_SERVER_H

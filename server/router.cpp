@@ -110,7 +110,8 @@ namespace router {
             {"events.broadcast", events::controllers::broadcast},
             // Neutralino.extensions
             {"extensions.dispatch", extensions::controllers::dispatch},
-            {"extensions.broadcast", extensions::controllers::broadcast}
+            {"extensions.broadcast", extensions::controllers::broadcast},
+            {"extensions.getStats", extensions::controllers::getStats}
         };
 
         if(methodMap.find(nativeMethodId) != methodMap.end()) {

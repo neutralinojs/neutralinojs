@@ -127,7 +127,7 @@ var Neutralino = (function (exports) {
     function moveFile(source, destination) {
         return sendMessage('filesystem.moveFile', { source, destination });
     }
-    function getStats(path) {
+    function getStats$1(path) {
         return sendMessage('filesystem.getStats', { path });
     }
 
@@ -143,7 +143,7 @@ var Neutralino = (function (exports) {
         readDirectory: readDirectory,
         copyFile: copyFile,
         moveFile: moveFile,
-        getStats: getStats
+        getStats: getStats$1
     });
 
     var Icon;
@@ -493,11 +493,15 @@ var Neutralino = (function (exports) {
     function broadcast(event, data) {
         return sendMessage('extensions.broadcast', { event, data });
     }
+    function getStats() {
+        return sendMessage('extensions.getStats');
+    }
 
     var extensions = /*#__PURE__*/Object.freeze({
         __proto__: null,
         dispatch: dispatch,
-        broadcast: broadcast
+        broadcast: broadcast,
+        getStats: getStats
     });
 
     function startAsync$1() {

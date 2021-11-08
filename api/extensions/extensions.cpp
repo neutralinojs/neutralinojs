@@ -3,6 +3,7 @@
 #include "server/neuserver.h"
 #include "lib/json/json.hpp"
 #include "helpers.h"
+#include "extensions_loader.h"
 #include "api/events/events.h"
 
 using namespace std;
@@ -51,6 +52,17 @@ namespace controllers {
         events::dispatchToAllExtensions(event, data);
         output["success"] = true;
 
+        return output;
+    }
+
+    json getStats(const json &input) {
+        json output;
+        json stats;
+        stats["loaded"] = extensions::getLoaded();
+        stats["connected"] = neuserver::getConnectedExtensions();
+
+        output["returnValue"] = stats;
+        output["success"] = true;
         return output;
     }
 

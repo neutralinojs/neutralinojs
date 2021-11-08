@@ -30,7 +30,7 @@ c++ $FLAGS resources.cpp \
     main.cpp \
     helpers.cpp \
     settings.cpp \
-    extensions.cpp \
+    extensions_loader.cpp \
     auth/authbasic.cpp \
     auth/permission.cpp \
     lib/tinyprocess/process.cpp \
