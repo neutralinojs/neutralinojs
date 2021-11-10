@@ -31,3 +31,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 - `dispatch`: Sends an event to a specific extension.
 - `broadcast`: Sends an event to all connected extensions. Useful for sending shutdown signals.
 - `getStats`: Returns details about loaded extensions and connected extensions.
+
+### Error codes
+
+- `NE_EX_EXTNOTC`: Thrown by `extensions.dispatch` if the target extension is not connected.
