@@ -15,8 +15,13 @@ Neutralino.init();
 Neutralino.events.on("ready", () => {
     // Immediate native calls
 });
+
 Neutralino.events.on("windowClose", () => {
     Neutralino.app.exit();
+});
+
+Neutralino.events.on("eventFromExtension", (evt) => {
+    console.log(evt.detail);
 });
 
 showInfo();
