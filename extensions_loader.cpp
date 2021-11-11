@@ -51,4 +51,9 @@ namespace extensions {
         return loadedExtensions;
     }
 
+    bool isLoaded(const string &extensionId) {
+        return find(loadedExtensions.begin(), loadedExtensions.end(), extensionId)
+                != loadedExtensions.end();
+    }
+
 } // namespace extensions

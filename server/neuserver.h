@@ -20,6 +20,7 @@ namespace neuserver {
     void handleHTTP(websocketpp::connection_hdl handler);
     void handleConnect(websocketpp::connection_hdl handler);
     void handleDisconnect(websocketpp::connection_hdl handler);
+    bool handleValidate(websocketpp::connection_hdl handler);
     void broadcast(const json &message);
     void broadcastToAllExtensions(const json &message);
     void broadcastToAllApps(const json &message);

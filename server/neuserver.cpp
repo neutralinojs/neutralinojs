@@ -11,6 +11,7 @@
 
 #include "lib/json/json.hpp"
 #include "settings.h"
+#include "extensions_loader.h"
 #include "server/neuserver.h"
 #include "server/router.h"
 #include "api/debug/debug.h"
@@ -66,6 +67,10 @@ namespace neuserver {
 
         server->set_close_handler([&](websocketpp::connection_hdl handler) {
             neuserver::handleDisconnect(handler);
+        });
+
+        server->set_validate_handler([&](websocketpp::connection_hdl handler) {
+            return neuserver::handleValidate(handler);
         });
 
         server->set_access_channels(websocketpp::log::alevel::none);
@@ -137,7 +142,7 @@ namespace neuserver {
                     "Unable to send native message: " + std::string(e.what()));
             }
         }
-        catch(exception e){
+        catch(exception e) {
             debug::log("ERROR",
                     "Unable to parse native call payload: " + std::string(e.what()));
         }
@@ -179,6 +184,18 @@ namespace neuserver {
             events::dispatch("appClientDisconnect", appConnections.size());
         }
         events::dispatch("clientDisconnect", appConnections.size() + extConnections.size());
+    }
+
+    bool handleValidate(websocketpp::connection_hdl handler) {
+        websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
+        string url = con->get_resource();
+        if(__isExtensionEndpoint(url)) {
+            string extensionId = __getExtensionIdFromUrl(url);
+            return extensions::isLoaded(extensionId);
+        }
+        else {
+            return true;
+        }
     }
 
     void broadcast(const json &message) {
