@@ -167,6 +167,7 @@ namespace settings {
             {"--logging-enabled", {"/logging/enabled", "bool"}},
             {"--logging-write-to-log-file", {"/logging/writeToLogFile", "bool"}},
             {"--enable-server", {"/enableServer", "bool"}},
+            {"--enable-extensions", {"/enableExtensions", "bool"}},
             // Window mode
             {"--window-title", {"/modes/window/title", "string"}},
             {"--window-width", {"/modes/window/width", "int"}},
@@ -211,6 +212,13 @@ namespace settings {
                 "/modes/cloud/enableServer"
                 }
             },
+            {"/enableExtensions",
+                {
+                "/modes/window/enableExtensions",
+                "/modes/browser/enableExtensions",
+                "/modes/cloud/enableExtensions"
+                }
+            }
         };
 
         if(cliMappings.find(arg.key) != cliMappings.end()) {

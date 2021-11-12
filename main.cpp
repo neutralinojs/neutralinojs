@@ -108,7 +108,14 @@ void __initFramework(const json &args) {
 }
 
 void __initExtra() {
-    extensions::init();
+    bool enableExtensions = false;
+    json exts = settings::getOptionForCurrentMode("enableExtensions");
+    if(!exts.is_null()) {
+        enableExtensions = exts.get<bool>();
+    }
+    if(enableExtensions) {
+        extensions::init();
+    }
 }
 
 #if defined(_WIN32)

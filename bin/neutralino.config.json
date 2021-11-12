@@ -5,6 +5,7 @@
     "url": "/resources/",
     "enableServer": true,
     "enableNativeAPI": true,
+    "enableExtensions": true,
     "logging": {
         "enabled": true,
         "writeToLogFile": true
