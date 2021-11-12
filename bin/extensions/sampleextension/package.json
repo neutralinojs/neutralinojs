@@ -9,6 +9,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "chalk": "^4.1.2",
     "minimist": "^1.2.5",
     "uuid": "^8.3.2",
     "websocket": "^1.0.34"

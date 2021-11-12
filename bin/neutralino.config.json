@@ -5,7 +5,6 @@
     "url": "/resources/",
     "enableServer": true,
     "enableNativeAPI": true,
-    "enableExtensions": true,
     "logging": {
         "enabled": true,
         "writeToLogFile": true
@@ -48,10 +47,6 @@
         "clientLibrary": "/resources/js/neutralino.js"
     },
     "extensions": [
-        {
-            "id": "js.neutralino.simplecall",
-            "command": "echo Hello"
-        },
         {
             "id": "js.neutralino.sampleextension",
             "commandLinux": "node ${NL_PATH}/extensions/sampleextension/main.js --linux",

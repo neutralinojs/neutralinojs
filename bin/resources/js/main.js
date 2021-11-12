@@ -22,6 +22,7 @@ Neutralino.events.on("windowClose", () => {
 
 Neutralino.events.on("eventFromExtension", (evt) => {
     console.log(evt.detail);
+    Neutralino.extensions.dispatch("js.neutralino.sampleextension", "eventToExtension", "Hello extension!");
 });
 
 showInfo();
