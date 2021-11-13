@@ -19,13 +19,19 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 - `extension` setting has 4 fields: `id`, `command`, `commandLinux`,`commandDarwin`, and `commandWindows`.
 - The `command`'s (platform-specific command's) value accepts `${NL_PATH}` global variable.
 - Each extension process instance is called with three CLI args: `--nl-port={}`, `--nl-extension-id={}` and `--nl-token={}`
+- Enable/disable extensions with `enableExtensions` config. 
+
+## Core: Community driver processes
+
+Now developers can use Neutralinojs as a part of their software with any programming language by spawning Neutralinojs as a child process.
+Use `exportAuthInfo` to write auth details to `{NL_PATH}.tmp/auth_info.json`. Then the parent process can pickup access details there. Note that WebSocket communication needs to be initiated via extensions API/loader. 
+
 
 ### API: app.broadcast
 - Sends an event to all app clients. This method is for extension developers.
 
 ### API: events.broadcast
 - Sends an event to all clients (apps and extensions). Useful for notifying important general events.
-
 
 ### API: extensions
 - `dispatch`: Sends an event to a specific extension.
@@ -35,3 +41,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### Error codes
 
 - `NE_EX_EXTNOTC`: Thrown by `extensions.dispatch` if the target extension is not connected.
+
+### Bug fixes
+
+- Fix port 0 issue with modes. Earlier, if the developer sets port as 0 from a specific mode, the `NL_PORT` also becomes 0.
