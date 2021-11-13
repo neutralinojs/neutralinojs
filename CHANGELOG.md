@@ -24,7 +24,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### Core: Community driver processes
 
 Now developers can use Neutralinojs as a part of their software with any programming language by spawning Neutralinojs as a child process.
-Use `exportAuthInfo` to write auth details to `{NL_PATH}.tmp/auth_info.json`. Then the parent process can pickup access details there. Note that WebSocket communication needs to be initiated via extensions API/loader.
+Use `exportAuthInfo` to write auth details to `${NL_PATH}/.tmp/auth_info.json`. Then the parent process can pickup access details there. Note that WebSocket communication needs to be initiated via extensions API/loader.
 
 
 ### API: app.broadcast
