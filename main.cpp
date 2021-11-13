@@ -22,6 +22,8 @@
 
 #define APP_LOG_FILE "/neutralinojs.log"
 #define APP_LOG_FORMAT "%level %datetime %msg %loc %user@%host"
+#define ELPP_THREAD_SAFE
+
 INITIALIZE_EASYLOGGINGPP
 
 using namespace std;
@@ -66,13 +68,17 @@ void __configureLogger() {
     el::Configurations defaultConf;
     defaultConf.setToDefault();
     defaultConf.setGlobally(
-            el::ConfigurationType::Filename, settings::joinAppPath(APP_LOG_FILE));
-    defaultConf.setGlobally(
             el::ConfigurationType::Format, APP_LOG_FORMAT);
+
+    if(enableLogFile) {
+        defaultConf.setGlobally(
+                el::ConfigurationType::Filename, settings::joinAppPath(APP_LOG_FILE));
+    }
     defaultConf.setGlobally(
-            el::ConfigurationType::ToFile, enableLogFile ? "TRUE" : "FALSE");
+            el::ConfigurationType::ToFile, enableLogFile ? "true" : "false");
+
     defaultConf.setGlobally(
-            el::ConfigurationType::Enabled, enableLogging ? "TRUE" : "FALSE");
+            el::ConfigurationType::Enabled, enableLogging ? "true" : "false");
     el::Loggers::reconfigureLogger("default", defaultConf);
 }
 
