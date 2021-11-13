@@ -142,7 +142,11 @@ namespace settings {
     }
 
     void setPort(int port) {
-      options["port"] = port;
+        options["port"] = port;
+
+        options["/modes/window/port"_json_pointer] = port;
+        options["/modes/browser/port"_json_pointer] = port;
+        options["/modes/cloud/port"_json_pointer] = port;
     }
 
     settings::CliArg _parseArg(const string &argStr) {
@@ -168,6 +172,7 @@ namespace settings {
             {"--logging-write-to-log-file", {"/logging/writeToLogFile", "bool"}},
             {"--enable-server", {"/enableServer", "bool"}},
             {"--enable-extensions", {"/enableExtensions", "bool"}},
+            {"--export-auth-info", {"/exportAuthInfo", "bool"}},
             // Window mode
             {"--window-title", {"/modes/window/title", "string"}},
             {"--window-width", {"/modes/window/width", "int"}},
@@ -217,6 +222,13 @@ namespace settings {
                 "/modes/window/enableExtensions",
                 "/modes/browser/enableExtensions",
                 "/modes/cloud/enableExtensions"
+                }
+            },
+            {"/exportAuthInfo",
+                {
+                "/modes/window/exportAuthInfo",
+                "/modes/browser/exportAuthInfo",
+                "/modes/cloud/exportAuthInfo"
                 }
             }
         };

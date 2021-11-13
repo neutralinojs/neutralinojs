@@ -31,17 +31,20 @@ namespace extensions {
         for(const json &extension: extensions) {
             string commandKeyForOs = "command" + string(OS_NAME);
 
-            if(!extension.contains("id") || (!extension.contains("command") &&
-                !extension.contains(commandKeyForOs)) ) {
+            if(!extension.contains("id")) {
                 continue;
             }
-            string extensionId = extension["id"].get<string>();
-            string command = extension.contains(commandKeyForOs) ? extension[commandKeyForOs].get<string>()
-                                : extension["command"].get<string>();
-            command = regex_replace(command, regex("\\$\\{NL_PATH\\}"), settings::getAppPath());
-            command += __buildExtensionArgs(extensionId);
 
-            os::execCommand(command, "", true); // async
+            string extensionId = extension["id"].get<string>();
+
+            if(extension.contains("command") || extension.contains(commandKeyForOs)) {
+                string command = extension.contains(commandKeyForOs) ? extension[commandKeyForOs].get<string>()
+                                    : extension["command"].get<string>();
+                command = regex_replace(command, regex("\\$\\{NL_PATH\\}"), settings::getAppPath());
+                command += __buildExtensionArgs(extensionId);
+
+                os::execCommand(command, "", true); // async
+            }
 
             loadedExtensions.push_back(extensionId);
         }

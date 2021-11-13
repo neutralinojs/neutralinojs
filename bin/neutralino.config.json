@@ -5,6 +5,7 @@
     "url": "/resources/",
     "enableServer": true,
     "enableNativeAPI": true,
+    "exportAuthInfo": true,
     "logging": {
         "enabled": true,
         "writeToLogFile": true
@@ -28,7 +29,8 @@
             "maximize": false,
             "hidden": false,
             "resizable": true,
-            "exitProcessOnClose": false
+            "exitProcessOnClose": false,
+            "port": 0
         },
         "browser": {
             "globalVariables": {
@@ -52,6 +54,9 @@
             "commandLinux": "node ${NL_PATH}/extensions/sampleextension/main.js --linux",
             "commandDarwin": "node ${NL_PATH}/extensions/sampleextension/main.js --darwin",
             "commandWindows": "node ${NL_PATH}/extensions/sampleextension/main.js --windows"
+        },
+        {
+            "id": "js.neutralino.driverprocess"
         }
     ]
 }

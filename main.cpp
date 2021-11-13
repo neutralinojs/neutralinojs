@@ -109,9 +109,18 @@ void __initFramework(const json &args) {
 
 void __initExtra() {
     bool enableExtensions = false;
+    bool exportAuthInfo = false;
     json exts = settings::getOptionForCurrentMode("enableExtensions");
     if(!exts.is_null()) {
         enableExtensions = exts.get<bool>();
+    }
+    json exportAuth = settings::getOptionForCurrentMode("exportAuthInfo");
+    if(!exportAuth.is_null()) {
+        exportAuthInfo = exportAuth.get<bool>();
+    }
+
+    if(exportAuthInfo) {
+        authbasic::exportAuthInfo();
     }
     if(enableExtensions) {
         extensions::init();
