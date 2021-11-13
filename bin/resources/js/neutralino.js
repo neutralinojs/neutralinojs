@@ -277,9 +277,6 @@ var Neutralino = (function (exports) {
             resolve();
         }));
     }
-    function keepAlive() {
-        return sendMessage('app.keepAlive');
-    }
     function getConfig() {
         return sendMessage('app.getConfig');
     }
@@ -292,7 +289,6 @@ var Neutralino = (function (exports) {
         exit: exit,
         killProcess: killProcess,
         restartProcess: restartProcess,
-        keepAlive: keepAlive,
         getConfig: getConfig,
         broadcast: broadcast$2
     });
@@ -504,17 +500,6 @@ var Neutralino = (function (exports) {
         getStats: getStats
     });
 
-    function startAsync$1() {
-        setInterval(() => __awaiter(this, void 0, void 0, function* () {
-            try {
-                yield keepAlive();
-            }
-            catch (e) {
-                console.error('Unable to keep Neutralino server online. The server is not reachable.');
-            }
-        }), 5000);
-    }
-
     function startAsync() {
         setInterval(() => __awaiter(this, void 0, void 0, function* () {
             try {
@@ -534,8 +519,6 @@ var Neutralino = (function (exports) {
 
     function init() {
         init$1();
-        if (window.NL_MODE && window.NL_MODE == 'browser')
-            startAsync$1();
         if (typeof window.NL_ARGS != 'undefined') {
             for (let i = 0; i < window.NL_ARGS.length; i++) {
                 if (window.NL_ARGS[i] == '--debug-mode') {
