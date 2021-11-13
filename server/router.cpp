@@ -38,17 +38,17 @@ namespace router {
         response.method = request.method;
 
         if(!authbasic::verifyToken(request.accessToken)) {
-            response.data = helpers::makeErrorPayload("NE_RT_INVTOKN",
+            response.data["error"] = helpers::makeErrorPayload("NE_RT_INVTOKN",
                             "Invalid or expired NL_TOKEN value from client").dump();
             return response;
         }
         if(!permission::hasMethodAccess(nativeMethodId)) {
-            response.data = helpers::makeErrorPayload("NE_RT_NATPRME",
+            response.data["error"] = helpers::makeErrorPayload("NE_RT_NATPRME",
                             "Missing permission to execute the native method").dump();
             return response;
         }
         if(!permission::hasAPIAccess(nativeMethodId)) {
-            response.data = helpers::makeErrorPayload("NE_RT_APIPRME",
+            response.data["error"] = helpers::makeErrorPayload("NE_RT_APIPRME",
                             "Missing permission to access Native API").dump();
             return response;
         }
@@ -58,7 +58,6 @@ namespace router {
             {"app.exit", app::controllers::exit},
             {"app.killProcess", app::controllers::killProcess},
             {"app.getConfig", app::controllers::getConfig},
-            {"app.keepAlive", app::controllers::keepAlive},
             {"app.broadcast", app::controllers::broadcast},
             // Neutralino.window
             {"window.setTitle", window::controllers::setTitle},

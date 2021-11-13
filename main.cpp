@@ -11,7 +11,6 @@
 #include "auth/permission.h"
 #include "auth/authbasic.h"
 #include "server/neuserver.h"
-#include "server/ping.h"
 #include "settings.h"
 #include "resources.h"
 #include "extensions_loader.h"
@@ -36,7 +35,6 @@ void __startApp() {
     json options = settings::getConfig();
     string mode = settings::getMode();
     if(mode == "browser") {
-        ping::start();
         os::open(navigationUrl);
         while(true);
     }

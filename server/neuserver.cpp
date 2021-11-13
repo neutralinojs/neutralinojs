@@ -4,6 +4,7 @@
 #include <regex>
 #include <map>
 #include <thread>
+#include <chrono>
 #include <set>
 
 #include <websocketpp/config/asio_no_tls.hpp>
@@ -16,6 +17,7 @@
 #include "server/router.h"
 #include "api/debug/debug.h"
 #include "api/events/events.h"
+#include "api/app/app.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -43,6 +45,16 @@ namespace neuserver {
             }
         }
         return id;
+    }
+
+    void __exitProcessIfIdle() {
+        thread exitCheckThread([=]() {
+            std::this_thread::sleep_for(10s);
+            if(appConnections.size() == 0) {
+                app::exit();
+            }
+        });
+        exitCheckThread.detach();
     }
 
     string init() {
@@ -181,6 +193,9 @@ namespace neuserver {
         }
         else {
             appConnections.erase(handler);
+            if(settings::getMode() == "browser") {
+                __exitProcessIfIdle();
+            }
             events::dispatch("appClientDisconnect", appConnections.size());
         }
         events::dispatch("clientDisconnect", appConnections.size() + extConnections.size());

@@ -17,7 +17,6 @@ g++ resources.cpp \
     main.cpp \
     server/router.cpp \
     server/neuserver.cpp \
-    server/ping.cpp \
     settings.cpp \
     extensions_loader.cpp \
     auth/authbasic.cpp \

@@ -13,7 +13,6 @@
 #include "lib/json/json.hpp"
 #include "settings.h"
 #include "helpers.h"
-#include "server/ping.h"
 #include "server/neuserver.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
@@ -61,14 +60,6 @@ namespace controllers {
         TerminateProcess(hnd, 0);
         #endif
         return nullptr;
-    }
-
-    json keepAlive(const json &input) {
-        json output;
-        ping::pingReceived();
-        output["message"] = "Keep alive call was successful. Server will not be terminated automatically.";
-        output["success"] = true;
-        return output;
     }
 
     json getConfig(const json &input) {

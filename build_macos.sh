@@ -25,7 +25,6 @@ echo "Compiling Neutralinojs $ARCH..."
 
 c++ $FLAGS resources.cpp \
     server/router.cpp \
-    server/ping.cpp \
     server/neuserver.cpp \
     main.cpp \
     helpers.cpp \

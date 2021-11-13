@@ -62,7 +62,6 @@ server/neuserver.cpp ^
 server/router.cpp ^
 auth/authbasic.cpp ^
 auth/permission.cpp ^
-server/ping.cpp ^
 helpers.cpp ^
 lib/tinyprocess/process.cpp ^
 lib/tinyprocess/process_win.cpp ^

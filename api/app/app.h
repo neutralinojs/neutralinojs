@@ -15,7 +15,6 @@ namespace app {
 namespace controllers {
     json exit(const json &input);
     json killProcess(const json &input);
-    json keepAlive(const json &input);
     json getConfig(const json &input);
     json broadcast(const json &input);
 
