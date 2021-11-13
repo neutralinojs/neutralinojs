@@ -21,7 +21,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 - Each extension process instance is called with three CLI args: `--nl-port={}`, `--nl-extension-id={}` and `--nl-token={}`
 - Enable/disable extensions with `enableExtensions` config. 
 
-## Core: Community driver processes
+### Core: Community driver processes
 
 Now developers can use Neutralinojs as a part of their software with any programming language by spawning Neutralinojs as a child process.
 Use `exportAuthInfo` to write auth details to `{NL_PATH}.tmp/auth_info.json`. Then the parent process can pickup access details there. Note that WebSocket communication needs to be initiated via extensions API/loader. 
