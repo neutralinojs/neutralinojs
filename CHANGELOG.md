@@ -38,6 +38,11 @@ Use `exportAuthInfo` to write auth details to `${NL_PATH}/.tmp/auth_info.json`. 
 - `broadcast`: Sends an event to all connected extensions. Useful for sending shutdown signals.
 - `getStats`: Returns details about loaded extensions and connected extensions.
 
+### Events
+
+- `appClientConnect` and `appClientDisconnect`: Occurs when a new app instance is launched and closed respectively.
+- `extClientConnect` and `extClientDisconnect`: Occurs when a new extension is connected and disconnected respectively.
+
 ### Error codes
 
 - `NE_EX_EXTNOTC`: Thrown by `extensions.dispatch` if the target extension is not connected.
