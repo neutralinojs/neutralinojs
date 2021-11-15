@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout 
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
     - name: Configure
       run: sudo apt-get update && sudo apt-get install -y -f libboost-all-dev libgtk-3-dev libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev libappindicator3-dev
     - name: Build
@@ -23,7 +23,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Checkout 
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
     - name: Install Boost
       run: choco install boost-msvc-14.1
     - name: Build
@@ -40,7 +40,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
     - name: Install Brew
       run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     - name: Install Boost
