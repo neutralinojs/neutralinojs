@@ -56,7 +56,7 @@ jobs:
         name: darwin_binary
         path: bin/neutralino-mac_x64
         
-  make-release:
+  create-release-zip:
     needs: [build-linux, build-windows, build-darwin]
     runs-on: ubuntu-latest
     steps:
