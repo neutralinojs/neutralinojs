@@ -74,20 +74,16 @@ jobs:
 #         path: ./bin/.tmp/neutralino-mac_x64
     - name: Show info
       run: ls ./bin -R
-#     - name: Make release zip
-#       uses: vimtor/action-zip@v1
-#       with: 
-#         files: |
-#           ./bin/.tmp/neutralino-linux_x64
-#           ./bin/.tmp/neutralino-win_x64.exe
-#           ./bin/.tmp/neutralino-mac_x64
-#           ./bin/WebView2Loader.dll
-#         dest: ./bin/neutralino-release.zip
-#     - name: Show info
-#       run: ls ./bin -R
-#     - name: Add & Commit
-#       uses: EndBug/add-and-commit@v7.4.0
-#       with:
-#         default_author: github_actions
-#         message: 'Add pre-built x64 pre-built binaries' 
-#         add: './bin/neutralino-release.zip'
+    - name: Create release zip
+      uses: vimtor/action-zip@v1
+      with: 
+        files: ./bin/neutralino-linux_x64 ./bin/WebView2Loader.dll
+        dest: ./bin/neutralino-release.zip
+    - name: Show info
+      run: ls ./bin -R
+    - name: Add & Commit
+      uses: EndBug/add-and-commit@v7.4.0
+      with:
+        default_author: github_actions
+        message: 'Add pre-built x64 pre-built binaries' 
+        add: './bin/neutralino-release.zip'
