@@ -1,5 +1,5 @@
 name: Make a release
-on: [workflow_dispatch]
+on: [workflow_dispatch, push]
 
 jobs:
   build-linux:
