@@ -1,19 +1,10 @@
-# For most projects, this workflow file will not need changing; you simply need
-# to commit it to your repository.
-#
-# You may wish to alter this file to override the set of languages analyzed,
-# or to provide custom queries or build logic.
-#
-name: "CodeQL"
+name: CodeQL
 
 on:
   push:
     branches: [ main ]
   pull_request:
-    # The branches below must be a subset of the branches above
     branches: [ main ]
-  schedule:
-    - cron: '32 10 * * 1'
 
 jobs:
   analyze:
@@ -30,26 +21,27 @@ jobs:
         language: [ 'cpp' ]
         
     steps:
-    - name: Checkout repository
+    - name: Checkout
       uses: actions/checkout@v2
-
-    # Initializes the CodeQL tools for scanning.
+      
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1
       with:
         languages: ${{ matrix.language }}
-        # If you wish to specify custom queries, you can do so here or in a config file.
-        # By default, queries listed here will override any specified in a config file.
-        # Prefix the list here with "+" to use these queries and those in the config file.
-        # queries: ./path/to/local/query, your-org/your-repo/queries@main
-
-
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 https://git.io/JvXDl
     
+    - name: Checkout
+      uses: actions/checkout@v2
     - name: configure
-      run: sudo apt-get update && sudo apt-get install -y -f libboost-all-dev libgtk-3-dev libwebkit2gtk-4.0-37 libwebkit2gtk-4.0-dev libappindicator3-dev
-    - run: bash build_linux.sh
+      run: | 
+        sudo apt-get update
+        sudo apt-get install -y -f \
+        libboost-all-dev \
+        libgtk-3-dev \
+        libwebkit2gtk-4.0-37 \
+        libwebkit2gtk-4.0-dev \
+        libappindicator3-dev
+    - name: Build
+      run: bash build_linux.sh
     
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
