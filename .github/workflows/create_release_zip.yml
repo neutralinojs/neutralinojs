@@ -18,7 +18,7 @@ jobs:
         libappindicator3-dev
     - name: Build
       run: bash build_linux.sh
-    - name: Upload artifacts
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
         name: linux_binary
@@ -33,7 +33,7 @@ jobs:
       run: choco install boost-msvc-14.1
     - name: Build
       run: ./build_windows.bat
-    - name: Upload artifacts
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
         name: win_binary
@@ -50,10 +50,10 @@ jobs:
       run: brew install boost@1.76
     - name: Build
       run: bash build_macos.sh
-    - name: Upload artifacts
+    - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: dawin_binary
+        name: darwin_binary
         path: bin/neutralino-mac_x64
         
   make-release:
@@ -88,7 +88,7 @@ jobs:
       with: 
         files: ./bin/neutralino-linux_x64 ./bin/neutralino-win_x64.exe ./bin/neutralino-mac_x64 ./bin/WebView2Loader.dll
         dest: ./bin/neutralino-release.zip
-    - name: Add & Commit
+    - name: Add, Commit and Push Release Zip
       uses: EndBug/add-and-commit@v7.4.0
       with:
         default_author: github_actions
