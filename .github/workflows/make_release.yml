@@ -27,6 +27,7 @@ jobs:
     - name: Build
       run: ./build_windows.bat
     - name: Upload artifacts
+      uses: actions/upload-artifact@v2
       with:
         name: win_binary
         path: bin/neutralino-win_x64.exe
@@ -43,6 +44,7 @@ jobs:
     - name: Build
       run: bash build_macos.sh
     - name: Upload artifacts
+      uses: actions/upload-artifact@v2
       with:
         name: mac_binary
         path: bin/neutralino-mac_x64
