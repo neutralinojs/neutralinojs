@@ -60,16 +60,16 @@ jobs:
       with:
         name: linux_binary
         path: ./bin/.tmp/neutralino-linux_x64
-    - name: Download Windows build artifacts 
-      uses: actions/download-artifact@v2
-      with:
-        name: win_binary
-        path: ./bin/.tmp/neutralino-win_x64.exe
-    - name: Download Darwin build artifacts 
-      uses: actions/download-artifact@v2
-      with:
-        name: darwin_binary
-        path: ./bin/.tmp/neutralino-mac_x64
+#     - name: Download Windows build artifacts 
+#       uses: actions/download-artifact@v2
+#       with:
+#         name: win_binary
+#         path: ./bin/.tmp/neutralino-win_x64.exe
+#     - name: Download Darwin build artifacts 
+#       uses: actions/download-artifact@v2
+#       with:
+#         name: darwin_binary
+#         path: ./bin/.tmp/neutralino-mac_x64
     - name: Show info
       run: ls ./bin -R
     - name: Make release zip
