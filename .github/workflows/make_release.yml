@@ -46,7 +46,7 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: mac_binary
+        name: dawin_binary
         path: bin/neutralino-mac_x64
         
   make-release:
@@ -55,10 +55,32 @@ jobs:
     steps:
     - name: Checkout 
       uses: actions/checkout@v2
-    - name: Download artifacts 
+    - name: Download Linux build artifacts 
       uses: actions/download-artifact@v2
       with:
-        path: ./bin
+        name: linux_binary
+        path: ./bin/neutralino-linux_x64
+    - name: Download Windows build artifacts 
+      uses: actions/download-artifact@v2
+      with:
+        name: win_binary
+        path: ./bin/neutralino-win_x64.exe
+    - name: Download Darwin build artifacts 
+      uses: actions/download-artifact@v2
+      with:
+        name: darwin_binary
+        path: ./bin/neutralino-mac_x64
+    - name: Show info
+      run: ls ./bin -R
+    - name: Easy Zip Files
+      uses: vimtor/action-zip@v1
+      with: 
+        files: |
+          ./bin/neutralino-linux_x64
+          ./bin/neutralino-win_x64.exe
+          ./bin/neutralino-mac_x64
+          ./bin/WebView2Loader.dll
+        dest: ./bin/neutralino-release.zip
     - name: Show info
       run: ls ./bin -R
 #     - name: Add & Commit
