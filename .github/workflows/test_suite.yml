@@ -17,7 +17,7 @@ jobs:
         libwebkit2gtk-4.0-37 \
         libwebkit2gtk-4.0-dev \
         libappindicator3-dev \ 
-        xvfb
+        sudo apr-get install -y -f xvfb
     - name: Build
       run: |
         bash build_linux.sh
@@ -48,4 +48,11 @@ jobs:
     - name: Install Boost
       run: brew install boost@1.76
     - name: Build
-      run: bash build_macos.sh
+      run: |
+        bash build_macos.sh
+        chmod +x ./bin/neutralino-mac_x64
+    - name: Run Spec
+      working-directory: ./spec 
+      run: | 
+        npm ci
+        npm run test
