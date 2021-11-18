@@ -16,9 +16,17 @@ jobs:
         libgtk-3-dev \
         libwebkit2gtk-4.0-37 \
         libwebkit2gtk-4.0-dev \
-        libappindicator3-dev
+        libappindicator3-dev \ 
+        xvfb
     - name: Build
-      run: bash build_linux.sh
+      run: |
+        bash build_linux.sh
+        chmod +x ./bin/neutralino-linux_x64
+    - name: Run Spec
+      working-directory: ./spec 
+      run: | 
+        npm ci
+        xvfb-run npm run test
 
   build-windows:
     runs-on: windows-latest
