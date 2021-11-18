@@ -60,7 +60,7 @@ function makeCommand(optArgs = '') {
         command += 'linux_x64'
     }
     else if(process.platform == 'darwin') {
-        command += 'macos_x64'
+        command += 'mac_x64'
     }
     else if(process.platform == 'win32') {
         command += 'win_x64.exe'
