@@ -8,7 +8,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-    - name: configure
+    - name: Install Libraries
       run: | 
         sudo apt-get update
         sudo apt-get install -y -f \
@@ -16,8 +16,8 @@ jobs:
         libgtk-3-dev \
         libwebkit2gtk-4.0-37 \
         libwebkit2gtk-4.0-dev \
-        libappindicator3-dev \ 
-        sudo apr-get install -y -f xvfb
+        libappindicator3-dev 
+        sudo apt-get install -y -f xvfb
     - name: Build
       run: |
         bash build_linux.sh
