@@ -14,7 +14,7 @@ async function __close(data = "", exitCode = 0) {
     }
     setTimeout(() => {
         Neutralino.app.exit(exitCode);
-    }, 5000);
+    }, 2000);
 }
 `;
 const OUTPUT_FILE = '../bin/output.txt';
