@@ -29,7 +29,7 @@ describe('globalvariables.spec: Global variables relatedtests', () => {
     it('updates NL_PID with the process identifier', async () => {
         runner.run(`
             await __close(NL_PID.toString());
-        `, {args: '--test-arg'});
+        `);
         assert.ok(parseInt(runner.getOutput()) > 0);
     });
 
