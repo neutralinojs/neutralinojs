@@ -7,7 +7,7 @@
 ![Build status](https://github.com/neutralinojs/neutralinojs/actions/workflows/test_suite.yml/badge.svg)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fneutralinojs%2Fneutralinojs.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fneutralinojs%2Fneutralinojs?ref=badge_shield)
 
-Neutralinojs is a lightweight and portable desktop application development framework. It lets you develop lightweight cross-platform desktop applications using JavaScript, HTML and CSS. Apps built with Neutralinojs can run on Linux, macOS, Windows, and Web.
+Neutralinojs is a lightweight and portable desktop application development framework. It lets you develop lightweight cross-platform desktop applications using JavaScript, HTML and CSS. Apps built with Neutralinojs can run on Linux, macOS, Windows, and Web. Also, you can extend Neutralinojs with any programming language (with extensions) and use Neutralinojs as part of your source code (via child processes). 
 
 - [Neutralinojs vs Electron vs NW.JS vs Tauri vs NodeGui vs Flutter vs .Net MAUI](https://github.com/Elanis/web-to-desktop-framework-comparison)
 - [Neutralinojs vs Electron vs NW.js (2018)](https://github.com/neutralinojs/evaluation)
