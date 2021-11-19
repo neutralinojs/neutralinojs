@@ -26,7 +26,7 @@ Get started with the neu CLI.
  neu build
 ```
 
-This documentation is for contributors. If you would like to learn Neutralinojs application development, please check [this](https://neutralino.js.org/docs) documentation.
+Start building apps: [neutralino.js.org/docs](https://neutralino.js.org/docs)
  
 ## Why Neutralinojs? 
 
@@ -34,95 +34,20 @@ In Electron and NWjs, you have to install NodeJs and hundreds of dependency libr
 
 Ask questions on StackOverflow using tag [neutralinojs](https://stackoverflow.com/questions/tagged/neutralinojs)
 
-## Contribution
+## Contributing
 
-- Select existing [issues](https://github.com/neutralinojs/neutralinojs/issues) or create a [new issue](https://github.com/neutralinojs/neutralinojs/issues/new). Send us a pull request with your code changes. We are happy to review it ❤️
-- Refer to [this guide](https://github.com/neutralinojs/neutralinojs/blob/master/CONTRIBUTING.md) for contribution guidelines.
-
-### Collaboration and communication
-
-- We use Slack and Discord for quick discussions. 
+Please check the [constribution guide](https://neutralino.js.org/docs/contributing/framework-developer-guide). We use GitHub Discussions, Slack, and Discord for quick discussions. 
+  * [Start a thread on Discussions](https://github.com/neutralinojs/neutralinojs/discussions)
   * [Join on Slack](https://join.slack.com/t/neutralinojs/shared_invite/zt-b7mbivj5-pKpO6U5drmeT68vKD_pc6w)
   * [Join on Discord](https://discord.gg/cybpp4guTJ)
-- Join our [Google group](https://groups.google.com/forum/#!forum/neutralinojs) for feature proposals and long discussions.
 
-## Framework Developer Guide
+Neutralinojs contributors:
 
-**NOTE**: The following setup guide is for building Neutralinojs from source. You don't need to do the following setup to create Neutralinojs applications. 
+<a href="https://github.com/neutralinojs/neutralinojs/graphs/contributors">
+  <img src="https://contributors-img.firebaseapp.com/image?repo=neutralinojs/neutralinojs" />
+</a>
 
-### Setup and compilation
-
-First, clone this repository.
-
-```bash
-git clone https://github.com/neutralinojs/neutralinojs.git
-cd neutralinojs
-```
-
-**Linux**
-
-No need for separate compilers because Linux distributions usually have GNU C/C++ compilers installed already.
-
-Install GTK, webkit, boost and other required libraries
-
-**Ubuntu**
-
-If you are using a newer version of Ubuntu, some libraries may be pre-installed.
-
-```bash
-sudo apt-get install \ 
-    libboost-all-dev \
-    libgtk-3-dev \ 
-    libwebkit2gtk-4.0-37 \ 
-    libwebkit2gtk-4.0-dev \
-    libappindicator3-dev
-```
-
-**Fedora**
-
-```bash
-sudo dnf install \
-    @development-tools \
-    libappindicator-gtk3.x86_64 \
-    gtk3 \
-    webkit2gtk3.x86_64 \
-    webkit2gtk3-devel.x86_64 \ 
-    boost-devel
-```
-
-Compile the Neutralinojs framework.
-
-```bash
-bash build_linux.sh # [ia32, x64, armhf, arm64]
-```
-
-**Windows**
-
-Install the latest Visual Studio IDE. Neutralinojs compilation on Windows will use MSVC (aka `cl.exe`) C++ compiler. Install Boost libraries via Chocolatey.
-
-```bash
-choco install boost-msvc-14.1
-```
-
-Compile the Neutralinojs framework.
-
-```bash
-./build_windows.bat # [ia32, x64, armhf, arm64]
-```
-
-**macOS**
-
-Install Xcode Command Line Tools. Install Boost libraries via Homebrew.
-
-```bash
-brew install boost@1.76
-```
-
-Compile the Neutralinojs framework.
-
-```bash
-bash build_macos.sh # [ia32, x64, armhf, arm64]
-```
+Image created with [contributors-img](https://contributors-img.firebaseapp.com).
 
 ## Sponsors and Donators
 
@@ -146,15 +71,7 @@ If you like to support our work, you can donate to Neutralinojs via [Patreon](ht
 - Cross-platform process library: MIT from [eidheim/tiny-process-library](https://gitlab.com/eidheim/tiny-process-library). Copyright (c) 2015-2020 Ole Christian Eidheim.
 - Logo design credits: [IconsPng](https://www.iconspng.com/image/2688/atom-orange). Copyright free as mentioned in their website. 
 
-Please check all licenses from [this](LICENSE) link.
-
+Complete license details: [this](LICENSE)
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fneutralinojs%2Fneutralinojs.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fneutralinojs%2Fneutralinojs?ref=badge_large)
 
-## Contributors
-
-<a href="https://github.com/neutralinojs/neutralinojs/graphs/contributors">
-  <img src="https://contributors-img.firebaseapp.com/image?repo=neutralinojs/neutralinojs" />
-</a>
-
-The above image was generated with [contributors-img](https://contributors-img.firebaseapp.com).
