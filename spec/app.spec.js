@@ -11,7 +11,7 @@ describe('app.spec: app namespace tests', () => {
                     Neutralino.app.exit();
                 }, 2000);
             `);
-            assert.ok(exitCode);
+            assert.ok(typeof exitCode != undefined);
         });
 
         it('works with parameters', async () => {
@@ -20,7 +20,7 @@ describe('app.spec: app namespace tests', () => {
                     Neutralino.app.exit(1);
                 }, 2000);
             `);
-            assert.ok(exitCode);
+            assert.ok(typeof exitCode != undefined);
         });
     });
 
