@@ -83,14 +83,14 @@ describe('window.spec: window namespace tests', () => {
             assert.equal(runner.getOutput(), 'done');
         });
 
-        it('sets full screen mode', async () => {
+        it('sets fullscreen mode', async () => {
             runner.run(`
                 await Neutralino.window.setFullScreen();
                 setTimeout(async () => {
                     let status = await Neutralino.window.isFullScreen();
                     await __close(status.toString());
                 }, 1000);
-            `, {args: '--window-maximize'});
+            `);
             assert.equal(runner.getOutput(), 'true');
         });
     });
