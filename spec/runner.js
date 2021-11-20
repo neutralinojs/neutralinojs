@@ -49,7 +49,13 @@ function run(code, options = {args: ''}) {
 }
 
 function getOutput() {
-    let content = fs.readFileSync(OUTPUT_FILE, 'utf8');
+    let content = ''
+    try {
+        content = fs.readFileSync(OUTPUT_FILE, 'utf8');
+    }
+    catch(err) {
+        // ignore
+    }
     cleanup();
     return content;
 }
