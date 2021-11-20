@@ -37,7 +37,7 @@ describe('window.spec: window namespace tests', () => {
                 setTimeout(async () => {
                     let status = await Neutralino.window.isMaximized();
                     await __close(status.toString());
-                }, 500);
+                }, 1000);
             `);
             assert.equal(runner.getOutput(), 'true');
         });
@@ -58,7 +58,7 @@ describe('window.spec: window namespace tests', () => {
                 setTimeout(async () => {
                     let status = await Neutralino.window.isMaximized();
                     await __close(status.toString());
-                }, 500);
+                }, 1000);
             `, {args: '--window-maximize'});
             assert.equal(runner.getOutput(), 'false');
         });
@@ -89,7 +89,7 @@ describe('window.spec: window namespace tests', () => {
                 setTimeout(async () => {
                     let status = await Neutralino.window.isFullScreen();
                     await __close(status.toString());
-                }, 500);
+                }, 1000);
             `, {args: '--window-maximize'});
             assert.equal(runner.getOutput(), 'true');
         });
@@ -110,7 +110,7 @@ describe('window.spec: window namespace tests', () => {
                 setTimeout(async () => {
                     let status = await Neutralino.window.isVisible();
                     await __close(status.toString());
-                }, 500);
+                }, 1000);
             `, {args: '--window-hidden'});
             assert.equal(runner.getOutput(), 'true');
         });
@@ -131,7 +131,7 @@ describe('window.spec: window namespace tests', () => {
                 setTimeout(async () => {
                     let status = await Neutralino.window.isVisible();
                     await __close(status.toString());
-                }, 500);
+                }, 1000);
             `);
             assert.equal(runner.getOutput(), 'false');
         });
