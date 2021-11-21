@@ -53,12 +53,11 @@ describe('window.spec: window namespace tests', () => {
     });
 
     describe('window.minimize', () => {
-        it('works without throwing errors', async () => {
+        it('exports the function to the app', async () => {
             runner.run(`
-                await Neutralino.window.minimize();
-                await __close('done');
+                await __close(typeof Neutralino.os.minimize);
             `);
-            assert.equal(runner.getOutput(), 'done');
+            assert.equal(runner.getOutput(), 'function');
         });
     });
 
@@ -113,12 +112,11 @@ describe('window.spec: window namespace tests', () => {
     });
 
     describe('window.focus', () => {
-        it('works without throwing errors', async () => {
+        it('exports the function to the app', async () => {
             runner.run(`
-                await Neutralino.window.focus();
-                await __close('done');
+                await __close(typeof Neutralino.os.focus);
             `);
-            assert.equal(runner.getOutput(), 'done');
+            assert.equal(runner.getOutput(), 'function');
         });
     });
 
