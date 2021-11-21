@@ -55,7 +55,7 @@ describe('window.spec: window namespace tests', () => {
     describe('window.minimize', () => {
         it('exports the function to the app', async () => {
             runner.run(`
-                await __close(typeof Neutralino.os.minimize);
+                await __close(typeof Neutralino.window.minimize);
             `);
             assert.equal(runner.getOutput(), 'function');
         });
@@ -114,7 +114,7 @@ describe('window.spec: window namespace tests', () => {
     describe('window.focus', () => {
         it('exports the function to the app', async () => {
             runner.run(`
-                await __close(typeof Neutralino.os.focus);
+                await __close(typeof Neutralino.window.focus);
             `);
             assert.equal(runner.getOutput(), 'function');
         });
