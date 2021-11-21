@@ -22,6 +22,9 @@ jobs:
       run: |
         bash build_linux.sh
         chmod +x ./bin/neutralino-linux_x64
+    - name: Setup Spec Requirements
+      working-directory: ./bin/extensions/sampleextension 
+      run: npm ci
     - name: Run Spec
       working-directory: ./spec 
       run: | 
@@ -51,6 +54,9 @@ jobs:
       run: |
         bash build_macos.sh
         chmod +x ./bin/neutralino-mac_x64
+    - name: Setup Spec Requirements
+      working-directory: ./bin/extensions/sampleextension 
+      run: npm ci
     - name: Run Spec
       working-directory: ./spec 
       run: | 

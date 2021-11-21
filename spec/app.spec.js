@@ -37,7 +37,7 @@ describe('app.spec: app namespace tests', () => {
 
     describe('app.getConfig', () => {
         it('returns the config as a JSON object', async () => {
-            let exitCode = runner.run(`
+            runner.run(`
                 let config = await Neutralino.app.getConfig();
                 await __close(JSON.stringify(config));
             `);
