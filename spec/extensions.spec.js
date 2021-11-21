@@ -7,8 +7,10 @@ describe('extensions.spec: extensions namespace tests', () => {
     describe('extensions.getStats', () => {
         it('returns extensions stats', async () => {
             runner.run(`
-                let stats = await Neutralino.extensions.getStats();
-                await __close(JSON.stringify(stats));
+                setTimeout(async () => {
+                    let stats = await Neutralino.extensions.getStats();
+                    await __close(JSON.stringify(stats));
+                }, 1000);
             `, {args: '--enable-extensions'});
 
             let stats = JSON.parse(runner.getOutput());
@@ -25,8 +27,10 @@ describe('extensions.spec: extensions namespace tests', () => {
     describe('extensions.dispatch', () => {
         it('works without throwing errors', async () => {
             runner.run(`
-                await Neutralino.extensions.dispatch('js.neutralino.sampleextension', 'testEvent', 'data');
-                await __close('done');
+                setTimeout(async () => {
+                    await Neutralino.extensions.dispatch('js.neutralino.sampleextension', 'testEvent', 'data');
+                    await __close('done');
+                }, 1000);
             `, {args: '--enable-extensions'});
             assert.equal(runner.getOutput(), 'done');
         });
@@ -35,8 +39,10 @@ describe('extensions.spec: extensions namespace tests', () => {
     describe('extensions.broadcast', () => {
         it('works without throwing errors', async () => {
             runner.run(`
-                await Neutralino.extensions.broadcast('testEvent', 'data');
-                await __close('done');
+                setTimeout(async () => {
+                    await Neutralino.extensions.broadcast('testEvent', 'data');
+                    await __close('done');
+                }, 1000);
             `, {args: '--enable-extensions'});
             assert.equal(runner.getOutput(), 'done');
         });
