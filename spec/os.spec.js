@@ -129,12 +129,11 @@ describe('os.spec: os namespace tests', () => {
     });
 
     describe('os.open', () => {
-        it('works without throwing errors', async () => {
+        it('exports the function to the app', async () => {
             runner.run(`
-                await Neutralino.os.open('http://neutralino.js.org');
-                await __close('done');
+                await __close(typeof Neutralino.os.open);
             `);
-            assert.equal(runner.getOutput(), 'done');
+            assert.equal(runner.getOutput(), 'function');
         });
     });
 
