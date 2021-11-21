@@ -13,8 +13,8 @@ async function __close(data = "", exitCode = 0) {
     if(data) {
         await Neutralino.filesystem.writeFile(NL_PATH + "/.tmp/output.txt", data);
     }
-    setTimeout(() => {
-        Neutralino.app.exit(exitCode);
+    setTimeout(async () => {
+        await Neutralino.app.exit(exitCode); // normal exit
     }, 2000);
 }
 
@@ -25,6 +25,10 @@ async function __init() {
     catch(err) {
         // ignore
     }
+    setTimeout(async () => {
+        await Neutralino.filesystem.writeFile(NL_PATH + "/.tmp/output.txt", 'NL_SP_MAXTIMT');
+        await Neutralino.app.exit(1); // max timeout force exit
+    }, 10000);
 }
 `;
 const TMP_DIR = '../bin/.tmp';
