@@ -22,45 +22,33 @@ describe('window.spec: window namespace tests', () => {
         });
     });
 
-    describe('window.maximize, window.isMaximized', () => {
+    describe('window.maximize', () => {
         it('works without throwing errors', async () => {
             runner.run(`
                 await Neutralino.window.maximize();
                 await __close('done');
             `);
             assert.equal(runner.getOutput(), 'done');
-        });
-
-        it('maximizes the window', async () => {
-            runner.run(`
-                await Neutralino.window.maximize();
-                setTimeout(async () => {
-                    let status = await Neutralino.window.isMaximized();
-                    await __close(status.toString());
-                }, 1000);
-            `);
-            assert.equal(runner.getOutput(), 'true');
         });
     });
 
-    describe('window.unmaximize, window.isMaximized', () => {
+    describe('window.isMaximized', () => {
+        it('returns a boolean value', async () => {
+            runner.run(`
+                let value = await Neutralino.window.isMaximized();
+                await __close(value.toString());
+            `);
+            assert.ok(typeof JSON.parse(runner.getOutput()) == 'boolean');
+        });
+    });
+
+    describe('window.unmaximize', () => {
         it('works without throwing errors', async () => {
             runner.run(`
                 await Neutralino.window.unmaximize();
                 await __close('done');
             `, {args: '--window-maximize'});
             assert.equal(runner.getOutput(), 'done');
-        });
-
-        it('unmaximizes the window', async () => {
-            runner.run(`
-                await Neutralino.window.unmaximize();
-                setTimeout(async () => {
-                    let status = await Neutralino.window.isMaximized();
-                    await __close(status.toString());
-                }, 1000);
-            `, {args: '--window-maximize'});
-            assert.equal(runner.getOutput(), 'false');
         });
     });
 
@@ -74,7 +62,7 @@ describe('window.spec: window namespace tests', () => {
         });
     });
 
-    describe('window.setFullScreen, , window.isFullScreen', () => {
+    describe('window.setFullScreen', () => {
         it('works without throwing errors', async () => {
             runner.run(`
                 await Neutralino.window.setFullScreen();
@@ -82,20 +70,29 @@ describe('window.spec: window namespace tests', () => {
             `);
             assert.equal(runner.getOutput(), 'done');
         });
+    });
 
-        it('sets fullscreen mode', async () => {
+    describe('window.exitFullScreen', () => {
+        it('works without throwing errors', async () => {
             runner.run(`
-                await Neutralino.window.setFullScreen();
-                setTimeout(async () => {
-                    let status = await Neutralino.window.isFullScreen();
-                    await __close(status.toString());
-                }, 1000);
+                await Neutralino.window.exitFullScreen();
+                await __close('done');
             `);
-            assert.equal(runner.getOutput(), 'true');
+            assert.equal(runner.getOutput(), 'done');
         });
     });
 
-    describe('window.show, window.isVisible', () => {
+    describe('window.isFullScreen', () => {
+        it('returns a boolean value', async () => {
+            runner.run(`
+                let value = await Neutralino.window.isFullScreen();
+                await __close(value.toString());
+            `);
+            assert.ok(typeof JSON.parse(runner.getOutput()) == 'boolean');
+        });
+    });
+
+    describe('window.show', () => {
         it('works without throwing errors', async () => {
             runner.run(`
                 await Neutralino.window.show();
@@ -103,37 +100,15 @@ describe('window.spec: window namespace tests', () => {
             `, {args: '--window-hidden'});
             assert.equal(runner.getOutput(), 'done');
         });
-
-        it('shows the hidden window', async () => {
-            runner.run(`
-                await Neutralino.window.show();
-                setTimeout(async () => {
-                    let status = await Neutralino.window.isVisible();
-                    await __close(status.toString());
-                }, 1000);
-            `, {args: '--window-hidden'});
-            assert.equal(runner.getOutput(), 'true');
-        });
     });
 
-    describe('window.hide, window.isVisible', () => {
+    describe('window.hide', () => {
         it('works without throwing errors', async () => {
             runner.run(`
                 await Neutralino.window.hide();
                 await __close('done');
             `);
             assert.equal(runner.getOutput(), 'done');
-        });
-
-        it('hides the window', async () => {
-            runner.run(`
-                await Neutralino.window.hide();
-                setTimeout(async () => {
-                    let status = await Neutralino.window.isVisible();
-                    await __close(status.toString());
-                }, 1000);
-            `);
-            assert.equal(runner.getOutput(), 'false');
         });
     });
 
@@ -144,6 +119,16 @@ describe('window.spec: window namespace tests', () => {
                 await __close('done');
             `);
             assert.equal(runner.getOutput(), 'done');
+        });
+    });
+
+    describe('window.isVisible', () => {
+        it('returns a boolean value', async () => {
+            runner.run(`
+                let value = await Neutralino.window.isVisible();
+                await __close(value.toString());
+            `);
+            assert.ok(typeof JSON.parse(runner.getOutput()) == 'boolean');
         });
     });
 
