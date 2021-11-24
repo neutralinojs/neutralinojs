@@ -174,7 +174,7 @@ namespace neuserver {
         if(__isExtensionEndpoint(url)) {
             string extensionId = __getExtensionIdFromUrl(url);
             extConnections[extensionId] = handler;
-            events::dispatch("extClientConnect", extConnections.size());
+            events::dispatch("extClientConnect", extensionId);
         }
         else {
             appConnections.insert(handler);
@@ -189,7 +189,7 @@ namespace neuserver {
         if(__isExtensionEndpoint(url)) {
             string extensionId = __getExtensionIdFromUrl(url);
             extConnections.erase(extensionId);
-            events::dispatch("extClientDisconnect", extConnections.size());
+            events::dispatch("extClientDisconnect", extensionId);
         }
         else {
             appConnections.erase(handler);

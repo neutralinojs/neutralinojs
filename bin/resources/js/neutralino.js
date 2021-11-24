@@ -2,23 +2,17 @@ var Neutralino = (function (exports) {
     'use strict';
 
     function on(event, handler) {
-        return new Promise((resolve, reject) => {
-            window.addEventListener(event, handler);
-            resolve();
-        });
+        window.addEventListener(event, handler);
+        return Promise.resolve();
     }
     function off(event, handler) {
-        return new Promise((resolve, reject) => {
-            window.removeEventListener(event, handler);
-            resolve();
-        });
+        window.removeEventListener(event, handler);
+        return Promise.resolve();
     }
     function dispatch$1(event, data) {
-        return new Promise((resolve, reject) => {
-            let customEvent = new CustomEvent(event, { detail: data });
-            window.dispatchEvent(customEvent);
-            resolve();
-        });
+        let customEvent = new CustomEvent(event, { detail: data });
+        window.dispatchEvent(customEvent);
+        return Promise.resolve();
     }
 
     let nativeCalls = {};
@@ -518,14 +512,19 @@ var Neutralino = (function (exports) {
     var version = "2.0.0";
 
     function init() {
-        init$1();
-        if (typeof window.NL_ARGS != 'undefined') {
-            for (let i = 0; i < window.NL_ARGS.length; i++) {
-                if (window.NL_ARGS[i] == '--debug-mode') {
-                    startAsync();
-                    break;
-                }
+        // Notify about already connect extensions and newly connected extensions
+        Neutralino.events.on("ready", () => __awaiter(this, void 0, void 0, function* () {
+            let stats = yield Neutralino.extensions.getStats();
+            for (let extension of stats.connected) {
+                yield Neutralino.events.dispatch("extensionReady", extension);
             }
+            Neutralino.events.on("extClientConnect", (evt) => __awaiter(this, void 0, void 0, function* () {
+                yield Neutralino.events.dispatch("extensionReady", evt.detail);
+            }));
+        }));
+        init$1();
+        if (window.NL_ARGS.find((arg) => arg == '--debug-mode')) {
+            startAsync();
         }
         window.NL_CVERSION = version;
     }

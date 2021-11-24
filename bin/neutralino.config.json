@@ -5,7 +5,7 @@
     "url": "/resources/",
     "enableServer": true,
     "enableNativeAPI": true,
-    "exportAuthInfo": true,
+    "exportAuthInfo": false,
     "logging": {
         "enabled": true,
         "writeToLogFile": true

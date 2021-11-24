@@ -6,12 +6,13 @@ describe('extensions.spec: extensions namespace tests', () => {
 
     describe('extensions.getStats', () => {
         it('returns extensions stats', async () => {
-            runner.run(`
-                setTimeout(async () => {
+            runner.run(``,
+            { beforeInitCode: `
+                Neutralino.events.on("extensionReady", async () => {
                     let stats = await Neutralino.extensions.getStats();
                     await __close(JSON.stringify(stats));
-                }, 1000);
-            `, {args: '--enable-extensions'});
+                });
+            `, args: '--enable-extensions'});
 
             let stats = JSON.parse(runner.getOutput());
             assert.ok(typeof stats == 'object');
@@ -26,24 +27,26 @@ describe('extensions.spec: extensions namespace tests', () => {
 
     describe('extensions.dispatch', () => {
         it('works without throwing errors', async () => {
-            runner.run(`
-                setTimeout(async () => {
+            runner.run(``,
+            { beforeInitCode: `
+                Neutralino.events.on("extensionReady", async () => {
                     await Neutralino.extensions.dispatch('js.neutralino.sampleextension', 'testEvent', 'data');
                     await __close('done');
-                }, 1000);
-            `, {args: '--enable-extensions'});
+                });
+            `, args: '--enable-extensions'});
             assert.equal(runner.getOutput(), 'done');
         });
     });
 
     describe('extensions.broadcast', () => {
         it('works without throwing errors', async () => {
-            runner.run(`
-                setTimeout(async () => {
+            runner.run(``,
+            { beforeInitCode: `
+                Neutralino.events.on("extensionReady", async () => {
                     await Neutralino.extensions.broadcast('testEvent', 'data');
                     await __close('done');
-                }, 1000);
-            `, {args: '--enable-extensions'});
+                });
+            `, args: '--enable-extensions'});
             assert.equal(runner.getOutput(), 'done');
         });
     });

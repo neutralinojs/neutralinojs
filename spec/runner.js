@@ -2,6 +2,8 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 
 const SOURCE_TEMPLATE = `
+{BEFORE_INIT_CODE}
+
 Neutralino.init();
 
 Neutralino.events.on("ready", async () => {
@@ -35,12 +37,12 @@ const TMP_DIR = '../bin/.tmp';
 const OUTPUT_FILE = '../bin/.tmp/output.txt';
 const SOURCE_FILE = '../bin/resources/js/main_spec.js';
 
-function run(code, options = {args: ''}) {
+function run(code, options = {}) {
     cleanup();
     if(options.debug) {
         console.log('INFO: Preparing app source...');
     }
-    fs.writeFileSync(SOURCE_FILE, makeAppSource(code));
+    fs.writeFileSync(SOURCE_FILE, makeAppSource(code, options.beforeInitCode));
 
     if(options.debug) {
         console.log('INFO: Running the app...');
@@ -91,8 +93,10 @@ function makeCommand(optArgs = '') {
     return command;
 }
 
-function makeAppSource(code) {
-    return SOURCE_TEMPLATE.replace('{CODE}', code);
+function makeAppSource(code, beforeInitCode = '') {
+    return SOURCE_TEMPLATE
+            .replace('{CODE}', code)
+            .replace('{BEFORE_INIT_CODE}', beforeInitCode);
 }
 
 function cleanup() {
