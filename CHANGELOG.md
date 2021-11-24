@@ -42,6 +42,8 @@ Use `exportAuthInfo` to write auth details to `${NL_PATH}/.tmp/auth_info.json`. 
 
 - `appClientConnect` and `appClientDisconnect`: Occurs when a new app instance is launched and closed respectively.
 - `extClientConnect` and `extClientDisconnect`: Occurs when a new extension is connected and disconnected respectively.
+- `extensionReady` can be used to implement immediate extension calls. This is implemented from the client-side with `extensions.getStats` and `extClientConnect`. This event gurantees that it will be triggered regardless of the extension's start time.
+
 
 ### Error codes
 
