@@ -13,15 +13,21 @@ function openInBrowser() {
 
 Neutralino.init();
 Neutralino.events.on("ready", () => {
+    console.log(`INFO: app ready.`);
     // Immediate native calls
+});
+
+Neutralino.events.on("extensionReady", (evt) => {
+    console.log(`INFO: ${evt.detail} ready.`);
+    // Immediate calls to extension
 });
 
 Neutralino.events.on("windowClose", () => {
     Neutralino.app.exit();
 });
 
-Neutralino.events.on("eventfromExtension", (evt) => {
-    console.log(evt.detail);
+Neutralino.events.on("eventFromExtension", (evt) => {
+    console.log(`INFO: Test extension said: ${evt.detail}`);
     Neutralino.extensions.dispatch("js.neutralino.sampleextension", "eventToExtension", "Hello extension!");
 });
 
