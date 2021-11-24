@@ -3,6 +3,7 @@
 #include "helpers.h"
 #include "settings.h"
 #include "api/filesystem/filesystem.h"
+#include "api/debug/debug.h"
 
 using namespace std;
 string token = "";
@@ -29,6 +30,8 @@ namespace authbasic {
             __makeAuthInfoPayload().dump()
         };
         fs::writeFile(fileWriterOptions);
+
+        debug::log("INFO", "Auth info was exported to " + tempAuthInfoPath);
     }
 
     string getToken() {

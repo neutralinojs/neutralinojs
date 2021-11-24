@@ -131,12 +131,11 @@ describe('window.spec: window namespace tests', () => {
     });
 
     describe('window.setIcon', () => {
-        it('sets the icon without throwing errores', async () => {
+        it('exports the function to the app', async () => {
             runner.run(`
-                await Neutralino.window.setIcon('/resources/icons/appIcon.png');
-                await __close('done');
+                await __close(typeof Neutralino.window.setIcon);
             `);
-            assert.equal(runner.getOutput(), 'done');
+            assert.equal(runner.getOutput(), 'function');
         });
 
         it('throws errors for missing params', async () => {
