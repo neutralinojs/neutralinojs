@@ -26,7 +26,6 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 Now developers can use Neutralinojs as a part of their software with any programming language by spawning Neutralinojs as a child process.
 Use `exportAuthInfo` to write auth details to `${NL_PATH}/.tmp/auth_info.json`. Then the parent process can pickup access details there. Note that WebSocket communication needs to be initiated via extensions API/loader.
 
-
 ### API: app.broadcast
 - Sends an event to all app clients. This method is for extension developers.
 
@@ -43,7 +42,6 @@ Use `exportAuthInfo` to write auth details to `${NL_PATH}/.tmp/auth_info.json`. 
 - `appClientConnect` and `appClientDisconnect`: Occurs when a new app instance is launched and closed respectively.
 - `extClientConnect` and `extClientDisconnect`: Occurs when a new extension is connected and disconnected respectively.
 - `extensionReady` can be used to implement immediate extension calls. This is implemented from the client-side with `extensions.getStats` and `extClientConnect`. This event gurantees that it will be triggered regardless of the extension's start time.
-
 
 ### Error codes
 

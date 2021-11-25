@@ -3,16 +3,25 @@ var Neutralino = (function (exports) {
 
     function on(event, handler) {
         window.addEventListener(event, handler);
-        return Promise.resolve();
+        return Promise.resolve({
+            success: true,
+            message: 'Event listener added'
+        });
     }
     function off(event, handler) {
         window.removeEventListener(event, handler);
-        return Promise.resolve();
+        return Promise.resolve({
+            success: true,
+            message: 'Event listener removed'
+        });
     }
     function dispatch$1(event, data) {
         let customEvent = new CustomEvent(event, { detail: data });
         window.dispatchEvent(customEvent);
-        return Promise.resolve();
+        return Promise.resolve({
+            success: true,
+            message: 'Message dispatched'
+        });
     }
 
     let nativeCalls = {};
@@ -431,11 +440,8 @@ var Neutralino = (function (exports) {
             if (options && options.processArgs)
                 command += " " + options.processArgs;
             Neutralino.os.execCommand(command, { background: true })
-                .then(() => {
-                resolve({
-                    success: true,
-                    message: 'New window instance created'
-                });
+                .then((processInfo) => {
+                resolve(processInfo);
             })
                 .catch((error) => {
                 reject(error);
@@ -503,7 +509,7 @@ var Neutralino = (function (exports) {
                     location.reload();
                 }
             }
-            catch (e) {
+            catch (err) {
                 console.error('Unable to communicate with neu devServer');
             }
         }), 1000);
@@ -513,14 +519,14 @@ var Neutralino = (function (exports) {
 
     function init() {
         // Notify about already connect extensions and newly connected extensions
-        Neutralino.events.on("ready", () => __awaiter(this, void 0, void 0, function* () {
+        Neutralino.events.on('ready', () => __awaiter(this, void 0, void 0, function* () {
             let stats = yield Neutralino.extensions.getStats();
-            for (let extension of stats.connected) {
-                yield Neutralino.events.dispatch("extensionReady", extension);
-            }
-            Neutralino.events.on("extClientConnect", (evt) => __awaiter(this, void 0, void 0, function* () {
-                yield Neutralino.events.dispatch("extensionReady", evt.detail);
+            Neutralino.events.on('extClientConnect', (evt) => __awaiter(this, void 0, void 0, function* () {
+                yield Neutralino.events.dispatch('extensionReady', evt.detail);
             }));
+            for (let extension of stats.connected) {
+                yield Neutralino.events.dispatch('extensionReady', extension);
+            }
         }));
         init$1();
         if (window.NL_ARGS.find((arg) => arg == '--debug-mode')) {
