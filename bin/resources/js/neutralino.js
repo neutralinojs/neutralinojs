@@ -1,6 +1,16 @@
 var Neutralino = (function (exports) {
     'use strict';
 
+    function __awaiter(thisArg, _arguments, P, generator) {
+        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+        return new (P || (P = Promise))(function (resolve, reject) {
+            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+            step((generator = generator.apply(thisArg, _arguments || [])).next());
+        });
+    }
+
     function on(event, handler) {
         window.addEventListener(event, handler);
         return Promise.resolve({
@@ -25,6 +35,7 @@ var Neutralino = (function (exports) {
     }
 
     let nativeCalls = {};
+    let offlineMessageQueue = [];
     let ws;
     function init$1() {
         ws = new WebSocket(`ws://${window.location.hostname}:${window.NL_PORT}`);
@@ -48,19 +59,32 @@ var Neutralino = (function (exports) {
                 dispatch$1(message.event, message.data);
             }
         });
-        ws.addEventListener('open', (event) => {
+        ws.addEventListener('open', (event) => __awaiter(this, void 0, void 0, function* () {
             dispatch$1('ready');
-        });
+            while (offlineMessageQueue.length > 0) {
+                let offlineMessage = offlineMessageQueue.shift();
+                try {
+                    let response = yield sendMessage(offlineMessage.method, offlineMessage.data);
+                    offlineMessage.resolve(response);
+                }
+                catch (err) {
+                    offlineMessage.reject(err);
+                }
+            }
+        }));
+        ws.addEventListener('close', (event) => __awaiter(this, void 0, void 0, function* () {
+            let error = {
+                code: 'NE_CL_NSEROFF',
+                message: 'Neutralino server is offline. Try restarting the application'
+            };
+            dispatch$1('serverOffline', error);
+        }));
     }
     function sendMessage(method, data) {
         return new Promise((resolve, reject) => {
-            if (ws.readyState != WebSocket.OPEN) {
-                let error = {
-                    code: 'NE_CL_NSEROFF',
-                    message: 'Neutralino server is offline. Try restarting the application'
-                };
-                dispatch$1('serverOffline', error);
-                return reject(error);
+            if ((ws === null || ws === void 0 ? void 0 : ws.readyState) != WebSocket.OPEN) {
+                offlineMessageQueue.push({ method, data, resolve, reject });
+                return;
             }
             const id = uuidv4();
             const accessToken = window.NL_TOKEN;
@@ -249,16 +273,6 @@ var Neutralino = (function (exports) {
         get LoggerType () { return LoggerType; },
         log: log
     });
-
-    function __awaiter(thisArg, _arguments, P, generator) {
-        function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-        return new (P || (P = Promise))(function (resolve, reject) {
-            function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-            function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-            function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-            step((generator = generator.apply(thisArg, _arguments || [])).next());
-        });
-    }
 
     function exit(code) {
         return sendMessage('app.exit', { code });
@@ -518,6 +532,9 @@ var Neutralino = (function (exports) {
     var version = "2.0.0";
 
     function init() {
+        if (window.NL_APPINIT) {
+            return;
+        }
         // Notify about already connect extensions and newly connected extensions
         Neutralino.events.on('ready', () => __awaiter(this, void 0, void 0, function* () {
             let stats = yield Neutralino.extensions.getStats();
@@ -533,6 +550,7 @@ var Neutralino = (function (exports) {
             startAsync();
         }
         window.NL_CVERSION = version;
+        window.NL_APPINIT = true;
     }
 
     exports.app = app;

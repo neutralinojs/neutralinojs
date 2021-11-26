@@ -12,10 +12,9 @@ function openInBrowser() {
 }
 
 Neutralino.init();
-Neutralino.events.on("ready", () => {
-    console.log(`INFO: app ready.`);
-    // Immediate native calls
-});
+if(NL_MODE == "window") {
+    Neutralino.window.setTitle("Test app"); // This request will be queued and processed when WS connects.
+}
 
 Neutralino.events.on("extensionReady", (evt) => {
     console.log(`INFO: ${evt.detail} ready.`);
