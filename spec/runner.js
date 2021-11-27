@@ -89,7 +89,7 @@ function makeCommand(optArgs = '') {
         command += 'win_x64.exe'
     }
     command += ' --load-dir-res --window-exit-process-on-close ' +
-            '--url=/resources/index_spec.html --window-enable-inspector=false ' + optArgs;
+            '--url=/index_spec.html --window-enable-inspector=false ' + optArgs;
     return command;
 }
 

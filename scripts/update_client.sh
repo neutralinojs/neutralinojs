@@ -18,3 +18,4 @@ cp ./dist/neutralino.js  ../neutralinojs/bin/resources/js/neutralino.js
 cp ./dist/neutralino.js.map  ../neutralinojs/bin/resources/js/neutralino.js.map
 
 echo "OK: Updated."
+
