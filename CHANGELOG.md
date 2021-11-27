@@ -21,6 +21,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 - Each extension process instance is called with three CLI args: `--nl-port={}`, `--nl-extension-id={}` and `--nl-token={}`
 - Enable/disable extensions with `enableExtensions` config.
 
+### Core: Static server
+- Supports setting document root (with `documentRoot`) via config. Now, it's possible to launch app without a subdirectory in the URL.
+
 ### Core: Community driver processes
 
 Now developers can use Neutralinojs as a part of their software with any programming language by spawning Neutralinojs as a child process.
