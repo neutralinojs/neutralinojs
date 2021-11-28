@@ -85,6 +85,7 @@ var Neutralino = (function (exports) {
         Neutralino.events.on('extensionReady', (evt) => __awaiter(this, void 0, void 0, function* () {
             if (evt.detail in extensionMessageQueue) {
                 yield processQueue(extensionMessageQueue[evt.detail]);
+                delete extensionMessageQueue[evt.detail];
             }
         }));
     }
