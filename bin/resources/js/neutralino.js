@@ -76,12 +76,12 @@ var Neutralino = (function (exports) {
             yield processQueue(offlineMessageQueue);
             let stats = yield Neutralino.extensions.getStats();
             for (let extension of stats.connected) {
-                yield Neutralino.events.dispatch('extensionReady', extension);
+                dispatch$1('extensionReady', extension);
             }
         }));
-        Neutralino.events.on('extClientConnect', (evt) => __awaiter(this, void 0, void 0, function* () {
-            yield Neutralino.events.dispatch('extensionReady', evt.detail);
-        }));
+        Neutralino.events.on('extClientConnect', (evt) => {
+            dispatch$1('extensionReady', evt.detail);
+        });
         Neutralino.events.on('extensionReady', (evt) => __awaiter(this, void 0, void 0, function* () {
             if (evt.detail in extensionMessageQueue) {
                 yield processQueue(extensionMessageQueue[evt.detail]);

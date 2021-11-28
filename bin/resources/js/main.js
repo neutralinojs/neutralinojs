@@ -17,7 +17,10 @@ if(NL_MODE == "window") {
 }
 
 // This request will be queued and processed when the extension connects.
-Neutralino.extensions.dispatch("js.neutralino.sampleextension", "eventToExtension", "Hello extension!");
+Neutralino.extensions.dispatch("js.neutralino.sampleextension", "eventToExtension", "Hello extension!")
+    .catch((err) => {
+        console.log("Extension isn't loaded!");
+    });
 
 Neutralino.events.on("windowClose", () => {
     Neutralino.app.exit();
