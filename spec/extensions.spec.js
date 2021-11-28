@@ -27,13 +27,10 @@ describe('extensions.spec: extensions namespace tests', () => {
 
     describe('extensions.dispatch', () => {
         it('works without throwing errors', async () => {
-            runner.run(``,
-            { beforeInitCode: `
-                Neutralino.events.on("extensionReady", async () => {
-                    await Neutralino.extensions.dispatch('js.neutralino.sampleextension', 'testEvent', 'data');
-                    await __close('done');
-                });
-            `, args: '--enable-extensions'});
+            runner.run(`
+                await Neutralino.extensions.dispatch('js.neutralino.sampleextension', 'testEvent', 'data');
+                await __close('done');
+            `, {args: '--enable-extensions'});
             assert.equal(runner.getOutput(), 'done');
         });
     });

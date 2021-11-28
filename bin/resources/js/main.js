@@ -16,10 +16,8 @@ if(NL_MODE == "window") {
     Neutralino.window.setTitle("Test app"); // This request will be queued and processed when WS connects.
 }
 
-Neutralino.events.on("extensionReady", (evt) => {
-    console.log(`INFO: ${evt.detail} ready.`);
-    // Immediate calls to extension
-});
+// This request will be queued and processed when the extension connects.
+Neutralino.extensions.dispatch("js.neutralino.sampleextension", "eventToExtension", "Hello extension!");
 
 Neutralino.events.on("windowClose", () => {
     Neutralino.app.exit();
@@ -27,7 +25,6 @@ Neutralino.events.on("windowClose", () => {
 
 Neutralino.events.on("eventFromExtension", (evt) => {
     console.log(`INFO: Test extension said: ${evt.detail}`);
-    Neutralino.extensions.dispatch("js.neutralino.sampleextension", "eventToExtension", "Hello extension!");
 });
 
 showInfo();

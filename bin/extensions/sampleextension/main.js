@@ -16,20 +16,6 @@ client.onerror = function() {
 
 client.onopen = function() {
     log('Connected');
-
-    setTimeout(() => {
-        // Use Neutralinojs server's messaging protocol to trigger native API functions
-        // Use app.broadcast method to send an event to all app instances
-        client.send(JSON.stringify({
-            id: uuidv4(),
-            method: 'app.broadcast',
-            accessToken: NL_TOKEN,
-            data: {
-                event: 'eventFromExtension',
-                data: 'Hello app!'
-            }
-        }));
-    }, 5000);
 };
 
 client.onclose = function() {
@@ -47,6 +33,17 @@ client.onmessage = function(e) {
         switch(message.event) {
             case 'eventToExtension':
                 log(message.data);
+                // Use Neutralinojs server's messaging protocol to trigger native API functions
+                // Use app.broadcast method to send an event to all app instances
+                client.send(JSON.stringify({
+                    id: uuidv4(),
+                    method: 'app.broadcast',
+                    accessToken: NL_TOKEN,
+                    data: {
+                        event: 'eventFromExtension',
+                        data: 'Hello app!'
+                    }
+                }));
                 break;
         }
     }

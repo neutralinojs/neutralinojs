@@ -34,11 +34,61 @@ var Neutralino = (function (exports) {
         });
     }
 
+    let ws;
     let nativeCalls = {};
     let offlineMessageQueue = [];
-    let ws;
+    let extensionMessageQueue = {};
     function init$1() {
         ws = new WebSocket(`ws://${window.location.hostname}:${window.NL_PORT}`);
+        registerLibraryEvents();
+        registerSocketEvents();
+    }
+    function sendMessage(method, data) {
+        return new Promise((resolve, reject) => {
+            if ((ws === null || ws === void 0 ? void 0 : ws.readyState) != WebSocket.OPEN) {
+                sendWhenReady({ method, data, resolve, reject });
+                return;
+            }
+            const id = uuidv4();
+            const accessToken = window.NL_TOKEN;
+            nativeCalls[id] = { resolve, reject };
+            ws.send(JSON.stringify({
+                id,
+                method,
+                data,
+                accessToken
+            }));
+        });
+    }
+    function sendWhenReady(message) {
+        offlineMessageQueue.push(message);
+    }
+    function sendWhenExtReady(extensionId, message) {
+        if (extensionId in extensionMessageQueue) {
+            extensionMessageQueue[extensionId].push(message);
+        }
+        else {
+            extensionMessageQueue[extensionId] = [message];
+        }
+    }
+    function registerLibraryEvents() {
+        Neutralino.events.on('ready', () => __awaiter(this, void 0, void 0, function* () {
+            yield processQueue(offlineMessageQueue);
+            let stats = yield Neutralino.extensions.getStats();
+            for (let extension of stats.connected) {
+                yield Neutralino.events.dispatch('extensionReady', extension);
+            }
+        }));
+        Neutralino.events.on('extClientConnect', (evt) => __awaiter(this, void 0, void 0, function* () {
+            yield Neutralino.events.dispatch('extensionReady', evt.detail);
+        }));
+        Neutralino.events.on('extensionReady', (evt) => __awaiter(this, void 0, void 0, function* () {
+            if (evt.detail in extensionMessageQueue) {
+                yield processQueue(extensionMessageQueue[evt.detail]);
+            }
+        }));
+    }
+    function registerSocketEvents() {
         ws.addEventListener('message', (event) => {
             var _a, _b;
             const message = JSON.parse(event.data);
@@ -61,16 +111,6 @@ var Neutralino = (function (exports) {
         });
         ws.addEventListener('open', (event) => __awaiter(this, void 0, void 0, function* () {
             dispatch$1('ready');
-            while (offlineMessageQueue.length > 0) {
-                let offlineMessage = offlineMessageQueue.shift();
-                try {
-                    let response = yield sendMessage(offlineMessage.method, offlineMessage.data);
-                    offlineMessage.resolve(response);
-                }
-                catch (err) {
-                    offlineMessage.reject(err);
-                }
-            }
         }));
         ws.addEventListener('close', (event) => __awaiter(this, void 0, void 0, function* () {
             let error = {
@@ -80,21 +120,18 @@ var Neutralino = (function (exports) {
             dispatch$1('serverOffline', error);
         }));
     }
-    function sendMessage(method, data) {
-        return new Promise((resolve, reject) => {
-            if ((ws === null || ws === void 0 ? void 0 : ws.readyState) != WebSocket.OPEN) {
-                offlineMessageQueue.push({ method, data, resolve, reject });
-                return;
+    function processQueue(messageQueue) {
+        return __awaiter(this, void 0, void 0, function* () {
+            while (messageQueue.length > 0) {
+                let message = messageQueue.shift();
+                try {
+                    let response = yield sendMessage(message.method, message.data);
+                    message.resolve(response);
+                }
+                catch (err) {
+                    message.reject(err);
+                }
             }
-            const id = uuidv4();
-            const accessToken = window.NL_TOKEN;
-            nativeCalls[id] = { resolve, reject };
-            ws.send(JSON.stringify({
-                id,
-                method,
-                data,
-                accessToken
-            }));
         });
     }
     // From: https://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid
@@ -498,7 +535,31 @@ var Neutralino = (function (exports) {
     });
 
     function dispatch(extensionId, event, data) {
-        return sendMessage('extensions.dispatch', { extensionId, event, data });
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            let stats = yield Neutralino.extensions.getStats();
+            if (!stats.loaded.includes(extensionId)) {
+                reject({
+                    code: 'NE_EX_EXTNOTL',
+                    message: `${extensionId} is not loaded`
+                });
+            }
+            else if (stats.connected.includes(extensionId)) {
+                try {
+                    let result = yield sendMessage('extensions.dispatch', { extensionId, event, data });
+                    resolve(result);
+                }
+                catch (err) {
+                    reject(err);
+                }
+            }
+            else {
+                // loaded but not connected yet.
+                sendWhenExtReady(extensionId, {
+                    method: 'extensions.dispatch',
+                    data: { extensionId, event, data }, resolve, reject
+                });
+            }
+        }));
     }
     function broadcast(event, data) {
         return sendMessage('extensions.broadcast', { event, data });
@@ -531,26 +592,17 @@ var Neutralino = (function (exports) {
 
     var version = "2.0.0";
 
+    let initialized = false;
     function init() {
-        if (window.NL_APPINIT) {
+        if (initialized) {
             return;
         }
-        // Notify about already connect extensions and newly connected extensions
-        Neutralino.events.on('ready', () => __awaiter(this, void 0, void 0, function* () {
-            let stats = yield Neutralino.extensions.getStats();
-            Neutralino.events.on('extClientConnect', (evt) => __awaiter(this, void 0, void 0, function* () {
-                yield Neutralino.events.dispatch('extensionReady', evt.detail);
-            }));
-            for (let extension of stats.connected) {
-                yield Neutralino.events.dispatch('extensionReady', extension);
-            }
-        }));
         init$1();
         if (window.NL_ARGS.find((arg) => arg == '--debug-mode')) {
             startAsync();
         }
         window.NL_CVERSION = version;
-        window.NL_APPINIT = true;
+        initialized = true;
     }
 
     exports.app = app;
