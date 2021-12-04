@@ -34,14 +34,14 @@ namespace events {
 namespace controllers {
     json broadcast(const json &input) {
         json output;
-        if(!input.contains("event")) {
+        if(!helpers::hasRequiredFields(input, {"event"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
         string event = input["event"].get<string>();
         json data = nullptr;
 
-        if(input.contains("data")) {
+        if(helpers::hasField(input, "data")) {
             data = input["data"];
         }
 

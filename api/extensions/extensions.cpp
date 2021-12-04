@@ -14,7 +14,7 @@ namespace extensions {
 namespace controllers {
     json dispatch(const json &input) {
         json output;
-        if(!input.contains("extensionId") || !input.contains("event")) {
+        if(!helpers::hasRequiredFields(input, {"extensionId", "event"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
@@ -22,7 +22,7 @@ namespace controllers {
         string event = input["event"].get<string>();
         json data = nullptr;
 
-        if(input.contains("data")) {
+        if(helpers::hasField(input, "data")) {
             data = input["data"];
         }
 
@@ -38,14 +38,14 @@ namespace controllers {
 
     json broadcast(const json &input) {
         json output;
-        if(!input.contains("event")) {
+        if(!helpers::hasRequiredFields(input, {"event"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
         string event = input["event"].get<string>();
         json data = nullptr;
 
-        if(input.contains("data")) {
+        if(helpers::hasField(input, "data")) {
             data = input["data"];
         }
 

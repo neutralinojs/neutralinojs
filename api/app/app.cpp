@@ -44,7 +44,7 @@ namespace app {
 namespace controllers {
     json exit(const json &input) {
         int code = 0;
-        if(input.contains("code")) {
+        if(helpers::hasField(input, "code")) {
             code = input["code"].get<int>();
         }
         app::exit(code);
@@ -71,14 +71,14 @@ namespace controllers {
 
     json broadcast(const json &input) {
         json output;
-        if(!input.contains("event")) {
+        if(!helpers::hasRequiredFields(input, {"event"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
         string event = input["event"].get<string>();
         json data = nullptr;
 
-        if(input.contains("data")) {
+        if(helpers::hasField(input, "data")) {
             data = input["data"];
         }
 
