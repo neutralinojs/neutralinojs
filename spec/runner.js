@@ -1,5 +1,6 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
+const path = require('path');
 
 const SOURCE_TEMPLATE = `
 {BEFORE_INIT_CODE}
@@ -33,6 +34,7 @@ async function __init() {
     }, 10000);
 }
 `;
+
 const TMP_DIR = '../bin/.tmp';
 const OUTPUT_FILE = '../bin/.tmp/output.txt';
 const SOURCE_FILE = '../bin/resources/js/main_spec.js';
@@ -55,7 +57,7 @@ function run(code, options = {}) {
         }
         execSync(command);
     }
-    catch (err) {
+    catch(err) {
         exitCode = err.status;
     }
 
@@ -70,7 +72,7 @@ function getOutput() {
     try {
         content = fs.readFileSync(OUTPUT_FILE, 'utf8');
     }
-    catch(err) {
+    catch (err) {
         // ignore
     }
     cleanup();
@@ -78,7 +80,7 @@ function getOutput() {
 }
 
 function makeCommand(optArgs = '') {
-    let command = '../bin/neutralino-';
+    let command = `..${path.sep}bin${path.sep}neutralino-`;
     if(process.platform == 'linux') {
         command += 'linux_x64'
     }
@@ -89,19 +91,20 @@ function makeCommand(optArgs = '') {
         command += 'win_x64.exe'
     }
     command += ' --load-dir-res --window-exit-process-on-close ' +
-            '--url=/index_spec.html --window-enable-inspector=false ' + optArgs;
+        '--url=/index_spec.html --window-enable-inspector=false ' + optArgs;
+    console.log(command)
     return command;
 }
 
 function makeAppSource(code, beforeInitCode = '') {
     return SOURCE_TEMPLATE
-            .replace('{CODE}', code)
-            .replace('{BEFORE_INIT_CODE}', beforeInitCode);
+        .replace('{CODE}', code)
+        .replace('{BEFORE_INIT_CODE}', beforeInitCode);
 }
 
 function cleanup() {
     try {
-        fs.rmSync(TMP_DIR, {recursive: true});
+        fs.rmSync(TMP_DIR, { recursive: true });
         fs.unlinkSync(SOURCE_FILE);
     }
     catch(err) {
