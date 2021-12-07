@@ -90,6 +90,9 @@ namespace settings {
         string jsSnippet = "var NL_OS='" + string(OS_NAME) + "';";
         jsSnippet += "var NL_VERSION='" + string(NL_VERSION) + "';";
         jsSnippet += "var NL_APPID='" + options["applicationId"].get<string>() + "';";
+        if(!options["version"].is_null()) {
+            jsSnippet += "var NL_APPVERSION='" + options["version"].get<string>() + "';";
+        }
         jsSnippet += "var NL_PORT=" + to_string(settings::getOptionForCurrentMode("port").get<int>()) + ";";
         jsSnippet += "var NL_MODE='" + options["defaultMode"].get<string>() + "';";
         jsSnippet += "var NL_TOKEN='" + authbasic::getToken() + "';";
