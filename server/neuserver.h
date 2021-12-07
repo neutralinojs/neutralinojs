@@ -14,6 +14,7 @@ using json = nlohmann::json;
 
 namespace neuserver {
     string init();
+    bool isInitialized();
     void startAsync();
     void stop();
     void handleMessage(websocketpp::connection_hdl handler, websocketpp::server<websocketpp::config::asio>::message_ptr msg);

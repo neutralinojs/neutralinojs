@@ -20,15 +20,11 @@ namespace permission {
     vector <string> allowedModules;
     bool shouldCheckBlockList = false;
     bool shouldCheckAllowList = false;
-    
+
     bool __isWildcardMatch(const string &methodMatch) {
         return regex_match(methodMatch, regex(".*\\.\\*"));
     }
-    
-    bool __isPingMethod(const string &methodMatch) {
-        return methodMatch == "app.keepAlive";
-    }
-    
+
     string __getModuleFromMethod(const string &nativeMethod) {
         vector <string> methodParts = helpers::split(nativeMethod, '.');
         return methodParts[0];
@@ -39,7 +35,7 @@ namespace permission {
         if(jNativeBlockList.is_null())
             return;
         vector<string> blockListVector = jNativeBlockList.get<vector<string>>();
-        
+
         for(int i = 0; i < blockListVector.size(); i++) {
             // Adding blocked modules
             if(__isWildcardMatch(blockListVector[i])) {
@@ -52,13 +48,13 @@ namespace permission {
         }
         shouldCheckBlockList = true;
     }
-    
+
     void __registerAllowList() {
         json jNativeAllowList = settings::getOptionForCurrentMode("nativeAllowList");
         if(jNativeAllowList.is_null())
             return;
         vector<string> allowListVector = jNativeAllowList.get<vector<string>>();
-        
+
         for(int i = 0; i < allowListVector.size(); i++) {
             // Adding allowed modules
             if(__isWildcardMatch(allowListVector[i])) {
@@ -73,49 +69,45 @@ namespace permission {
     }
 
     bool hasMethodAccess(const string &nativeMethod) {
-        if(__isPingMethod(nativeMethod))
-            return true;
         string module = __getModuleFromMethod(nativeMethod);
         if(shouldCheckBlockList) {
             // Check modules
-            if(find(blockedModules.begin(), blockedModules.end(), module) 
+            if(find(blockedModules.begin(), blockedModules.end(), module)
                     != blockedModules.end()) {
-                return false;        
+                return false;
             }
-            
+
             // Check methods
-            if(find(blockedMethods.begin(), blockedMethods.end(), nativeMethod) 
+            if(find(blockedMethods.begin(), blockedMethods.end(), nativeMethod)
                     != blockedMethods.end()) {
-                return false;        
+                return false;
             }
             return true; // method is not blocked
         }
         else if(shouldCheckAllowList) {
             // Check modules
-            if(find(allowedModules.begin(), allowedModules.end(), module) 
+            if(find(allowedModules.begin(), allowedModules.end(), module)
                     != allowedModules.end()) {
-                return true;        
+                return true;
             }
-            
+
             // Check methods
-            if(find(allowedMethods.begin(), allowedMethods.end(), nativeMethod) 
+            if(find(allowedMethods.begin(), allowedMethods.end(), nativeMethod)
                     != allowedMethods.end()) {
-                return true;        
+                return true;
             }
             return false; // method is not allowed
         }
         return true; // anything is allowed if no allow/block list defined
     }
 
-    bool hasAPIAccess(const string &nativeMethod) {
-        if(__isPingMethod(nativeMethod))
-            return true;
+    bool hasAPIAccess() {
         json jEnableNativeAPI = settings::getOptionForCurrentMode("enableNativeAPI");
         if(!jEnableNativeAPI.is_null())
             return jEnableNativeAPI.get<bool>();
         return false;
     }
-    
+
     void init() {
         __registerAllowList();
         __registerBlockList();

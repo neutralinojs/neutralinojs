@@ -42,14 +42,14 @@ namespace router {
                             "Invalid or expired NL_TOKEN value from client").dump();
             return response;
         }
+        if(!permission::hasAPIAccess()) {
+            response.data["error"] = helpers::makeErrorPayload("NE_RT_APIPRME",
+                            "Missing permission to access Native API").dump();
+            return response;
+        }
         if(!permission::hasMethodAccess(nativeMethodId)) {
             response.data["error"] = helpers::makeErrorPayload("NE_RT_NATPRME",
                             "Missing permission to execute the native method").dump();
-            return response;
-        }
-        if(!permission::hasAPIAccess(nativeMethodId)) {
-            response.data["error"] = helpers::makeErrorPayload("NE_RT_APIPRME",
-                            "Missing permission to access Native API").dump();
             return response;
         }
 

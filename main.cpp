@@ -28,7 +28,6 @@ INITIALIZE_EASYLOGGINGPP
 using namespace std;
 using json = nlohmann::json;
 
-bool enableServer = false;
 string navigationUrl = "";
 
 void __startApp() {
@@ -44,9 +43,10 @@ void __startApp() {
         window::controllers::init(windowOptions);
     }
     else if(mode == "cloud") {
-        if(enableServer)
+        if(neuserver::isInitialized()) {
             debug::log("INFO", options["applicationId"].get<string>() +
                      " is available at " + navigationUrl);
+        }
         while(true);
     }
 }
@@ -85,7 +85,6 @@ void __startServerAsync() {
     json jEnableServer = settings::getOptionForCurrentMode("enableServer");
 
     if(!jEnableServer.is_null() && jEnableServer.get<bool>()) {
-        enableServer = true;
         navigationUrl = neuserver::init();
         neuserver::startAsync();
     }

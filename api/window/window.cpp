@@ -24,6 +24,8 @@
 #include "lib/webview/webview.h"
 #include "settings.h"
 #include "helpers.h"
+#include "server/neuserver.h"
+#include "auth/permission.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
 #include "api/events/events.h"
@@ -55,7 +57,8 @@ namespace window {
 
 namespace handlers {
     void onClose() {
-        if(windowProps.exitProcessOnClose) {
+        if(windowProps.exitProcessOnClose ||
+            !neuserver::isInitialized() || !permission::hasAPIAccess()) {
             app::exit();
         }
         else {

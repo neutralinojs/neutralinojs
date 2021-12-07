@@ -30,6 +30,8 @@ websocketserver *server;
 wsclientsSet appConnections;
 wsclientsMap extConnections;
 
+bool initialized = false;
+
 namespace neuserver {
 
     bool __isExtensionEndpoint(const string &url) {
@@ -119,7 +121,12 @@ namespace neuserver {
             else
                 navigationUrl = url;
         }
+        initialized = true;
         return navigationUrl;
+    }
+
+    bool isInitialized() {
+        return initialized;
     }
 
     void startAsync() {
