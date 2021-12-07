@@ -56,6 +56,7 @@ namespace resources {
             asarArchive.read(fileBuf.data(), uSize);
             string fileContent(fileBuf.begin(), fileBuf.end());
             fileReaderResult.data = fileContent;
+            asarArchive.close();
        }
        else {
             fileReaderResult.hasError = true;
@@ -85,6 +86,7 @@ namespace resources {
         asarArchive.read(headerBuf.data(), uSize);
         json files;
         string headerContent(headerBuf.begin(), headerBuf.end());
+        asarArchive.close();
         try {
             files = json::parse(headerContent);
         }
