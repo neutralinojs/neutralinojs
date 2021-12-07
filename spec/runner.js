@@ -2,7 +2,6 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-
 const SOURCE_TEMPLATE = `
 {BEFORE_INIT_CODE}
 
@@ -35,33 +34,34 @@ async function __init() {
     }, 10000);
 }
 `;
+
 const TMP_DIR = '../bin/.tmp';
 const OUTPUT_FILE = '../bin/.tmp/output.txt';
 const SOURCE_FILE = '../bin/resources/js/main_spec.js';
 
 function run(code, options = {}) {
     cleanup();
-    if (options.debug) {
+    if(options.debug) {
         console.log('INFO: Preparing app source...');
     }
     fs.writeFileSync(SOURCE_FILE, makeAppSource(code, options.beforeInitCode));
 
-    if (options.debug) {
+    if(options.debug) {
         console.log('INFO: Running the app...');
     }
     let exitCode = 0;
     try {
         let command = makeCommand(options.args);
-        if (options.debug) {
+        if(options.debug) {
             console.log('INFO: Running command: ' + command);
         }
         execSync(command);
     }
-    catch (err) {
+    catch(err) {
         exitCode = err.status;
     }
 
-    if (options.debug) {
+    if(options.debug) {
         console.log('INFO: Test app was closed...');
     }
     return exitCode;
@@ -81,13 +81,13 @@ function getOutput() {
 
 function makeCommand(optArgs = '') {
     let command = `..${path.sep}bin${path.sep}neutralino-`;
-    if (process.platform == 'linux') {
+    if(process.platform == 'linux') {
         command += 'linux_x64'
     }
-    else if (process.platform == 'darwin') {
+    else if(process.platform == 'darwin') {
         command += 'mac_x64'
     }
-    else if (process.platform == 'win32') {
+    else if(process.platform == 'win32') {
         command += 'win_x64.exe'
     }
     command += ' --load-dir-res --window-exit-process-on-close ' +
@@ -107,7 +107,7 @@ function cleanup() {
         fs.rmSync(TMP_DIR, { recursive: true });
         fs.unlinkSync(SOURCE_FILE);
     }
-    catch (err) {
+    catch(err) {
         // ignore
     }
 }
