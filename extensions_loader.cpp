@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "settings.h"
+#include "helpers.h"
 #include "auth/authbasic.h"
 #include "api/os/os.h"
 
@@ -31,14 +32,14 @@ namespace extensions {
         for(const json &extension: extensions) {
             string commandKeyForOs = "command" + string(OS_NAME);
 
-            if(!extension.contains("id")) {
+            if(!helpers::hasField(extension, "id")) {
                 continue;
             }
 
             string extensionId = extension["id"].get<string>();
 
-            if(extension.contains("command") || extension.contains(commandKeyForOs)) {
-                string command = extension.contains(commandKeyForOs) ? extension[commandKeyForOs].get<string>()
+            if(helpers::hasField(extension, "command") || helpers::hasField(extension, commandKeyForOs)) {
+                string command = helpers::hasField(extension, commandKeyForOs) ? extension[commandKeyForOs].get<string>()
                                     : extension["command"].get<string>();
                 command = regex_replace(command, regex("\\$\\{NL_PATH\\}"), settings::getAppPath());
                 command += __buildExtensionArgs(extensionId);

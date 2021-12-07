@@ -14,7 +14,7 @@
 #include <atlstr.h>
 #include <shlwapi.h>
 #include <winbase.h>
-#endif 
+#endif
 
 #include "lib/json/json.hpp"
 #include "lib/base64/base64.hpp"
@@ -34,7 +34,7 @@ namespace fs {
         return CreateDirectory(path.c_str(), nullptr) == 1;
         #endif
     }
-    
+
     bool removeFile(const string &filename) {
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         return remove(filename.c_str()) == 0;
@@ -42,7 +42,7 @@ namespace fs {
         return DeleteFile(filename.c_str()) == 1;
         #endif
     }
-    
+
     string getDirectoryName(const string &filename){
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         return dirname((char*)filename.c_str());
@@ -52,7 +52,7 @@ namespace fs {
         string directory(pathToReplace);
         replace(directory.begin(), directory.end(), '\\', '/');
         return directory;
-        #endif 
+        #endif
     }
 
     string getCurrentDirectory() {
@@ -60,13 +60,13 @@ namespace fs {
         return getcwd(nullptr, 0);
         #elif defined(_WIN32)
         TCHAR currentDir[MAX_PATH];
-        GetCurrentDirectory(MAX_PATH, currentDir);   
+        GetCurrentDirectory(MAX_PATH, currentDir);
         string currentDirStr(currentDir);
-        replace(currentDirStr.begin(), currentDirStr.end(), '\\', '/');     
+        replace(currentDirStr.begin(), currentDirStr.end(), '\\', '/');
         return currentDirStr;
         #endif
     }
-    
+
     string getFullPathFromRelative(const string &path) {
         #if defined(__linux__)
         return realpath(path.c_str(), nullptr);
@@ -74,7 +74,7 @@ namespace fs {
         return path;
         #endif
     }
-    
+
     fs::FileReaderResult readFile(const string &filename) {
         fs::FileReaderResult fileReaderResult;
         ifstream reader(filename.c_str(), ios::binary | ios::ate);
@@ -90,7 +90,7 @@ namespace fs {
         reader.read(buffer.data(), size);
         string result(buffer.begin(), buffer.end());
         reader.close();
-        
+
         fileReaderResult.data = result;
         return fileReaderResult;
     }
@@ -104,7 +104,7 @@ namespace fs {
         writer.close();
         return true;
     }
-    
+
     fs::FileStats getStats(const string &path) {
         fs::FileStats fileStats;
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
@@ -116,13 +116,13 @@ namespace fs {
         }
 
         #elif defined(_WIN32)
-        HANDLE hFile = CreateFile(path.c_str(), GENERIC_READ, 
-                        FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 
+        HANDLE hFile = CreateFile(path.c_str(), GENERIC_READ,
+                        FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
                         FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL);
 
         LARGE_INTEGER size;
         FILE_BASIC_INFO basicInfo;
-        if(GetFileSizeEx(hFile, &size) && 
+        if(GetFileSizeEx(hFile, &size) &&
             GetFileInformationByHandleEx(hFile, FileBasicInfo, &basicInfo, sizeof(basicInfo))
         ) {
             fileStats.size = size.QuadPart;
@@ -144,7 +144,7 @@ namespace fs {
 namespace controllers {
     json createDirectory(const json &input) {
         json output;
-        if(!input.contains("path")) {
+        if(!helpers::hasRequiredFields(input, {"path"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
@@ -154,7 +154,7 @@ namespace controllers {
             output["message"] = "Directory " + path + " was created";
         }
         else{
-            output["error"] = helpers::makeErrorPayload("NE_FS_DIRCRER", 
+            output["error"] = helpers::makeErrorPayload("NE_FS_DIRCRER",
                                 "Cannot create a directory in " + path);
         }
         return output;
@@ -162,7 +162,7 @@ namespace controllers {
 
     json removeDirectory(const json &input) {
         json output;
-        if(!input.contains("path")) {
+        if(!helpers::hasRequiredFields(input, {"path"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
@@ -176,7 +176,7 @@ namespace controllers {
             output["message"] = "Directory " + path + " was removed";
         }
         else{
-            output["error"] = helpers::makeErrorPayload("NE_FS_RMDIRER", 
+            output["error"] = helpers::makeErrorPayload("NE_FS_RMDIRER",
                                 "Cannot remove " + path);
         }
         return output;
@@ -184,7 +184,7 @@ namespace controllers {
 
     json readFile(const json &input) {
         json output;
-        if(!input.contains("path")) {
+        if(!helpers::hasRequiredFields(input, {"path"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
@@ -199,10 +199,10 @@ namespace controllers {
         }
         return output;
     }
-    
+
     json readBinaryFile(const json &input) {
         json output;
-        if(!input.contains("path")) {
+        if(!helpers::hasRequiredFields(input, {"path"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
@@ -220,7 +220,7 @@ namespace controllers {
 
     json writeFile(const json &input) {
         json output;
-        if(!input.contains("path") || !input.contains("data")) {
+        if(!helpers::hasRequiredFields(input, {"path", "data"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
@@ -230,14 +230,14 @@ namespace controllers {
         if(fs::writeFile(fileWriterOptions))
             output["success"] = true;
         else
-            output["error"] = helpers::makeErrorPayload("NE_FS_FILWRER", 
+            output["error"] = helpers::makeErrorPayload("NE_FS_FILWRER",
                                 "Unable to write file: " + fileWriterOptions.filename);
         return output;
     }
-    
+
     json writeBinaryFile(const json &input) {
         json output;
-        if(!input.contains("path") || !input.contains("data")) {
+        if(!helpers::hasRequiredFields(input, {"path", "data"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
@@ -247,14 +247,14 @@ namespace controllers {
         if(fs::writeFile(fileWriterOptions))
             output["success"] = true;
         else
-            output["error"] = helpers::makeErrorPayload("NE_FS_FILWRER", 
+            output["error"] = helpers::makeErrorPayload("NE_FS_FILWRER",
                                 "Unable to write file: " + fileWriterOptions.filename);
         return output;
     }
 
     json removeFile(const json &input) {
         json output;
-        if(!input.contains("path")) {
+        if(!helpers::hasRequiredFields(input, {"path"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
@@ -264,7 +264,7 @@ namespace controllers {
             output["message"] = filename + " was deleted";
         }
         else{
-            output["error"] = helpers::makeErrorPayload("NE_FS_FILRMER", 
+            output["error"] = helpers::makeErrorPayload("NE_FS_FILRMER",
                                 "Cannot remove " + filename);
         }
         return output;
@@ -272,7 +272,7 @@ namespace controllers {
 
     json readDirectory(const json &input) {
         json output;
-        if(!input.contains("path")) {
+        if(!helpers::hasRequiredFields(input, {"path"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
@@ -282,7 +282,7 @@ namespace controllers {
             output["error"] = helpers::makeErrorPayload("NE_FS_NOPATHE", fileStats.error);
             return output;
         }
-        
+
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         DIR *dirp;
         struct dirent *directory;
@@ -327,10 +327,10 @@ namespace controllers {
         #endif
         return output;
     }
-   
+
     json copyFile(const json &input) {
         json output;
-        if(!input.contains("source") || !input.contains("destination")) {
+        if(!helpers::hasRequiredFields(input, {"source", "destination"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
@@ -352,11 +352,11 @@ namespace controllers {
                                 "Cannot copy " + source + " to " + destination);
         }
         return output;
-    } 
-    
+    }
+
     json moveFile(const json &input) {
         json output;
-        if(!input.contains("source") || !input.contains("destination")) {
+        if(!helpers::hasRequiredFields(input, {"source", "destination"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
@@ -378,11 +378,11 @@ namespace controllers {
                                 "Cannot move " + source + " to " + destination);
         }
         return output;
-    } 
-    
+    }
+
     json getStats(const json &input) {
         json output;
-        if(!input.contains("path")) {
+        if(!helpers::hasRequiredFields(input, {"path"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
@@ -400,7 +400,7 @@ namespace controllers {
             output["error"] = helpers::makeErrorPayload("NE_FS_NOPATHE", fileStats.error);
         }
         return output;
-    } 
-    
+    }
+
 } // namespace controllers
 } // namespace fs

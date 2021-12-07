@@ -141,17 +141,17 @@ namespace controllers {
 
     json execCommand(const json &input) {
         json output;
-        if(!input.contains("command")) {
+        if(!helpers::hasRequiredFields(input, {"command"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
         string command = input["command"].get<string>();
         bool background = false;
         string stdIn = "";
-        if(input.contains("stdIn")) {
+        if(helpers::hasField(input, "stdIn")) {
             stdIn = input["stdIn"].get<string>();
         }
-        if(input.contains("background")) {
+        if(helpers::hasField(input, "background")) {
             background = input["background"].get<bool>();
         }
         os::CommandResult commandResult = os::execCommand(command, stdIn, background);
@@ -169,7 +169,7 @@ namespace controllers {
 
     json getEnv(const json &input) {
         json output;
-        if(!input.contains("key")) {
+        if(!helpers::hasRequiredFields(input, {"key"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
@@ -193,15 +193,15 @@ namespace controllers {
         vector <string> filters = {"All files", "*"};
         pfd::opt option = pfd::opt::none;
 
-        if(input.contains("title")) {
+        if(helpers::hasField(input, "title")) {
             title = input["title"].get<string>();
         }
 
-        if(input.contains("multiSelections") && input["multiSelections"].get<bool>()) {
+        if(helpers::hasField(input, "multiSelections") && input["multiSelections"].get<bool>()) {
             option = pfd::opt::multiselect;
         }
 
-        if(input.contains("filters")) {
+        if(helpers::hasField(input, "filters")) {
             filters.clear();
             filters = __extensionsToVector(input["filters"]);
         }
@@ -217,7 +217,7 @@ namespace controllers {
         json output;
         string title = "Select a folder";
 
-        if(input.contains("title")) {
+        if(helpers::hasField(input, "title")) {
             title = input["title"].get<string>();
         }
 
@@ -234,15 +234,15 @@ namespace controllers {
         vector <string> filters = {"All files", "*"};
         pfd::opt option = pfd::opt::none;
 
-        if(input.contains("title")) {
+        if(helpers::hasField(input, "title")) {
             title = input["title"].get<string>();
         }
 
-        if(input.contains("forceOverwrite") && input["forceOverwrite"].get<bool>()) {
+        if(helpers::hasField(input, "forceOverwrite") && input["forceOverwrite"].get<bool>()) {
             option = pfd::opt::force_overwrite;
         }
 
-        if(input.contains("filters")) {
+        if(helpers::hasField(input, "filters")) {
             filters.clear();
             filters = __extensionsToVector(input["filters"]);
         }
@@ -256,7 +256,7 @@ namespace controllers {
 
     json showNotification(const json &input) {
         json output;
-        if(!input.contains("title") || !input.contains("content")) {
+        if(!helpers::hasRequiredFields(input, {"title", "content"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
@@ -264,7 +264,7 @@ namespace controllers {
         string content = input["content"].get<string>();
         string icon = "INFO";
 
-        if(input.contains("icon")) {
+        if(helpers::hasField(input, "icon")) {
             icon = input["icon"].get<string>();
         }
 
@@ -288,7 +288,7 @@ namespace controllers {
 
     json showMessageBox(const json &input) {
         json output;
-        if(!input.contains("title") || !input.contains("content")) {
+        if(!helpers::hasRequiredFields(input, {"title", "content"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
@@ -297,11 +297,11 @@ namespace controllers {
         string title = input["title"].get<string>();
         string content = input["content"].get<string>();
 
-        if(input.contains("icon")) {
+        if(helpers::hasField(input, "icon")) {
             icon = input["icon"].get<string>();
         }
 
-        if(input.contains("choice")) {
+        if(helpers::hasField(input, "choice")) {
             choice = input["choice"].get<string>();
         }
 
@@ -364,7 +364,7 @@ namespace controllers {
         json output;
         int menuCount = 1;
 
-        if(input.contains("menuItems")) {
+        if(helpers::hasField(input, "menuItems")) {
             menuCount += input["menuItems"].size();
         }
 
@@ -376,13 +376,13 @@ namespace controllers {
             char *text = helpers::cStrCopy(menuItem["text"].get<string>());
             int disabled = 0;
             int checked = 0;
-            if(menuItem.contains("id")) {
+            if(helpers::hasField(menuItem, "id")) {
                 id = helpers::cStrCopy(menuItem["id"].get<string>());
             }
-            if(menuItem.contains("isDisabled")) {
+            if(helpers::hasField(menuItem, "isDisabled")) {
                 disabled = menuItem["isDisabled"].get<bool>() ? 1 : 0;
             }
-            if(menuItem.contains("isChecked")) {
+            if(helpers::hasField(menuItem, "isChecked")) {
                 checked = menuItem["isChecked"].get<bool>() ? 1 : 0;
             }
 
@@ -394,7 +394,7 @@ namespace controllers {
 
         tray.menu = menus;
 
-        if(input.contains("icon")) {
+        if(helpers::hasField(input, "icon")) {
             string iconPath = input["icon"].get<string>();
             #if defined(__linux__)
             string fullIconPath;
@@ -451,7 +451,7 @@ namespace controllers {
 
     json open(const json &input) {
         json output;
-        if(!input.contains("url")) {
+        if(!helpers::hasRequiredFields(input, {"url"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
@@ -463,7 +463,7 @@ namespace controllers {
 
     json getPath(const json &input) {
         json output;
-        if(!input.contains("name")) {
+        if(!helpers::hasRequiredFields(input, {"name"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }

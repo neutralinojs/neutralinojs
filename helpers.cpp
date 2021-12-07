@@ -71,23 +71,36 @@ namespace helpers {
         }
         *dst++ = '\0';
     }
-    
+
     char* cStrCopy(const string &str) {
         char *text = new char[str.size() + 1];
         copy(str.begin(), str.end(), text);
         text[str.size()] = '\0';
-        // delete[] text from the initiator 
+        // delete[] text from the initiator
         return text;
     }
-    
+
     json makeMissingArgErrorPayload() {
         return helpers::makeErrorPayload("NE_RT_NATRTER", "Missing mandatory arguments");
     }
-    
+
     json makeErrorPayload(const string &code, const string &message) {
         json error;
         error["code"] = code;
         error["message"] = message;
         return error;
+    }
+
+    bool hasRequiredFields(const json &input, const vector<string> &keys) {
+        for(const string &key: keys) {
+            if(!helpers::hasField(input, key)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool hasField(const json &input, const string &key) {
+        return input.contains(key) && !input[key].is_null();
     }
 } // namespace helpers

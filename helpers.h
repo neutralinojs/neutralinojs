@@ -16,6 +16,8 @@ namespace helpers {
     char* cStrCopy(const string &str);
     json makeMissingArgErrorPayload();
     json makeErrorPayload(const string &code, const string &message);
+    bool hasRequiredFields(const json &input, const vector<string> &keys);
+    bool hasField(const json &input, const string &key);
 } // namespace helpers
 
 #endif // #define NEU_HELPERS_H

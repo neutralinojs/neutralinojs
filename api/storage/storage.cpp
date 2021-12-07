@@ -21,24 +21,24 @@ namespace controllers {
         if(regex_match(key, regex(STORAGE_KEY_REGEX)))
             return nullptr;
         json output;
-        output["error"] = helpers::makeErrorPayload("NE_ST_INVSTKY", 
+        output["error"] = helpers::makeErrorPayload("NE_ST_INVSTKY",
                             "Invalid storage key format. The key should match regex: ^[a-zA-Z-_0-9]{1,50}$");
         return output;
     }
-    
+
     json getData(const json &input) {
         json output;
-        if(!input.contains("key")) {
+        if(!helpers::hasRequiredFields(input, {"key"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
         string key = input["key"].get<string>();
         json errorPayload = __validateStorageBucket(key);
-        if(!errorPayload.is_null()) 
+        if(!errorPayload.is_null())
             return errorPayload;
         string bucketPath = settings::joinAppPath(STORAGE_DIR);
         string filename = bucketPath + "/" + key + STORAGE_EXT;
-        
+
         fs::FileReaderResult fileReaderResult;
         fileReaderResult = fs::readFile(filename);
         if(fileReaderResult.hasError) {
@@ -53,29 +53,29 @@ namespace controllers {
 
     json setData(const json &input) {
         json output;
-        if(!input.contains("key")) {
+        if(!helpers::hasRequiredFields(input, {"key"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
         string key = input["key"].get<string>();
         json errorPayload = __validateStorageBucket(key);
-        if(!errorPayload.is_null()) 
+        if(!errorPayload.is_null())
             return errorPayload;
         string bucketPath = settings::joinAppPath(STORAGE_DIR);
 
         fs::createDirectory(bucketPath);
-        
+
         string filename = bucketPath + "/" + key + STORAGE_EXT;
-        if(!input.contains("data")) {
+        if(!helpers::hasField(input, "data")) {
             fs::removeFile(filename);
         }
         else {
             fs::FileWriterOptions fileWriterOptions;
             fileWriterOptions.data = input["data"].get<string>();
             fileWriterOptions.filename = filename;
-    
+
             if(!fs::writeFile(fileWriterOptions)) {
-                output["error"] = helpers::makeErrorPayload("NE_ST_STKEYWE", 
+                output["error"] = helpers::makeErrorPayload("NE_ST_STKEYWE",
                                     "Unable to write data to key: " + key);
                 return output;
             }

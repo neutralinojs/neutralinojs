@@ -19,16 +19,16 @@ namespace debug {
         else
             LOG(DEBUG) << message;
     }
-    
+
 namespace controllers {
     json log(const json &input) {
         json output;
         string type = "INFO";
-        if(!input.contains("message")) {
+        if(!helpers::hasRequiredFields(input, {"message"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
-        if(input.contains("type")) {
+        if(helpers::hasField(input, "type")) {
             type = input["type"].get<string>();
         }
 

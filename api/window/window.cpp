@@ -68,7 +68,7 @@ namespace handlers {
         if(nativeWindow)
             nativeWindow->eval(js);
     }
-    
+
     bool isMaximized() {
         json output;
         #if defined(__linux__) || defined(__FreeBSD__)
@@ -76,11 +76,11 @@ namespace handlers {
         #elif defined(_WIN32)
         return  IsZoomed(windowHandle) == 1;
         #elif defined(__APPLE__)
-        return ((bool (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+        return ((bool (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
             "isZoomed"_sel, NULL);
         #endif
     }
-    
+
     void maximize() {
         if(window::isMaximized())
             return;
@@ -89,11 +89,11 @@ namespace handlers {
         #elif defined(_WIN32)
         ShowWindow(windowHandle, SW_MAXIMIZE);
         #elif defined(__APPLE__)
-        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
             "zoom:"_sel, NULL);
         #endif
     }
-    
+
     void unmaximize() {
         if(!window::isMaximized())
             return;
@@ -102,49 +102,49 @@ namespace handlers {
         #elif defined(_WIN32)
         ShowWindow(windowHandle, SW_RESTORE);
         #elif defined(__APPLE__)
-        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
             "zoom:"_sel, NULL);
         #endif
     }
-    
+
     bool isVisible() {
         #if defined(__linux__) || defined(__FreeBSD__)
         return gtk_widget_is_visible(windowHandle) == 1;
         #elif defined(__APPLE__)
-        return ((bool (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+        return ((bool (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
             "isVisible"_sel, NULL);
         return true;
         #elif defined(_WIN32)
         return IsWindowVisible(windowHandle) == 1;
         #endif
     }
-    
+
     void show() {
         if(window::isVisible())
             return;
         #if defined(__linux__) || defined(__FreeBSD__)
         gtk_widget_show(windowHandle);
         #elif defined(__APPLE__)
-        ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
+        ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle,
                     "setIsVisible:"_sel, true);
         #elif defined(_WIN32)
         ShowWindow(windowHandle, SW_SHOW);
         #endif
     }
-    
+
     void hide() {
         if(!window::isVisible())
             return;
         #if defined(__linux__) || defined(__FreeBSD__)
         gtk_widget_hide(windowHandle);
         #elif defined(__APPLE__)
-        ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
+        ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle,
                     "setIsVisible:"_sel, false);
         #elif defined(_WIN32)
         ShowWindow(windowHandle, SW_HIDE);
         #endif
     }
-    
+
     bool isFullScreen() {
         json output;
         #if defined(__linux__) || defined(__FreeBSD__)
@@ -157,14 +157,14 @@ namespace handlers {
         return isWinWindowFullScreen;
         #endif
     }
-    
+
     void setFullScreen() {
         if(window::isFullScreen())
             return;
         #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_fullscreen(GTK_WINDOW(windowHandle));
         #elif defined(__APPLE__)
-        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
                 "toggleFullScreen:"_sel, NULL);
         #elif defined(_WIN32)
         savedStyle = GetWindowLong(windowHandle, GWL_STYLE);
@@ -191,14 +191,14 @@ namespace handlers {
         isWinWindowFullScreen = true;
         #endif
     }
-    
+
     void exitFullScreen() {
         if(!window::isFullScreen())
             return;
         #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_unfullscreen(GTK_WINDOW(windowHandle));
         #elif defined(__APPLE__)
-        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
                 "toggleFullScreen:"_sel, NULL);
         #elif defined(_WIN32)
         SetWindowLong(windowHandle, GWL_STYLE, savedStyle);
@@ -209,7 +209,7 @@ namespace handlers {
         isWinWindowFullScreen = false;
         #endif
     }
-    
+
     void setIcon(const string &iconFile) {
         fs::FileReaderResult fileReaderResult = settings::getFileContent(iconFile);
         string iconDataStr = fileReaderResult.data;
@@ -230,7 +230,7 @@ namespace handlers {
         const char *iconData = iconDataStr.c_str();
         icon =
             ((id (*)(id, SEL))objc_msgSend)("NSImage"_cls, "alloc"_sel);
-        
+
         id nsIconData = ((id (*)(id, SEL, const char*, int))objc_msgSend)("NSData"_cls,
                     "dataWithBytes:length:"_sel, iconData, iconDataStr.length());
 
@@ -257,18 +257,18 @@ namespace handlers {
         GdiplusShutdown(gdiplusToken);
         #endif
     }
-    
+
     void setAlwaysOnTop() {
         #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_set_keep_above(GTK_WINDOW(windowHandle), true);
         #elif defined(__APPLE__)
-        ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle, 
+        ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle,
                 "setLevel:"_sel, NSFloatingWindowLevel);
         #elif defined(_WIN32)
         SetWindowPos(windowHandle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
         #endif
     }
-    
+
     void setBorderless() {
         #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_set_decorated(GTK_WINDOW(windowHandle), false);
@@ -276,7 +276,7 @@ namespace handlers {
         unsigned long windowStyleMask = ((unsigned long (*)(id, SEL))objc_msgSend)(
             (id) windowHandle, "styleMask"_sel);
         windowStyleMask &= ~NSWindowStyleMaskTitled;
-        ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle, 
+        ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle,
                 "setStyleMask:"_sel, windowStyleMask);
         #elif defined(_WIN32)
         DWORD currentStyle = GetWindowLong(windowHandle, GWL_STYLE);
@@ -286,7 +286,7 @@ namespace handlers {
                         SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
         #endif
     }
-    
+
     void _close(int exitCode) {
         if(nativeWindow) {
             nativeWindow->terminate(exitCode);
@@ -299,13 +299,13 @@ namespace controllers {
         nativeWindow = new webview::webview(windowProps.enableInspector, nullptr);
         nativeWindow->set_title(windowProps.title);
         nativeWindow->set_size(windowProps.sizeOptions.width, windowProps.sizeOptions.height, windowProps.sizeOptions.minWidth,
-                        windowProps.sizeOptions.minHeight, windowProps.sizeOptions.maxWidth, windowProps.sizeOptions.maxHeight, 
+                        windowProps.sizeOptions.minHeight, windowProps.sizeOptions.maxWidth, windowProps.sizeOptions.maxHeight,
                         windowProps.sizeOptions.resizable);
         nativeWindow->setOnCloseHandler(&window::handlers::onClose);
-                        
+
         #if defined(__linux__) || defined(__FreeBSD__)
         windowHandle = (GtkWidget*) nativeWindow->window();
-        
+
         g_signal_connect(G_OBJECT(windowHandle), "window-state-event",
              G_CALLBACK(+[](GtkWidget *widget, GdkEventWindowState *event, gpointer user_data) {
                  isGtkWindowFullScreen = event->new_window_state & GDK_WINDOW_STATE_FULLSCREEN;
@@ -314,7 +314,7 @@ namespace controllers {
 
         #elif defined(__APPLE__)
         windowHandle = (id) nativeWindow->window();
-        ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle, 
+        ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle,
                     "setHasShadow:"_sel, true);
 
         #elif defined(_WIN32)
@@ -323,19 +323,19 @@ namespace controllers {
 
         if(windowProps.maximize)
             window::maximize();
-        
+
         if(windowProps.hidden)
             window::hide();
 
         if(windowProps.fullScreen)
             window::setFullScreen();
-            
+
         if(windowProps.icon != "")
             window::setIcon(windowProps.icon);
-        
+
         if(windowProps.alwaysOnTop)
             window::setAlwaysOnTop();
-        
+
         if(windowProps.borderless)
             window::setBorderless();
 
@@ -345,31 +345,31 @@ namespace controllers {
 
     window::SizeOptions __jsonToSizeOptions(const json &input, bool useDefaultRect = false) {
         window::SizeOptions sizeOptions;
-        
+
         if(useDefaultRect) {
             sizeOptions.width = 800;
             sizeOptions.height = 600;
         }
-        
-        if(input.contains("width"))
+
+        if(helpers::hasField(input, "width"))
             sizeOptions.width = input["width"].get<int>();
 
-        if(input.contains("height"))
+        if(helpers::hasField(input, "height"))
             sizeOptions.height = input["height"].get<int>();
-            
-        if(input.contains("minWidth"))
+
+        if(helpers::hasField(input, "minWidth"))
             sizeOptions.minWidth = input["minWidth"].get<int>();
 
-        if(input.contains("minHeight"))
+        if(helpers::hasField(input, "minHeight"))
             sizeOptions.minHeight = input["minHeight"].get<int>();
-            
-        if(input.contains("maxWidth"))
+
+        if(helpers::hasField(input, "maxWidth"))
             sizeOptions.maxWidth = input["maxWidth"].get<int>();
 
-        if(input.contains("maxHeight"))
+        if(helpers::hasField(input, "maxHeight"))
             sizeOptions.maxHeight = input["maxHeight"].get<int>();
 
-        if(input.contains("resizable"))
+        if(helpers::hasField(input, "resizable"))
             sizeOptions.resizable = input["resizable"].get<bool>();
         return sizeOptions;
     }
@@ -377,7 +377,7 @@ namespace controllers {
     json setTitle(const json &input) {
         json output;
         string title = "";
-        if(input.contains("title")) {
+        if(helpers::hasField(input, "title")) {
             title = input["title"].get<string>();
         }
         nativeWindow->set_title(title);
@@ -398,7 +398,7 @@ namespace controllers {
         output["success"] = true;
         return output;
     }
-    
+
     json isMaximized(const json &input) {
         json output;
         output["returnValue"] = window::isMaximized();
@@ -407,19 +407,19 @@ namespace controllers {
     }
 
     json minimize(const json &input) {
-        json output; 
+        json output;
         #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_iconify(GTK_WINDOW(windowHandle));
         #elif defined(_WIN32)
         ShowWindow(windowHandle, SW_MINIMIZE);
         #elif defined(__APPLE__)
-        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
             "miniaturize:"_sel, NULL);
         #endif
         output["success"] = true;
         return output;
     }
-    
+
     json show(const json &input) {
         json output;
         #if defined(__linux__) || defined(__FreeBSD__)
@@ -439,14 +439,14 @@ namespace controllers {
         output["success"] = true;
         return output;
     }
-    
+
     json isVisible(const json &input) {
         json output;
         output["returnValue"] = window::isVisible();
         output["success"] = true;
         return output;
     }
-    
+
     json setFullScreen(const json &input) {
         json output;
         window::setFullScreen();
@@ -460,20 +460,20 @@ namespace controllers {
         output["success"] = true;
         return output;
     }
-    
+
     json isFullScreen(const json &input) {
         json output;
         output["returnValue"] = window::isFullScreen();
         output["success"] = true;
         return output;
     }
-    
+
     json focus(const json &input) {
-        json output; 
+        json output;
         #if defined(__linux__) || defined(__FreeBSD__)
         gtk_window_present(GTK_WINDOW(windowHandle));
         #elif defined(__APPLE__)
-        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle, 
+        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
                 "orderFront:"_sel, NULL);
         #elif defined(_WIN32)
         SetForegroundWindow(windowHandle);
@@ -481,10 +481,10 @@ namespace controllers {
         output["success"] = true;
         return output;
     }
-    
+
     json setIcon(const json &input) {
         json output;
-        if(!input.contains("icon")) {
+        if(!helpers::hasRequiredFields(input, {"icon"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
@@ -493,10 +493,10 @@ namespace controllers {
         output["success"] = true;
         return output;
     }
-    
+
     json move(const json &input) {
-        json output; 
-        if(!input.contains("x") || !input.contains("y")) {
+        json output;
+        if(!helpers::hasRequiredFields(input, {"x", "y"})) {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
@@ -519,51 +519,51 @@ namespace controllers {
         output["success"] = true;
         return output;
     }
-    
+
     json setSize(const json &input) {
         json output;
         window::SizeOptions sizeOptions = __jsonToSizeOptions(input);
-            
+
         nativeWindow->set_size(sizeOptions.width, sizeOptions.height, sizeOptions.minWidth,
-                        sizeOptions.minHeight, sizeOptions.maxWidth, sizeOptions.maxHeight, 
-                        sizeOptions.resizable);      
+                        sizeOptions.minHeight, sizeOptions.maxWidth, sizeOptions.maxHeight,
+                        sizeOptions.resizable);
         output["success"] = true;
         return output;
     }
-    
+
     json init(const json &input) {
         json output;
-        
+
         windowProps.sizeOptions = __jsonToSizeOptions(input, true);
-        
-        if(input.contains("fullScreen"))
+
+        if(helpers::hasField(input, "fullScreen"))
             windowProps.fullScreen = input["fullScreen"].get<bool>();
 
-        if(input.contains("alwaysOnTop"))
+        if(helpers::hasField(input, "alwaysOnTop"))
             windowProps.alwaysOnTop = input["alwaysOnTop"].get<bool>();
 
-        if(input.contains("title"))
+        if(helpers::hasField(input, "title"))
             windowProps.title = input["title"].get<string>();
 
-        if(input.contains("url"))
+        if(helpers::hasField(input, "url"))
             windowProps.url = input["url"].get<string>();
 
-        if(input.contains("icon"))
+        if(helpers::hasField(input, "icon"))
             windowProps.icon = input["icon"].get<string>();
 
-        if(input.contains("enableInspector"))
+        if(helpers::hasField(input, "enableInspector"))
             windowProps.enableInspector = input["enableInspector"].get<bool>();
 
-        if(input.contains("borderless"))
+        if(helpers::hasField(input, "borderless"))
             windowProps.borderless = input["borderless"].get<bool>();
 
-        if(input.contains("maximize"))
+        if(helpers::hasField(input, "maximize"))
             windowProps.maximize = input["maximize"].get<bool>();
 
-        if(input.contains("hidden"))
+        if(helpers::hasField(input, "hidden"))
             windowProps.hidden = input["hidden"].get<bool>();
-            
-        if(input.contains("exitProcessOnClose"))
+
+        if(helpers::hasField(input, "exitProcessOnClose"))
             windowProps.exitProcessOnClose = input["exitProcessOnClose"].get<bool>();
 
         __createWindow();
