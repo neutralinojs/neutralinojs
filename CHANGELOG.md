@@ -56,3 +56,7 @@ Use `exportAuthInfo` to write auth details to `${NL_PATH}/.tmp/auth_info.json`. 
 the `NL_PORT` also becomes 0.
 - Fix an issue with `writeToLogFile` config option. Earlier, the log file was created even this
 option is set to `false`.
+
+### Global variables
+
+- `NL_APPVERSION`: Value of the `version` key in the config file.
