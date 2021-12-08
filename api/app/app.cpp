@@ -57,7 +57,8 @@ namespace controllers {
         #elif defined(_WIN32)
         DWORD pid = GetCurrentProcessId();
         HANDLE hnd = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, TRUE, pid);
-        TerminateProcess(hnd, 0);
+        TerminateProcess(hnd, 137);
+        CloseHandle(hnd);
         #endif
         return nullptr;
     }
