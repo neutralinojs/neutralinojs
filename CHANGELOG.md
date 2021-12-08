@@ -25,7 +25,6 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 - Supports setting document root (with `documentRoot`) via config. Now, it's possible to launch app without a subdirectory in the URL.
 
 ### Core: Community driver processes
-
 Now developers can use Neutralinojs as a part of their software with any programming language by spawning Neutralinojs as a child process.
 Use `exportAuthInfo` to write auth details to `${NL_PATH}/.tmp/auth_info.json`. Then the parent process can pickup access details there. Note that WebSocket communication needs to be initiated via extensions API/loader.
 
@@ -40,23 +39,27 @@ Use `exportAuthInfo` to write auth details to `${NL_PATH}/.tmp/auth_info.json`. 
 - `broadcast`: Sends an event to all connected extensions. Useful for sending shutdown signals.
 - `getStats`: Returns details about loaded extensions and connected extensions.
 
-### Events
+### API: updater
+- `checkForUpdates`: Send a request to a seed URL (JSON) and fetch update details.
+- `install`: Install updates based on the currently downloaded manifest.
 
+### Events
 - `appClientConnect` and `appClientDisconnect`: Occurs when a new app instance is launched and closed respectively.
 - `extClientConnect` and `extClientDisconnect`: Occurs when a new extension is connected and disconnected respectively.
 - `extensionReady` can be used to implement immediate extension calls. This is implemented from the client-side with `extensions.getStats` and `extClientConnect`. This event gurantees that it will be triggered regardless of the extension's start time.
 
 ### Error codes
-
 - `NE_EX_EXTNOTC`: Thrown by `extensions.dispatch` if the target extension is not connected.
+- `NE_UP_CUPDMER`: Thrown by `updater.checkForUpdates` if the JSON update manifest is invalid or applicationId is not matching.
+- `NE_UP_CUPDERR`: Thrown by `updater.checkForUpdates` if the updater API cannot fetch the manifest.
+- `NE_UP_UPDNOUF`: Thrown by `updater.install` when the update manifest is not loaded.
+- `NE_UP_UPDINER`: Thrown by `updater.install` for update installation errors.
 
 ### Bug fixes
-
 - Fix port 0 issue with modes. Earlier, if the developer sets port as 0 from a specific mode,
 the `NL_PORT` also becomes 0.
 - Fix an issue with `writeToLogFile` config option. Earlier, the log file was created even this
 option is set to `false`.
 
 ### Global variables
-
 - `NL_APPVERSION`: Value of the `version` key in the config file.
