@@ -327,7 +327,7 @@ var Neutralino = (function (exports) {
             if (options === null || options === void 0 ? void 0 : options.args) {
                 command += ' ' + options.args;
             }
-            yield Neutralino.os.execCommand(command, { shouldRunInBackground: true });
+            yield Neutralino.os.execCommand(command, { background: true });
             Neutralino.app.exit();
             resolve();
         }));
@@ -577,7 +577,7 @@ var Neutralino = (function (exports) {
     });
 
     let manifest = null;
-    function checkForUpdate(url) {
+    function checkForUpdates(url) {
         function isValidManifest(manifest) {
             if (manifest.applicationId && manifest.applicationId == window.NL_APPID
                 && manifest.version && manifest.resourcesURL) {
@@ -613,7 +613,7 @@ var Neutralino = (function (exports) {
             }
         }));
     }
-    function installUpdate(url) {
+    function install(url) {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             if (!manifest) {
                 return reject({
@@ -641,8 +641,8 @@ var Neutralino = (function (exports) {
 
     var updater = /*#__PURE__*/Object.freeze({
         __proto__: null,
-        checkForUpdate: checkForUpdate,
-        installUpdate: installUpdate
+        checkForUpdates: checkForUpdates,
+        install: install
     });
 
     function startAsync() {
