@@ -2,7 +2,7 @@ const assert = require('assert');
 
 const runner = require('./runner');
 
-describe('updater.spec: app namespace tests', () => {
+describe('updater.spec: updater namespace tests', () => {
 
     describe('updater.checkForUpdates', () => {
         it('throws an error for missing params', async () => {
