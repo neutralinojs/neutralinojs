@@ -50,6 +50,10 @@ Use `exportAuthInfo` to write auth details to `${NL_PATH}/.tmp/auth_info.json`. 
 
 ### Error codes
 - `NE_EX_EXTNOTC`: Thrown by `extensions.dispatch` if the target extension is not connected.
+- `NE_UP_CUPDMER`: Thrown by `updater.checkForUpdates` if the JSON update manifest is invalid or applicationId is not matching.
+- `NE_UP_CUPDERR`: Thrown by `updater.checkForUpdates` if the updater API cannot fetch the manifest.
+- `NE_UP_UPDNOUF`: Thrown by `updater.install` when the update manifest is not loaded.
+- `NE_UP_UPDINER`: Thrown by `updater.install` for update installation errors.
 
 ### Bug fixes
 - Fix port 0 issue with modes. Earlier, if the developer sets port as 0 from a specific mode,
