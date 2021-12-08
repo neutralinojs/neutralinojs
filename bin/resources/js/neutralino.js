@@ -576,6 +576,75 @@ var Neutralino = (function (exports) {
         getStats: getStats
     });
 
+    let manifest = null;
+    function checkForUpdate(url) {
+        function isValidManifest(manifest) {
+            if (manifest.applicationId && manifest.applicationId == window.NL_APPID
+                && manifest.version && manifest.resourcesURL) {
+                return true;
+            }
+            return false;
+        }
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            if (!url) {
+                return reject({
+                    code: 'NE_RT_NATRTER',
+                    message: 'Missing require parameter: url'
+                });
+            }
+            try {
+                let response = yield fetch(url);
+                manifest = JSON.parse(yield response.text());
+                if (isValidManifest(manifest)) {
+                    resolve(manifest);
+                }
+                else {
+                    reject({
+                        code: 'NE_UP_CUPDMER',
+                        message: 'Invalid update manifest or mismatching applicationId'
+                    });
+                }
+            }
+            catch (err) {
+                reject({
+                    code: 'NE_UP_CUPDERR',
+                    message: 'Unable to fetch update manifest'
+                });
+            }
+        }));
+    }
+    function installUpdate(url) {
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            if (!manifest) {
+                return reject({
+                    code: 'NE_UP_UPDNOUF',
+                    message: 'No update manifest loaded'
+                });
+            }
+            try {
+                let response = yield fetch(manifest.resourcesURL);
+                let resourcesBuffer = yield response.arrayBuffer();
+                yield Neutralino.filesystem.writeBinaryFile(window.NL_PATH + "/res.neu", resourcesBuffer);
+                resolve({
+                    success: true,
+                    message: 'Update installed. Restart the process to see updates'
+                });
+            }
+            catch (err) {
+                reject({
+                    code: 'NE_UP_UPDINER',
+                    message: 'Update installation error'
+                });
+            }
+        }));
+    }
+
+    var updater = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        checkForUpdate: checkForUpdate,
+        installUpdate: installUpdate
+    });
+
     function startAsync() {
         setInterval(() => __awaiter(this, void 0, void 0, function* () {
             try {
@@ -615,6 +684,7 @@ var Neutralino = (function (exports) {
     exports.init = init;
     exports.os = os;
     exports.storage = storage;
+    exports.updater = updater;
     exports.window = window$1;
 
     Object.defineProperty(exports, '__esModule', { value: true });
