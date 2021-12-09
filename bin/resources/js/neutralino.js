@@ -624,7 +624,7 @@ var Neutralino = (function (exports) {
             try {
                 let response = yield fetch(manifest.resourcesURL);
                 let resourcesBuffer = yield response.arrayBuffer();
-                yield Neutralino.filesystem.writeBinaryFile(window.NL_PATH + "/res.neu", resourcesBuffer);
+                yield Neutralino.filesystem.writeBinaryFile(window.NL_PATH + "/resources.neu", resourcesBuffer);
                 resolve({
                     success: true,
                     message: 'Update installed. Restart the process to see updates'
