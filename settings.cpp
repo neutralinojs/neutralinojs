@@ -123,7 +123,7 @@ namespace settings {
                     appPath = fs::getCurrentDirectory();
             }
 
-            // Resources read mode (res.neu or from directory)
+            // Resources read mode (resources.neu or from directory)
             if(cliArg.key == "--load-dir-res") {
                 loadResFromDir = true;
             }

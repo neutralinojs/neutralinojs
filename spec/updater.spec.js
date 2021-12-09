@@ -45,21 +45,21 @@ describe('updater.spec: updater namespace tests', () => {
             assert.equal(runner.getOutput(), 'NE_UP_UPDNOUF');
         });
 
-        it('replaces res.neu with resourcesURL data', async () => {
+        it('replaces resources.neu with resourcesURL data', async () => {
             let exitCode = runner.run(`
                 await Neutralino.updater
                     .checkForUpdates('http://localhost:8080/updater_test/update_info.json');
 
-                //Try deleting existing res.neu just for testing
+                //Try deleting existing resources.neu just for testing
                 try {
-                    await Neutralino.filesystem.removeFile(NL_PATH + '/res.neu');
+                    await Neutralino.filesystem.removeFile(NL_PATH + '/resources.neu');
                 }
                 catch(err) {
                     // ignore
                 }
 
                 await Neutralino.updater.install();
-                let stats = await Neutralino.filesystem.getStats(NL_PATH + '/res.neu');
+                let stats = await Neutralino.filesystem.getStats(NL_PATH + '/resources.neu');
 
                 if(stats.isFile) {
                     await __close('ok');

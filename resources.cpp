@@ -12,7 +12,7 @@
 #include "api/debug/debug.h"
 #include "api/filesystem/filesystem.h"
 
-#define APP_RES_FILE "/res.neu"
+#define APP_RES_FILE "/resources.neu"
 
 using namespace std;
 using json = nlohmann::json;
