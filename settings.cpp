@@ -104,7 +104,7 @@ namespace settings {
         json jGlobalVariables = settings::getOptionForCurrentMode("globalVariables");
         if(!jGlobalVariables.is_null()) {
             for (const auto &it: jGlobalVariables.items()) {
-                jsSnippet += "var NL_" + it.key() +  "='" + it.value().get<string>() + "';";
+                jsSnippet += "var NL_" + it.key() +  "=JSON.parse('" + it.value().dump() + "');";
             }
         }
         return jsSnippet;
