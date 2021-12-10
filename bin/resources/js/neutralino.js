@@ -645,21 +645,6 @@ var Neutralino = (function (exports) {
         install: install
     });
 
-    function startAsync() {
-        setInterval(() => __awaiter(this, void 0, void 0, function* () {
-            try {
-                let fetchResponse = yield fetch('http://localhost:5050');
-                let response = JSON.parse(yield fetchResponse.text());
-                if (response.needsReload) {
-                    location.reload();
-                }
-            }
-            catch (err) {
-                console.error('Unable to communicate with neu devServer');
-            }
-        }), 1000);
-    }
-
     var version = "2.0.0";
 
     let initialized = false;
@@ -668,8 +653,11 @@ var Neutralino = (function (exports) {
             return;
         }
         init$1();
-        if (window.NL_ARGS.find((arg) => arg == '--debug-mode')) {
-            startAsync();
+        if (window.NL_ARGS.find((arg) => arg == '--dev-cli-auto-reload')) {
+            Neutralino.events.on('devEvent_reloadApp', () => __awaiter(this, void 0, void 0, function* () {
+                yield Neutralino.debug.log('Reloading the application...');
+                location.reload();
+            }));
         }
         window.NL_CVERSION = version;
         initialized = true;
