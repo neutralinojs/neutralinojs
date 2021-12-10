@@ -23,14 +23,15 @@ using json = nlohmann::json;
 
 namespace app {
     void exit(int code) {
-        json jEnableServer = settings::getOptionForCurrentMode("enableServer");
-        if(!jEnableServer.is_null() && jEnableServer.get<bool>()) {
+        if(neuserver::isInitialized()) {
             neuserver::stop();
         }
-        if(settings::getMode() == "window")
+        if(settings::getMode() == "window") {
             window::_close(code);
-        else
+        }
+        else {
             std::exit(code);
+        }
     }
 
     unsigned int getProcessId() {

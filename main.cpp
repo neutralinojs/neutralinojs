@@ -98,12 +98,22 @@ void __initFramework(const json &args) {
             loadResFromDir = true;
     }
     json options = settings::getConfig();
+
     if(options.is_null()) {
         pfd::message("Unable to load app configuration",
                         "neutralino.config.json file is missing or corrupted.",
                         pfd::choice::ok,
                         pfd::icon::error);
-        app::exit();
+        std::exit(1);
+    }
+
+    if(options["applicationId"].is_null() || options["defaultMode"].is_null()
+        || settings::getOptionForCurrentMode("url").is_null()) {
+        pfd::message("Missing mandatory configuration",
+                        "Neutralinojs app config should contain applicationId, defaultMode, and url.",
+                        pfd::choice::ok,
+                        pfd::icon::error);
+        std::exit(1);
     }
 
     authbasic::generateToken();
