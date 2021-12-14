@@ -12,9 +12,9 @@ Therefore, if any vulnerability is reported against the Neutralinojs version you
 
 ## Prebuilt binaries
 
-The neu CLI downloads prebuilt binaries for each platform from the latest release (according to the CLI version). On Windows, if your virus scanner software identified a Neutralinojs binary as malware via a false positive detection, please take the following actions.
+The neu CLI downloads prebuilt binaries for each platform from the releases (according your project configuration's versions). On Windows, if your virus scanner software identified a Neutralinojs binary as malware via a false positive detection, please take the following actions.
 
-- Do a full system scan with your antivirus software to verify that a real malicious program is active.
+- Do a full system scan with your antivirus software to verify whether a real malicious program is active.
 - Send a false positive detection report to your antivirus software developers.
 - Report to Neutralinojs developers via a Github [issue](https://github.com/neutralinojs/neutralinojs/issues).
 
