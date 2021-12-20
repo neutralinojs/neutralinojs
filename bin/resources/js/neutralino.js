@@ -352,6 +352,9 @@ var Neutralino = (function (exports) {
     function setTitle(title) {
         return sendMessage('window.setTitle', { title });
     }
+    function getTitle() {
+        return sendMessage('window.getTitle');
+    }
     function maximize() {
         return sendMessage('window.maximize');
     }
@@ -504,6 +507,7 @@ var Neutralino = (function (exports) {
     var window$1 = /*#__PURE__*/Object.freeze({
         __proto__: null,
         setTitle: setTitle,
+        getTitle: getTitle,
         maximize: maximize,
         unmaximize: unmaximize,
         isMaximized: isMaximized,
@@ -645,7 +649,7 @@ var Neutralino = (function (exports) {
         install: install
     });
 
-    var version = "2.0.0";
+    var version = "3.0.0";
 
     let initialized = false;
     function init() {
@@ -653,8 +657,8 @@ var Neutralino = (function (exports) {
             return;
         }
         init$1();
-        if (window.NL_ARGS.find((arg) => arg == '--dev-cli-auto-reload')) {
-            Neutralino.events.on('devEvent_reloadApp', () => __awaiter(this, void 0, void 0, function* () {
+        if (window.NL_ARGS.find((arg) => arg == '--neu-dev-auto-reload')) {
+            Neutralino.events.on('neuDev_reloadApp', () => __awaiter(this, void 0, void 0, function* () {
                 yield Neutralino.debug.log('Reloading the application...');
                 location.reload();
             }));

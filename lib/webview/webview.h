@@ -518,7 +518,7 @@ public:
   void run() { gtk_main(); }
   void terminate(int exitCode = 0) {
     processExitCode = exitCode;
-    gtk_window_close(GTK_WINDOW(m_window)); 
+    gtk_window_close(GTK_WINDOW(m_window));
     gtk_widget_destroy(m_window);
   }
   void dispatch(std::function<void()> f) {
@@ -534,7 +534,12 @@ public:
     gtk_window_set_title(GTK_WINDOW(m_window), title.c_str());
   }
 
-  void set_size(int width, int height, int minWidth, int minHeight, 
+  std::string get_title() {
+    std::string title(gtk_window_get_title(GTK_WINDOW(m_window)));
+    return title;
+  }
+
+  void set_size(int width, int height, int minWidth, int minHeight,
   int maxWidth, int maxHeight, bool resizable) {
     if(minWidth != -1 || minHeight != -1 || maxWidth != -1 || maxHeight != -1) {
       GdkGeometry g;
@@ -544,9 +549,9 @@ public:
         h = (GdkWindowHints)(GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE);
       else if(maxWidth != -1 || maxHeight != -1)
         h = GDK_HINT_MAX_SIZE;
-      else 
+      else
         h = GDK_HINT_MIN_SIZE;
-        
+
       g.min_width = minWidth;
       g.min_height = minHeight;
       g.max_width = maxWidth;
@@ -675,7 +680,7 @@ public:
     auto wcls =
         objc_allocateClassPair((Class) "NSResponder"_cls, "WindowDelegate", 0);
     class_addMethod(wcls, "windowShouldClose:"_sel,
-                    (IMP)(+[](id, SEL, id) -> BOOL { 
+                    (IMP)(+[](id, SEL, id) -> BOOL {
                       if(onCloseHandler)
                         onCloseHandler();
                       return 0;
@@ -777,13 +782,19 @@ public:
                        delete f;
                      }));
   }
+
   void set_title(const std::string title) {
     ((void (*)(id, SEL, id))objc_msgSend)(
         m_window, "setTitle:"_sel,
         ((id(*)(id, SEL, const char *))objc_msgSend)(
             "NSString"_cls, "stringWithUTF8String:"_sel, title.c_str()));
   }
-  void set_size(int width, int height, int minWidth, int minHeight, 
+
+  std::string get_title() {
+    return "";
+  }
+
+  void set_size(int width, int height, int minWidth, int minHeight,
                 int maxWidth, int maxHeight, bool resizable) {
     auto style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
                  NSWindowStyleMaskMiniaturizable;
@@ -1005,7 +1016,7 @@ public:
                                    ICoreWebView2Settings *m_settings;
                                    m_webview->get_Settings(&m_settings);
                                    if(debug) {
-                                      m_settings->put_AreDevToolsEnabled(TRUE); 
+                                      m_settings->put_AreDevToolsEnabled(TRUE);
                                       m_webview->OpenDevToolsWindow();
                                    }
                                    else {
@@ -1168,7 +1179,7 @@ public:
             case WM_TRAY_PASS_MENU_REF:
               menuRef = (HMENU) wp;
               break;
-            case WM_TRAY_CALLBACK_MESSAGE: 
+            case WM_TRAY_CALLBACK_MESSAGE:
               if (lp == WM_LBUTTONUP || lp == WM_RBUTTONUP) {
                 POINT p;
                 GetCursorPos(&p);
@@ -1177,7 +1188,7 @@ public:
                                                     TPM_RETURNCMD | TPM_NONOTIFY,
                                           p.x, p.y, 0, hwnd, nullptr);
                 SendMessage(hwnd, WM_COMMAND, cmd, 0);
-              } 
+              }
               break;
             case WM_COMMAND:
               if (wp >= ID_TRAY_FIRST) {
@@ -1258,7 +1269,7 @@ public:
     }
   }
   void *window() { return (void *)m_window; }
-  void terminate(int exitCode = 0) { 
+  void terminate(int exitCode = 0) {
     processExitCode = exitCode;
     dispatch([=]() {
         DestroyWindow(m_window);
@@ -1272,7 +1283,15 @@ public:
     SetWindowText(m_window, title.c_str());
   }
 
-  void set_size(int width, int height, int minWidth, int minHeight, 
+  std::string get_title() {
+    int len = GetWindowTextLength(hwnd);
+    std::string title;
+    title.reserve(len + 1);
+    GetWindowText(hwnd, const_cast<char*>(title.c_str()), len);
+    return title;
+  }
+
+  void set_size(int width, int height, int minWidth, int minHeight,
                 int maxWidth, int maxHeight, bool resizable) {
     auto style = GetWindowLong(m_window, GWL_STYLE);
     if (!resizable) {
@@ -1285,7 +1304,7 @@ public:
     if (maxWidth != -1 || maxHeight != -1) {
       m_maxsz.x = maxWidth;
       m_maxsz.y = maxHeight;
-    } 
+    }
     if (minWidth != -1 || minHeight != -1) {
       m_minsz.x = minWidth;
       m_minsz.y = minHeight;
@@ -1394,7 +1413,7 @@ public:
       }
     });
   }
-  
+
   void setOnCloseHandler(onCloseHandler_t handler) {
     onCloseHandler = handler;
   }

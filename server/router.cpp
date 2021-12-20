@@ -61,6 +61,7 @@ namespace router {
             {"app.broadcast", app::controllers::broadcast},
             // Neutralino.window
             {"window.setTitle", window::controllers::setTitle},
+            {"window.getTitle", window::controllers::getTitle},
             {"window.maximize", window::controllers::maximize},
             {"window.isMaximized", window::controllers::isMaximized},
             {"window.unmaximize", window::controllers::unmaximize},

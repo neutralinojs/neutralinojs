@@ -388,6 +388,13 @@ namespace controllers {
         return output;
     }
 
+    json getTitle(const json &input) {
+        json output;
+        output["returnValue"] = nativeWindow->get_title();
+        output["success"] = true;
+        return output;
+    }
+
     json maximize(const json &input) {
         json output;
         window::maximize();

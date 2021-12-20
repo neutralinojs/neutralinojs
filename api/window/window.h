@@ -31,7 +31,7 @@ namespace window {
         int maxHeight = -1;
         bool resizable = true;
     };
-    
+
     struct WindowOptions {
         SizeOptions sizeOptions;
         bool fullScreen = false;
@@ -46,7 +46,7 @@ namespace window {
         string url = "https://neutralino.js.org";
         string icon = "";
     };
-    
+
 namespace handlers {
     void onClose();
 } // namespace handlers
@@ -64,13 +64,14 @@ namespace handlers {
     void setIcon(const string &icon);
     void setAwaysOnTop();
     void setBorderless();
-    
+
     void _close(int exitCode);
 
 namespace controllers {
     json init(const json &input);
     json setTitle(const json &input);
-    json maximize(const json &input); 
+    json getTitle(const json &input);
+    json maximize(const json &input);
     json unmaximize(const json &input);
     json isMaximized(const json &input);
     json minimize(const json &input);
@@ -84,7 +85,7 @@ namespace controllers {
     json setIcon(const json &input);
     json move(const json &input);
     json setSize(const json &input);
-        
+
 } // namespace controllers
 } // namespace window
 
