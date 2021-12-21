@@ -57,6 +57,7 @@ c++ $FLAGS resources.cpp \
     -DBOOST_ALL_NO_LIB \
     -DWEBVIEW_COCOA=1 \
     -DOBJC_OLD_DISPATCH_PROTOTYPES=1 \
+    -Wno-deprecated-declarations \
     -Os \
     -o $NEU_BIN
 

@@ -791,7 +791,12 @@ public:
   }
 
   std::string get_title() {
-    return "";
+    std::string title = std::string(
+      ((const char *(*)(id, SEL))objc_msgSend)(
+        ((id(*)(id, SEL))objc_msgSend)(m_window, "title"_sel)
+      , "UTF8String"_sel)
+    );
+    return title;
   }
 
   void set_size(int width, int height, int minWidth, int minHeight,
