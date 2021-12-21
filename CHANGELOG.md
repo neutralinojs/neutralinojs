@@ -6,7 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
-- ...
+### API: window
+- `window.getTitle` returns the current native window title.
 
 ## V4.0.0
 
