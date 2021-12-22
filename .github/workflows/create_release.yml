@@ -38,6 +38,8 @@ jobs:
       uses: peterjgrainger/action-create-branch@v2.0.1
       with: 
         branch: ${{github.event.inputs.version}}
+      env:
+        GITHUB_TOKEN: ${{ secrets.BRANCH_TOKEN }}
     - name: Create a GitHub release
       uses: ncipollo/release-action@v1
       with:
