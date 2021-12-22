@@ -37,7 +37,7 @@ jobs:
       run: | 
         git checkout -b ${{github.event.inputs.version}}
         git tag ${{github.event.inputs.version}}
-        git push
+        git push origin ${{github.event.inputs.version}}
     - name: Create a GitHub release
       uses: ncipollo/release-action@v1
       with:
