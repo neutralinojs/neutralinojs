@@ -10,6 +10,8 @@ jobs:
   create-release-zip:
     runs-on: ubuntu-latest
     steps:
+    - name: Print version
+      run: echo ${{github.event.inputs.version}}
     - name: Checkout 
       uses: actions/checkout@v2
     - name: Create Release zip
@@ -29,6 +31,7 @@ jobs:
         git tag v${{github.event.inputs.version}}
         git tag
         git status
+        git push
     - name: Create a GitHub release
       uses: ncipollo/release-action@v1
       with:
