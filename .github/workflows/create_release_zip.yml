@@ -22,7 +22,7 @@ jobs:
       with:
         default_author: github_actions
         message: 'Add pre-built x64 binaries to release zip' 
-        add: './bin/neutralinojs*.zip'
+        add: './bin/neutralinojs-v${{github.event.inputs.version}}.zip'
     - name: Create tag and branch
       run: | 
         git checkout -b v${{github.event.inputs.version}}
@@ -35,4 +35,4 @@ jobs:
           tag: ${{github.event.inputs.version}}
           name: Neutralinojs v${{github.event.inputs.version}} released!
           body: 'Test release'
-          artifacts: './bin/neutralinojs*.zip'
+          artifacts: './bin/neutralinojs-v${{github.event.inputs.version}}.zip'
