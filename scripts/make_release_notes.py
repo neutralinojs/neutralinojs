@@ -10,7 +10,7 @@ if len(sys.argv) < 2:
 changelog_file = './CHANGELOG.md'
 tmp_dir = './.tmp'
 release_note_file = tmp_dir + '/release_notes.md'
-release_version = sys.argv[1]
+release_version = 'v' + sys.argv[1]
 
 release_note = '## What\'s new \n'
 collect = False
