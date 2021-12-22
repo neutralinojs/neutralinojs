@@ -23,15 +23,21 @@ jobs:
         default_author: github_actions
         message: 'Add ${{github.event.inputs.version}} pre-built x64 binaries to release zip' 
         add: './bin/neutralinojs-${{github.event.inputs.version}}.zip'
+    - name: Create Release Notes
+      run: |
+        chmod +x ./scripts/make_release_notes.py
+        ./scripts/make_release_notes.py ${{github.event.inputs.version}}
+    - name: Commit and Push Changelog
+      uses: EndBug/add-and-commit@v7.4.0
+      with:
+        default_author: github_actions
+        message: 'Update changelog for ${{github.event.inputs.version}}' 
+        add: 'CHANGELOG.md'
     - name: Create Tag and Branch
       run: | 
         git checkout -b ${{github.event.inputs.version}}
         git tag ${{github.event.inputs.version}}
         git push
-    - name: Process Changelog
-      run: |
-        chmod +x ./scripts/make_release_notes.py
-        ./make_release_notes.py ${{github.event.inputs.version}}
     - name: Create a GitHub release
       uses: ncipollo/release-action@v1
       with:
