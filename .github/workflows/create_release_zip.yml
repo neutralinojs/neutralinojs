@@ -1,96 +1,36 @@
 name: Create release zip
-on: [workflow_dispatch]
+on: 
+  workflow_dispatch:
+    inputs: 
+      version: 
+        type: text
+        description: 'Version number Eg: 4.2.0' 
 
-jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout 
-      uses: actions/checkout@v2
-    - name: Configure
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y -f \
-        libboost-all-dev \
-        libgtk-3-dev \
-        libwebkit2gtk-4.0-37 \
-        libwebkit2gtk-4.0-dev \
-        libappindicator3-dev
-    - name: Build
-      run: bash build_linux.sh
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: linux_binary
-        path: bin/neutralino-linux_x64
-
-  build-windows:
-    runs-on: windows-latest
-    steps:
-    - name: Checkout 
-      uses: actions/checkout@v2
-    - name: Install Boost
-      run: choco install boost-msvc-14.1
-    - name: Build
-      run: ./build_windows.bat
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: win_binary
-        path: bin/neutralino-win_x64.exe
-
-  build-darwin:
-    runs-on: macos-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v2
-    - name: Install Brew
-      run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    - name: Install Boost
-      run: brew install boost@1.76
-    - name: Build
-      run: bash build_macos.sh
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: darwin_binary
-        path: bin/neutralino-mac_x64
-        
+jobs:   
   create-release-zip:
-    needs: [build-linux, build-windows, build-darwin]
     runs-on: ubuntu-latest
     steps:
     - name: Checkout 
       uses: actions/checkout@v2
-    - name: Clean previous binaries
-      run: |
-        rm -f \
-        ./bin/neutralino-linux_x64 \
-        ./bin/neutralino-win_x64.exe \
-        ./bin/neutralino-mac_x64
-    - name: Download Linux build artifacts 
-      uses: actions/download-artifact@v2
-      with:
-        name: linux_binary
-        path: ./bin/neutralino-linux_x64
-    - name: Download Windows build artifacts 
-      uses: actions/download-artifact@v2
-      with:
-        name: win_binary
-        path: ./bin/neutralino-win_x64.exe
-    - name: Download Darwin build artifacts 
-      uses: actions/download-artifact@v2
-      with:
-        name: darwin_binary
-        path: ./bin/neutralino-mac_x64
     - name: Create Release zip
       uses: vimtor/action-zip@v1
       with: 
         files: ./bin/neutralino-linux_x64 ./bin/neutralino-win_x64.exe ./bin/neutralino-mac_x64 ./bin/WebView2Loader.dll
-        dest: ./bin/neutralino-release.zip
+        dest: './bin/neutralinojs-v${{github.event.inputs.version}}.zip'
     - name: Add, Commit and Push Release Zip
       uses: EndBug/add-and-commit@v7.4.0
       with:
         default_author: github_actions
         message: 'Add pre-built x64 binaries to release zip' 
-        add: './bin/neutralino-release.zip'
+        add: './bin/neutralinojs*.zip'
+    - name: Bump version and push tag
+      uses: mathieudutour/github-tag-action@v6.0
+      with:
+          custom_tag: v${{github.event.inputs.version}}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create a GitHub release
+      uses: ncipollo/release-action@v1
+      with:
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: Neutralinojs v${{github.event.inputs.version}} released!
+          body: 'Test release'
