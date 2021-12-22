@@ -33,11 +33,11 @@ jobs:
         default_author: github_actions
         message: 'Update changelog for ${{github.event.inputs.version}}' 
         add: 'CHANGELOG.md'
-    - name: Create Tag and Branch
-      run: | 
-        git checkout -b ${{github.event.inputs.version}}
-        git tag ${{github.event.inputs.version}}
-        git push origin ${{github.event.inputs.version}}
+        tag: ${{github.event.inputs.version}}
+    - name: Create Branch
+      uses: peterjgrainger/action-create-branch@v2.0.1
+      with: 
+        branch: ${{github.event.inputs.version}}
     - name: Create a GitHub release
       uses: ncipollo/release-action@v1
       with:
