@@ -4,7 +4,7 @@ Add all code changes (features, deprecations, and enhancements) under the `Unrel
 the next release. Once the changes are released,
 rename `Unreleased` topic with the new version tag. Finally, create a new `Unreleased` topic for future changes.
 
-## Unreleased
+## v4.1.5
 
 ### API: window
 - `window.getTitle` returns the current native window title.
