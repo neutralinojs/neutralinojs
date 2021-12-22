@@ -9,7 +9,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### API: window
 - `window.getTitle` returns the current native window title.
 
-## V4.0.0
+## v4.0.0
 
 ### API: os.execCommand
 - Renamed `shouldRunInBackground` option to `background`.
