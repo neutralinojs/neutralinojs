@@ -10,32 +10,32 @@ jobs:
   create-release-zip:
     runs-on: ubuntu-latest
     steps:
-    - name: Print version
-      run: echo ${{github.event.inputs.version}}
     - name: Checkout 
       uses: actions/checkout@v2
     - name: Create Release zip
       uses: vimtor/action-zip@v1
       with: 
         files: ./bin/neutralino-linux_x64 ./bin/neutralino-win_x64.exe ./bin/neutralino-mac_x64 ./bin/WebView2Loader.dll
-        dest: './bin/neutralinojs-v${{github.event.inputs.version}}.zip'
+        dest: './bin/neutralinojs-${{github.event.inputs.version}}.zip'
     - name: Add, Commit and Push Release Zip
       uses: EndBug/add-and-commit@v7.4.0
       with:
         default_author: github_actions
-        message: 'Add pre-built x64 binaries to release zip' 
-        add: './bin/neutralinojs-v${{github.event.inputs.version}}.zip'
-    - name: Create tag and branch
+        message: 'Add ${{github.event.inputs.version}} pre-built x64 binaries to release zip' 
+        add: './bin/neutralinojs-${{github.event.inputs.version}}.zip'
+    - name: Create Tag and Branch
       run: | 
-        git checkout -b v${{github.event.inputs.version}}
-        git tag v${{github.event.inputs.version}}
-        git tag
-        git status
+        git checkout -b ${{github.event.inputs.version}}
+        git tag ${{github.event.inputs.version}}
         git push
+    - name: Process Changelog
+      run: |
+        chmod +x ./scripts/make_release_notes.py
+        ./make_release_notes.py ${{github.event.inputs.version}}
     - name: Create a GitHub release
       uses: ncipollo/release-action@v1
       with:
           tag: ${{github.event.inputs.version}}
-          name: Neutralinojs v${{github.event.inputs.version}} released!
-          body: 'Test release'
-          artifacts: './bin/neutralinojs-v${{github.event.inputs.version}}.zip'
+          name: Neutralinojs ${{github.event.inputs.version}} released!
+          bodyFile: ./.tmp/release_notes.md
+          artifacts: './bin/neutralinojs-${{github.event.inputs.version}}.zip'
