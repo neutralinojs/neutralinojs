@@ -49,6 +49,8 @@ Neutralinojs contributors:
 
 Image created with [contributors-img](https://contributors-img.firebaseapp.com).
 
+Releases are powered by [ReleaseZri](https://codezri.org/docs/releasezri)
+
 ## Sponsors and Donators
 
 Organizations and individuals support Neutralinojs development. See: https://codezri.org/sponsors
