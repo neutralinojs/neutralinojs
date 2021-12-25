@@ -18,6 +18,7 @@ namespace helpers {
     json makeErrorPayload(const string &code, const string &message);
     bool hasRequiredFields(const json &input, const vector<string> &keys);
     bool hasField(const json &input, const string &key);
+    string getDefaultChromeArgs();
 } // namespace helpers
 
 #endif // #define NEU_HELPERS_H

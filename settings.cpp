@@ -197,48 +197,53 @@ namespace settings {
         };
 
         map<string, vector<string>> cliMappingAliases = {
-            {"/port", {"/modes/window/port", "/modes/browser/port", "/modes/cloud/port"}},
-            {"/url", {"/modes/window/url", "/modes/browser/url", "/modes/cloud/url"}},
+            {"/port", {"/modes/window/port", "/modes/browser/port", "/modes/cloud/port", "/modes/chrome/port"}},
+            {"/url", {"/modes/window/url", "/modes/browser/url", "/modes/cloud/url", "/modes/chrome/url"}},
             {"/logging/enabled",
                 {
                 "/modes/window/logging/enabled",
                 "/modes/browser/logging/enabled",
-                "/modes/cloud/logging/enabled"
+                "/modes/cloud/logging/enabled",
+                "/modes/chrome/logging/enabled"
                 }
             },
             {"/logging/writeToLogFile",
                 {
                 "/modes/window/logging/writeToLogFile",
                 "/modes/browser/logging/writeToLogFile",
-                "/modes/cloud/logging/writeToLogFile"
+                "/modes/cloud/logging/writeToLogFile",
+                "/modes/chrome/logging/writeToLogFile"
                 }
             },
             {"/enableServer",
                 {
                 "/modes/window/enableServer",
                 "/modes/browser/enableServer",
-                "/modes/cloud/enableServer"
+                "/modes/cloud/enableServer",
+                "/modes/chrome/enableServer"
                 }
             },
             {"/enableExtensions",
                 {
                 "/modes/window/enableExtensions",
                 "/modes/browser/enableExtensions",
-                "/modes/cloud/enableExtensions"
+                "/modes/cloud/enableExtensions",
+                "/modes/chrome/enableExtensions"
                 }
             },
             {"/exportAuthInfo",
                 {
                 "/modes/window/exportAuthInfo",
                 "/modes/browser/exportAuthInfo",
-                "/modes/cloud/exportAuthInfo"
+                "/modes/cloud/exportAuthInfo",
+                "/modes/chrome/exportAuthInfo"
                 }
             }
         };
 
         if(cliMappings.find(arg.key) != cliMappings.end()) {
             if(arg.key == "--mode") {
-                if(arg.value != "browser" && arg.value != "window" && arg.value != "cloud") {
+                if(arg.value != "browser" && arg.value != "window" && arg.value != "cloud" && arg.value != "chrome") {
                     debug::log("ERROR", "Unsupported mode: '" + arg.value + "'. The default mode is selected.");
                     return;
                 }

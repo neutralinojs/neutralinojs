@@ -103,4 +103,35 @@ namespace helpers {
     bool hasField(const json &input, const string &key) {
         return input.contains(key) && !input[key].is_null();
     }
+
+    /*
+    * Thanks to https://github.com/zserge/lorca/blob/a990beb2828ffa625b74500b4ae43b90fdf8b2e1/ui.go#L29
+    */
+    string getDefaultChromeArgs() {
+        return "--disable-background-networking "
+        "--disable-background-timer-throttling "
+        "--disable-backgrounding-occluded-windows "
+        "--disable-breakpad "
+        "--disable-client-side-phishing-detection "
+        "--disable-default-apps "
+        "--disable-dev-shm-usage "
+        "--disable-infobars "
+        "--disable-extensions "
+        "--disable-features=site-per-process "
+        "--disable-hang-monitor "
+        "--disable-ipc-flooding-protection "
+        "--disable-popup-blocking "
+        "--disable-prompt-on-repost "
+        "--disable-renderer-backgrounding "
+        "--disable-sync "
+        "--disable-translate "
+        "--disable-windows10-custom-titlebar "
+        "--metrics-recording-only "
+        "--no-first-run "
+        "--no-default-browser-check "
+        "--safebrowsing-disable-auto-update "
+        "--enable-automation "
+        "--password-store=basic "
+        "--use-mock-keychain";
+    }
 } // namespace helpers

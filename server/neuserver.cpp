@@ -212,8 +212,9 @@ namespace neuserver {
             events::dispatch("extClientDisconnect", extensionId);
         }
         else {
+            string mode = settings::getMode();
             appConnections.erase(handler);
-            if(settings::getMode() == "browser") {
+            if(mode == "browser" || mode == "chrome") {
                 __exitProcessIfIdle();
             }
             events::dispatch("appClientDisconnect", appConnections.size());

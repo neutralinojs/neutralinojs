@@ -47,6 +47,10 @@
         },
         "cloud": {
             "url": "/resources/#cloud"
+        },
+        "chrome": {
+            "width": 800,
+            "height": 500
         }
     },
     "cli": {
