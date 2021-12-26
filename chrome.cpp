@@ -103,7 +103,7 @@ namespace chrome {
             std::exit(1);
         }
 
-        if(regex_match(chromeCmd, regex(" "))) {
+        if(regex_search(chromeCmd, regex(" "))) {
             chromeCmd = "\"" + chromeCmd + "\"";
         }
 
@@ -116,7 +116,7 @@ namespace chrome {
             chromeCmd += " --window-size=" + to_string(input["width"].get<int>()) +
                         "," + to_string(input["height"].get<int>());
         }
-        os::execCommand(chromeCmd, " ");
+        os::execCommand(chromeCmd);
     }
 } // namesapce chrome
 
