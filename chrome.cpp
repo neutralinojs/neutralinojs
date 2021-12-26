@@ -57,11 +57,14 @@ namespace chrome {
 
         #elif defined(__APPLE__)
         vector<string> chromeBins = {
-            "/usr/bin/google-chrome-stable",
-            "/usr/bin/google-chrome",
-            "/usr/bin/chromium",
-            "/usr/bin/chromium-browser",
-            "/snap/bin/chromium",
+			"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+			"/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary",
+			"/Applications/Chromium.app/Contents/MacOS/Chromium",
+			"/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+			"/usr/bin/google-chrome-stable",
+			"/usr/bin/google-chrome",
+			"/usr/bin/chromium",
+			"/usr/bin/chromium-browser",
         };
 
         #elif defined(_WIN32)
