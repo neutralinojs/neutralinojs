@@ -50,10 +50,10 @@ namespace chrome {
         #if defined(__linux__)
         vector<string> chromeBins = {
         	"/usr/bin/google-chrome-stable",
-			"/usr/bin/google-chrome",
-			"/usr/bin/chromium",
-			"/usr/bin/chromium-browser",
-			"/snap/bin/chromium",
+		"/usr/bin/google-chrome",
+		"/usr/bin/chromium",
+		"/usr/bin/chromium-browser",
+		"/snap/bin/chromium",
         };
 
         #elif defined(__APPLE__)
