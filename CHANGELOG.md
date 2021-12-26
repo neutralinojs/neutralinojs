@@ -9,6 +9,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### API: window
 - `window.getTitle` returns the current native window title.
 
+### API: os
+- Remove `NE_OS_ENVNOEX` from `os.getEnv` and return an empty string if environment variable is not defined.
+
 ## v4.0.0
 
 ### API: os.execCommand

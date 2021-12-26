@@ -1,7 +1,6 @@
 #include <cstdlib>
 #include <string>
 #include <thread>
-#include <vector>
 #if defined(_WIN32)
 #include <winsock2.h>
 #endif
@@ -13,8 +12,8 @@
 #include "auth/authbasic.h"
 #include "server/neuserver.h"
 #include "settings.h"
-#include "helpers.h"
 #include "resources.h"
+#include "chrome.h"
 #include "extensions_loader.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
@@ -31,25 +30,6 @@ using namespace std;
 using json = nlohmann::json;
 
 string navigationUrl = "";
-
-string __findChrome() {
-    string chromePath = "";
-    #if defined(__linux__)
-    vector<string> chromeCmds = {"google-chrome",
-                                "google-chrome-stable",
-                                "chromium", "chromium-browser"};
-
-    for(const string &cmd: chromeCmds) {
-        os::CommandResult cmdResult = os::execCommand("which " + cmd);
-        if(cmdResult.exitCode == 0) {
-            chromePath = cmdResult.stdOut;
-            chromePath.pop_back(); // Remove the ending \n
-            break;
-        }
-    }
-    #endif
-    return chromePath;
-}
 
 void __startApp() {
     json options = settings::getConfig();
@@ -73,29 +53,7 @@ void __startApp() {
     else if(mode == "chrome") {
         json chromeOptions = options["modes"]["chrome"];
         chromeOptions["url"] = navigationUrl;
-
-        string chromeCmd = __findChrome();
-        if(chromeCmd.empty()) {
-            pfd::message("Unable to start Chrome mode",
-                            "You need to install Chrome browser to use the Neutralinojs chrome mode",
-                            pfd::choice::ok,
-                            pfd::icon::error);
-            std::exit(1);
-        }
-        json jFullScreen = chromeOptions["fullScreen"];
-        json jWidth = chromeOptions["width"];
-        json jHeight = chromeOptions["height"];
-
-        chromeCmd += " " + helpers::getDefaultChromeArgs();
-
-        chromeCmd += " --user-data-dir=" + settings::joinAppPath("/.tmp/chromedata");
-        chromeCmd += " --app=" + navigationUrl;
-
-        if(!jWidth.is_null() && !jHeight.is_null()) {
-            chromeCmd += " --window-size=" + to_string(jWidth.get<int>()) +
-                        "," + to_string(jHeight.get<int>());
-        }
-        os::execCommand(chromeCmd, " ");
+        chrome::init(chromeOptions);
     }
 }
 

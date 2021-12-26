@@ -124,6 +124,12 @@ namespace os {
         return string();
     }
 
+    string getEnv(const string &key) {
+        char *value;
+        value = getenv(key.c_str());
+        return value == nullptr ? "" : string(value);
+    }
+
 namespace controllers {
 
     vector<string> __extensionsToVector(const json &filters) {
@@ -173,17 +179,10 @@ namespace controllers {
             output["error"] = helpers::makeMissingArgErrorPayload();
             return output;
         }
-        string varKey = input["key"].get<string>();
-        char *varValue;
-        varValue = getenv(varKey.c_str());
-        if(varValue == nullptr) {
-            output["error"] = helpers::makeErrorPayload("NE_OS_ENVNOEX",
-                                        varKey + " is not defined");
-        }
-        else {
-            output["returnValue"] = varValue;
-            output["success"] = true;
-        }
+        string key = input["key"].get<string>();
+
+        output["returnValue"] = os::getEnv(key);
+        output["success"] = true;
         return output;
     }
 

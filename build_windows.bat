@@ -57,6 +57,7 @@ cl /std:c++17 ^
 main.cpp ^
 settings.cpp ^
 extensions_loader.cpp ^
+chrome.cpp ^
 resources.cpp ^
 server/neuserver.cpp ^
 server/router.cpp ^

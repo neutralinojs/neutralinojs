@@ -20,6 +20,7 @@ namespace os {
     void open(const string &url);
     os::CommandResult execCommand(string command, const string &input = "", bool background = false);
     string getPath(const string &name);
+    string getEnv(const string &key);
 
 namespace controllers {
     json execCommand(const json &input);

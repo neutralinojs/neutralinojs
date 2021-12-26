@@ -30,6 +30,7 @@ c++ $FLAGS resources.cpp \
     helpers.cpp \
     settings.cpp \
     extensions_loader.cpp \
+    chrome.cpp \
     auth/authbasic.cpp \
     auth/permission.cpp \
     lib/tinyprocess/process.cpp \

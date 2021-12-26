@@ -19,6 +19,7 @@ g++ resources.cpp \
     server/neuserver.cpp \
     settings.cpp \
     extensions_loader.cpp \
+    chrome.cpp \
     auth/authbasic.cpp \
     auth/permission.cpp \
     lib/tinyprocess/process.cpp \
