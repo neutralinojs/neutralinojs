@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <regex>
 
 #include "lib/json/json.hpp"
 #include "lib/filedialogs/portable-file-dialogs.h"
@@ -57,10 +58,10 @@ namespace chrome {
 
         #elif defined(__APPLE__)
         vector<string> chromeBins = {
-			"\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\"",
-			"\"/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary\"",
+			"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+			"/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary",
 			"/Applications/Chromium.app/Contents/MacOS/Chromium",
-			"\"/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge\"",
+			"/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
 			"/usr/bin/google-chrome-stable",
 			"/usr/bin/google-chrome",
 			"/usr/bin/chromium",
@@ -93,12 +94,17 @@ namespace chrome {
     void init(const json &input) {
 
         string chromeCmd = __findChrome();
+
         if(chromeCmd.empty()) {
             pfd::message("Unable to start Chrome mode",
                             "You need to install Chrome browser to use the Neutralinojs chrome mode",
                             pfd::choice::ok,
                             pfd::icon::error);
             std::exit(1);
+        }
+
+        if(regex_match(chromeCmd, regex(" "))) {
+            chromeCmd = "\"" + chromeCmd + "\"";
         }
 
         chromeCmd += " " + __getDefaultChromeArgs();
