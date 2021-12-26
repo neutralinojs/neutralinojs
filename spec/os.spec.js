@@ -41,16 +41,12 @@ describe('os.spec: os namespace tests', () => {
             assert.ok(runner.getOutput().length > 0);
         });
 
-        it('throws an error if the key doesn\'t exist', async () => {
+        it('returns an empty string if the key doesn\'t exist', async () => {
             runner.run(`
-                try {
-                    await Neutralino.os.getEnv('test_env_key');
-                }
-                catch(err) {
-                    await __close(err.code);
-                }
+                let value = await Neutralino.os.getEnv('test_env_key');
+                await __close(value);
             `);
-            assert.equal(runner.getOutput(), 'NE_OS_ENVNOEX');
+            assert.equal(runner.getOutput(), '');
         });
 
         it('throws an error for missing args', async () => {
