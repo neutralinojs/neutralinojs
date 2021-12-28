@@ -15,6 +15,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### Core: Chrome mode
 - Now you can run Neutralinojs apps as Chrome apps via the `chrome` mode.
 
+### Core: configuration
+- Getting chrome mode config from `modes.chrome`. Added `height`, `width`, and args specially for the chrome mode.
+
 ## v4.0.0
 
 ### API: os.execCommand
