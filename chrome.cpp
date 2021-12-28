@@ -49,35 +49,35 @@ namespace chrome {
         string chromePath = "";
         #if defined(__linux__)
         vector<string> chromeBins = {
-        	"/usr/bin/google-chrome-stable",
-		"/usr/bin/google-chrome",
-		"/usr/bin/chromium",
-		"/usr/bin/chromium-browser",
-		"/snap/bin/chromium",
+            "/usr/bin/google-chrome-stable",
+            "/usr/bin/google-chrome",
+            "/usr/bin/chromium",
+            "/usr/bin/chromium-browser",
+            "/snap/bin/chromium",
         };
 
         #elif defined(__APPLE__)
         vector<string> chromeBins = {
-		"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-		"/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary",
-		"/Applications/Chromium.app/Contents/MacOS/Chromium",
-		"/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
-		"/usr/bin/google-chrome-stable",
-		"/usr/bin/google-chrome",
-		"/usr/bin/chromium",
-		"/usr/bin/chromium-browser",
+            "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+            "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary",
+            "/Applications/Chromium.app/Contents/MacOS/Chromium",
+            "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+            "/usr/bin/google-chrome-stable",
+            "/usr/bin/google-chrome",
+            "/usr/bin/chromium",
+            "/usr/bin/chromium-browser",
         };
 
         #elif defined(_WIN32)
         vector<string> chromeBins = {
-		os.getEnv("LocalAppData") + "/Google/Chrome/Application/chrome.exe",
-		os.getEnv("ProgramFiles") + "/Google/Chrome/Application/chrome.exe",
-		os.getEnv("ProgramFiles(x86)") + "/Google/Chrome/Application/chrome.exe",
-		os.getEnv("LocalAppData") + "/Chromium/Application/chrome.exe",
-		os.getEnv("ProgramFiles") + "/Chromium/Application/chrome.exe",
-		os.getEnv("ProgramFiles(x86)") + "/Chromium/Application/chrome.exe",
-		os.getEnv("ProgramFiles(x86)") + "/Microsoft/Edge/Application/msedge.exe",
-		os.getEnv("ProgramFiles") + "/Microsoft/Edge/Application/msedge.exe",
+            os.getEnv("LocalAppData") + "/Google/Chrome/Application/chrome.exe",
+            os.getEnv("ProgramFiles") + "/Google/Chrome/Application/chrome.exe",
+            os.getEnv("ProgramFiles(x86)") + "/Google/Chrome/Application/chrome.exe",
+            os.getEnv("LocalAppData") + "/Chromium/Application/chrome.exe",
+            os.getEnv("ProgramFiles") + "/Chromium/Application/chrome.exe",
+            os.getEnv("ProgramFiles(x86)") + "/Chromium/Application/chrome.exe",
+            os.getEnv("ProgramFiles(x86)") + "/Microsoft/Edge/Application/msedge.exe",
+            os.getEnv("ProgramFiles") + "/Microsoft/Edge/Application/msedge.exe",
         };
         #endif
 
@@ -116,6 +116,11 @@ namespace chrome {
             chromeCmd += " --window-size=" + to_string(input["width"].get<int>()) +
                         "," + to_string(input["height"].get<int>());
         }
+
+        if(helpers::hasField(input, "args")) {
+            chromeCmd += " " + input["args"].get<string>();
+        }
+
         os::execCommand(chromeCmd);
     }
 } // namesapce chrome

@@ -50,7 +50,8 @@
         },
         "chrome": {
             "width": 800,
-            "height": 500
+            "height": 500,
+            "args": "--user-agent=\"Neutralinojs chrome mode\""
         }
     },
     "cli": {
