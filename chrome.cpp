@@ -70,14 +70,14 @@ namespace chrome {
 
         #elif defined(_WIN32)
         vector<string> chromeBins = {
-            os.getEnv("LocalAppData") + "/Google/Chrome/Application/chrome.exe",
-            os.getEnv("ProgramFiles") + "/Google/Chrome/Application/chrome.exe",
-            os.getEnv("ProgramFiles(x86)") + "/Google/Chrome/Application/chrome.exe",
-            os.getEnv("LocalAppData") + "/Chromium/Application/chrome.exe",
-            os.getEnv("ProgramFiles") + "/Chromium/Application/chrome.exe",
-            os.getEnv("ProgramFiles(x86)") + "/Chromium/Application/chrome.exe",
-            os.getEnv("ProgramFiles(x86)") + "/Microsoft/Edge/Application/msedge.exe",
-            os.getEnv("ProgramFiles") + "/Microsoft/Edge/Application/msedge.exe",
+            os::getEnv("LocalAppData") + "/Google/Chrome/Application/chrome.exe",
+            os::getEnv("ProgramFiles") + "/Google/Chrome/Application/chrome.exe",
+            os::getEnv("ProgramFiles(x86)") + "/Google/Chrome/Application/chrome.exe",
+            os::getEnv("LocalAppData") + "/Chromium/Application/chrome.exe",
+            os::getEnv("ProgramFiles") + "/Chromium/Application/chrome.exe",
+            os::getEnv("ProgramFiles(x86)") + "/Chromium/Application/chrome.exe",
+            os::getEnv("ProgramFiles(x86)") + "/Microsoft/Edge/Application/msedge.exe",
+            os::getEnv("ProgramFiles") + "/Microsoft/Edge/Application/msedge.exe",
         };
         #endif
 
