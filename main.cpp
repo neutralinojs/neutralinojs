@@ -1,7 +1,6 @@
 #include <cstdlib>
 #include <string>
 #include <thread>
-#include <chrono>
 #if defined(_WIN32)
 #include <winsock2.h>
 #endif
@@ -34,7 +33,7 @@ string navigationUrl = "";
 
 void __wait() {
     while(true) {
-        this_thread::sleep_for((chrono::system_clock::duration::max)());
+        this_thread::sleep_for(20000ms);
     }
 }
 
