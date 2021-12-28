@@ -34,7 +34,7 @@ string navigationUrl = "";
 
 void __wait() {
     while(true) {
-        this_thread::sleep_for(chrono::system_clock::duration::max());
+        this_thread::sleep_for((chrono::system_clock::duration::max)());
     }
 }
 
