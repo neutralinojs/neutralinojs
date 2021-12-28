@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <string>
 #include <thread>
+#include <chrono>
 #if defined(_WIN32)
 #include <winsock2.h>
 #endif
@@ -31,12 +32,18 @@ using json = nlohmann::json;
 
 string navigationUrl = "";
 
+void __wait() {
+    while(true) {
+        this_thread::sleep_for(chrono::system_clock::duration::max());
+    }
+}
+
 void __startApp() {
     json options = settings::getConfig();
     string mode = settings::getMode();
     if(mode == "browser") {
         os::open(navigationUrl);
-        while(true);
+        __wait();
     }
     else if(mode == "window") {
         json windowOptions = options["modes"]["window"];
@@ -48,12 +55,13 @@ void __startApp() {
             debug::log("INFO", options["applicationId"].get<string>() +
                      " is available at " + navigationUrl);
         }
-        while(true);
+        __wait();
     }
     else if(mode == "chrome") {
         json chromeOptions = options["modes"]["chrome"];
         chromeOptions["url"] = navigationUrl;
         chrome::init(chromeOptions);
+        __wait();
     }
 }
 

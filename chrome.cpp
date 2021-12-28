@@ -121,7 +121,7 @@ namespace chrome {
             chromeCmd += " " + input["args"].get<string>();
         }
 
-        os::execCommand(chromeCmd);
+        os::execCommand(chromeCmd, "", true);
     }
 } // namesapce chrome
 
