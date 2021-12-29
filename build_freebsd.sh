@@ -1,3 +1,5 @@
+#!/bin/sh
+
 echo "Compiling Neutralinojs..."
 if [ -e bin/neutralino-freebsd ]; then
     rm bin/neutralino-freebsd

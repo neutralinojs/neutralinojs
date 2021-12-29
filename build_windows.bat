@@ -51,7 +51,7 @@ cl /std:c++17 ^
 /I . ^
 /I lib/webview/windows ^
 /I lib ^
-/I C:/local/boost_1_74_0 ^
+/I lib/asio/include ^
 /EHsc ^
 /Os ^
 main.cpp ^
@@ -78,7 +78,8 @@ api/window/window.cpp ^
 api/events/events.cpp ^
 api/extensions/extensions.cpp ^
 /DELPP_NO_DEFAULT_LOG_FILE ^
-/DBOOST_ALL_NO_LIB ^
+/DASIO_STANDALONE ^
+/D_WEBSOCKETPP_CPP11_STL_ ^
 /link lib/webview/windows/WebView2Loader.dll.lib /OUT:%NEU_BIN%
 
 if exist %NEU_BIN% (

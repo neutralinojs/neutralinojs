@@ -1,16 +1,18 @@
+#!/bin/sh
+
 ARCH=$1
 # Trigger x64 build by default
-if [ "$ARCH" == "" ]; then
+if [ "$ARCH" = "" ]; then
     ARCH="x64"
 fi
 
 NEU_BIN="./bin/neutralino-mac_$ARCH"
 
-if [ "$ARCH" == "ia32" ]; then
+if [ "$ARCH" = "ia32" ]; then
     FLAGS="-arch i386"
-elif [ "$ARCH" == "x64" ]; then
+elif [ "$ARCH" = "x64" ]; then
     FLAGS="-arch x86_64"
-elif [ "$ARCH" == "arm64" ]; then
+elif [ "$ARCH" = "arm64" ]; then
     FLAGS="-arch arm64"
 else
     echo "Unsupported instruction set architecture: $ARCH"
@@ -47,7 +49,7 @@ c++ $FLAGS resources.cpp \
     api/events/events.cpp \
     api/extensions/extensions.cpp \
     -I . \
-    -I /opt/homebrew/Cellar/boost/1.76.0/include \
+    -I lib/asio/include \
     -I lib \
     -L lib \
     -std=c++17 \
@@ -55,7 +57,7 @@ c++ $FLAGS resources.cpp \
     -framework WebKit \
     -framework Cocoa \
     -DELPP_NO_DEFAULT_LOG_FILE=1 \
-    -DBOOST_ALL_NO_LIB \
+    -DASIO_STANDALONE \
     -DWEBVIEW_COCOA=1 \
     -DOBJC_OLD_DISPATCH_PROTOTYPES=1 \
     -Wno-deprecated-declarations \
