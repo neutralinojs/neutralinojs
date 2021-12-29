@@ -29,9 +29,9 @@ def parse_release_note():
             if '## Unreleased' in line:
                 collect = True
                 continue
-            if('## v' in line):
+            if '## v' in line:
                 break
-            if(collect):
+            if collect:
                 note += line
     return note
 
@@ -43,8 +43,12 @@ def save_release_note(note):
 
 def update_changelog():
     updated_changelog = ''
+    pre_replace = '''## Unreleased
+
+'''
     with open(CHANGELOG_FILE, 'r') as cf:
-        updated_changelog = cf.read().replace('## Unreleased', '## ' + VERSION)
+        replace_text = pre_replace + '## ' + VERSION
+        updated_changelog = cf.read().replace('## Unreleased', replace_text)
 
     with open(CHANGELOG_FILE, 'w') as cf:
         cf.write(updated_changelog)
@@ -52,13 +56,11 @@ def update_changelog():
 def create_note():
     print('INFO: Preparing release notes...')
     note = parse_release_note()
-    print('---- Release note for %s (parsed) ----' % VERSION)
-    print(note)
-    print('----')
-
-    if note == '':
-        print('ERROR: No changelog.')
+    if note.strip() == '':
+        print('ERROR: No changelog so far.')
         sys.exit(1)
+    print('---- Release note for %s (parsed) ----' % VERSION)
+    print('----')
 
     note = apply_notes_to_template(note)
     print('---- Release note for %s (applied to template) ----' % VERSION)
