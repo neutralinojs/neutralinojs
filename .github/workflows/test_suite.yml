@@ -8,6 +8,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+      
     - name: Install Libraries
       run: | 
         sudo apt-get update
@@ -17,13 +18,16 @@ jobs:
         libwebkit2gtk-4.0-dev \
         libappindicator3-dev 
         sudo apt-get install -y -f xvfb
+        
     - name: Build
       run: |
         bash build_linux.sh
         chmod +x ./bin/neutralino-linux_x64
+        
     - name: Setup Spec Requirements
       working-directory: ./bin/extensions/sampleextension 
       run: npm ci
+      
     - name: Run Spec
       working-directory: ./spec 
       run: | 
@@ -35,6 +39,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+      
     - name: Build
       run: ./build_windows.bat
 
@@ -43,15 +48,16 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-    - name: Install Brew
-      run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      
     - name: Build
       run: |
         bash build_macos.sh
         chmod +x ./bin/neutralino-mac_x64
+        
     - name: Setup Spec Requirements
       working-directory: ./bin/extensions/sampleextension 
       run: npm ci
+      
     - name: Run Spec
       working-directory: ./spec 
       run: | 
