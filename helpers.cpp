@@ -103,4 +103,8 @@ namespace helpers {
     bool hasField(const json &input, const string &key) {
         return input.contains(key) && !input[key].is_null();
     }
+
+    vector <string> getModes() {
+        return {"window", "browser", "cloud", "chrome"};
+    }
 } // namespace helpers
