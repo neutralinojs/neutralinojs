@@ -70,7 +70,7 @@ lib/easylogging/easylogging++.cc ^
 lib/platformfolders/platform_folders.cpp ^
 lib/clip/clip.cpp ^
 lib/clip/image.cpp ^
-lib/clip/clip_x11.cpp ^
+lib/clip/clip_win.cpp ^
 api/computer/computer.cpp ^
 api/filesystem/filesystem.cpp ^
 api/os/os.cpp ^
