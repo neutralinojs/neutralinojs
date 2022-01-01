@@ -21,6 +21,7 @@
 #include "api/window/window.h"
 #include "api/events/events.h"
 #include "api/extensions/extensions.h"
+#include "api/clipboard/clipboard.h"
 
 #if defined(__APPLE__)
 #include <dispatch/dispatch.h>
@@ -111,7 +112,10 @@ namespace router {
             // Neutralino.extensions
             {"extensions.dispatch", extensions::controllers::dispatch},
             {"extensions.broadcast", extensions::controllers::broadcast},
-            {"extensions.getStats", extensions::controllers::getStats}
+            {"extensions.getStats", extensions::controllers::getStats},
+            // Neutralino.clipboard
+            {"clipboard.readText", clipboard::controllers::readText},
+            {"clipboard.writeText", clipboard::controllers::writeText}
         };
 
         if(methodMap.find(nativeMethodId) != methodMap.end()) {

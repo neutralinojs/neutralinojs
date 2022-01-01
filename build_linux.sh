@@ -28,6 +28,9 @@ g++ resources.cpp \
     lib/tinyprocess/process_unix.cpp \
     lib/easylogging/easylogging++.cc \
     lib/platformfolders/platform_folders.cpp \
+    lib/clip/clip.cpp \
+    lib/clip/image.cpp \
+    lib/clip/clip_x11.cpp \
     api/filesystem/filesystem.cpp \
     api/os/os.cpp \
     api/computer/computer.cpp \
@@ -37,12 +40,14 @@ g++ resources.cpp \
     api/window/window.cpp \
     api/events/events.cpp \
     api/extensions/extensions.cpp \
+    api/clipboard/clipboard.cpp \
     -pthread \
     -std=c++17 \
     -DELPP_NO_DEFAULT_LOG_FILE=1 \
+    -DHAVE_XCB_XLIB_H \
     -DASIO_STANDALONE \
     -DWEBVIEW_GTK=1 \
-    `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0 glib-2.0 appindicator3-0.1` \
+    `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0 glib-2.0 appindicator3-0.1 xcb` \
     -o $NEU_BIN \
     -no-pie \
     -Os \
