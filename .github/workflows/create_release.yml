@@ -127,7 +127,6 @@ jobs:
           name: Neutralinojs v${{github.event.inputs.version}} released!
           bodyFile: ./.tmprz/release_notes.md
           artifacts: './bin/neutralinojs-v${{github.event.inputs.version}}.zip'
-          draft: true
           
     - name: Clean Release Notes
       run: |
