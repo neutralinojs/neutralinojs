@@ -649,6 +649,19 @@ var Neutralino = (function (exports) {
         install: install
     });
 
+    function readText(key, data) {
+        return sendMessage('clipboard.readText', { key, data });
+    }
+    function writeText(data) {
+        return sendMessage('clipboard.writeText', { data });
+    }
+
+    var clipboard = /*#__PURE__*/Object.freeze({
+        __proto__: null,
+        readText: readText,
+        writeText: writeText
+    });
+
     var version = "3.0.0";
 
     let initialized = false;
@@ -668,6 +681,7 @@ var Neutralino = (function (exports) {
     }
 
     exports.app = app;
+    exports.clipboard = clipboard;
     exports.computer = computer;
     exports.debug = debug;
     exports.events = events;

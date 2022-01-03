@@ -68,6 +68,9 @@ lib/tinyprocess/process.cpp ^
 lib/tinyprocess/process_win.cpp ^
 lib/easylogging/easylogging++.cc ^
 lib/platformfolders/platform_folders.cpp ^
+lib/clip/clip.cpp ^
+lib/clip/image.cpp ^
+lib/clip/clip_win.cpp ^
 api/computer/computer.cpp ^
 api/filesystem/filesystem.cpp ^
 api/os/os.cpp ^
@@ -77,6 +80,7 @@ api/app/app.cpp ^
 api/window/window.cpp ^
 api/events/events.cpp ^
 api/extensions/extensions.cpp ^
+api/clipboard/clipboard.cpp ^
 /DELPP_NO_DEFAULT_LOG_FILE ^
 /DASIO_STANDALONE ^
 /D_WEBSOCKETPP_CPP11_STL_ ^

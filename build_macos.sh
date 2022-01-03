@@ -39,6 +39,9 @@ c++ $FLAGS resources.cpp \
     lib/tinyprocess/process_unix.cpp \
     lib/easylogging/easylogging++.cc \
     lib/platformfolders/platform_folders.cpp \
+    lib/clip/clip.cpp \
+    lib/clip/image.cpp \
+    lib/clip/clip_osx.mm \
     api/filesystem/filesystem.cpp \
     api/os/os.cpp \
     api/computer/computer.cpp \
@@ -48,6 +51,7 @@ c++ $FLAGS resources.cpp \
     api/window/window.cpp \
     api/events/events.cpp \
     api/extensions/extensions.cpp \
+    api/clipboard/clipboard.cpp \
     -I . \
     -I lib/asio/include \
     -I lib \
