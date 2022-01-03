@@ -6,6 +6,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: clipboard
+- Add clipboard API for all platforms. Supports reading and writing text in the system clipboard.
+
 ### Core: configuration
 - Accept chrome-related CLI args: `--chrome-width`, `--chrome-height`, and `--chrome-args`.
 
