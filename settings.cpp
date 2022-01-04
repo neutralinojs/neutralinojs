@@ -37,10 +37,11 @@ namespace settings {
     }
 
     fs::FileReaderResult getFileContent(const string &filename) {
-        if(!loadResFromDir)
+        if(!loadResFromDir) {
             return resources::getFileContent(filename);
-        fs::FileReaderResult fileReaderResult = fs::readFile(settings::joinAppPath(filename));
+        }
 
+        fs::FileReaderResult fileReaderResult = fs::readFile(settings::joinAppPath(filename));
         if(fileReaderResult.hasError) {
             debug::log("ERROR", fileReaderResult.error);
         }
@@ -103,6 +104,7 @@ namespace settings {
         jsSnippet += "var NL_ARGS=" + globalArgs.dump() + ";";
         jsSnippet += "var NL_PATH='" + appPath + "';";
         jsSnippet += "var NL_PID=" + to_string(app::getProcessId()) + ";";
+        jsSnippet += "var NL_RESMODE='" + string(loadResFromDir ? "directory" : "bundle") + "';";
 
         json jGlobalVariables = settings::getOptionForCurrentMode("globalVariables");
         if(!jGlobalVariables.is_null()) {
