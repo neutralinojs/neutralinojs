@@ -72,6 +72,7 @@ If you like to support our work, you can donate to Neutralinojs via [Patreon](ht
 - C++ logging library: MIT from [amrayn/easyloggingpp](https://github.com/amrayn/easyloggingpp). Copyright (c) 2012-2018 Amrayn Web Services. Copyright (c) 2012-2018 @abumusamq
 - Cross-platform process library: MIT from [eidheim/tiny-process-library](https://gitlab.com/eidheim/tiny-process-library). Copyright (c) 2015-2020 Ole Christian Eidheim.
 - Asio standalone C++ library: [Boost License v1.0](https://www.boost.org/LICENSE_1_0.txt) from [chriskohlhoff/asio](https://github.com/chriskohlhoff/asio). Copyright (c) 2003-2021 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+- Cross-platform C++ clipboard library: MIT from [dacap/clip](https://github.com/dacap/clip). Copyright (c) 2015-2021 David Capello
 - Logo design credits: [IconsPng](https://www.iconspng.com/image/2688/atom-orange). Copyright free as mentioned in their website. 
 
 [Complete license details](LICENSE)
