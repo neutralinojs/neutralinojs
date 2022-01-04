@@ -12,6 +12,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### Core: configuration
 - Accept chrome-related CLI args: `--chrome-width`, `--chrome-height`, and `--chrome-args`.
 
+### API: global variables
+- Added `NL_RESMODE` to get details about application resources source. Returns `bundle` if resources are loaded from `resources.neu`. Otherwise, returns `directory`.
+
 ## v4.1.0
 
 ### API: window
