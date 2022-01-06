@@ -3,20 +3,27 @@
 import sys
 import os
 import shutil
+from datetime import datetime
 
 RZ_DIR = './.releasezri'
 TEMPLATE_FILE = './.releasezri/template.md'
 CHANGELOG_FILE = './CHANGELOG.md'
 TMP_DIR = './.tmprz'
 RELEASE_NOTE_FILE = './.tmprz/release_notes.md'
+RZ_VERSION = '1.2.0'
 VERSION = ''
+VERSION_WITH_V = ''
 
 def apply_notes_to_template(note):
     md = ''
+    today = datetime.today()
     with open(TEMPLATE_FILE, 'r') as tf:
         md = tf.read() \
-                    .replace('{RZ_VERSION}', VERSION) \
-                    .replace('{RZ_CHANGELOG}', note)
+                .replace('{RZ_RZVERSION}', RZ_VERSION) \
+                .replace('{RZ_VERSION}', VERSION) \
+                .replace('{RZ_DATE}', today.strftime('%Y-%m-%d')) \
+                .replace('{RZ_TIME}', today.strftime('%H:%M:%S')) \
+                .replace('{RZ_CHANGELOG}', note)
     return md
 
 def parse_release_note():
@@ -47,7 +54,7 @@ def update_changelog():
 
 '''
     with open(CHANGELOG_FILE, 'r') as cf:
-        replace_text = pre_replace + '## ' + VERSION
+        replace_text = pre_replace + '## ' + VERSION_WITH_V
         updated_changelog = cf.read().replace('## Unreleased', replace_text)
 
     with open(CHANGELOG_FILE, 'w') as cf:
@@ -59,11 +66,11 @@ def create_note():
     if note.strip() == '':
         print('ERROR: No changelog so far.')
         sys.exit(1)
-    print('---- Release note for %s (parsed) ----' % VERSION)
+    print('---- Release note for %s (parsed) ----' % VERSION_WITH_V)
     print('----')
 
     note = apply_notes_to_template(note)
-    print('---- Release note for %s (applied to template) ----' % VERSION)
+    print('---- Release note for %s (applied to template) ----' % VERSION_WITH_V)
     print(note)
     print('----')
     save_release_note(note)
@@ -98,7 +105,8 @@ if __name__ == '__main__':
         if len(sys.argv) < 3:
             print('ERROR: Missing version argument')
             sys.exit(1)
-        VERSION = 'v' + sys.argv[2]
+        VERSION = sys.argv[2]
+        VERSION_WITH_V = 'v' + VERSION
         create_note()
 
     elif command == 'cleanup':
