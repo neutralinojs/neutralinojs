@@ -137,4 +137,6 @@ jobs:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
       uses: Ilshidur/action-discord@master
       with:
-        args: 'Neutralinojs v${{github.event.inputs.version}} released 🚀'
+        args: |
+          Neutralinojs v${{github.event.inputs.version}} released 🚀
+          Changelog: https://github.com/neutralinojs/neutralinojs/releases/tag/v${{github.event.inputs.version}}
