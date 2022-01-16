@@ -1,7 +1,7 @@
 ## What's new
 {RZ_CHANGELOG}
 
-Update `cli.binaryVersion` in the config file and enter `neu update` to fetch this version.
+Update the config file option `cli.binaryVersion` with `{RZ_VERSION}` and enter `neu update` to fetch this version.
 
 Get started: https://neutralino.js.org/docs
 
