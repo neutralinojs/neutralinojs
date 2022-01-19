@@ -8,6 +8,9 @@
     "enableServer": true,
     "enableNativeAPI": true,
     "exportAuthInfo": false,
+    "serverHeaders": {
+        "Test-Header-Option": "Test Value"
+    },
     "logging": {
         "enabled": true,
         "writeToLogFile": true

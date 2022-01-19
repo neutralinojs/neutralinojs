@@ -31,11 +31,19 @@ wsclientsSet appConnections;
 wsclientsMap extConnections;
 
 bool initialized = false;
+bool applyConfigHeaders = false;
 
 namespace neuserver {
 
     bool __isExtensionEndpoint(const string &url) {
         return regex_match(url, regex(".*extensionId=.*"));
+    }
+
+    void __applyConfigHeaders(websocketserver::connection_ptr con) {
+        json jHeaders = settings::getOptionForCurrentMode("serverHeaders");
+        for(const auto &it: jHeaders.items()) {
+            con->replace_header(it.key(), it.value().get<string>());
+        }
     }
 
     string __getExtensionIdFromUrl(const string &url) {
@@ -122,6 +130,12 @@ namespace neuserver {
                 navigationUrl = url;
         }
         initialized = true;
+
+        json jHeaders = settings::getOptionForCurrentMode("serverHeaders");
+        if(!jHeaders.is_null()) {
+            applyConfigHeaders = true;
+        }
+
         return navigationUrl;
     }
 
@@ -186,6 +200,10 @@ namespace neuserver {
         con->set_status(routerResponse.status);
         con->set_body(routerResponse.data);
         con->replace_header("Content-Type", routerResponse.contentType);
+
+        if(applyConfigHeaders) {
+            __applyConfigHeaders(con);
+        }
     }
 
     void handleConnect(websocketpp::connection_hdl handler) {
