@@ -109,8 +109,8 @@ namespace chrome {
 
         chromeCmd += " " + __getDefaultChromeArgs();
 
-        chromeCmd += " --user-data-dir=" + settings::joinAppPath("/.tmp/chromedata");
-        chromeCmd += " --app=" + input["url"].get<string>();
+        chromeCmd += " --user-data-dir=\"" + settings::joinAppPath("/.tmp/chromedata") + "\"";
+        chromeCmd += " --app=\"" + input["url"].get<string>() + "\"";
 
         if(helpers::hasRequiredFields(input, {"width", "height"})) {
             chromeCmd += " --window-size=" + to_string(input["width"].get<int>()) +
@@ -123,5 +123,5 @@ namespace chrome {
 
         os::execCommand(chromeCmd, "", true);
     }
-} // namesapce chrome
+} // namespace chrome
 
