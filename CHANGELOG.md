@@ -16,6 +16,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### API: global variables
 - Added `NL_RESMODE` to get details about application resources source. Returns `bundle` if resources are loaded from `resources.neu`. Otherwise, returns `directory`.
 
+### Bugfixes
+- Fix chrome mode user data dir issue (Support paths with spaces).
+
 ## v4.1.0
 
 ### API: window
