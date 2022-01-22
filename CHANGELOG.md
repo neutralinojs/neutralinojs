@@ -18,6 +18,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ### Bugfixes
 - Fix chrome mode user data dir issue (Support paths with spaces).
+- Fix browser mode's shutdown issue with neu CLI.
 
 ## v4.1.0
 
