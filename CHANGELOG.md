@@ -11,6 +11,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ### Core: configuration
 - Accept chrome-related CLI args: `--chrome-width`, `--chrome-height`, and `--chrome-args`.
+- Accept `--neu-dev-extension` to enable devtools connections (For internal usages with CLI).
 - Accept custom HTTP headers via `serverHeaders` option.
 
 ### API: global variables
