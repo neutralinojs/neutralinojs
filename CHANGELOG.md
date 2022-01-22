@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v4.2.0
+
 ### API: clipboard
 - Add clipboard API for all platforms. Supports reading and writing text in the system clipboard.
 
