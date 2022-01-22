@@ -11,6 +11,7 @@ using json = nlohmann::json;
 
 namespace extensions {
     void init();
+    void loadOne(const string &extensionId);
     vector<string> getLoaded();
     bool isLoaded(const string &extensionId);
 } // namesapce extensions

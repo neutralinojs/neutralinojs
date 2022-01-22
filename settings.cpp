@@ -9,6 +9,7 @@
 
 #include "lib/json/json.hpp"
 #include "settings.h"
+#include "extensions_loader.h"
 #include "resources.h"
 #include "helpers.h"
 #include "auth/authbasic.h"
@@ -131,11 +132,20 @@ namespace settings {
             // Resources read mode (resources.neu or from directory)
             if(cliArg.key == "--load-dir-res") {
                 loadResFromDir = true;
+                continue;
             }
 
             // Set app path context
             if(cliArg.key == "--path") {
                 appPath = cliArg.value;
+                continue;
+            }
+
+            // Enable dev tools connection (as an extension)
+            // Not available for production (resources.neu-based) apps
+            if(cliArg.key == "--neu-dev-extension" && loadResFromDir) {
+                extensions::loadOne("js.neutralino.devtools");
+                continue;
             }
 
             // Override app configs

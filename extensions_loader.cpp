@@ -5,6 +5,7 @@
 #include <regex>
 #include <vector>
 
+#include "extensions_loader.h"
 #include "settings.h"
 #include "helpers.h"
 #include "auth/authbasic.h"
@@ -47,8 +48,12 @@ namespace extensions {
                 os::execCommand(command, "", true); // async
             }
 
-            loadedExtensions.push_back(extensionId);
+            extensions::loadOne(extensionId);
         }
+    }
+
+    void loadOne(const string &extensionId) {
+        loadedExtensions.push_back(extensionId);
     }
 
     vector<string> getLoaded() {
