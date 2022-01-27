@@ -12,6 +12,7 @@
 #include "server/router.h"
 #include "helpers.h"
 #include "settings.h"
+#include "resources.h"
 #include "api/os/os.h"
 #include "api/filesystem/filesystem.h"
 #include "api/computer/computer.h"
@@ -219,7 +220,7 @@ namespace router {
             {"wasm", "application/wasm"}
         };
 
-        fs::FileReaderResult fileReaderResult = settings::getFileContent(path);
+        fs::FileReaderResult fileReaderResult = resources::getFile(path);
         response.data = fileReaderResult.data;
         response.status = fileReaderResult.hasError ? websocketpp::http::status_code::not_found
                                     : websocketpp::http::status_code::ok;

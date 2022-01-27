@@ -22,7 +22,7 @@
 
 #include "lib/json/json.hpp"
 #include "lib/webview/webview.h"
-#include "settings.h"
+#include "resources.h"
 #include "helpers.h"
 #include "server/neuserver.h"
 #include "auth/permission.h"
@@ -214,7 +214,7 @@ namespace handlers {
     }
 
     void setIcon(const string &iconFile) {
-        fs::FileReaderResult fileReaderResult = settings::getFileContent(iconFile);
+        fs::FileReaderResult fileReaderResult = resources::getFile(iconFile);
         string iconDataStr = fileReaderResult.data;
         #if defined(__linux__) || defined(__FreeBSD__)
         GdkPixbuf *icon = nullptr;

@@ -20,11 +20,9 @@
 #include <string>
 
 #include "lib/json/json.hpp"
-#include "api/filesystem/filesystem.h"
 
 using namespace std;
 using json = nlohmann::json;
-extern bool loadResFromDir;
 
 namespace settings {
 
@@ -40,7 +38,6 @@ namespace settings {
     };
 
     json getConfig();
-    fs::FileReaderResult getFileContent(const string &filename);
     string getGlobalVars();
     void setGlobalArgs(const json &args);
     string joinAppPath(const string &filename);

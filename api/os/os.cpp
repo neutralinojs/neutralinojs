@@ -11,6 +11,7 @@
 #include <cstring>
 #include <vector>
 
+#include "resources.h"
 #include "lib/tinyprocess/process.hpp"
 #include "lib/platformfolders/platform_folders.h"
 #include "lib/filedialogs/portable-file-dialogs.h"
@@ -397,7 +398,7 @@ namespace controllers {
             string iconPath = input["icon"].get<string>();
             #if defined(__linux__)
             string fullIconPath;
-            if(loadResFromDir) {
+            if(resources::getMode() == "directory") {
                 fullIconPath = fs::getFullPathFromRelative(settings::joinAppPath("")) + iconPath;
             }
             else {

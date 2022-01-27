@@ -105,11 +105,7 @@ void __startServerAsync() {
 
 void __initFramework(const json &args) {
     settings::setGlobalArgs(args);
-    if (!loadResFromDir) {
-        bool resourceLoaderStatus = resources::makeFileTree();
-        if(!resourceLoaderStatus)
-            loadResFromDir = true;
-    }
+    resources::init();
     json options = settings::getConfig();
 
     if(options.is_null()) {

@@ -22,7 +22,6 @@ using json = nlohmann::json;
 
 json options;
 json globalArgs;
-bool loadResFromDir = false;
 string appPath;
 
 vector <settings::ConfigOverride> configOverrides;
@@ -37,24 +36,12 @@ namespace settings {
         return appPath;
     }
 
-    fs::FileReaderResult getFileContent(const string &filename) {
-        if(!loadResFromDir) {
-            return resources::getFileContent(filename);
-        }
-
-        fs::FileReaderResult fileReaderResult = fs::readFile(settings::joinAppPath(filename));
-        if(fileReaderResult.hasError) {
-            debug::log("ERROR", fileReaderResult.error);
-        }
-        return fileReaderResult;
-    }
-
     json getConfig() {
         if(!options.is_null())
             return options;
         json config;
         try {
-            fs::FileReaderResult fileReaderResult = settings::getFileContent(APP_CONFIG_FILE);
+            fs::FileReaderResult fileReaderResult = resources::getFile(APP_CONFIG_FILE);
             config = json::parse(fileReaderResult.data);
             options = config;
 
@@ -105,7 +92,7 @@ namespace settings {
         jsSnippet += "var NL_ARGS=" + globalArgs.dump() + ";";
         jsSnippet += "var NL_PATH='" + appPath + "';";
         jsSnippet += "var NL_PID=" + to_string(app::getProcessId()) + ";";
-        jsSnippet += "var NL_RESMODE='" + string(loadResFromDir ? "directory" : "bundle") + "';";
+        jsSnippet += "var NL_RESMODE='" + resources::getMode() + "';";
 
         json jGlobalVariables = settings::getOptionForCurrentMode("globalVariables");
         if(!jGlobalVariables.is_null()) {
@@ -131,7 +118,7 @@ namespace settings {
 
             // Resources read mode (resources.neu or from directory)
             if(cliArg.key == "--load-dir-res") {
-                loadResFromDir = true;
+                resources::setMode("directory");
                 continue;
             }
 
@@ -143,7 +130,7 @@ namespace settings {
 
             // Enable dev tools connection (as an extension)
             // Not available for production (resources.neu-based) apps
-            if(cliArg.key == "--neu-dev-extension" && loadResFromDir) {
+            if(cliArg.key == "--neu-dev-extension" && resources::getMode() == "directory") {
                 extensions::loadOne("js.neutralino.devtools");
                 continue;
             }

@@ -9,6 +9,7 @@
 #include "lib/json/json.hpp"
 #include "helpers.h"
 #include "settings.h"
+#include "resources.h"
 #include "api/debug/debug.h"
 #include "api/filesystem/filesystem.h"
 
@@ -16,12 +17,14 @@
 
 using namespace std;
 using json = nlohmann::json;
+
 json fileTree = nullptr;
 unsigned int asarHeaderSize;
+bool loadResFromDir = false;
 
 namespace resources {
 
-    pair<int, string> seekFilePos(const string &path, json node, const string &curpath) {
+    pair<int, string> __seekFilePos(const string &path, json node, const string &curpath) {
         vector <string> pathSegments = helpers::split(path, '/');
         string filename = pathSegments[pathSegments.size() - 1];
         json json = node;
@@ -35,9 +38,9 @@ namespace resources {
         return make_pair<int, string>(-1, "");
     }
 
-    fs::FileReaderResult getFileContent(const string &filename) {
+    fs::FileReaderResult __getFileFromBundle(const string &filename) {
         fs::FileReaderResult fileReaderResult;
-        pair<int, string> p = seekFilePos(filename, fileTree, "");
+        pair<int, string> p = __seekFilePos(filename, fileTree, "");
         if(p.first != -1) {
             ifstream asarArchive;
             string resFileName = APP_RES_FILE;
@@ -64,7 +67,7 @@ namespace resources {
        return fileReaderResult;
     }
 
-    bool makeFileTree() {
+    bool __makeFileTree() {
         ifstream asarArchive;
         string resFileName = APP_RES_FILE;
         resFileName = settings::joinAppPath(resFileName);
@@ -98,11 +101,41 @@ namespace resources {
     }
 
     void extractFile(const string &filename, const string &outputFilename) {
-        fs::FileReaderResult fileReaderResult = resources::getFileContent(filename);
+        fs::FileReaderResult fileReaderResult = resources::getFile(filename);
         fs::FileWriterOptions fileWriterOptions;
         fileWriterOptions.filename = outputFilename;
         fileWriterOptions.data = fileReaderResult.data;
         fs::writeFile(fileWriterOptions);
+    }
+
+    fs::FileReaderResult getFile(const string &filename) {
+        if(resources::getMode() == "bundle") {
+            return __getFileFromBundle(filename);
+        }
+
+        fs::FileReaderResult fileReaderResult = fs::readFile(settings::joinAppPath(filename));
+        if(fileReaderResult.hasError) {
+            debug::log("ERROR", fileReaderResult.error);
+        }
+        return fileReaderResult;
+    }
+
+    void init() {
+        if(resources::getMode() == "directory") {
+            return;
+        }
+        bool resourceLoaderStatus = __makeFileTree();
+        if(!resourceLoaderStatus) {
+            resources::setMode("directory"); // fallback to directory mode
+        }
+    }
+
+    void setMode(const string &mode) {
+        loadResFromDir = mode == "directory";
+    }
+
+    string getMode() {
+        return loadResFromDir ? "directory" : "bundle";
     }
 
 } // namespace resources

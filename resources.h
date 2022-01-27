@@ -10,10 +10,11 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace resources {
-    pair<int, string> seekFilePos(const string &path, json node, const string &curpath);
-    bool makeFileTree();
-    fs::FileReaderResult getFileContent(const string &filename);
+    fs::FileReaderResult getFile(const string &filename);
     void extractFile(const string &filename, const string &outputFilename);
+    void init();
+    void setMode(const string &mode);
+    string getMode();
 } // namespace resources
 
 #endif // #define NEU_RESOURCES_H
