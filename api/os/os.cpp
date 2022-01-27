@@ -412,7 +412,7 @@ namespace controllers {
             tray.icon = helpers::cStrCopy(fullIconPath);
 
             #elif defined(_WIN32)
-            fs::FileReaderResult fileReaderResult = settings::getFileContent(iconPath);
+            fs::FileReaderResult fileReaderResult = resources::getFile(iconPath);
             string iconDataStr = fileReaderResult.data;
             const char *iconData = iconDataStr.c_str();
             unsigned char *uiconData = reinterpret_cast<unsigned char*>(const_cast<char*>(iconData));
@@ -422,7 +422,7 @@ namespace controllers {
             pStream->Release();
 
             #elif defined(__APPLE__)
-            fs::FileReaderResult fileReaderResult = settings::getFileContent(iconPath);
+            fs::FileReaderResult fileReaderResult = resources::getFile(iconPath);
             string iconDataStr = fileReaderResult.data;
             const char *iconData = iconDataStr.c_str();
             tray.icon =
