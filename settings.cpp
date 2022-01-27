@@ -103,6 +103,19 @@ namespace settings {
         return jsSnippet;
     }
 
+    settings::CliArg _parseArg(const string &argStr) {
+        settings::CliArg arg;
+        vector<string> argParts = helpers::split(argStr, '=');
+        if(argParts.size() == 2 && argParts[1].length() > 0) {
+            arg.key = argParts[0];
+            arg.value = argParts[1];
+        }
+        else {
+            arg.key = argStr;
+        }
+        return arg;
+    }
+
     void setGlobalArgs(const json &args) {
         int argIndex = 0;
         globalArgs = args;
@@ -152,19 +165,6 @@ namespace settings {
         options["/modes/window/port"_json_pointer] = port;
         options["/modes/browser/port"_json_pointer] = port;
         options["/modes/cloud/port"_json_pointer] = port;
-    }
-
-    settings::CliArg _parseArg(const string &argStr) {
-        settings::CliArg arg;
-        vector<string> argParts = helpers::split(argStr, '=');
-        if(argParts.size() == 2 && argParts[1].length() > 0) {
-            arg.key = argParts[0];
-            arg.value = argParts[1];
-        }
-        else {
-            arg.key = argStr;
-        }
-        return arg;
     }
 
     void applyConfigOverride(const settings::CliArg &arg) {

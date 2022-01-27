@@ -13,8 +13,8 @@
 #elif defined(__FreeBSD__)
 #define OS_NAME "FreeBSD"
 #endif
-#define NL_VERSION "4.2.0"
 
+#define NL_VERSION "4.2.0"
 #define APP_CONFIG_FILE "/neutralino.config.json"
 
 #include <string>
@@ -44,7 +44,6 @@ namespace settings {
     string getAppPath();
     string getMode();
     void setPort(int port);
-    settings::CliArg _parseArg(const string &arg);
     void applyConfigOverride(const settings::CliArg &arg);
     json getOptionForCurrentMode(const string &key);
 } // namesapce settings
