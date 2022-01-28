@@ -6,6 +6,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### Core: Auth
+- Added `tokenSecurity` to the configuration to improve the security of `NL_TOKEN`. Accepted values are `none` and `one-time`. If `none` is set, Neutralinojs server will always expose `NL_TOKEN` for any application instance, so you can open Neutralinojs apps from browser directly. If `one-time` (recommended) is set, Neutralinojs server expose `NL_TOKEN` only once and client persists the token in `sessionStorage`.
+
 ## v4.2.0
 
 ### API: clipboard
