@@ -6,7 +6,7 @@
 using namespace std;
 
 namespace authbasic {
-    void generateToken();
+    void init();
     void exportAuthInfo();
     bool verifyToken(const string &token);
     string getToken();

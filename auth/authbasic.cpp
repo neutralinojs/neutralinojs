@@ -6,7 +6,10 @@
 #include "api/debug/debug.h"
 
 using namespace std;
+
 string token = "";
+string tokenSecurity = "one-time";
+bool tokenSent = false;
 
 namespace authbasic {
 
@@ -17,8 +20,12 @@ namespace authbasic {
         return info;
     }
 
-    void generateToken() {
+    void init() {
         token = helpers::generateToken();
+        json jTokenSecurity = settings::getOptionForCurrentMode("tokenSecurity");
+        if(!jTokenSecurity.is_null()) {
+            tokenSecurity = jTokenSecurity.get<string>();
+        }
     }
 
     void exportAuthInfo() {
@@ -35,6 +42,10 @@ namespace authbasic {
     }
 
     string getToken() {
+        if(tokenSent && tokenSecurity == "one-time") {
+            return "";
+        }
+        tokenSent = true;
         return token;
     }
 

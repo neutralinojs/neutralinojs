@@ -125,7 +125,7 @@ void __initFramework(const json &args) {
         std::exit(1);
     }
 
-    authbasic::generateToken();
+    authbasic::init();
     permission::init();
 }
 

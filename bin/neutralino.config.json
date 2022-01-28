@@ -6,6 +6,7 @@
     "url": "/",
     "documentRoot": "/resources/",
     "enableServer": true,
+    "tokenSecurity": "one-time",
     "enableNativeAPI": true,
     "exportAuthInfo": false,
     "serverHeaders": {
