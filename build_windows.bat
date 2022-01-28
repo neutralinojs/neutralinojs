@@ -84,6 +84,7 @@ api/clipboard/clipboard.cpp ^
 /DELPP_NO_DEFAULT_LOG_FILE ^
 /DASIO_STANDALONE ^
 /D_WEBSOCKETPP_CPP11_STL_ ^
+/D_HAS_STD_BYTE=0 ^
 /link lib/webview/windows/WebView2Loader.dll.lib /OUT:%NEU_BIN%
 
 if exist %NEU_BIN% (
