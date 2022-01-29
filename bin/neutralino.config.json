@@ -16,10 +16,7 @@
         "enabled": true,
         "writeToLogFile": true
     },
-    "nativeBlockList": [
-        "os.execCommand",
-        "filesystem.*"
-    ],
+    "nativeBlockList": [],
     "globalVariables": {
         "TEST1": "Hello",
         "TEST2": [2, 4, 5],
