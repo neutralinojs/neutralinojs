@@ -39,7 +39,6 @@ var Neutralino = (function (exports) {
     let offlineMessageQueue = [];
     let extensionMessageQueue = {};
     function init$1() {
-        initAuth();
         ws = new WebSocket(`ws://${window.location.hostname}:${window.NL_PORT}`);
         registerLibraryEvents();
         registerSocketEvents();
@@ -51,7 +50,7 @@ var Neutralino = (function (exports) {
                 return;
             }
             const id = uuidv4();
-            const accessToken = getAuthToken();
+            const accessToken = window.NL_TOKEN;
             nativeCalls[id] = { resolve, reject };
             ws.send(JSON.stringify({
                 id,
@@ -135,14 +134,6 @@ var Neutralino = (function (exports) {
                 }
             }
         });
-    }
-    function initAuth() {
-        if (window.NL_TOKEN) {
-            sessionStorage.setItem('NL_TOKEN', window.NL_TOKEN);
-        }
-    }
-    function getAuthToken() {
-        return window.NL_TOKEN || sessionStorage.getItem('NL_TOKEN') || '';
     }
     // From: https://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid
     function uuidv4() {
