@@ -10,6 +10,7 @@ namespace authbasic {
     void exportAuthInfo();
     bool verifyToken(const string &token);
     string getToken();
+    string getTokenInternal();
 } // namespace authbasic
 
 #endif // #define NEU_AUTHBASIC_H

@@ -2,6 +2,7 @@
 
 #include "helpers.h"
 #include "settings.h"
+#include "auth/authbasic.h"
 #include "api/filesystem/filesystem.h"
 #include "api/debug/debug.h"
 
@@ -46,6 +47,10 @@ namespace authbasic {
             return "";
         }
         tokenSent = true;
+        return authbasic::getTokenInternal();
+    }
+
+    string getTokenInternal() {
         return token;
     }
 

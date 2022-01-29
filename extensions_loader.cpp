@@ -20,7 +20,7 @@ namespace extensions {
     string __buildExtensionArgs(const string &extensionId) {
         string options = "";
         options += " --nl-port=" + to_string(settings::getOptionForCurrentMode("port").get<int>());
-        options += " --nl-token=" + authbasic::getToken();
+        options += " --nl-token=" + authbasic::getTokenInternal();
         options += " --nl-extension-id=" + extensionId;
         return options;
     }
