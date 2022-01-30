@@ -18,11 +18,11 @@
 using namespace std;
 using json = nlohmann::json;
 
-json fileTree = nullptr;
-unsigned int asarHeaderSize;
-bool loadResFromDir = false;
-
 namespace resources {
+
+    json fileTree = nullptr;
+    unsigned int asarHeaderSize;
+    bool loadResFromDir = false;
 
     pair<int, string> __seekFilePos(const string &path, json node, const string &curpath) {
         vector <string> pathSegments = helpers::split(path, '/');

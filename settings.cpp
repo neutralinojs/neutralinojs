@@ -20,13 +20,13 @@
 using namespace std;
 using json = nlohmann::json;
 
-json options;
-json globalArgs;
-string appPath;
-
-vector <settings::ConfigOverride> configOverrides;
-
 namespace settings {
+
+    json options;
+    json globalArgs;
+    string appPath;
+
+    vector <settings::ConfigOverride> configOverrides;
 
     string joinAppPath(const string &filename) {
         return appPath + filename;
@@ -93,6 +93,7 @@ namespace settings {
         jsSnippet += "var NL_PATH='" + appPath + "';";
         jsSnippet += "var NL_PID=" + to_string(app::getProcessId()) + ";";
         jsSnippet += "var NL_RESMODE='" + resources::getMode() + "';";
+        jsSnippet += "var NL_EXTENABLED=" + json(extensions::isInitialized()).dump() + ";";
 
         json jGlobalVariables = settings::getOptionForCurrentMode("globalVariables");
         if(!jGlobalVariables.is_null()) {

@@ -39,6 +39,7 @@ var Neutralino = (function (exports) {
     let offlineMessageQueue = [];
     let extensionMessageQueue = {};
     function init$1() {
+        initAuth();
         ws = new WebSocket(`ws://${window.location.hostname}:${window.NL_PORT}`);
         registerLibraryEvents();
         registerSocketEvents();
@@ -50,7 +51,7 @@ var Neutralino = (function (exports) {
                 return;
             }
             const id = uuidv4();
-            const accessToken = window.NL_TOKEN;
+            const accessToken = getAuthToken();
             nativeCalls[id] = { resolve, reject };
             ws.send(JSON.stringify({
                 id,
@@ -74,6 +75,9 @@ var Neutralino = (function (exports) {
     function registerLibraryEvents() {
         Neutralino.events.on('ready', () => __awaiter(this, void 0, void 0, function* () {
             yield processQueue(offlineMessageQueue);
+            if (!window.NL_EXTENABLED) {
+                return;
+            }
             let stats = yield Neutralino.extensions.getStats();
             for (let extension of stats.connected) {
                 dispatch$1('extensionReady', extension);
@@ -82,6 +86,9 @@ var Neutralino = (function (exports) {
         Neutralino.events.on('extClientConnect', (evt) => {
             dispatch$1('extensionReady', evt.detail);
         });
+        if (!window.NL_EXTENABLED) {
+            return;
+        }
         Neutralino.events.on('extensionReady', (evt) => __awaiter(this, void 0, void 0, function* () {
             if (evt.detail in extensionMessageQueue) {
                 yield processQueue(extensionMessageQueue[evt.detail]);
@@ -97,6 +104,12 @@ var Neutralino = (function (exports) {
                 // Native call response
                 if ((_a = message.data) === null || _a === void 0 ? void 0 : _a.error) {
                     nativeCalls[message.id].reject(message.data.error);
+                    if (message.data.error.code == 'NE_RT_INVTOKN') {
+                        // critical auth error
+                        // Perhaps, someone tried to open app from anoher client,
+                        // with 'one-time' token mode
+                        handleAuthError();
+                    }
                 }
                 else if ((_b = message.data) === null || _b === void 0 ? void 0 : _b.success) {
                     nativeCalls[message.id]
@@ -134,6 +147,20 @@ var Neutralino = (function (exports) {
                 }
             }
         });
+    }
+    function handleAuthError() {
+        ws.close();
+        document.body.innerText = '';
+        document.write('<code>NE_RT_INVTOKN</code>: Neutralinojs application configuration' +
+            ' prevents accepting native calls from this client.');
+    }
+    function initAuth() {
+        if (window.NL_TOKEN) {
+            sessionStorage.setItem('NL_TOKEN', window.NL_TOKEN);
+        }
+    }
+    function getAuthToken() {
+        return window.NL_TOKEN || sessionStorage.getItem('NL_TOKEN') || '';
     }
     // From: https://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid
     function uuidv4() {

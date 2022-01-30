@@ -52,11 +52,12 @@ using json = nlohmann::json;
 using namespace Gdiplus;
 #endif
 
-struct tray_menu menus[MAX_TRAY_MENU_ITEMS];
-struct tray tray;
-bool isTrayCreated = false;
-
 namespace os {
+
+    struct tray_menu menus[MAX_TRAY_MENU_ITEMS];
+    struct tray tray;
+    bool isTrayCreated = false;
+
     void open(const string &url) {
         #if defined(__linux__) || defined(__FreeBSD__)
         os::execCommand("xdg-open \"" + url + "\"");

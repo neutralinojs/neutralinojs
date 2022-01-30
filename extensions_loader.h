@@ -14,6 +14,7 @@ namespace extensions {
     void loadOne(const string &extensionId);
     vector<string> getLoaded();
     bool isLoaded(const string &extensionId);
+    bool isInitialized();
 } // namesapce extensions
 
 #endif // #define NEU_EXTENSIONS_H

@@ -14,6 +14,7 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace permission {
+
     vector <string> blockedMethods;
     vector <string> blockedModules;
     vector <string> allowedMethods;

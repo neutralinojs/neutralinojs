@@ -8,11 +8,11 @@
 
 using namespace std;
 
-string token = "";
-string tokenSecurity = "one-time";
-bool tokenSent = false;
-
 namespace authbasic {
+
+    string token = "";
+    string tokenSecurity = "one-time";
+    bool tokenSent = false;
 
     json __makeAuthInfoPayload() {
         json info;

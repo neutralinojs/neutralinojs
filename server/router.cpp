@@ -29,6 +29,7 @@
 #endif
 
 using namespace std;
+
 using json = nlohmann::json;
 typedef json (*NativeMethod)(const json &);
 
@@ -41,17 +42,17 @@ namespace router {
 
         if(!authbasic::verifyToken(request.accessToken)) {
             response.data["error"] = helpers::makeErrorPayload("NE_RT_INVTOKN",
-                            "Invalid or expired NL_TOKEN value from client").dump();
+                            "Invalid or expired NL_TOKEN value from client");
             return response;
         }
         if(!permission::hasAPIAccess()) {
             response.data["error"] = helpers::makeErrorPayload("NE_RT_APIPRME",
-                            "Missing permission to access Native API").dump();
+                            "Missing permission to access Native API");
             return response;
         }
         if(!permission::hasMethodAccess(nativeMethodId)) {
             response.data["error"] = helpers::makeErrorPayload("NE_RT_NATPRME",
-                            "Missing permission to execute the native method").dump();
+                            "Missing permission to execute the native method");
             return response;
         }
 

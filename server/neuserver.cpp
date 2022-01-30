@@ -26,14 +26,14 @@ typedef websocketpp::server<websocketpp::config::asio> websocketserver;
 typedef map<string, websocketpp::connection_hdl> wsclientsMap;
 typedef set<websocketpp::connection_hdl, owner_less<websocketpp::connection_hdl>> wsclientsSet;
 
-websocketserver *server;
-wsclientsSet appConnections;
-wsclientsMap extConnections;
-
-bool initialized = false;
-bool applyConfigHeaders = false;
-
 namespace neuserver {
+
+    websocketserver *server;
+    wsclientsSet appConnections;
+    wsclientsMap extConnections;
+
+    bool initialized = false;
+    bool applyConfigHeaders = false;
 
     bool __isExtensionEndpoint(const string &url) {
         return regex_match(url, regex(".*extensionId=.*"));

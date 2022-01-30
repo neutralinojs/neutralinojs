@@ -14,9 +14,11 @@
 using namespace std;
 using json = nlohmann::json;
 
-vector<string> loadedExtensions;
-
 namespace extensions {
+
+    vector<string> loadedExtensions;
+    bool initialized = false;
+
     string __buildExtensionArgs(const string &extensionId) {
         string options = "";
         options += " --nl-port=" + to_string(settings::getOptionForCurrentMode("port").get<int>());
@@ -50,6 +52,7 @@ namespace extensions {
 
             extensions::loadOne(extensionId);
         }
+        initialized = true;
     }
 
     void loadOne(const string &extensionId) {
@@ -63,6 +66,10 @@ namespace extensions {
     bool isLoaded(const string &extensionId) {
         return find(loadedExtensions.begin(), loadedExtensions.end(), extensionId)
                 != loadedExtensions.end();
+    }
+
+    bool isInitialized() {
+        return initialized;
     }
 
 } // namespace extensions
