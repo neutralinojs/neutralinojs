@@ -9,14 +9,19 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace events {
-    void dispatch(const string &event, const json &data); // notifies all clients
-    void dispatchToAllExtensions(const string &event, const json &data); // notifies all ext clients
-    void dispatchToAllApps(const string &event, const json &data); // notifies all app clients
-    bool dispatchToExtension(const string &extensionId, const string &event, const json &data);
-    //notifies specific ext client
+
+void dispatch(const string &event, const json &data); // notifies all clients
+void dispatchToAllExtensions(const string &event, const json &data); // notifies all ext clients
+void dispatchToAllApps(const string &event, const json &data); // notifies all app clients
+bool dispatchToExtension(const string &extensionId, const string &event, const json &data);
+//notifies specific ext client
 
 namespace controllers {
-    json broadcast(const json &input);
+
+json broadcast(const json &input);
+
 } // namespace controllers
+
 } // namespace events
+
 #endif // #define NEU_EVENT_H

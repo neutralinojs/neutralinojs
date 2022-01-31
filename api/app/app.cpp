@@ -22,73 +22,75 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace app {
-    void exit(int code) {
-        if(neuserver::isInitialized()) {
-            neuserver::stop();
-        }
-        if(settings::getMode() == "window") {
-            window::_close(code);
-        }
-        else {
-            std::exit(code);
-        }
-    }
 
-    unsigned int getProcessId() {
-        #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
-        return getpid();
-        #elif defined(_WIN32)
-        return GetCurrentProcessId();
-        #endif
+void exit(int code) {
+    if(neuserver::isInitialized()) {
+        neuserver::stop();
     }
+    if(settings::getMode() == "window") {
+        window::_close(code);
+    }
+    else {
+        std::exit(code);
+    }
+}
+
+unsigned int getProcessId() {
+    #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
+    return getpid();
+    #elif defined(_WIN32)
+    return GetCurrentProcessId();
+    #endif
+}
 
 namespace controllers {
-    json exit(const json &input) {
-        int code = 0;
-        if(helpers::hasField(input, "code")) {
-            code = input["code"].get<int>();
-        }
-        app::exit(code);
-        return nullptr;
-    }
 
-    json killProcess(const json &input) {
-        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-        kill(getpid(),SIGINT);
-        #elif defined(_WIN32)
-        DWORD pid = GetCurrentProcessId();
-        HANDLE hnd = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, TRUE, pid);
-        TerminateProcess(hnd, 137);
-        CloseHandle(hnd);
-        #endif
-        return nullptr;
+json exit(const json &input) {
+    int code = 0;
+    if(helpers::hasField(input, "code")) {
+        code = input["code"].get<int>();
     }
+    app::exit(code);
+    return nullptr;
+}
 
-    json getConfig(const json &input) {
-        json output;
-        output["returnValue"] = settings::getConfig();
-        output["success"] = true;
+json killProcess(const json &input) {
+    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+    kill(getpid(),SIGINT);
+    #elif defined(_WIN32)
+    DWORD pid = GetCurrentProcessId();
+    HANDLE hnd = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, TRUE, pid);
+    TerminateProcess(hnd, 137);
+    CloseHandle(hnd);
+    #endif
+    return nullptr;
+}
+
+json getConfig(const json &input) {
+    json output;
+    output["returnValue"] = settings::getConfig();
+    output["success"] = true;
+    return output;
+}
+
+json broadcast(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"event"})) {
+        output["error"] = helpers::makeMissingArgErrorPayload();
         return output;
     }
+    string event = input["event"].get<string>();
+    json data = nullptr;
 
-    json broadcast(const json &input) {
-        json output;
-        if(!helpers::hasRequiredFields(input, {"event"})) {
-            output["error"] = helpers::makeMissingArgErrorPayload();
-            return output;
-        }
-        string event = input["event"].get<string>();
-        json data = nullptr;
-
-        if(helpers::hasField(input, "data")) {
-            data = input["data"];
-        }
-
-        events::dispatchToAllApps(event, data);
-        output["success"] = true;
-
-        return output;
+    if(helpers::hasField(input, "data")) {
+        data = input["data"];
     }
+
+    events::dispatchToAllApps(event, data);
+    output["success"] = true;
+
+    return output;
+}
 
 } // namespace controllers
 } // namespace app

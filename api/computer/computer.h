@@ -9,9 +9,13 @@ using json = nlohmann::json;
 using namespace std;
 
 namespace computer {
+
 namespace controllers {
-    json getMemoryInfo(const json &input);
+
+json getMemoryInfo(const json &input);
+
 } // namespace controllers
+
 } // namespace computer
 
 #endif // #define NEU_COMPUTER_H

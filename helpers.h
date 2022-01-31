@@ -10,15 +10,17 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace helpers {
-    vector<string> split(const string &s, char delim);
-    string generateToken();
-    void urldecode(char *dst, const char *src);
-    char* cStrCopy(const string &str);
-    json makeMissingArgErrorPayload();
-    json makeErrorPayload(const string &code, const string &message);
-    bool hasRequiredFields(const json &input, const vector<string> &keys);
-    bool hasField(const json &input, const string &key);
-    vector <string> getModes();
+
+vector<string> split(const string &s, char delim);
+string generateToken();
+void urldecode(char *dst, const char *src);
+char* cStrCopy(const string &str);
+json makeMissingArgErrorPayload();
+json makeErrorPayload(const string &code, const string &message);
+bool hasRequiredFields(const json &input, const vector<string> &keys);
+bool hasField(const json &input, const string &key);
+vector <string> getModes();
+
 } // namespace helpers
 
 #endif // #define NEU_HELPERS_H

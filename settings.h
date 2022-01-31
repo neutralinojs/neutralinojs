@@ -26,26 +26,27 @@ using json = nlohmann::json;
 
 namespace settings {
 
-    struct CliArg {
-        string key;
-        string value;
-    };
+struct CliArg {
+    string key;
+    string value;
+};
 
-    struct ConfigOverride {
-        string key;
-        string value;
-        string convertTo;
-    };
+struct ConfigOverride {
+    string key;
+    string value;
+    string convertTo;
+};
 
-    json getConfig();
-    string getGlobalVars();
-    void setGlobalArgs(const json &args);
-    string joinAppPath(const string &filename);
-    string getAppPath();
-    string getMode();
-    void setPort(int port);
-    void applyConfigOverride(const settings::CliArg &arg);
-    json getOptionForCurrentMode(const string &key);
+json getConfig();
+string getGlobalVars();
+void setGlobalArgs(const json &args);
+string joinAppPath(const string &filename);
+string getAppPath();
+string getMode();
+void setPort(int port);
+void applyConfigOverride(const settings::CliArg &arg);
+json getOptionForCurrentMode(const string &key);
+
 } // namesapce settings
 
 #endif // #define NEU_SETTINGS_H

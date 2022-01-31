@@ -6,11 +6,13 @@
 using namespace std;
 
 namespace authbasic {
-    void init();
-    void exportAuthInfo();
-    bool verifyToken(const string &token);
-    string getToken();
-    string getTokenInternal();
+
+void init();
+void exportAuthInfo();
+bool verifyToken(const string &token);
+string getToken();
+string getTokenInternal();
+
 } // namespace authbasic
 
 #endif // #define NEU_AUTHBASIC_H

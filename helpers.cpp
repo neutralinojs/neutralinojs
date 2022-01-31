@@ -12,100 +12,101 @@ using json = nlohmann::json;
 
 namespace helpers {
 
-    vector<string> split(const string &s, char delim) {
-        stringstream ss(s);
-        string item;
-        vector<string> tokens;
-        while (getline(ss, item, delim)) {
-            tokens.push_back(item);
+vector<string> split(const string &s, char delim) {
+    stringstream ss(s);
+    string item;
+    vector<string> tokens;
+    while (getline(ss, item, delim)) {
+        tokens.push_back(item);
+    }
+    return tokens;
+}
+
+string generateToken() {
+    srand(time(NULL));
+
+    string s = "";
+    static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+
+    for (int i = 0; i < 32; ++i) {
+        s += alphanum[rand() % (sizeof(alphanum) - 1)];
+    }
+
+    return s;
+}
+
+/*
+* https://stackoverflow.com/a/14530993 - mini url decoder
+*/
+void urldecode(char *dst, const char *src) {
+    char a, b;
+    while (*src) {
+        if ((*src == '%') &&
+            ((a = src[1]) && (b = src[2])) &&
+            (isxdigit(a) && isxdigit(b))) {
+            if (a >= 'a')
+                a -= 'a' - 'A';
+            if (a >= 'A')
+                a -= ('A' - 10);
+            else
+                a -= '0';
+            if (b >= 'a')
+                b -= 'a' - 'A';
+            if (b >= 'A')
+                b -= ('A' - 10);
+            else
+                b -= '0';
+            *dst++ = 16 * a + b;
+            src += 3;
         }
-        return tokens;
-    }
-
-    string generateToken() {
-        srand(time(NULL));
-
-        string s = "";
-        static const char alphanum[] =
-            "0123456789"
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-            "abcdefghijklmnopqrstuvwxyz";
-
-        for (int i = 0; i < 32; ++i) {
-            s += alphanum[rand() % (sizeof(alphanum) - 1)];
+        else if (*src == '+') {
+            *dst++ = ' ';
+            src++;
         }
-
-        return s;
-    }
-
-    /*
-    * https://stackoverflow.com/a/14530993 - mini url decoder
-    */
-    void urldecode(char *dst, const char *src) {
-        char a, b;
-        while (*src) {
-            if ((*src == '%') &&
-                ((a = src[1]) && (b = src[2])) &&
-                (isxdigit(a) && isxdigit(b))) {
-                if (a >= 'a')
-                    a -= 'a' - 'A';
-                if (a >= 'A')
-                    a -= ('A' - 10);
-                else
-                    a -= '0';
-                if (b >= 'a')
-                    b -= 'a' - 'A';
-                if (b >= 'A')
-                    b -= ('A' - 10);
-                else
-                    b -= '0';
-                *dst++ = 16 * a + b;
-                src += 3;
-            }
-            else if (*src == '+') {
-                *dst++ = ' ';
-                src++;
-            }
-            else {
-                *dst++ = *src++;
-            }
+        else {
+            *dst++ = *src++;
         }
-        *dst++ = '\0';
     }
+    *dst++ = '\0';
+}
 
-    char* cStrCopy(const string &str) {
-        char *text = new char[str.size() + 1];
-        copy(str.begin(), str.end(), text);
-        text[str.size()] = '\0';
-        // delete[] text from the initiator
-        return text;
-    }
+char* cStrCopy(const string &str) {
+    char *text = new char[str.size() + 1];
+    copy(str.begin(), str.end(), text);
+    text[str.size()] = '\0';
+    // delete[] text from the initiator
+    return text;
+}
 
-    json makeMissingArgErrorPayload() {
-        return helpers::makeErrorPayload("NE_RT_NATRTER", "Missing mandatory arguments");
-    }
+json makeMissingArgErrorPayload() {
+    return helpers::makeErrorPayload("NE_RT_NATRTER", "Missing mandatory arguments");
+}
 
-    json makeErrorPayload(const string &code, const string &message) {
-        json error;
-        error["code"] = code;
-        error["message"] = message;
-        return error;
-    }
+json makeErrorPayload(const string &code, const string &message) {
+    json error;
+    error["code"] = code;
+    error["message"] = message;
+    return error;
+}
 
-    bool hasRequiredFields(const json &input, const vector<string> &keys) {
-        for(const string &key: keys) {
-            if(!helpers::hasField(input, key)) {
-                return false;
-            }
+bool hasRequiredFields(const json &input, const vector<string> &keys) {
+    for(const string &key: keys) {
+        if(!helpers::hasField(input, key)) {
+            return false;
         }
-        return true;
     }
+    return true;
+}
 
-    bool hasField(const json &input, const string &key) {
-        return input.contains(key) && !input[key].is_null();
-    }
+bool hasField(const json &input, const string &key) {
+    return input.contains(key) && !input[key].is_null();
+}
 
-    vector <string> getModes() {
-        return {"window", "browser", "cloud", "chrome"};
-    }
+vector <string> getModes() {
+    return {"window", "browser", "cloud", "chrome"};
+}
+
 } // namespace helpers

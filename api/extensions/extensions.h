@@ -11,10 +11,13 @@ using namespace std;
 namespace extensions {
 
 namespace controllers {
-    json dispatch(const json &input);
-    json broadcast(const json &input);
-    json getStats(const json &input);
+
+json dispatch(const json &input);
+json broadcast(const json &input);
+json getStats(const json &input);
 
 } // namespace controllers
+
 } // namespace extensions
+
 #endif // define NEU_EXT_H

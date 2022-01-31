@@ -10,7 +10,9 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace chrome {
-    void init(const json &input);
+
+void init(const json &input);
+
 } // namesapce chrome
 
 #endif // #define NEU_CHROME_H

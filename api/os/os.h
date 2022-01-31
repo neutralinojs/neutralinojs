@@ -10,30 +10,33 @@ using namespace std;
 
 namespace os {
 
-    struct CommandResult {
-        int pid = -1;
-        int exitCode = -1;
-        string stdErr = "";
-        string stdOut = "";
-    };
+struct CommandResult {
+    int pid = -1;
+    int exitCode = -1;
+    string stdErr = "";
+    string stdOut = "";
+};
 
-    void open(const string &url);
-    os::CommandResult execCommand(string command, const string &input = "", bool background = false);
-    string getPath(const string &name);
-    string getEnv(const string &key);
+void open(const string &url);
+os::CommandResult execCommand(string command, const string &input = "", bool background = false);
+string getPath(const string &name);
+string getEnv(const string &key);
 
 namespace controllers {
-    json execCommand(const json &input);
-    json getEnv(const json &input);
-    json showOpenDialog(const json &input);
-    json showFolderDialog(const json &input);
-    json showSaveDialog(const json &input);
-    json showNotification(const json &input);
-    json showMessageBox(const json &input);
-    json setTray(const json &input);
-    json open(const json &input);
-    json getPath(const json &input);
+
+json execCommand(const json &input);
+json getEnv(const json &input);
+json showOpenDialog(const json &input);
+json showFolderDialog(const json &input);
+json showSaveDialog(const json &input);
+json showNotification(const json &input);
+json showMessageBox(const json &input);
+json setTray(const json &input);
+json open(const json &input);
+json getPath(const json &input);
+
 } // namespace controllers
+
 } // namespace os
 
 #endif // #define NEU_OS_H
