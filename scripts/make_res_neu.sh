@@ -4,6 +4,9 @@
 # A script to build res.neu for the test app
 #
 
+echo "Updating client..."
+./scripts/update_client.sh
+
 echo "Packing resources to resources.neu..."
 cd ./bin
 mkdir -p ./.tmp

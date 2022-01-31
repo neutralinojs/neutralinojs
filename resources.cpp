@@ -38,16 +38,24 @@ pair<int, string> __seekFilePos(const string &path, json node, const string &cur
     return make_pair<int, string>(-1, "");
 }
 
+// Needs explicit close later
+ifstream __openResourceFile() {
+    ifstream asarArchive;
+    string resFileName = APP_RES_FILE;
+    resFileName = settings::joinAppPath(resFileName);
+    asarArchive.open(resFileName, ios::binary);
+    if(!asarArchive) {
+        debug::log("ERROR", "Resource file tree generation error: " + resFileName + " is missing.");
+    }
+    return asarArchive;
+}
+
 fs::FileReaderResult __getFileFromBundle(const string &filename) {
     fs::FileReaderResult fileReaderResult;
     pair<int, string> p = __seekFilePos(filename, fileTree, "");
     if(p.first != -1) {
-        ifstream asarArchive;
-        string resFileName = APP_RES_FILE;
-        resFileName = settings::joinAppPath(resFileName);
-        asarArchive.open(resFileName, ios::binary);
+        ifstream asarArchive = __openResourceFile();
         if (!asarArchive) {
-            debug::log("ERROR", "Resource file tree generation error: " + resFileName + " is missing.");
             fileReaderResult.hasError = true;
             return fileReaderResult;
         }
@@ -68,12 +76,8 @@ fs::FileReaderResult __getFileFromBundle(const string &filename) {
 }
 
 bool __makeFileTree() {
-    ifstream asarArchive;
-    string resFileName = APP_RES_FILE;
-    resFileName = settings::joinAppPath(resFileName);
-    asarArchive.open(resFileName, ios::binary);
+    ifstream asarArchive = __openResourceFile();
     if (!asarArchive) {
-        debug::log("ERROR", "Resource file tree generation error: " + resFileName + " is missing.");
         return false;
     }
 
