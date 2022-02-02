@@ -12,6 +12,10 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### Core: global variables
 - Added `NL_EXTENABLED` which returns `true` if extensions are enabled. It is used to check extensions status faster during initialization process.
 
+### Bugfixes
+- Fixed the file dialog order issue on Windows.
+- Removed tray icon when the application exits.
+
 ## v4.2.0
 
 ### API: clipboard
