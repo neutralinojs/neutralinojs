@@ -213,7 +213,7 @@ static void tray_update(struct tray *tray) {
   objc_msgSend(statusItem, sel_registerName("setMenu:"), _tray_menu(tray->menu));
 }
 
-static void tray_exit() { objc_msgSend(app, sel_registerName("terminate:"), app); }
+static void tray_exit() {}
 
 #elif defined(TRAY_WINAPI)
 #include <windows.h>
@@ -271,7 +271,7 @@ static int tray_init(struct tray *tray) {
   memset(&nid, 0, sizeof(nid));
   nid.cbSize = sizeof(NOTIFYICONDATA);
   nid.hWnd = hwnd;
-  nid.uID = 0;
+  nid.uID = 1000;
   nid.uFlags = NIF_ICON | NIF_MESSAGE;
   nid.uCallbackMessage = WM_TRAY_CALLBACK_MESSAGE;
   Shell_NotifyIcon(NIM_ADD, &nid);
@@ -313,15 +313,16 @@ static void tray_update(struct tray *tray) {
   }
 }
 
-static void tray_exit(HMENU hmenu) {
+static void tray_exit() {
   Shell_NotifyIcon(NIM_DELETE, &nid);
-  if (nid.hIcon != 0) {
+  
+  if (nid.hIcon) {
     DestroyIcon(nid.hIcon);
   }
-  if (hmenu != 0) {
+  
+  if (hmenu) {
     DestroyMenu(hmenu);
   }
-  PostQuitMessage(0);
 }
 #else
 #error Please define TRAY_WINAPI, TRAY_APPINDICATOR or TRAY_APPKIT before including this file.

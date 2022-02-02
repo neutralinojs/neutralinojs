@@ -16,6 +16,7 @@
 #include "server/neuserver.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
+#include "api/os/os.h"
 #include "api/events/events.h"
 
 using namespace std;
@@ -28,6 +29,9 @@ void exit(int code) {
         neuserver::stop();
     }
     if(settings::getMode() == "window") {
+        if(os::isTrayInitialized()) {
+            os::cleanupTray();
+        }
         window::_close(code);
     }
     else {

@@ -16,14 +16,7 @@
 #include "lib/platformfolders/platform_folders.h"
 #include "lib/filedialogs/portable-file-dialogs.h"
 
-#if defined(__linux__) || defined(__FreeBSD__)
-#define TRAY_APPINDICATOR 1
-
-#elif defined(__APPLE__)
-#define TRAY_APPKIT 1
-
-#elif defined(_WIN32)
-#define TRAY_WINAPI 1
+#if defined(_WIN32)
 #define _WINSOCKAPI_
 #include <windows.h>
 #include <gdiplus.h>
@@ -56,7 +49,17 @@ namespace os {
 
     struct tray_menu menus[MAX_TRAY_MENU_ITEMS];
     struct tray tray;
-    bool isTrayCreated = false;
+    bool trayInitialized = false;
+
+    bool isTrayInitialized() {
+        return trayInitialized; 
+    }
+
+    void cleanupTray() {
+        if(os::isTrayInitialized()) {
+            tray_exit();
+        }
+    }
 
     void open(const string &url) {
         #if defined(__linux__) || defined(__FreeBSD__)
@@ -436,9 +439,9 @@ namespace controllers {
             #endif
         }
 
-        if(!isTrayCreated) {
+        if(!trayInitialized) {
             tray_init(&tray);
-            isTrayCreated = true;
+            trayInitialized = true;
         }
         else {
             tray_update(&tray);

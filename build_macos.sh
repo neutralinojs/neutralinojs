@@ -63,6 +63,7 @@ c++ $FLAGS resources.cpp \
     -DELPP_NO_DEFAULT_LOG_FILE=1 \
     -DASIO_STANDALONE \
     -DWEBVIEW_COCOA=1 \
+    -DTRAY_APPKIT=1 \
     -DOBJC_OLD_DISPATCH_PROTOTYPES=1 \
     -Wno-deprecated-declarations \
     -Os \
