@@ -1192,7 +1192,10 @@ inline internal::file_dialog::file_dialog(type in_type,
             case type::folder: command.push_back("--getexistingdirectory"); break;
         }
         if (options & opt::multiselect)
-            command.push_back(" --multiple");
+        {
+            command.push_back("--multiple");
+            command.push_back("--separate-output");
+        }
 
         command.push_back(default_path);
 
