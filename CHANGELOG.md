@@ -10,7 +10,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 - Added `tokenSecurity` to the configuration to improve the security of `NL_TOKEN`. Accepted values are `none` and `one-time`. If `none` is set, Neutralinojs server will always expose `NL_TOKEN` for any application instance, so you can open Neutralinojs apps from browser directly. If `one-time` (recommended) is set, Neutralinojs server expose `NL_TOKEN` only once and client persists the token in `sessionStorage`, so all other clients that acces the app after the initial client will get an auth error message (Displayed to the user via HTML).
 
 ### API: window
-- `window.setAlwaysOnTop(bool)` was added to all supported platforms.
+- `window.setAlwaysOnTop(bool)` was added.
+- `window.getSize` was added.
 
 ### Core: global variables
 - Added `NL_EXTENABLED` which returns `true` if extensions are enabled. It is used to check extensions status faster during initialization process.
