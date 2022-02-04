@@ -8,7 +8,9 @@
 
 #elif defined(__APPLE__)
 #include <objc/objc-runtime.h>
+#include <CoreFoundation/Corefoundation.h> 
 #include <CoreGraphics/CGDisplayConfiguration.h>
+#include <CoreGraphics/CGWindow.h>
 #define NSBaseWindowLevel 0
 #define NSFloatingWindowLevel 5
 #define NSWindowStyleMaskFullScreen 16384
@@ -567,11 +569,25 @@ json getSize(const json &input) {
     gtk_window_get_size(GTK_WINDOW(windowHandle),
                         &windowProps.sizeOptions.width, &windowProps.sizeOptions.height);
     #elif defined(__APPLE__)
+    // "frame"_sel is the easiest way, but it crashes
+    // So, this is a workaround with low-level APIs.
+    long winId = ((long(*)(id, SEL))objc_msgSend)(windowHandle, "windowNumber"_sel);
+    auto winInfoArray = CGWindowListCopyWindowInfo(kCGWindowListOptionIncludingWindow, winId);
+    auto winInfo = CFArrayGetValueAtIndex(winInfoArray, 0);
+    auto winBounds = CFDictionaryGetValue((CFDictionaryRef) winInfo, kCGWindowBounds);
+    
+    CGRect winPos;
+    CGRectMakeWithDictionaryRepresentation((CFDictionaryRef) winBounds, &winPos);
+
+    windowProps.sizeOptions.width = winPos.size.width;
+    windowProps.sizeOptions.height = winPos.size.height;
+
     #elif defined(_WIN32)
     RECT winPos;
     GetWindowRect(windowHandle, &winPos);
     windowProps.sizeOptions.width = winPos.right - winPos.left;
     windowProps.sizeOptions.height = winPos.bottom - winPos.top;
+
     #endif
     output["returnValue"] = __sizeOptionsToJson();
     output["success"] = true;
