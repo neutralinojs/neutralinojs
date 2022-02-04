@@ -9,6 +9,7 @@
 #elif defined(__APPLE__)
 #include <objc/objc-runtime.h>
 #include <CoreGraphics/CGDisplayConfiguration.h>
+#define NSBaseWindowLevel 0
 #define NSFloatingWindowLevel 5
 #define NSWindowStyleMaskFullScreen 16384
 
@@ -270,7 +271,7 @@ void setAlwaysOnTop(bool onTop) {
     gtk_window_set_keep_above(GTK_WINDOW(windowHandle), onTop);
     #elif defined(__APPLE__)
     ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle,
-            "setLevel:"_sel, NSFloatingWindowLevel);
+            "setLevel:"_sel, onTop ? NSFloatingWindowLevel : NSBaseWindowLevel);
     #elif defined(_WIN32)
     SetWindowPos(windowHandle, onTop ? HWND_TOPMOST : HWND_NOTOPMOST, 
                 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
