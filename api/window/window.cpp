@@ -265,9 +265,9 @@ void setIcon(const string &iconFile) {
     #endif
 }
 
-void setAlwaysOnTop() {
+void setAlwaysOnTop(bool onTop) {
     #if defined(__linux__) || defined(__FreeBSD__)
-    gtk_window_set_keep_above(GTK_WINDOW(windowHandle), true);
+    gtk_window_set_keep_above(GTK_WINDOW(windowHandle), onTop);
     #elif defined(__APPLE__)
     ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle,
             "setLevel:"_sel, NSFloatingWindowLevel);
@@ -342,7 +342,7 @@ void __createWindow() {
         window::setIcon(windowProps.icon);
 
     if(windowProps.alwaysOnTop)
-        window::setAlwaysOnTop();
+        window::setAlwaysOnTop(true);
 
     if(windowProps.borderless)
         window::setBorderless();
@@ -572,6 +572,17 @@ json getSize(const json &input) {
     windowProps.sizeOptions.height = winPos.bottom - winPos.top;
     #endif
     output["returnValue"] = __sizeOptionsToJson();
+    output["success"] = true;
+    return output;
+}
+
+json setAlwaysOnTop(const json &input) {
+    json output;
+    bool onTop = true;
+    if(helpers::hasField(input, "onTop")) {
+        onTop = input["onTop"].get<bool>();
+    }
+    window::setAlwaysOnTop(onTop);
     output["success"] = true;
     return output;
 }

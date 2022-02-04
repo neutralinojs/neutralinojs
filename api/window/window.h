@@ -64,7 +64,7 @@ void setFullScreen();
 void exitFullScreen();
 bool isFullScreen();
 void setIcon(const string &icon);
-void setAwaysOnTop();
+void setAwaysOnTop(bool onTop);
 void setBorderless();
 
 void _close(int exitCode);
@@ -89,6 +89,7 @@ json setIcon(const json &input);
 json move(const json &input);
 json setSize(const json &input);
 json getSize(const json &input);
+json setAlwaysOnTop(const json &input);
 
 } // namespace controllers
 

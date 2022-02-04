@@ -494,7 +494,7 @@ var Neutralino = (function (exports) {
     function setSize(options) {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             let sizeOptions = yield Neutralino.window.getSize();
-            options = Object.assign(Object.assign({}, sizeOptions), options);
+            options = Object.assign(Object.assign({}, sizeOptions), options); // merge prioritizing options arg
             sendMessage('window.setSize', options)
                 .then((response) => {
                 resolve(response);
@@ -506,6 +506,12 @@ var Neutralino = (function (exports) {
     }
     function getSize() {
         return sendMessage('window.getSize');
+    }
+    function isAlwaysOnTop() {
+        return sendMessage('window.isAlwaysOnTop');
+    }
+    function setAlwaysOnTop(onTop) {
+        return sendMessage('window.setAlwaysOnTop', { onTop });
     }
     function create(url, options) {
         return new Promise((resolve, reject) => {
@@ -565,6 +571,8 @@ var Neutralino = (function (exports) {
         unsetDraggableRegion: unsetDraggableRegion,
         setSize: setSize,
         getSize: getSize,
+        isAlwaysOnTop: isAlwaysOnTop,
+        setAlwaysOnTop: setAlwaysOnTop,
         create: create
     });
 
