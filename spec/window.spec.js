@@ -244,4 +244,32 @@ describe('window.spec: window namespace tests', () => {
         });
     });
 
+    describe('window.setAlwaysOnTop', () => {
+        it('works without throwing errors', async () => {
+            runner.run(`
+                await Neutralino.window.setAlwaysOnTop();
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+    });
+
+    describe('window.getSize', () => {
+        it('returns size information', async () => {
+            let exitCode = runner.run(`
+                let stats = await Neutralino.window.getSize();
+                await __close(JSON.stringify(stats));
+            `);
+            let sizeInfo = JSON.parse(runner.getOutput());
+            assert.ok(typeof sizeInfo == 'object');
+            assert.ok(typeof sizeInfo.width == 'number');
+            assert.ok(typeof sizeInfo.height == 'number');
+            assert.ok(typeof sizeInfo.minWidth == 'number');
+            assert.ok(typeof sizeInfo.minHeight == 'number');
+            assert.ok(typeof sizeInfo.maxWidth == 'number');
+            assert.ok(typeof sizeInfo.maxHeight == 'number');
+            assert.ok(typeof sizeInfo.resizable == 'boolean');
+        });
+    });
+
 });
