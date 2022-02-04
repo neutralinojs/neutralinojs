@@ -507,9 +507,6 @@ var Neutralino = (function (exports) {
     function getSize() {
         return sendMessage('window.getSize');
     }
-    function isAlwaysOnTop() {
-        return sendMessage('window.isAlwaysOnTop');
-    }
     function setAlwaysOnTop(onTop) {
         return sendMessage('window.setAlwaysOnTop', { onTop });
     }
@@ -571,7 +568,6 @@ var Neutralino = (function (exports) {
         unsetDraggableRegion: unsetDraggableRegion,
         setSize: setSize,
         getSize: getSize,
-        isAlwaysOnTop: isAlwaysOnTop,
         setAlwaysOnTop: setAlwaysOnTop,
         create: create
     });
