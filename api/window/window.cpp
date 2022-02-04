@@ -566,7 +566,10 @@ json getSize(const json &input) {
                         &windowProps.sizeOptions.width, &windowProps.sizeOptions.height);
     #elif defined(__APPLE__)
     #elif defined(_WIN32)
-
+    RECT winPos;
+    GetWindowRect(windowHandle, &winPos);
+    windowProps.sizeOptions.width = winPos.right - winPos.left;
+    windowProps.sizeOptions.height = winPos.bottom - winPos.top;
     #endif
     output["returnValue"] = __sizeOptionsToJson();
     output["success"] = true;

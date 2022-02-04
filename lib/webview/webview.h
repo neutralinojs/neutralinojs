@@ -1319,7 +1319,6 @@ public:
       r.left = r.top = 0;
       r.right = width;
       r.bottom = height;
-      AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, 0);
       SetWindowPos(
           m_window, NULL, r.left, r.top, r.right - r.left, r.bottom - r.top,
           SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_FRAMECHANGED);
