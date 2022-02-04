@@ -272,7 +272,8 @@ void setAlwaysOnTop(bool onTop) {
     ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle,
             "setLevel:"_sel, NSFloatingWindowLevel);
     #elif defined(_WIN32)
-    SetWindowPos(windowHandle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+    SetWindowPos(windowHandle, onTop ? HWND_TOPMOST : HWND_NOTOPMOST, 
+                0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
     #endif
 }
 
