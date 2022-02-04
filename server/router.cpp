@@ -80,6 +80,7 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
         {"window.setIcon", window::controllers::setIcon},
         {"window.move", window::controllers::move},
         {"window.setSize", window::controllers::setSize},
+        {"window.getSize", window::controllers::getSize},
         // Neutralino.computer
         {"computer.getMemoryInfo", computer::controllers::getMemoryInfo},
         // Neutralino.log

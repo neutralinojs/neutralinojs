@@ -492,7 +492,20 @@ var Neutralino = (function (exports) {
         });
     }
     function setSize(options) {
-        return sendMessage('window.setSize', options);
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            let sizeOptions = yield Neutralino.window.getSize();
+            options = Object.assign(Object.assign({}, sizeOptions), options);
+            sendMessage('window.setSize', options)
+                .then((response) => {
+                resolve(response);
+            })
+                .catch((error) => {
+                reject(error);
+            });
+        }));
+    }
+    function getSize() {
+        return sendMessage('window.getSize');
     }
     function create(url, options) {
         return new Promise((resolve, reject) => {
@@ -551,6 +564,7 @@ var Neutralino = (function (exports) {
         setDraggableRegion: setDraggableRegion,
         unsetDraggableRegion: unsetDraggableRegion,
         setSize: setSize,
+        getSize: getSize,
         create: create
     });
 

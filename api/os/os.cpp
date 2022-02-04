@@ -52,7 +52,7 @@ namespace os {
     bool trayInitialized = false;
 
     bool isTrayInitialized() {
-        return trayInitialized; 
+        return trayInitialized;
     }
 
     void cleanupTray() {
@@ -63,9 +63,9 @@ namespace os {
 
     void open(const string &url) {
         #if defined(__linux__) || defined(__FreeBSD__)
-        os::execCommand("xdg-open \"" + url + "\"");
+        os::execCommand("xdg-open \"" + url + "\"", "", true);
         #elif defined(__APPLE__)
-        os::execCommand("open \"" + url + "\"");
+        os::execCommand("open \"" + url + "\"", "", true);
         #elif defined(_WIN32)
         ShellExecute(0, 0, url.c_str(), 0, 0, SW_SHOW );
         #endif

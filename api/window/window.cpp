@@ -382,6 +382,19 @@ window::SizeOptions __jsonToSizeOptions(const json &input, bool useDefaultRect =
     return sizeOptions;
 }
 
+json __sizeOptionsToJson() {
+    json output = {
+        {"width", windowProps.sizeOptions.width},
+        {"height", windowProps.sizeOptions.height},
+        {"minWidth", windowProps.sizeOptions.minWidth},
+        {"minHeight", windowProps.sizeOptions.minHeight},
+        {"maxWidth", windowProps.sizeOptions.maxWidth},
+        {"maxHeight", windowProps.sizeOptions.maxHeight},
+        {"resizable", windowProps.sizeOptions.resizable}
+    };
+    return output;
+}
+
 json setTitle(const json &input) {
     json output;
     string title = "";
@@ -537,11 +550,25 @@ json move(const json &input) {
 
 json setSize(const json &input) {
     json output;
-    window::SizeOptions sizeOptions = __jsonToSizeOptions(input);
+    windowProps.sizeOptions = __jsonToSizeOptions(input);
+    nativeWindow->set_size(windowProps.sizeOptions.width, windowProps.sizeOptions.height,
+                    windowProps.sizeOptions.minWidth, windowProps.sizeOptions.minHeight,
+                    windowProps.sizeOptions.maxWidth, windowProps.sizeOptions.maxHeight,
+                    windowProps.sizeOptions.resizable);
+    output["success"] = true;
+    return output;
+}
 
-    nativeWindow->set_size(sizeOptions.width, sizeOptions.height, sizeOptions.minWidth,
-                    sizeOptions.minHeight, sizeOptions.maxWidth, sizeOptions.maxHeight,
-                    sizeOptions.resizable);
+json getSize(const json &input) {
+    json output;
+    #if defined(__linux__) || defined(__FreeBSD__)
+    gtk_window_get_size(GTK_WINDOW(windowHandle),
+                        &windowProps.sizeOptions.width, &windowProps.sizeOptions.height);
+    #elif defined(__APPLE__)
+    #elif defined(_WIN32)
+
+    #endif
+    output["returnValue"] = __sizeOptionsToJson();
     output["success"] = true;
     return output;
 }

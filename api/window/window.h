@@ -88,6 +88,7 @@ json focus(const json &input);
 json setIcon(const json &input);
 json move(const json &input);
 json setSize(const json &input);
+json getSize(const json &input);
 
 } // namespace controllers
 
