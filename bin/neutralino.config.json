@@ -47,15 +47,17 @@
             "globalVariables": {
                 "TEST": "Test value browser"
             },
-            "nativeBlockList": ["filesystem.*"]
+            "nativeBlockList": ["filesystem.*", "os.*"]
         },
         "cloud": {
-            "url": "/resources/#cloud"
+            "url": "/resources/#cloud",
+            "nativeAllowList": ["app.*", "storage.*"]
         },
         "chrome": {
             "width": 800,
             "height": 500,
-            "args": "--user-agent=\"Neutralinojs chrome mode\""
+            "args": "--user-agent=\"Neutralinojs chrome mode\"",
+            "nativeBlockList": ["filesystem.*", "os.*"]
         }
     },
     "cli": {
