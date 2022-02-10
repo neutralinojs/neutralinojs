@@ -38,7 +38,7 @@ jobs:
         libgtk-3-dev \
         libwebkit2gtk-4.0-37 \
         libwebkit2gtk-4.0-dev \
-        libappindicator3-dev
+        libayatana-appindicator3-dev
     - name: Build
       run: bash build_linux.sh
     
