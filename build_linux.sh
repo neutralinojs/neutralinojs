@@ -48,7 +48,7 @@ g++ resources.cpp \
     -DASIO_STANDALONE \
     -DWEBVIEW_GTK=1 \
     -DTRAY_APPINDICATOR=1 \
-    `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0 glib-2.0 appindicator3-0.1 xcb` \
+    `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0 glib-2.0 ayatana-appindicator3-0.1 xcb` \
     -o $NEU_BIN \
     -no-pie \
     -Os \
