@@ -6,6 +6,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### Dependencies
+- Use `ayatana-appindicator3-0.1` instead of `appindicator3-0.1` (Marked as obsolete in [Debian packages](https://www.debian.org/releases/bullseye/amd64/release-notes/ch-information.en.html#noteworthy-obsolete-packages))
+
 ## v4.3.0
 
 ### Core: auth
