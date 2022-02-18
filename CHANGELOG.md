@@ -9,6 +9,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### Dependencies
 - Use `ayatana-appindicator3-0.1` instead of `appindicator3-0.1` (Marked as obsolete in [Debian packages](https://www.debian.org/releases/bullseye/amd64/release-notes/ch-information.en.html#noteworthy-obsolete-packages))
 
+### Bugfixes
+- Dynamically call `SetProcessDpiAwarenessContext` function to support previous Windows versions.
+
 ## v4.3.0
 
 ### Core: auth
