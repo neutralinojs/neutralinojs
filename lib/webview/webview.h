@@ -1238,7 +1238,7 @@ public:
       m_window = *(static_cast<HWND *>(window));
     }
 
-    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+    setDpi();
     ShowWindow(m_window, SW_SHOW);
     UpdateWindow(m_window);
     SetFocus(m_window);
@@ -1332,6 +1332,16 @@ public:
 
 private:
   virtual void on_message(const std::string msg) = 0;
+  
+  void setDpi() {
+    HMODULE user32 = LoadLibraryA("User32.dll");
+    auto func_win10 = reinterpret_cast<decltype(&SetProcessDpiAwarenessContext)>(
+      GetProcAddress(user32, "SetProcessDpiAwarenessContext"));
+    if (func_win10) {
+        // Windows 10+
+        func_win10(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+    }
+  }
 
   HWND m_window;
   POINT m_minsz = POINT{0, 0};
