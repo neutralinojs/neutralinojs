@@ -81,6 +81,7 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
         {"window.move", window::controllers::move},
         {"window.setSize", window::controllers::setSize},
         {"window.getSize", window::controllers::getSize},
+        {"window.getPosition", window::controllers::getPosition},
         {"window.setAlwaysOnTop", window::controllers::setAlwaysOnTop},
         // Neutralino.computer
         {"computer.getMemoryInfo", computer::controllers::getMemoryInfo},

@@ -440,6 +440,7 @@ inline std::string json_parse(const std::string s, const std::string key,
 //
 // ====================================================================
 //
+#include <X11/Xlib.h>
 #include <JavaScriptCore/JavaScript.h>
 #include <gtk/gtk.h>
 #include <webkit2/webkit2.h>
@@ -450,6 +451,8 @@ class gtk_webkit_engine {
 public:
   gtk_webkit_engine(bool debug, void *window)
       : m_window(static_cast<GtkWidget *>(window)) {
+
+    XInitThreads();
     gtk_init_check(0, NULL);
     m_window = static_cast<GtkWidget *>(window);
     if (m_window == nullptr) {
@@ -1332,7 +1335,7 @@ public:
 
 private:
   virtual void on_message(const std::string msg) = 0;
-  
+
   void setDpi() {
     HMODULE user32 = LoadLibraryA("User32.dll");
     auto func_win10 = reinterpret_cast<decltype(&SetProcessDpiAwarenessContext)>(

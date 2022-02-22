@@ -346,8 +346,8 @@ var Neutralino = (function (exports) {
         return sendMessage('app.killProcess');
     }
     function restartProcess(options) {
-        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
-            let command = window.NL_ARGS.reduce((acc, arg, index) => {
+        return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
+            let command = window.NL_ARGS.reduce((acc, arg) => {
                 acc += ' ' + arg;
                 return acc;
             }, '');
@@ -507,6 +507,9 @@ var Neutralino = (function (exports) {
     function getSize() {
         return sendMessage('window.getSize');
     }
+    function getPosition() {
+        return sendMessage('window.getPosition');
+    }
     function setAlwaysOnTop(onTop) {
         return sendMessage('window.setAlwaysOnTop', { onTop });
     }
@@ -568,6 +571,7 @@ var Neutralino = (function (exports) {
         unsetDraggableRegion: unsetDraggableRegion,
         setSize: setSize,
         getSize: getSize,
+        getPosition: getPosition,
         setAlwaysOnTop: setAlwaysOnTop,
         create: create
     });
@@ -662,7 +666,7 @@ var Neutralino = (function (exports) {
             }
         }));
     }
-    function install(url) {
+    function install() {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
             if (!manifest) {
                 return reject({

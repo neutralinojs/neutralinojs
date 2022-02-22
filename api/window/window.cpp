@@ -8,7 +8,7 @@
 
 #elif defined(__APPLE__)
 #include <objc/objc-runtime.h>
-#include <CoreFoundation/Corefoundation.h> 
+#include <CoreFoundation/Corefoundation.h>
 #include <CoreGraphics/CGDisplayConfiguration.h>
 #include <CoreGraphics/CGWindow.h>
 #define NSBaseWindowLevel 0
@@ -275,7 +275,7 @@ void setAlwaysOnTop(bool onTop) {
     ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle,
             "setLevel:"_sel, onTop ? NSFloatingWindowLevel : NSBaseWindowLevel);
     #elif defined(_WIN32)
-    SetWindowPos(windowHandle, onTop ? HWND_TOPMOST : HWND_NOTOPMOST, 
+    SetWindowPos(windowHandle, onTop ? HWND_TOPMOST : HWND_NOTOPMOST,
                 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
     #endif
 }
@@ -575,7 +575,7 @@ json getSize(const json &input) {
     auto winInfoArray = CGWindowListCopyWindowInfo(kCGWindowListOptionIncludingWindow, winId);
     auto winInfo = CFArrayGetValueAtIndex(winInfoArray, 0);
     auto winBounds = CFDictionaryGetValue((CFDictionaryRef) winInfo, kCGWindowBounds);
-    
+
     CGRect winPos;
     CGRectMakeWithDictionaryRepresentation((CFDictionaryRef) winBounds, &winPos);
 
@@ -601,6 +601,27 @@ json setAlwaysOnTop(const json &input) {
         onTop = input["onTop"].get<bool>();
     }
     window::setAlwaysOnTop(onTop);
+    output["success"] = true;
+    return output;
+}
+
+json getPosition(const json &input) {
+    json output;
+
+    int x, y;
+    #if defined(__linux__) || defined(__FreeBSD__)
+    gdk_window_get_root_origin(gtk_widget_get_window(windowHandle), &x, &y);
+
+    #elif defined(__APPLE__)
+
+    #elif defined(_WIN32)
+
+    #endif
+
+    json winPos;
+    winPos["x"] = x;
+    winPos["y"] = y;
+    output["returnValue"] = winPos;
     output["success"] = true;
     return output;
 }
