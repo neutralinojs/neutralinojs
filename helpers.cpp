@@ -27,11 +27,12 @@ string generateToken() {
 
     string s = "";
     static const char alphanum[] =
+        "-_"
         "0123456789"
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "abcdefghijklmnopqrstuvwxyz";
 
-    for (int i = 0; i < 32; ++i) {
+    for (int i = 0; i < 48; ++i) {
         s += alphanum[rand() % (sizeof(alphanum) - 1)];
     }
 
