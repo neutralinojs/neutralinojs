@@ -272,4 +272,17 @@ describe('window.spec: window namespace tests', () => {
         });
     });
 
+    describe('window.getPosition', () => {
+        it('returns position information', async () => {
+            let exitCode = runner.run(`
+                let pos = await Neutralino.window.getPosition();
+                await __close(JSON.stringify(pos));
+            `);
+            let positionInfo = JSON.parse(runner.getOutput());
+            assert.ok(typeof positionInfo == 'object');
+            assert.ok(typeof positionInfo.x == 'number');
+            assert.ok(typeof positionInfo.y == 'number');
+        });
+    });
+
 });
