@@ -615,13 +615,16 @@ json getPosition(const json &input) {
     #elif defined(__APPLE__)
 
     #elif defined(_WIN32)
-
+    RECT winPos;
+    GetWindowRect(windowHandle, &winPos);
+    x = winPos.left;
+    y = winPos.top;
     #endif
 
-    json winPos;
-    winPos["x"] = x;
-    winPos["y"] = y;
-    output["returnValue"] = winPos;
+    json posRes;
+    posRes["x"] = x;
+    posRes["y"] = y;
+    output["returnValue"] = posRes;
     output["success"] = true;
     return output;
 }
