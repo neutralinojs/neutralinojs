@@ -410,6 +410,21 @@ json setTitle(const json &input) {
     return output;
 }
 
+#if defined(__APPLE__)
+CGRect __getWindowRect() {
+    // "frame"_sel is the easiest way, but it crashes
+    // So, this is a workaround with low-level APIs.
+    long winId = ((long(*)(id, SEL))objc_msgSend)(windowHandle, "windowNumber"_sel);
+    auto winInfoArray = CGWindowListCopyWindowInfo(kCGWindowListOptionIncludingWindow, winId);
+    auto winInfo = CFArrayGetValueAtIndex(winInfoArray, 0);
+    auto winBounds = CFDictionaryGetValue((CFDictionaryRef) winInfo, kCGWindowBounds);
+
+    CGRect winPos;
+    CGRectMakeWithDictionaryRepresentation((CFDictionaryRef) winBounds, &winPos);
+    return winPos;
+}
+#endif
+
 json getTitle(const json &input) {
     json output;
     output["returnValue"] = nativeWindow->get_title();
@@ -569,15 +584,7 @@ json getSize(const json &input) {
     gtk_window_get_size(GTK_WINDOW(windowHandle),
                         &windowProps.sizeOptions.width, &windowProps.sizeOptions.height);
     #elif defined(__APPLE__)
-    // "frame"_sel is the easiest way, but it crashes
-    // So, this is a workaround with low-level APIs.
-    long winId = ((long(*)(id, SEL))objc_msgSend)(windowHandle, "windowNumber"_sel);
-    auto winInfoArray = CGWindowListCopyWindowInfo(kCGWindowListOptionIncludingWindow, winId);
-    auto winInfo = CFArrayGetValueAtIndex(winInfoArray, 0);
-    auto winBounds = CFDictionaryGetValue((CFDictionaryRef) winInfo, kCGWindowBounds);
-
-    CGRect winPos;
-    CGRectMakeWithDictionaryRepresentation((CFDictionaryRef) winBounds, &winPos);
+    CGRect winPos = __getWindowRect();
 
     windowProps.sizeOptions.width = winPos.size.width;
     windowProps.sizeOptions.height = winPos.size.height;
@@ -613,6 +620,9 @@ json getPosition(const json &input) {
     gdk_window_get_root_origin(gtk_widget_get_window(windowHandle), &x, &y);
 
     #elif defined(__APPLE__)
+    CGRect winPos = __getWindowRect();
+    x = winPos.origin.x;
+    y = winPos.origin.y;
 
     #elif defined(_WIN32)
     RECT winPos;
