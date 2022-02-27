@@ -239,7 +239,7 @@ router::Response getAsset(string path, const string &prependData) {
     return response;
 }
 
-   router::Response serve(string path) {
+router::Response serve(string path) {
     char *originalPath = (char *) path.c_str();
     char *decodedPath = new char[strlen(originalPath) + 1];
     helpers::urldecode(decodedPath, originalPath);

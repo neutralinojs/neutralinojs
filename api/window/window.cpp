@@ -399,17 +399,6 @@ json __sizeOptionsToJson() {
     return output;
 }
 
-json setTitle(const json &input) {
-    json output;
-    string title = "";
-    if(helpers::hasField(input, "title")) {
-        title = input["title"].get<string>();
-    }
-    nativeWindow->set_title(title);
-    output["success"] = true;
-    return output;
-}
-
 #if defined(__APPLE__)
 CGRect __getWindowRect() {
     // "frame"_sel is the easiest way, but it crashes
@@ -424,6 +413,17 @@ CGRect __getWindowRect() {
     return winPos;
 }
 #endif
+
+json setTitle(const json &input) {
+    json output;
+    string title = "";
+    if(helpers::hasField(input, "title")) {
+        title = input["title"].get<string>();
+    }
+    nativeWindow->set_title(title);
+    output["success"] = true;
+    return output;
+}
 
 json getTitle(const json &input) {
     json output;
