@@ -7,14 +7,14 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ## Unreleased
 
 ### API: window
-
 - Add `window.getPosition` to get the current window coordinates.
 
 ### Dependencies
 - Use `ayatana-appindicator3-0.1` instead of `appindicator3-0.1` (Marked as obsolete in [Debian packages](https://www.debian.org/releases/bullseye/amd64/release-notes/ch-information.en.html#noteworthy-obsolete-packages))
 
-### Bugfixes
+### Bugfixes/improvements
 - Dynamically call `SetProcessDpiAwarenessContext` function to support previous Windows versions.
+- Display the native method name with the `NE_RT_NATPRME` error payload.
 
 ## v4.3.0
 
