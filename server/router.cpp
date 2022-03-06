@@ -53,7 +53,7 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
     }
     if(!permission::hasMethodAccess(nativeMethodId)) {
         response.data["error"] = helpers::makeErrorPayload("NE_RT_NATPRME",
-                        "Missing permission to execute the native method");
+                        "Missing permission to execute the native method: " + nativeMethodId);
         return response;
     }
 
