@@ -96,9 +96,14 @@ fs::FileReaderResult readFile(const string &filename) {
     return fileReaderResult;
 }
 
- bool writeFile(const fs::FileWriterOptions &fileWriterOptions) {
+bool writeFile(const fs::FileWriterOptions &fileWriterOptions) {
     json output;
-    ofstream writer(fileWriterOptions.filename);
+    ios_base::openmode mode = ios_base::out;
+    if(fileWriterOptions.append) {
+        mode = ios_base::app;
+    }
+
+    ofstream writer(fileWriterOptions.filename, mode);
     if(!writer.is_open())
         return false;
     writer << fileWriterOptions.data;
@@ -143,6 +148,44 @@ fs::FileStats getStats(const string &path) {
 }
 
 namespace controllers {
+
+json __writeOrAppendFile(const json &input, bool append = false) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path", "data"})) {
+        output["error"] = helpers::makeMissingArgErrorPayload();
+        return output;
+    }
+    fs::FileWriterOptions fileWriterOptions;
+    fileWriterOptions.filename = input["path"].get<string>();
+    fileWriterOptions.data = input["data"].get<string>();
+    fileWriterOptions.append = append;
+
+    if(fs::writeFile(fileWriterOptions))
+        output["success"] = true;
+    else
+        output["error"] = helpers::makeErrorPayload("NE_FS_FILWRER",
+                            "Unable to write file: " + fileWriterOptions.filename);
+    return output;
+}
+
+json __writeOrAppendBinaryFile(const json &input, bool append = false) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path", "data"})) {
+        output["error"] = helpers::makeMissingArgErrorPayload();
+        return output;
+    }
+    fs::FileWriterOptions fileWriterOptions;
+    fileWriterOptions.filename = input["path"].get<string>();
+    fileWriterOptions.data = base64::from_base64(input["data"].get<string>());
+    fileWriterOptions.append = append;
+
+    if(fs::writeFile(fileWriterOptions))
+        output["success"] = true;
+    else
+        output["error"] = helpers::makeErrorPayload("NE_FS_FILWRER",
+                            "Unable to write file: " + fileWriterOptions.filename);
+    return output;
+}
 
 json createDirectory(const json &input) {
     json output;
@@ -221,37 +264,19 @@ json readBinaryFile(const json &input) {
 }
 
 json writeFile(const json &input) {
-    json output;
-    if(!helpers::hasRequiredFields(input, {"path", "data"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
-        return output;
-    }
-    fs::FileWriterOptions fileWriterOptions;
-    fileWriterOptions.filename = input["path"].get<string>();
-    fileWriterOptions.data = input["data"].get<string>();
-    if(fs::writeFile(fileWriterOptions))
-        output["success"] = true;
-    else
-        output["error"] = helpers::makeErrorPayload("NE_FS_FILWRER",
-                            "Unable to write file: " + fileWriterOptions.filename);
-    return output;
+    return __writeOrAppendFile(input);
+}
+
+json appendFile(const json &input) {
+    return __writeOrAppendFile(input, true);
 }
 
 json writeBinaryFile(const json &input) {
-    json output;
-    if(!helpers::hasRequiredFields(input, {"path", "data"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
-        return output;
-    }
-    fs::FileWriterOptions fileWriterOptions;
-    fileWriterOptions.filename = input["path"].get<string>();
-    fileWriterOptions.data = base64::from_base64(input["data"].get<string>());
-    if(fs::writeFile(fileWriterOptions))
-        output["success"] = true;
-    else
-        output["error"] = helpers::makeErrorPayload("NE_FS_FILWRER",
-                            "Unable to write file: " + fileWriterOptions.filename);
-    return output;
+    return __writeOrAppendBinaryFile(input);
+}
+
+json appendBinaryFile(const json &input) {
+    return __writeOrAppendBinaryFile(input, true);
 }
 
 json removeFile(const json &input) {

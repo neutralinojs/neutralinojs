@@ -19,6 +19,7 @@ struct FileReaderResult {
 struct FileWriterOptions {
     string filename;
     string data;
+    bool append = false;
 };
 
 struct FileStats {
@@ -44,6 +45,8 @@ json createDirectory(const json &input);
 json removeDirectory(const json &input);
 json writeFile(const json &input);
 json writeBinaryFile(const json &input);
+json appendFile(const json &input);
+json appendBinaryFile(const json &input);
 json readFile(const json &input);
 json readBinaryFile(const json &input);
 json removeFile(const json &input);

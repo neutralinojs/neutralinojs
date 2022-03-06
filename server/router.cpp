@@ -94,6 +94,8 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
         {"filesystem.readBinaryFile", fs::controllers::readBinaryFile},
         {"filesystem.writeFile", fs::controllers::writeFile},
         {"filesystem.writeBinaryFile", fs::controllers::writeBinaryFile},
+        {"filesystem.appendFile", fs::controllers::appendFile},
+        {"filesystem.appendBinaryFile", fs::controllers::appendBinaryFile},
         {"filesystem.removeFile", fs::controllers::removeFile},
         {"filesystem.readDirectory", fs::controllers::readDirectory},
         {"filesystem.copyFile", fs::controllers::copyFile},

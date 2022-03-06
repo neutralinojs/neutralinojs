@@ -176,15 +176,19 @@ var Neutralino = (function (exports) {
     function writeFile(path, data) {
         return sendMessage('filesystem.writeFile', { path, data });
     }
+    function appendFile(path, data) {
+        return sendMessage('filesystem.appendFile', { path, data });
+    }
     function writeBinaryFile(path, data) {
-        let bytes = new Uint8Array(data);
-        let asciiStr = '';
-        for (let byte of bytes) {
-            asciiStr += String.fromCharCode(byte);
-        }
         return sendMessage('filesystem.writeBinaryFile', {
             path,
-            data: window.btoa(asciiStr)
+            data: arrayBufferToBase64(data)
+        });
+    }
+    function appendBinaryFile(path, data) {
+        return sendMessage('filesystem.appendBinaryFile', {
+            path,
+            data: arrayBufferToBase64(data)
         });
     }
     function readFile(path) {
@@ -222,13 +226,23 @@ var Neutralino = (function (exports) {
     function getStats$1(path) {
         return sendMessage('filesystem.getStats', { path });
     }
+    function arrayBufferToBase64(data) {
+        let bytes = new Uint8Array(data);
+        let asciiStr = '';
+        for (let byte of bytes) {
+            asciiStr += String.fromCharCode(byte);
+        }
+        return window.btoa(asciiStr);
+    }
 
     var filesystem = /*#__PURE__*/Object.freeze({
         __proto__: null,
         createDirectory: createDirectory,
         removeDirectory: removeDirectory,
         writeFile: writeFile,
+        appendFile: appendFile,
         writeBinaryFile: writeBinaryFile,
+        appendBinaryFile: appendBinaryFile,
         readFile: readFile,
         readBinaryFile: readBinaryFile,
         removeFile: removeFile,
