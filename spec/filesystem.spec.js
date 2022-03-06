@@ -35,6 +35,27 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         });
     });
 
+    describe('filesystem.appendFile', () => {
+        it('works without throwing errors', async () => {
+            runner.run(`
+                await Neutralino.filesystem.appendFile(NL_PATH + '/.tmp/test.txt', 'Hello');
+                await Neutralino.filesystem.appendFile(NL_PATH + '/.tmp/test.txt', 'World');
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+
+        it('appends content to files', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Hello');
+                await Neutralino.filesystem.appendFile(NL_PATH + '/.tmp/test.txt', ' World');
+                let content = await Neutralino.filesystem.readFile(NL_PATH + '/.tmp/test.txt');
+                await __close(content);
+            `);
+            assert.equal(runner.getOutput(), 'Hello World');
+        });
+    });
+
     describe('filesystem.readFile', () => {
         it('works without throwing errors', async () => {
             runner.run(`
@@ -56,6 +77,33 @@ describe('filesystem.spec: filesystem namespace tests', () => {
                 await __close('done');
             `);
             assert.equal(runner.getOutput(), 'done');
+        });
+    });
+
+    describe('filesystem.appendBinaryFile', () => {
+        it('works without throwing errors', async () => {
+            runner.run(`
+                let rawBin = new ArrayBuffer(1);
+                let view = new Uint8Array(rawBin);
+                view[0] = 64; // Saves ASCII '@' to the binary file
+                await Neutralino.filesystem.appendBinaryFile(NL_PATH + '/.tmp/test.bin', rawBin);
+                await Neutralino.filesystem.appendBinaryFile(NL_PATH + '/.tmp/test.bin', rawBin);
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+
+        it('appends binary content to files', async () => {
+            runner.run(`
+                let rawBin = new ArrayBuffer(1);
+                let view = new Uint8Array(rawBin);
+                view[0] = 64; // Saves ASCII '@' to the binary file
+                await Neutralino.filesystem.appendBinaryFile(NL_PATH + '/.tmp/test.bin', rawBin);
+                await Neutralino.filesystem.appendBinaryFile(NL_PATH + '/.tmp/test.bin', rawBin);
+                let arrayBuffer = await Neutralino.filesystem.readBinaryFile(NL_PATH + '/.tmp/test.bin');
+                await __close(new Uint8Array(arrayBuffer).toString());
+            `);
+            assert.equal(runner.getOutput(), '64,64');
         });
     });
 
