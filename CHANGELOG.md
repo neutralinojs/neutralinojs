@@ -9,6 +9,10 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### API: window
 - Add `window.getPosition` to get the current window coordinates.
 
+### API: filesystem
+- Add `filesystem.appendFile` to append text content to a file. Thrown errors are similar to the `filesystem.writeFile` function.
+- Add `filesystem.appendBinaryFile` to append binary content to a file. Thrown errors are similar to the `filesystem.writeBinaryFile` function.
+
 ### Dependencies
 - Use `ayatana-appindicator3-0.1` instead of `appindicator3-0.1` (Marked as obsolete in [Debian packages](https://www.debian.org/releases/bullseye/amd64/release-notes/ch-information.en.html#noteworthy-obsolete-packages))
 
