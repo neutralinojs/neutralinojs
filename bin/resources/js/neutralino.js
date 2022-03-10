@@ -725,7 +725,7 @@ var Neutralino = (function (exports) {
         writeText: writeText
     });
 
-    var version = "3.2.0";
+    var version = "3.3.0";
 
     let initialized = false;
     function init() {
