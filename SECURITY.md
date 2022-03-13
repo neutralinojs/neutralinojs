@@ -1,9 +1,22 @@
 # Security Policy
 
-## Reporting a vulnerability
+## Reporting Security Issues
 
-If you found a vulnerability in Neutralinojs components, please report as a Github [issue](https://github.com/neutralinojs/neutralinojs/issues).
-After that, we'll add the `security` label to those issues and apply patches with a future release.
+**Please do not report security vulnerabilities through public GitHub issues.** Instead, please report them to the NeutralinoJs Email [neutralinojs@gmail.com](mailto:neutralinojs@gmail.com).
+
+You should receive a response within 48 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
+
+Please include the requested information listed below (as much as you can provide) to help us better understand the nature and scope of the possible issue:
+
+  * Type of issue (e.g. buffer overflow, cross-site scripting, etc.)
+  * Full paths of source file(s) related to the manifestation of the issue
+  * The location of the affected source code (tag/branch/commit or direct URL)
+  * Any special configuration required to reproduce the issue
+  * Step-by-step instructions to reproduce the issue
+  * Proof-of-concept or exploit code (if possible)
+  * Impact of the issue, including how an attacker might exploit the issue
+
+This information will help us triage your report more quickly.
 
 ## How to download security patches
 
