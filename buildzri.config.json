@@ -1,0 +1,50 @@
+{
+    "std": "c++17",
+    "name": "Neutralinojs",
+    "version": "4.4.0",
+    "output": "./bin/neutralino-${BZ_OS}_${BZ_ARCH}",
+    "include": {
+        "*": [
+            ".",
+            "lib",
+            "lib/asio/include"
+        ]
+    },
+    "source": {
+        "*": [
+            "*.cpp",
+            "auth/*.cpp",
+            "server/*.cpp",
+            "api/*/*.cpp",
+            "lib/tinyprocess/process.cpp",
+            "lib/easylogging/easylogging++.cc",
+            "lib/platformfolders/platform_folders.cpp",
+            "lib/clip/clip.cpp",
+            "lib/clip/image.cpp"
+        ],
+        "linux": [
+            "lib/tinyprocess/process_unix.cpp",
+            "lib/clip/clip_x11.cpp"
+        ]
+    },
+    "options": {
+        "linux": [
+            "`pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0 glib-2.0 ayatana-appindicator3-0.1 xcb x11`",
+            "-pthread",
+            "-no-pie",
+            "-Os"
+        ]
+    },
+    "definitions": {
+        "*": [
+            "NL_VERSION='\"${BZ_VERSION}\"'",
+            "ELPP_NO_DEFAULT_LOG_FILE=1",
+            "ASIO_STANDALONE"
+        ],
+        "linux": [
+            "HAVE_XCB_XLIB_H",
+            "WEBVIEW_GTK=1",
+            "TRAY_APPINDICATOR=1"
+        ]
+    }
+}
