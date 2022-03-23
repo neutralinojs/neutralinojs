@@ -22,7 +22,7 @@ jobs:
         libwebkit2gtk-4.0-dev \
         libayatana-appindicator3-dev
     - name: Build
-      run: bash build_linux.sh
+      run: ./scripts/bz.py
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
@@ -48,7 +48,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Build
-      run: bash build_macos.sh
+      run: ./scripts/bz.py
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
