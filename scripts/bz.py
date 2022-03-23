@@ -1,4 +1,4 @@
-#!/bin/env python3
+#!/usr/bin/env python3
 
 import sys
 import os
@@ -16,9 +16,13 @@ BZ_ISDARWIN = BZ_OS == 'darwin'
 BZ_ISWIN = BZ_OS == 'windows'
 BZ_ISVERBOSE = '--verbose' in sys.argv
 
-def get_arch():
+def get_arch(short_names = True, use_mac_rosetta = True):
     arch = platform.machine()
-    if arch == 'x86_64':
+
+    if BZ_ISDARWIN and arch == 'arm64':
+        arch = 'x86_64'
+
+    if short_names and arch == 'x86_64':
         arch = 'x64'
     return arch
 
@@ -34,7 +38,8 @@ def apply_template_vars(text):
     return text\
         .replace('${BZ_OS}', get_os_shortname()) \
         .replace('${BZ_VERSION}', C['version']) \
-        .replace('${BZ_ARCH}', get_arch())
+        .replace('${BZ_ARCH}', get_arch()) \
+        .replace('${BZ_ARCHL}', get_arch(short_names = False))
 
 def get_target_name():
     out_file = C['output']
@@ -131,7 +136,7 @@ def get_options():
         if opt_def not in C['options']:
             continue
         for entry in C['options'][opt_def]:
-            opts += '%s ' % entry
+            opts += '%s ' % apply_template_vars(entry)
     return opts
 
 def build_compiler_cmd():

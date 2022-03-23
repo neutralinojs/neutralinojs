@@ -25,6 +25,10 @@
         "linux": [
             "lib/tinyprocess/process_unix.cpp",
             "lib/clip/clip_x11.cpp"
+        ],
+        "darwin": [
+            "lib/tinyprocess/process_unix.cpp",
+            "lib/clip/clip_osx.mm"
         ]
     },
     "options": {
@@ -32,6 +36,13 @@
             "`pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0 glib-2.0 ayatana-appindicator3-0.1 xcb x11`",
             "-pthread",
             "-no-pie",
+            "-Os"
+        ],
+        "darwin": [
+            "-arch ${BZ_ARCHL}",
+            "-Wno-deprecated-declarations",
+            "-framework WebKit",
+            "-framework Cocoa",
             "-Os"
         ]
     },
@@ -45,6 +56,11 @@
             "HAVE_XCB_XLIB_H",
             "WEBVIEW_GTK=1",
             "TRAY_APPINDICATOR=1"
+        ],
+        "darwin": [
+            "WEBVIEW_COCOA=1",
+            "TRAY_APPKIT=1",
+            "OBJC_OLD_DISPATCH_PROTOTYPES=1"
         ]
     }
 }
