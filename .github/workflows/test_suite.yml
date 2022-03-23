@@ -21,7 +21,7 @@ jobs:
         
     - name: Build
       run: |
-        bash build_linux.sh
+        ./scripts/bz.py
         chmod +x ./bin/neutralino-linux_x64
         
     - name: Setup Spec Requirements
@@ -51,7 +51,7 @@ jobs:
       
     - name: Build
       run: |
-        bash build_macos.sh
+        ./scripts/bz.py
         chmod +x ./bin/neutralino-mac_x64
         
     - name: Setup Spec Requirements
