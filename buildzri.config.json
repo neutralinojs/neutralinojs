@@ -8,6 +8,9 @@
             ".",
             "lib",
             "lib/asio/include"
+        ],
+        "windows": [
+            "lib/webview/windows"
         ]
     },
     "source": {
@@ -29,6 +32,10 @@
         "darwin": [
             "lib/tinyprocess/process_unix.cpp",
             "lib/clip/clip_osx.mm"
+        ],
+        "windows": [
+            "lib/tinyprocess/process_win.cpp",
+            "lib/clip/clip_win.cpp"
         ]
     },
     "options": {
@@ -44,11 +51,16 @@
             "-framework WebKit",
             "-framework Cocoa",
             "-Os"
+        ],
+        "windows": [
+            "/EHsc",
+            "/Os",
+            "/link lib/webview/windows/WebView2Loader.dll.lib"
         ]
     },
     "definitions": {
         "*": [
-            "NL_VERSION='\"${BZ_VERSION}\"'",
+            "NL_VERSION=\\\"${BZ_VERSION}\\\"",
             "ELPP_NO_DEFAULT_LOG_FILE=1",
             "ASIO_STANDALONE"
         ],
@@ -61,6 +73,11 @@
             "WEBVIEW_COCOA=1",
             "TRAY_APPKIT=1",
             "OBJC_OLD_DISPATCH_PROTOTYPES=1"
+        ],
+        "windows": [
+            "_WEBSOCKETPP_CPP11_STL_",
+            "_HAS_STD_BYTE=0",
+            "TRAY_WINAPI=1"
         ]
     }
 }

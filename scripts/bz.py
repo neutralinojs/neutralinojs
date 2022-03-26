@@ -2,6 +2,7 @@
 
 import sys
 import os
+import subprocess
 import platform
 import json
 import glob
@@ -17,12 +18,12 @@ BZ_ISWIN = BZ_OS == 'windows'
 BZ_ISVERBOSE = '--verbose' in sys.argv
 
 def get_arch(short_names = True, use_mac_rosetta = True):
-    arch = platform.machine()
+    arch = platform.machine().lower()
 
     if BZ_ISDARWIN and arch == 'arm64':
         arch = 'x86_64'
 
-    if short_names and arch == 'x86_64':
+    if short_names and (arch in ['x86_64', 'amd64']):
         arch = 'x64'
     return arch
 
@@ -45,16 +46,50 @@ def get_target_name():
     out_file = C['output']
 
     out_file = apply_template_vars(out_file)
+
+    if BZ_ISWIN:
+        out_file += '.exe'
+
     return out_file
+
+def configure_vs_tools():
+    vsw_path = ''
+    vsw_path_f = '%s\\Microsoft Visual Studio\\Installer\\vswhere.exe'
+    for prog_path in [os.getenv('ProgramFiles(x86)'), os.getenv('ProgramFiles')]:
+        path = vsw_path_f % prog_path
+        if os.path.exists(path):
+            vsw_path = path
+            break
+
+    if vsw_path == '':
+        print('ERR: Unable to find vswhere.exe')
+        sys.exit(1)
+    
+    if BZ_ISVERBOSE:
+        print('vswhere.exe path: %s' % vsw_path)
+
+    vs_paths = subprocess\
+        .getoutput('"%s" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath' % vsw_path) \
+        .strip().split('\r\n')
+    
+    vs_path = vs_paths[-1]
+    vs_devcmd_file = '%s\\Common7\\Tools\\vsdevcmd.bat' % vs_path
+    
+    if not os.path.exists(vs_devcmd_file):
+        print('ERR: Unable to find VS dev command-line tools')
+        sys.exit(1)
+    
+    return '"%s" -host_arch=%s -arch=%s' % (vs_devcmd_file, get_arch(), get_arch())
+
 
 def get_std():
     if 'std' not in C:
         return ''
 
-    std_prefix = '--std'
+    std_prefix = '--std='
     if BZ_ISWIN:
         std_prefix = '/std:'
-    return '%s=%s ' % (std_prefix, C['std'])
+    return '%s%s ' % (std_prefix, C['std'])
 
 def get_source_files():
     file_defs = ['*', BZ_OS]
@@ -140,7 +175,10 @@ def get_options():
     return opts
 
 def build_compiler_cmd():
-    cmd = get_compiler()
+    cmd = ''
+    if BZ_ISWIN:
+        cmd += 'cmd /c %s && ' % configure_vs_tools()
+    cmd += get_compiler()
     cmd += get_std()
     cmd += get_includes()
     cmd += get_source_files()
