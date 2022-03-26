@@ -36,6 +36,7 @@ jobs:
       uses: actions/checkout@v2
     - name: Build
       run: python ./scripts/bz.py
+      shell: cmd
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
