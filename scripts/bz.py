@@ -177,7 +177,7 @@ def get_options():
 def build_compiler_cmd():
     cmd = ''
     if BZ_ISWIN:
-        cmd += 'cmd /c %s && ' % configure_vs_tools()
+        cmd += '%s && ' % configure_vs_tools()
     cmd += get_compiler()
     cmd += get_std()
     cmd += get_includes()
@@ -193,7 +193,7 @@ def compile(cmd):
     if BZ_ISVERBOSE:
         print('Running command: %s' % cmd)
 
-    exit_code = os.system(cmd)
+    exit_code = subprocess.call(cmd, shell = True)
     msg = ''
     if exit_code == 0:
         msg = 'OK: %s compiled into %s' % (C['name'], get_target_name())
