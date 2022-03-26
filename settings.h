@@ -14,7 +14,6 @@
 #define OS_NAME "FreeBSD"
 #endif
 
-#define NL_VERSION "4.4.0"
 #define APP_CONFIG_FILE "/neutralino.config.json"
 
 #include <string>

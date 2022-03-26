@@ -21,7 +21,7 @@ jobs:
         
     - name: Build
       run: |
-        bash build_linux.sh
+        ./scripts/bz.py
         chmod +x ./bin/neutralino-linux_x64
         
     - name: Setup Spec Requirements
@@ -41,7 +41,8 @@ jobs:
       uses: actions/checkout@v2
       
     - name: Build
-      run: ./build_windows.bat
+      run: python ./scripts/bz.py
+      shell: cmd
 
   build-darwin:
     runs-on: macos-latest
@@ -51,7 +52,7 @@ jobs:
       
     - name: Build
       run: |
-        bash build_macos.sh
+        ./scripts/bz.py
         chmod +x ./bin/neutralino-mac_x64
         
     - name: Setup Spec Requirements

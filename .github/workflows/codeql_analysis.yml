@@ -40,7 +40,7 @@ jobs:
         libwebkit2gtk-4.0-dev \
         libayatana-appindicator3-dev
     - name: Build
-      run: bash build_linux.sh
+      run: ./scripts/bz.py
     
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1
