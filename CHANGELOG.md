@@ -6,6 +6,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## DevOps
+- Use [BuildZri](https://github.com/codezri/buildzri) for C++ build automation.
+
 ## v4.4.0
 
 ### API: window
