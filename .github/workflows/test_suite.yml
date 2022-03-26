@@ -41,7 +41,7 @@ jobs:
       uses: actions/checkout@v2
       
     - name: Build
-      run: python ./scripts/bz.py --verbose
+      run: python ./scripts/bz.py
       shell: cmd
 
   build-darwin:
