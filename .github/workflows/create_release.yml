@@ -35,7 +35,7 @@ jobs:
     - name: Checkout 
       uses: actions/checkout@v2
     - name: Build
-      run: ./build_windows.bat
+      run: python ./scripts/bz.py
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
