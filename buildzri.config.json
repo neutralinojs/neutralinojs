@@ -1,0 +1,83 @@
+{
+    "std": "c++17",
+    "name": "Neutralinojs",
+    "version": "4.4.0",
+    "output": "./bin/neutralino-${BZ_OS}_${BZ_ARCH}",
+    "include": {
+        "*": [
+            ".",
+            "lib",
+            "lib/asio/include"
+        ],
+        "windows": [
+            "lib/webview/windows"
+        ]
+    },
+    "source": {
+        "*": [
+            "*.cpp",
+            "auth/*.cpp",
+            "server/*.cpp",
+            "api/*/*.cpp",
+            "lib/tinyprocess/process.cpp",
+            "lib/easylogging/easylogging++.cc",
+            "lib/platformfolders/platform_folders.cpp",
+            "lib/clip/clip.cpp",
+            "lib/clip/image.cpp"
+        ],
+        "linux": [
+            "lib/tinyprocess/process_unix.cpp",
+            "lib/clip/clip_x11.cpp"
+        ],
+        "darwin": [
+            "lib/tinyprocess/process_unix.cpp",
+            "lib/clip/clip_osx.mm"
+        ],
+        "windows": [
+            "lib/tinyprocess/process_win.cpp",
+            "lib/clip/clip_win.cpp"
+        ]
+    },
+    "options": {
+        "linux": [
+            "`pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0 glib-2.0 ayatana-appindicator3-0.1 xcb x11`",
+            "-pthread",
+            "-no-pie",
+            "-Os"
+        ],
+        "darwin": [
+            "-arch ${BZ_ARCHL}",
+            "-Wno-deprecated-declarations",
+            "-framework WebKit",
+            "-framework Cocoa",
+            "-Os"
+        ],
+        "windows": [
+            "/EHsc",
+            "/Os",
+            "/link lib/webview/windows/WebView2Loader.dll.lib"
+        ]
+    },
+    "definitions": {
+        "*": [
+            "NL_VERSION=\\\"${BZ_VERSION}\\\"",
+            "ELPP_NO_DEFAULT_LOG_FILE=1",
+            "ASIO_STANDALONE"
+        ],
+        "linux": [
+            "HAVE_XCB_XLIB_H",
+            "WEBVIEW_GTK=1",
+            "TRAY_APPINDICATOR=1"
+        ],
+        "darwin": [
+            "WEBVIEW_COCOA=1",
+            "TRAY_APPKIT=1",
+            "OBJC_OLD_DISPATCH_PROTOTYPES=1"
+        ],
+        "windows": [
+            "_WEBSOCKETPP_CPP11_STL_",
+            "_HAS_STD_BYTE=0",
+            "TRAY_WINAPI=1"
+        ]
+    }
+}
