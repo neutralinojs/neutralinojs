@@ -89,7 +89,7 @@ int load_app_indicator() {
     dlib = dlopen(dlib_names[i], RTLD_LAZY);
 
     if(dlib) {
-        break;
+      break;
     }
   }
 
