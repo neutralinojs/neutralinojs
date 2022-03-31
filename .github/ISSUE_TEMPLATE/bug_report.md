@@ -25,8 +25,11 @@ If applicable, add screenshots/screen recordings to help explain your problem.
 
 **Specifications**  
  - OS: [e.g. Windows 10 x64]
- - NeutralinoJs Version: [e.g. v4.3.0]
- - NeutralinoJs CLI version: [e.g. v9.1.2]
+ - Neutralinojs version: [e.g. v4.3.0]
+ - Neutralinojs client library version: [e.g. v3.3.0]
+ - Neutralinojs CLI version: [e.g. v9.1.2]
+
+*Note: you can enter the `neu version` command to find these details*
 
 **Logs**
 Attach your `neutralinojs.log` file, if Possible
