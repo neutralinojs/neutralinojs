@@ -9,6 +9,10 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ## DevOps
 - Use [BuildZri](https://github.com/codezri/buildzri) for C++ build automation.
 
+## Bugfixes/improvements
+- Search and dynamically load app indicator libraries on Linux. This enhancement supports Neutralinojs to start without a crash when there is no app indicator library present on the system.
+- Throw `NE_OS_TRAYIER` from the `os.setTray` function for initialization failures.
+
 ## v4.4.0
 
 ### API: window
