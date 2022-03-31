@@ -40,12 +40,70 @@ static void tray_update(struct tray *tray);
 #if defined(TRAY_APPINDICATOR)
 
 #include <gtk/gtk.h>
-#include <libayatana-appindicator/app-indicator.h>
+#include <dlfcn.h>
 
 #define TRAY_APPINDICATOR_ID "tray-id"
 
+typedef enum {
+  APP_INDICATOR_CATEGORY_APPLICATION_STATUS,
+  APP_INDICATOR_CATEGORY_COMMUNICATIONS,
+  APP_INDICATOR_CATEGORY_SYSTEM_SERVICES,
+  APP_INDICATOR_CATEGORY_HARDWARE,
+  APP_INDICATOR_CATEGORY_OTHER
+} AppIndicatorCategory;
+
+typedef enum {
+  APP_INDICATOR_STATUS_PASSIVE,
+  APP_INDICATOR_STATUS_ACTIVE,
+  APP_INDICATOR_STATUS_ATTENTION
+} AppIndicatorStatus;
+
+typedef struct _AppIndicator AppIndicator;
+
+typedef AppIndicator* (*app_indicator_new_func)(const gchar *id,
+                                                const gchar *icon_name,
+                                                AppIndicatorCategory category);
+typedef void (*app_indicator_set_status_func)(AppIndicator *self, AppIndicatorStatus status);
+typedef void (*app_indicator_set_menu_func)(AppIndicator *self, GtkMenu *menu);
+typedef void (*app_indicator_set_icon_func)(AppIndicator *self, const gchar *icon_name);
+
+app_indicator_new_func app_indicator_new = NULL;
+app_indicator_set_status_func app_indicator_set_status = NULL;
+app_indicator_set_menu_func app_indicator_set_menu = NULL;
+app_indicator_set_icon_func app_indicator_set_icon = NULL;
+
 static AppIndicator *indicator = NULL;
 static int loop_result = 0;
+
+int load_app_indicator() {
+  const char *dlib_names[] = {
+    "libappindicator3.so",
+    "libappindicator3.so.1",
+    "libayatana-appindicator3.so",
+    "libayatana-appindicator3.so.1"
+  };
+
+  void *dlib = NULL;
+
+  for(int i = 0; i < sizeof(dlib_names) / sizeof(dlib_names[0]); i++) {
+    dlib = dlopen(dlib_names[i], RTLD_LAZY);
+
+    if(dlib) {
+        break;
+    }
+  }
+
+  if(!dlib) {
+    return -1;
+  }
+
+  app_indicator_new = (app_indicator_new_func)(dlsym(dlib, "app_indicator_new"));
+  app_indicator_set_status = (app_indicator_set_status_func)(dlsym(dlib, "app_indicator_set_status"));
+  app_indicator_set_menu = (app_indicator_set_menu_func)(dlsym(dlib, "app_indicator_set_menu"));
+  app_indicator_set_icon = (app_indicator_set_icon_func)(dlsym(dlib, "app_indicator_set_icon"));
+
+  return 0;
+}
 
 static void _tray_menu_cb(GtkMenuItem *item, gpointer data) {
   (void)item;
@@ -85,6 +143,11 @@ static int tray_init(struct tray *tray) {
   if (gtk_init_check(0, NULL) == FALSE) {
     return -1;
   }
+
+  if(load_app_indicator() != 0) {
+    return -1;
+  }
+
   indicator = app_indicator_new(TRAY_APPINDICATOR_ID, tray->icon,
                                 APP_INDICATOR_CATEGORY_APPLICATION_STATUS);
   app_indicator_set_status(indicator, APP_INDICATOR_STATUS_ACTIVE);
@@ -121,7 +184,7 @@ static id _tray_menu(struct tray_menu *m) {
 
     for (; m != NULL && m->text != NULL; m++) {
       if (strcmp(m->text, "-") == 0) {
-        objc_msgSend(menu, sel_registerName("addItem:"), 
+        objc_msgSend(menu, sel_registerName("addItem:"),
           objc_msgSend((id)objc_getClass("NSMenuItem"), sel_registerName("separatorItem")));
       } else {
         id menuItem = objc_msgSend((id)objc_getClass("NSMenuItem"), sel_registerName("alloc"));
@@ -130,14 +193,14 @@ static id _tray_menu(struct tray_menu *m) {
                   objc_msgSend((id)objc_getClass("NSString"), sel_registerName("stringWithUTF8String:"), m->text),
                   sel_registerName("menuCallback:"),
                   objc_msgSend((id)objc_getClass("NSString"), sel_registerName("stringWithUTF8String:"), ""));
-  
+
         objc_msgSend(menuItem, sel_registerName("setEnabled:"), (m->disabled ? false : true));
           objc_msgSend(menuItem, sel_registerName("setState:"), (m->checked ? 1 : 0));
           objc_msgSend(menuItem, sel_registerName("setRepresentedObject:"),
             objc_msgSend((id)objc_getClass("NSValue"), sel_registerName("valueWithPointer:"), m));
-  
+
           objc_msgSend(menu, sel_registerName("addItem:"), menuItem);
-  
+
           if (m->submenu != NULL) {
             objc_msgSend(menu, sel_registerName("setSubmenu:forItem:"), _tray_menu(m->submenu), menuItem);
       }
@@ -149,7 +212,7 @@ static id _tray_menu(struct tray_menu *m) {
 
 static void menu_callback(id self, SEL cmd, id sender) {
   struct tray_menu *m =
-      (struct tray_menu *)objc_msgSend(objc_msgSend(sender, sel_registerName("representedObject")), 
+      (struct tray_menu *)objc_msgSend(objc_msgSend(sender, sel_registerName("representedObject")),
                   sel_registerName("pointerValue"));
 
     if (m != NULL && m->cb != NULL) {
@@ -160,28 +223,28 @@ static void menu_callback(id self, SEL cmd, id sender) {
 static int tray_init(struct tray *tray) {
     pool = objc_msgSend((id)objc_getClass("NSAutoreleasePool"),
                           sel_registerName("new"));
-  
+
     objc_msgSend((id)objc_getClass("NSApplication"),
                           sel_registerName("sharedApplication"));
-  
+
     Class trayDelegateClass = objc_allocateClassPair(objc_getClass("NSObject"), "Tray", 0);
     class_addProtocol(trayDelegateClass, objc_getProtocol("NSApplicationDelegate"));
     class_addMethod(trayDelegateClass, sel_registerName("menuCallback:"), (IMP)menu_callback, "v@:@");
     objc_registerClassPair(trayDelegateClass);
-  
+
     id trayDelegate = objc_msgSend((id)trayDelegateClass,
                           sel_registerName("new"));
-  
+
     app = objc_msgSend((id)objc_getClass("NSApplication"),
                           sel_registerName("sharedApplication"));
-  
+
     objc_msgSend(app, sel_registerName("setDelegate:"), trayDelegate);
-  
+
     statusBar = objc_msgSend((id)objc_getClass("NSStatusBar"),
                           sel_registerName("systemStatusBar"));
-  
+
     statusItem = objc_msgSend(statusBar, sel_registerName("statusItemWithLength:"), -1.0);
-  
+
     objc_msgSend(statusItem, sel_registerName("retain"));
     objc_msgSend(statusItem, sel_registerName("setHighlightMode:"), true);
     statusBarButton = objc_msgSend(statusItem, sel_registerName("button"));
@@ -191,16 +254,16 @@ static int tray_init(struct tray *tray) {
 }
 
 static int tray_loop(int blocking) {
-    id until = (blocking ? 
-      objc_msgSend((id)objc_getClass("NSDate"), sel_registerName("distantFuture")) : 
+    id until = (blocking ?
+      objc_msgSend((id)objc_getClass("NSDate"), sel_registerName("distantFuture")) :
       objc_msgSend((id)objc_getClass("NSDate"), sel_registerName("distantPast")));
-  
-    id event = objc_msgSend(app, sel_registerName("nextEventMatchingMask:untilDate:inMode:dequeue:"), 
-                ULONG_MAX, 
-                until, 
-                objc_msgSend((id)objc_getClass("NSString"), 
-                  sel_registerName("stringWithUTF8String:"), 
-                  "kCFRunLoopDefaultMode"), 
+
+    id event = objc_msgSend(app, sel_registerName("nextEventMatchingMask:untilDate:inMode:dequeue:"),
+                ULONG_MAX,
+                until,
+                objc_msgSend((id)objc_getClass("NSString"),
+                  sel_registerName("stringWithUTF8String:"),
+                  "kCFRunLoopDefaultMode"),
                 true);
     if (event) {
       objc_msgSend(app, sel_registerName("sendEvent:"), event);
@@ -275,7 +338,7 @@ static int tray_init(struct tray *tray) {
   nid.uFlags = NIF_ICON | NIF_MESSAGE;
   nid.uCallbackMessage = WM_TRAY_CALLBACK_MESSAGE;
   Shell_NotifyIcon(NIM_ADD, &nid);
-  tray_update(tray); 
+  tray_update(tray);
   return 0;
 }
 
@@ -315,11 +378,11 @@ static void tray_update(struct tray *tray) {
 
 static void tray_exit() {
   Shell_NotifyIcon(NIM_DELETE, &nid);
-  
+
   if (nid.hIcon) {
     DestroyIcon(nid.hIcon);
   }
-  
+
   if (hmenu) {
     DestroyMenu(hmenu);
   }

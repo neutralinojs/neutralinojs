@@ -440,8 +440,7 @@ namespace controllers {
         }
 
         if(!trayInitialized) {
-            tray_init(&tray);
-            trayInitialized = true;
+            trayInitialized = tray_init(&tray) == 0;
         }
         else {
             tray_update(&tray);
@@ -449,7 +448,13 @@ namespace controllers {
         #if defined(_WIN32)
         GdiplusShutdown(gdiplusToken);
         #endif
-        output["success"] = true;
+        if(trayInitialized) {
+            output["success"] = true;
+        }
+        else {
+            output["error"] = helpers::makeErrorPayload("NE_OS_TRAYIER",
+                        "Unable to initialize the tray menu");
+        }
         return output;
     }
 
