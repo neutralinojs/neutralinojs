@@ -2,7 +2,7 @@
 name: Bug Report
 about: Create a report to help us improve
 title: ''
-labels: ''
+labels: 'bug'
 assignees: ''
 
 ---
@@ -30,9 +30,6 @@ If applicable, add screenshots/screen recordings to help explain your problem.
  - Neutralinojs CLI version: [e.g. v9.1.2]
 
 *Note: you can enter the `neu version` command to find these details*
-
-**Logs**
-Attach your `neutralinojs.log` file, if Possible
 
 **Additional context**
 Add any other context about the problem here.
