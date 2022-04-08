@@ -7,7 +7,7 @@
         "*": [
             ".",
             "lib",
-            "lib/asio/include"
+            "lib/asio"
         ],
         "windows": [
             "lib/webview/windows"
