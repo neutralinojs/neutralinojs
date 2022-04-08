@@ -1,5 +1,5 @@
 // Clip Library
-// Copyright (c) 2015-2018 David Capello
+// Copyright (c) 2015-2022 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -7,6 +7,22 @@
 #include "clip.h"
 
 namespace clip {
+
+unsigned long image_spec::required_data_size() const
+{
+  unsigned long n = (bytes_per_row * height);
+
+  // For 24bpp we add some extra space to access the last pixel (3
+  // bytes) as an uint32_t
+  if (bits_per_pixel == 24) {
+    if ((n % 4) > 0)
+      n += 4 - (n % 4);
+    else
+      ++n;
+  }
+
+  return n;
+}
 
 image::image()
   : m_own_data(false),
@@ -16,7 +32,7 @@ image::image()
 
 image::image(const image_spec& spec)
   : m_own_data(true),
-    m_data(new char[spec.bytes_per_row*spec.height]),
+    m_data(new char[spec.required_data_size()]),
     m_spec(spec) {
 }
 
@@ -65,7 +81,7 @@ void image::copy_image(const image& image) {
   reset();
 
   m_spec = image.spec();
-  std::size_t n = m_spec.bytes_per_row*m_spec.height;
+  std::size_t n = m_spec.required_data_size();
 
   m_own_data = true;
   m_data = new char[n];
