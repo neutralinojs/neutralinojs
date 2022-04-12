@@ -62,13 +62,25 @@ window::WindowOptions windowProps;
 
 namespace handlers {
 
-void onClose() {
-    if(windowProps.exitProcessOnClose ||
-        !neuserver::isInitialized() || !permission::hasAPIAccess()) {
-        app::exit();
-    }
-    else {
-        events::dispatch("windowClose", nullptr);
+void windowStateChange(int state) {
+    #if defined(__linux__) || defined(__FreeBSD__)
+        isGtkWindowFullScreen = state == WEBVIEW_WINDOW_FULLSCREEN;
+    #endif
+    switch(state) {
+        case WEBVIEW_WINDOW_CLOSE:
+            if(windowProps.exitProcessOnClose ||
+                !neuserver::isInitialized() || !permission::hasAPIAccess()) {
+                app::exit();
+            }
+            else {
+                events::dispatch("windowClose", nullptr);
+            }
+            break;
+        case WEBVIEW_WINDOW_FOCUS:
+            events::dispatch("windowFocus", nullptr);
+            break;
+        case WEBVIEW_WINDOW_BLUR:
+            events::dispatch("windowBlur", nullptr);
     }
 }
 
@@ -313,16 +325,10 @@ void __createWindow() {
     nativeWindow->set_size(windowProps.sizeOptions.width, windowProps.sizeOptions.height, windowProps.sizeOptions.minWidth,
                     windowProps.sizeOptions.minHeight, windowProps.sizeOptions.maxWidth, windowProps.sizeOptions.maxHeight,
                     windowProps.sizeOptions.resizable);
-    nativeWindow->setOnCloseHandler(&window::handlers::onClose);
+    nativeWindow->setEventHandler(&window::handlers::windowStateChange);
 
     #if defined(__linux__) || defined(__FreeBSD__)
     windowHandle = (GtkWidget*) nativeWindow->window();
-
-    g_signal_connect(G_OBJECT(windowHandle), "window-state-event",
-         G_CALLBACK(+[](GtkWidget *widget, GdkEventWindowState *event, gpointer user_data) {
-             isGtkWindowFullScreen = event->new_window_state & GDK_WINDOW_STATE_FULLSCREEN;
-         }),
-    nullptr);
 
     #elif defined(__APPLE__)
     windowHandle = (id) nativeWindow->window();
