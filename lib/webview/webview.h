@@ -1202,6 +1202,13 @@ public:
               if(windowStateChange)
                 windowStateChange(WEBVIEW_WINDOW_CLOSE);
               break;
+            case WM_ACTIVATE:
+              if(!windowStateChange) break;
+              if(LOWORD(wp) == WA_INACTIVE)
+                windowStateChange(WEBVIEW_WINDOW_BLUR);
+              else
+                windowStateChange(WEBVIEW_WINDOW_FOCUS);
+              break;
             case WM_DESTROY:
               PostQuitMessage(processExitCode);
               break;
