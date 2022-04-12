@@ -713,6 +713,17 @@ public:
                         windowStateChange(WEBVIEW_WINDOW_CLOSE);
                       return 0;
                      }), "c@:@");
+    class_addMethod(wcls, "windowDidBecomeKey:"_sel,
+                    (IMP)(+[](id, SEL, id) { 
+                        if(windowStateChange)
+                          windowStateChange(WEBVIEW_WINDOW_FOCUS);
+                    }), "c@:@");
+    class_addMethod(wcls, "windowDidResignKey:"_sel,
+                    (IMP)(+[](id, SEL, id) { 
+                        if(windowStateChange)
+                          windowStateChange(WEBVIEW_WINDOW_BLUR);
+                    }), "c@:@");
+            
     objc_registerClassPair(wcls);
 
     auto wdelegate = ((id(*)(id, SEL))objc_msgSend)((id)wcls, "new"_sel);
