@@ -71,6 +71,12 @@ WEBVIEW_API void webview_set_title(webview_t w, const char *title);
 #define WEBVIEW_HINT_MIN 1   // Width and height are minimum bounds
 #define WEBVIEW_HINT_MAX 2   // Width and height are maximum bounds
 #define WEBVIEW_HINT_FIXED 3 // Window size can not be changed by a user
+// Window events
+#define WEBVIEW_WINDOW_CLOSE 0
+#define WEBVIEW_WINDOW_FOCUS 1
+#define WEBVIEW_WINDOW_BLUR 2
+#define WEBVIEW_WINDOW_FULLSCREEN 3 // GTK only
+#define WEBVIEW_WINDOW_UNDEFINED 100 // GTK only
 // Updates native window size. See WEBVIEW_HINT constants.
 WEBVIEW_API void webview_set_size(webview_t w, int width, int height,
                                   int hints);
@@ -137,9 +143,9 @@ WEBVIEW_API void webview_return(webview_t w, const char *seq, int status,
 
 namespace webview {
 using dispatch_fn_t = std::function<void()>;
-using onCloseHandler_t = std::function<void()>;
+using eventHandler_t = std::function<void(int)>;
 
-static onCloseHandler_t onCloseHandler;
+static eventHandler_t windowStateChange;
 static int processExitCode = 0;
 
 // Convert ASCII hex digit to a nibble (four bits, 0 - 15).
@@ -463,13 +469,32 @@ public:
                        std::exit(processExitCode);
                      }),
                      this);
+
     g_signal_connect(G_OBJECT(m_window), "delete-event",
-                     G_CALLBACK(+[](GtkWidget *, gpointer arg) {
-                       if(onCloseHandler)
-                         onCloseHandler();
-                       return true;
-                     }),
-                     nullptr);
+                    G_CALLBACK(+[](GtkWidget *, gpointer arg) {
+                        if(windowStateChange)
+                            windowStateChange(WEBVIEW_WINDOW_CLOSE);
+                        return true;
+                    }),
+                    nullptr);
+
+    g_signal_connect(G_OBJECT(m_window), "window-state-event",
+        G_CALLBACK(+[](GtkWidget *widget, GdkEventWindowState *event, gpointer user_data) {
+            if(!windowStateChange) return;
+
+            if(event->changed_mask & GDK_WINDOW_STATE_FULLSCREEN)
+                windowStateChange(WEBVIEW_WINDOW_FULLSCREEN);
+            else if(event->changed_mask & GDK_WINDOW_STATE_FOCUSED) {
+                if(event->new_window_state & GDK_WINDOW_STATE_FOCUSED)
+                  windowStateChange(WEBVIEW_WINDOW_FOCUS);
+                else
+                  windowStateChange(WEBVIEW_WINDOW_BLUR);
+            }
+            else
+                windowStateChange(WEBVIEW_WINDOW_UNDEFINED);
+        }),
+    nullptr);
+
     // Initialize webview widget
     m_webview = webkit_web_view_new();
     WebKitUserContentManager *manager =
@@ -684,10 +709,21 @@ public:
         objc_allocateClassPair((Class) "NSResponder"_cls, "WindowDelegate", 0);
     class_addMethod(wcls, "windowShouldClose:"_sel,
                     (IMP)(+[](id, SEL, id) -> BOOL {
-                      if(onCloseHandler)
-                        onCloseHandler();
+                      if(windowStateChange)
+                        windowStateChange(WEBVIEW_WINDOW_CLOSE);
                       return 0;
                      }), "c@:@");
+    class_addMethod(wcls, "windowDidBecomeKey:"_sel,
+                    (IMP)(+[](id, SEL, id) { 
+                        if(windowStateChange)
+                          windowStateChange(WEBVIEW_WINDOW_FOCUS);
+                    }), "c@:@");
+    class_addMethod(wcls, "windowDidResignKey:"_sel,
+                    (IMP)(+[](id, SEL, id) { 
+                        if(windowStateChange)
+                          windowStateChange(WEBVIEW_WINDOW_BLUR);
+                    }), "c@:@");
+            
     objc_registerClassPair(wcls);
 
     auto wdelegate = ((id(*)(id, SEL))objc_msgSend)((id)wcls, "new"_sel);
@@ -1174,8 +1210,15 @@ public:
               w->m_browser->resize(hwnd);
               break;
             case WM_CLOSE:
-              if(onCloseHandler)
-                onCloseHandler();
+              if(windowStateChange)
+                windowStateChange(WEBVIEW_WINDOW_CLOSE);
+              break;
+            case WM_ACTIVATE:
+              if(!windowStateChange) break;
+              if(LOWORD(wp) == WA_INACTIVE)
+                windowStateChange(WEBVIEW_WINDOW_BLUR);
+              else
+                windowStateChange(WEBVIEW_WINDOW_FOCUS);
               break;
             case WM_DESTROY:
               PostQuitMessage(processExitCode);
@@ -1431,8 +1474,8 @@ public:
     });
   }
 
-  void setOnCloseHandler(onCloseHandler_t handler) {
-    onCloseHandler = handler;
+  void setEventHandler(eventHandler_t handler) {
+    windowStateChange = handler;
   }
 
 private:
