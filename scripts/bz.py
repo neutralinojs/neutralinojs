@@ -20,7 +20,7 @@ BZ_ISVERBOSE = '--verbose' in sys.argv
 def get_arch(short_names = True, use_mac_rosetta = True):
     arch = platform.machine().lower()
 
-    if BZ_ISDARWIN and arch == 'arm64':
+    if BZ_ISDARWIN and arch == 'arm64' and use_mac_rosetta:
         arch = 'x86_64'
 
     if short_names and (arch in ['x86_64', 'amd64']):
