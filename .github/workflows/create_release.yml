@@ -9,7 +9,7 @@ on:
 
 jobs:
   build-linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
     - name: Checkout 
       uses: actions/checkout@v2
@@ -74,19 +74,19 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: linux_binary
-        path: ./bin/neutralino-linux_x64
+        path: ./bin
         
     - name: Download Windows build artifacts 
       uses: actions/download-artifact@v2
       with:
         name: win_binary
-        path: ./bin/neutralino-win_x64.exe
+        path: ./bin
         
     - name: Download Darwin build artifacts 
       uses: actions/download-artifact@v2
       with:
         name: darwin_binary
-        path: ./bin/neutralino-mac_x64
+        path: ./bin
         
     - name: Create Release zip
       uses: vimtor/action-zip@v1
