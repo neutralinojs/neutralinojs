@@ -15,6 +15,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### Bugfixes/improvements
 - Search and dynamically load app indicator libraries on Linux. This enhancement supports Neutralinojs to start without a crash when there is no app indicator library present on the system.
 - Throw `NE_OS_TRAYIER` from the `os.setTray` function for initialization failures.
+- Fix binary file write error on Windows with the `filesystem.writeBinaryFile` function. This was fixed by using `LF` as the line breaker on all platforms as a portable solution. If the developer needs CRLF on Windows (or CR on Darwin), the developer needs to handle it explicitly with `NL_OS`.
 
 ## v4.4.0
 
