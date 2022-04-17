@@ -62,6 +62,8 @@ jobs:
     - uses: dev-drprasad/delete-tag-and-release@v0.2.0
       with:
         tag_name: nightly
+      env:
+        GITHUB_TOKEN: ${{ secrets.COMMIT_TOKEN }}
       
     - name: Clean previous binaries
       run: |
