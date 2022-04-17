@@ -92,7 +92,7 @@ jobs:
     - name: Create Release Notes
       run: |
         chmod +x ./scripts/rz.py
-        ./scripts/rz.py create nightly
+        ./scripts/rz.py create nightly --top=":warning: **Nightly build**: This nighly-release may contain experimental features and breaking changes."
         
     - name: Create Branch
       uses: peterjgrainger/action-create-branch@v2.0.1
@@ -105,7 +105,7 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
           tag: nightly
-          name: Neutralinojs nightly version released!
+          name: Neutralinojs nightly release
           bodyFile: ./.tmprz/release_notes.md
           artifacts: './bin/neutralinojs-nightly.zip'
           prerelease: true
