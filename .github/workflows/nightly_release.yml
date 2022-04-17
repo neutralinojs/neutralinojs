@@ -103,6 +103,7 @@ jobs:
           artifacts: ./bin/neutralinojs-nightly.zip
           prerelease: true
           allowUpdates: true
+          commit: main
           
     - name: Clean Release Notes
       run: |
