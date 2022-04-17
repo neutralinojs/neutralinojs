@@ -1,0 +1,116 @@
+name: Nightly release
+on: 
+  workflow_dispatch:
+  schedule:
+    - cron: 0 0 * * *
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-18.04
+    steps:
+    - name: Checkout 
+      uses: actions/checkout@v2
+    - name: Configure
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y -f \
+        libgtk-3-dev \
+        libwebkit2gtk-4.0-37 \
+        libwebkit2gtk-4.0-dev
+    - name: Build
+      run: ./scripts/bz.py
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: linux_binary
+        path: bin/neutralino-linux_x64
+
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - name: Checkout 
+      uses: actions/checkout@v2
+    - name: Build
+      run: python ./scripts/bz.py
+      shell: cmd
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: win_binary
+        path: bin/neutralino-win_x64.exe
+
+  build-darwin:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Build
+      run: ./scripts/bz.py
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: darwin_binary
+        path: bin/neutralino-mac_x64
+        
+  update-nightly-release:
+    needs: [build-linux, build-windows, build-darwin]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout 
+      uses: actions/checkout@v2
+      
+    - uses: dev-drprasad/delete-tag-and-release@v0.2.0
+      with:
+        tag_name: nightly
+      env:
+        GITHUB_TOKEN: ${{ secrets.COMMIT_TOKEN }}
+      
+    - name: Clean previous binaries
+      run: |
+        rm -f \
+        ./bin/neutralino-linux_x64 \
+        ./bin/neutralino-win_x64.exe \
+        ./bin/neutralino-mac_x64
+        
+    - name: Download Linux build artifacts 
+      uses: actions/download-artifact@v2
+      with:
+        name: linux_binary
+        path: ./bin
+        
+    - name: Download Windows build artifacts 
+      uses: actions/download-artifact@v2
+      with:
+        name: win_binary
+        path: ./bin
+        
+    - name: Download Darwin build artifacts 
+      uses: actions/download-artifact@v2
+      with:
+        name: darwin_binary
+        path: ./bin
+        
+    - name: Create Release zip
+      uses: vimtor/action-zip@v1
+      with: 
+        files: ./bin/neutralino-linux_x64 ./bin/neutralino-win_x64.exe ./bin/neutralino-mac_x64 ./bin/WebView2Loader.dll
+        dest: './bin/neutralinojs-nightly.zip'
+        
+    - name: Create Release Notes
+      run: |
+        chmod +x ./scripts/rz.py
+        ./scripts/rz.py create nightly --top=":warning: **Nightly build**: This nighly-release may contain experimental features and breaking changes."
+        
+    - name: Update nightly GitHub release
+      uses: ncipollo/release-action@v1
+      with:
+          name: Neutralinojs nightly release
+          bodyFile: ./.tmprz/release_notes.md
+          artifacts: ./bin/neutralinojs-nightly.zip
+          prerelease: true
+          allowUpdates: true
+          tag: nightly
+          
+    - name: Clean Release Notes
+      run: |
+        ./scripts/rz.py cleanup

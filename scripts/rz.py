@@ -10,9 +10,15 @@ TEMPLATE_FILE = './.releasezri/template.md'
 CHANGELOG_FILE = './CHANGELOG.md'
 TMP_DIR = './.tmprz'
 RELEASE_NOTE_FILE = './.tmprz/release_notes.md'
-RZ_VERSION = '1.2.0'
+RZ_VERSION = '1.3.0'
 VERSION = ''
 VERSION_WITH_V = ''
+
+def get_cli_option_value(option):
+    for arg in sys.argv:
+        if option in arg:
+            return arg.split('=')[1]
+    return ''
 
 def apply_notes_to_template(note):
     md = ''
@@ -23,7 +29,9 @@ def apply_notes_to_template(note):
                 .replace('{RZ_VERSION}', VERSION) \
                 .replace('{RZ_DATE}', today.strftime('%Y-%m-%d')) \
                 .replace('{RZ_TIME}', today.strftime('%H:%M:%S')) \
-                .replace('{RZ_CHANGELOG}', note)
+                .replace('{RZ_CHANGELOG}', note) \
+                .replace('{RZ_TOP}', get_cli_option_value('--top')) \
+                .strip()
     return md
 
 def parse_release_note():
