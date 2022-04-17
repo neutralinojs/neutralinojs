@@ -1,4 +1,3 @@
-
 name: Nightly release
 on: 
   workflow_dispatch
