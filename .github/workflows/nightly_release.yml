@@ -93,13 +93,6 @@ jobs:
         chmod +x ./scripts/rz.py
         ./scripts/rz.py create nightly --top=":warning: **Nightly build**: This nighly-release may contain experimental features and breaking changes."
         
-    - name: Create Branch
-      uses: peterjgrainger/action-create-branch@v2.0.1
-      with: 
-        branch: nightly
-      env:
-        GITHUB_TOKEN: ${{ secrets.COMMIT_TOKEN }}
-        
     - name: Update nightly GitHub release
       uses: ncipollo/release-action@v1
       with:
