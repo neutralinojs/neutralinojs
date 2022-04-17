@@ -96,10 +96,9 @@ jobs:
     - name: Update nightly GitHub release
       uses: ncipollo/release-action@v1
       with:
-          tag: nightly
           name: Neutralinojs nightly release
           bodyFile: ./.tmprz/release_notes.md
-          artifacts: './bin/neutralinojs-nightly.zip'
+          artifacts: ./bin/neutralinojs-nightly.zip
           prerelease: true
           allowUpdates: true
           
