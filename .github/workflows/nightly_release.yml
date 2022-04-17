@@ -59,6 +59,10 @@ jobs:
     - name: Checkout 
       uses: actions/checkout@v2
       
+    - uses: dev-drprasad/delete-tag-and-release@v0.2.0
+      with:
+        tag_name: nightly
+      
     - name: Clean previous binaries
       run: |
         rm -f \
