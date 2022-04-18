@@ -11,6 +11,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ### DevOps
 - Use [BuildZri](https://github.com/codezri/buildzri) for C++ build automation.
+- Implement a new workflow for nightly releases. Developers can get the nightly release binaries via the `nightly` version tag.
 
 ### Bugfixes/improvements
 - Search and dynamically load app indicator libraries on Linux. This enhancement supports Neutralinojs to start without a crash when there is no app indicator library present on the system.
