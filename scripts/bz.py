@@ -35,12 +35,17 @@ def get_compiler():
     compilers = {'linux': 'g++', 'windows': 'cl', 'darwin': 'c++'}
     return compilers[BZ_OS] + ' '
 
+def get_latest_commit():
+    return subprocess.getoutput('git log -n 1 main --pretty=format:"%H"') \
+            .strip()
+
 def apply_template_vars(text):
     return text\
         .replace('${BZ_OS}', get_os_shortname()) \
         .replace('${BZ_VERSION}', C['version']) \
         .replace('${BZ_ARCH}', get_arch()) \
-        .replace('${BZ_ARCHL}', get_arch(short_names = False))
+        .replace('${BZ_ARCHL}', get_arch(short_names = False)) \
+        .replace('${BZ_COMMIT}', get_latest_commit())
 
 def get_target_name():
     out_file = C['output']
@@ -64,21 +69,21 @@ def configure_vs_tools():
     if vsw_path == '':
         print('ERR: Unable to find vswhere.exe')
         sys.exit(1)
-    
+
     if BZ_ISVERBOSE:
         print('vswhere.exe path: %s' % vsw_path)
 
     vs_paths = subprocess\
         .getoutput('"%s" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath' % vsw_path) \
         .strip().split('\r\n')
-    
+
     vs_path = vs_paths[-1]
     vs_devcmd_file = '%s\\Common7\\Tools\\vsdevcmd.bat' % vs_path
-    
+
     if not os.path.exists(vs_devcmd_file):
         print('ERR: Unable to find VS dev command-line tools')
         sys.exit(1)
-    
+
     return '"%s" -host_arch=%s -arch=%s' % (vs_devcmd_file, get_arch(), get_arch())
 
 

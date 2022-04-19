@@ -63,6 +63,7 @@
     "definitions": {
         "*": [
             "NL_VERSION=\\\"${BZ_VERSION}\\\"",
+            "NL_COMMIT=\\\"${BZ_COMMIT}\\\"",
             "ELPP_NO_DEFAULT_LOG_FILE=1",
             "ASIO_STANDALONE"
         ],

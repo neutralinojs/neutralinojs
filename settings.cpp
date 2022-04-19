@@ -81,6 +81,7 @@ namespace settings {
     string getGlobalVars(){
         string jsSnippet = "var NL_OS='" + string(OS_NAME) + "';";
         jsSnippet += "var NL_VERSION='" + string(NL_VERSION) + "';";
+        jsSnippet += "var NL_COMMIT='" + string(NL_COMMIT) + "';";
         jsSnippet += "var NL_APPID='" + options["applicationId"].get<string>() + "';";
         if(!options["version"].is_null()) {
             jsSnippet += "var NL_APPVERSION='" + options["version"].get<string>() + "';";
