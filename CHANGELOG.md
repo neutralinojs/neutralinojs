@@ -18,6 +18,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 - Throw `NE_OS_TRAYIER` from the `os.setTray` function for initialization failures.
 - Fix binary file write error on Windows with the `filesystem.writeBinaryFile` function. This was fixed by using `LF` as the line breaker on all platforms as a portable solution. If the developer needs CRLF on Windows (or CR on Darwin), the developer needs to handle it explicitly with `NL_OS`.
 
+### Core: global variables
+- Add `NL_COMMIT` to hold framework's release commit. This is helpful to find the nightly release's code snapshot.
+
 ## v4.4.0
 
 ### API: window
