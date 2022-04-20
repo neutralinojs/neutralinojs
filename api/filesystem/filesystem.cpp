@@ -51,8 +51,7 @@ string getDirectoryName(const string &filename){
     LPSTR pathToReplace = const_cast<char *>(filename.c_str());
     PathRemoveFileSpecA(pathToReplace);
     string directory(pathToReplace);
-    replace(directory.begin(), directory.end(), '\\', '/');
-    return directory;
+    return helpers::normalizePath(directory);
     #endif
 }
 
@@ -63,8 +62,7 @@ string getCurrentDirectory() {
     TCHAR currentDir[MAX_PATH];
     GetCurrentDirectory(MAX_PATH, currentDir);
     string currentDirStr(currentDir);
-    replace(currentDirStr.begin(), currentDirStr.end(), '\\', '/');
-    return currentDirStr;
+    return helpers::normalizePath(currentDirStr);
     #endif
 }
 

@@ -1,5 +1,6 @@
 #include <vector>
 #include <string>
+#include <algorithm>
 #include <sstream>
 #include <time.h>
 #include <ctype.h>
@@ -108,6 +109,13 @@ bool hasField(const json &input, const string &key) {
 
 vector <string> getModes() {
     return {"window", "browser", "cloud", "chrome"};
+}
+
+string normalizePath(const string &path) {
+    #if defined(_WIN32)
+    replace(path.begin(), path.end(), '\\', '/');
+    #endif
+    return path;
 }
 
 } // namespace helpers

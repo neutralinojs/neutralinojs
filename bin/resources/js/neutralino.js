@@ -740,6 +740,7 @@ var Neutralino = (function (exports) {
             }));
         }
         window.NL_CVERSION = version;
+        window.NL_CCOMMIT = 'a68e0b75c4889d2836a5f7d9fc599e23eefa2cc5'; // only the build server will update this
         initialized = true;
     }
 
