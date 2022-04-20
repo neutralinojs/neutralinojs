@@ -106,27 +106,28 @@ namespace os {
     }
 
     string getPath(const string &name) {
+        string path = "";
         if(name == "config")
-            return sago::getConfigHome();
-        if(name == "data")
-            return sago::getDataHome();
-        if(name == "cache")
-            return sago::getCacheDir();
-        if(name == "documents")
-            return sago::getDocumentsFolder();
-        if(name == "pictures")
-            return sago::getPicturesFolder();
-        if(name == "music")
-            return sago::getMusicFolder();
-        if(name == "video")
-            return sago::getVideoFolder();
-        if(name == "downloads")
-            return sago::getDownloadFolder();
-        if(name == "saveGames1")
-            return sago::getSaveGamesFolder1();
-        if(name == "saveGames2")
-            return sago::getSaveGamesFolder2();
-        return string();
+            path = sago::getConfigHome();
+        else if(name == "data")
+            path = sago::getDataHome();
+        else if(name == "cache")
+            path = sago::getCacheDir();
+        else if(name == "documents")
+            path = sago::getDocumentsFolder();
+        else if(name == "pictures")
+            path = sago::getPicturesFolder();
+        else if(name == "music")
+            path = sago::getMusicFolder();
+        else if(name == "video")
+            path = sago::getVideoFolder();
+        else if(name == "downloads")
+            path = sago::getDownloadFolder();
+        else if(name == "saveGames1")
+            path = sago::getSaveGamesFolder1();
+        else if(name == "saveGames2")
+            path = sago::getSaveGamesFolder2();
+        return helpers::normalizePath(path);
     }
 
     string getEnv(const string &key) {
@@ -212,6 +213,10 @@ namespace controllers {
 
         vector<string> selectedEntries = pfd::open_file(title, "", filters, option).result();
 
+        for(string &entry: selectedEntries) {
+            entry = helpers::normalizePath(entry);
+        }
+
         output["returnValue"] = selectedEntries;
         output["success"] = true;
         return output;
@@ -227,7 +232,7 @@ namespace controllers {
 
         string selectedEntry = pfd::select_folder(title, "", pfd::opt::none).result();
 
-        output["returnValue"] = selectedEntry;
+        output["returnValue"] = helpers::normalizePath(selectedEntry);
         output["success"] = true;
         return output;
     }
@@ -253,7 +258,7 @@ namespace controllers {
 
         string selectedEntry = pfd::save_file(title, "", filters, option).result();
 
-        output["returnValue"] = selectedEntry;
+        output["returnValue"] = helpers::normalizePath(selectedEntry);
         output["success"] = true;
         return output;
     }
