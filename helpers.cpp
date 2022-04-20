@@ -111,7 +111,7 @@ vector <string> getModes() {
     return {"window", "browser", "cloud", "chrome"};
 }
 
-string normalizePath(const string &path) {
+string normalizePath(string &path) {
     #if defined(_WIN32)
     replace(path.begin(), path.end(), '\\', '/');
     #endif
