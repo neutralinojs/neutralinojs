@@ -49,7 +49,10 @@ Neutralinojs contributors:
 
 Image created with [contributors-img](https://contributors-img.firebaseapp.com).
 
-Releases are powered by [ReleaseZri](https://codezri.org/docs/releasezri/intro)
+## Subprojects
+
+- Builds are powered by [BuildZri](https://codezri.org/docs/buildzri/intro)
+- Releases are powered by [ReleaseZri](https://codezri.org/docs/releasezri/intro)
 
 ## Sponsors and Donators
 
