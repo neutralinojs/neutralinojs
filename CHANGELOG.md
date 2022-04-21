@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v4.5.0
+
 ### Core: events
 - Added `windowFocus` and `windowBlur` native events.
 
