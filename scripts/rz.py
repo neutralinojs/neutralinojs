@@ -72,8 +72,11 @@ def create_note():
     print('INFO: Preparing release notes...')
     note = parse_release_note()
     if note.strip() == '':
-        print('ERROR: No changelog so far.')
-        sys.exit(1)
+        if '--no-changes' in sys.argv:
+            note = 'No changes — this version is similar to the previous version'
+        else:
+            print('ERROR: No changes so far.')
+            sys.exit(1)
     print('---- Release note for %s (parsed) ----' % VERSION_WITH_V)
     print('----')
 
