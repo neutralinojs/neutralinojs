@@ -2,7 +2,6 @@
 #define NEU_FILESYSTEM_H
 
 #include <string>
-
 #include "lib/json/json.hpp"
 
 using json = nlohmann::json;
@@ -28,6 +27,8 @@ struct FileStats {
     long long size;
     bool isDirectory;
     bool isFile;
+    time_t createdAt;
+    time_t modifiedAt;
 };
 
 bool createDirectory(const string &path);

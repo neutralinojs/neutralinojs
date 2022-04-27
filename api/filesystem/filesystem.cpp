@@ -118,6 +118,8 @@ fs::FileStats getStats(const string &path) {
         fileStats.size = statBuffer.st_size;
         fileStats.isFile = S_ISREG(statBuffer.st_mode);
         fileStats.isDirectory = S_ISDIR(statBuffer.st_mode);
+        fileStats.createdAt = statBuffer.st_ctime;
+        fileStats.modifiedAt = statBuffer.st_mtime;
     }
 
     #elif defined(_WIN32)
@@ -419,6 +421,8 @@ json getStats(const json &input) {
         stats["size"] = fileStats.size;
         stats["isFile"] = fileStats.isFile;
         stats["isDirectory"] = fileStats.isDirectory;
+        stats["createdAt"] = fileStats.createdAt;
+        stats["modifiedAt"] = fileStats.modifiedAt;
         output["returnValue"] = stats;
         output["success"] = true;
     }
