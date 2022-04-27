@@ -118,8 +118,8 @@ fs::FileStats getStats(const string &path) {
         fileStats.size = statBuffer.st_size;
         fileStats.isFile = S_ISREG(statBuffer.st_mode);
         fileStats.isDirectory = S_ISDIR(statBuffer.st_mode);
-        fileStats.createdAt = statBuffer.st_ctime;
-        fileStats.modifiedAt = statBuffer.st_mtime;
+        fileStats.createdAt = statBuffer.st_ctime*1000;
+        fileStats.modifiedAt = statBuffer.st_mtime*1000;
     }
 
     #elif defined(_WIN32)
