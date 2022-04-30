@@ -14,6 +14,12 @@
 #include <atlstr.h>
 #include <shlwapi.h>
 #include <winbase.h>
+#define WINDOWS_TICK 10000000
+#define SEC_TO_UNIX_EPOCH 11644473600LL
+long long WindowsTickToUnixMilliSeconds(long long windowsTicks)
+{   long long unixTime = (windowsTicks / WINDOWS_TICK - SEC_TO_UNIX_EPOCH)*1000;
+    return unixTime;
+}
 #endif
 
 #include "lib/json/json.hpp"
@@ -135,6 +141,8 @@ fs::FileStats getStats(const string &path) {
         fileStats.size = size.QuadPart;
         fileStats.isFile = !(basicInfo.FileAttributes & FILE_ATTRIBUTE_DIRECTORY);
         fileStats.isDirectory = basicInfo.FileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+        fileStats.createdAt = WindowsTickToUnixMilliSeconds(basicInfo.CreationTime.QuadPart);
+        fileStats.modifiedAt = WindowsTickToUnixMilliSeconds(basicInfo.ChangeTime.QuadPart);
     }
 
     #endif

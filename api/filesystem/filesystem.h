@@ -27,8 +27,8 @@ struct FileStats {
     long long size;
     bool isDirectory;
     bool isFile;
-    time_t createdAt;
-    time_t modifiedAt;
+    long long createdAt;
+    long long modifiedAt;
 };
 
 bool createDirectory(const string &path);
