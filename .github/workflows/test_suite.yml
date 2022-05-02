@@ -51,11 +51,18 @@ jobs:
             libgtk-3-dev \
             libwebkit2gtk-4.0-37 \
             libwebkit2gtk-4.0-dev \
-            libayatana-appindicator3-dev
+            libayatana-appindicator3-dev \
+            curl \
+            git \
+            python3 \
+            g++ \
+            make \
+            gcc \
+            pkg-config
           githubToken: ${{ github.token }}
           run: |
             ./scripts/bz.py
-            chmod +x ./bin/neutralino-linux_x64
+            chmod +x ./bin/neutralino-linux_aarch64
             npm ci
             cd spec && npm ci && xvfb-run npm run test
 

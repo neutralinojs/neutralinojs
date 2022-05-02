@@ -46,7 +46,14 @@ jobs:
             libgtk-3-dev \
             libwebkit2gtk-4.0-37 \
             libwebkit2gtk-4.0-dev \
-            libayatana-appindicator3-dev
+            libayatana-appindicator3-dev \
+            curl \
+            git \
+            python3 \
+            g++ \
+            make \
+            gcc \
+            pkg-config
           githubToken: ${{ github.token }}
           run: ./scripts/bz.py
       - name: Upload Artifacts
