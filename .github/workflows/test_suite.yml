@@ -34,6 +34,31 @@ jobs:
         npm ci
         xvfb-run npm run test
 
+  build-aarch64:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Build package
+        uses: uraimo/run-on-arch-action@v2
+        id: build-package
+        with:
+          arch: aarch64
+          distro: ubuntu18.04
+          install: |
+            apt-get update
+            apt-get install -y -f \
+            libgtk-3-dev \
+            libwebkit2gtk-4.0-37 \
+            libwebkit2gtk-4.0-dev \
+            libayatana-appindicator3-dev
+          githubToken: ${{ github.token }}
+          run: |
+            ./scripts/bz.py
+            chmod +x ./bin/neutralino-linux_x64
+            npm ci
+            cd spec && npm ci && xvfb-run npm run test
+
   build-windows:
     runs-on: windows-latest
     steps:
