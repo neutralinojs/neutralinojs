@@ -61,7 +61,8 @@ jobs:
             pkg-config
           githubToken: ${{ github.token }}
           run: |
-            python3 ./scripts/bz.py --verbose
+            git config --global --add safe.directory /home/runner/work/neutralinojs/neutralinojs
+            ./scripts/bz.py --verbose
             chmod +x ./bin/neutralino-linux_aarch64
             npm ci
             cd spec && npm ci && xvfb-run npm run test
