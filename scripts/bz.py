@@ -36,8 +36,7 @@ def get_compiler():
     return compilers[BZ_OS] + ' '
 
 def get_latest_commit():
-    return subprocess.getoutput('git log -n 1 main --pretty=format:"%H"') \
-            .strip()
+    return subprocess.getoutput('git rev-parse HEAD').strip()
 
 def apply_template_vars(text):
     return text\
