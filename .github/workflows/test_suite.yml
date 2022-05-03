@@ -58,7 +58,8 @@ jobs:
             g++ \
             make \
             gcc \
-            pkg-config
+            pkg-config \
+            xvfb
             curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
             apt-get install -y nodejs
           githubToken: ${{ github.token }}
