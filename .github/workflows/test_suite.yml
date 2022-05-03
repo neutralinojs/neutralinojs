@@ -62,6 +62,7 @@ jobs:
           githubToken: ${{ github.token }}
           run: |
             git config --global --add safe.directory ${GITHUB_WORKSPACE}
+            git branch main
             ./scripts/bz.py --verbose
             chmod +x ./bin/neutralino-linux_aarch64
             npm ci
