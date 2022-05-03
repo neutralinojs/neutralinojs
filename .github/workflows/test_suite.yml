@@ -59,6 +59,8 @@ jobs:
             make \
             gcc \
             pkg-config
+            curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+            apt-get install -y nodejs
           githubToken: ${{ github.token }}
           run: |
             git config --global --add safe.directory ${GITHUB_WORKSPACE}
