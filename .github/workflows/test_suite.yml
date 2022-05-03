@@ -67,8 +67,8 @@ jobs:
             git branch main
             ./scripts/bz.py --verbose
             chmod +x ./bin/neutralino-linux_aarch64
-            npm ci
-            cd spec && npm ci && xvfb-run npm run test
+            cd $GITHUB_WORKSPACE/bin/extensions/sampleextension && npm ci
+            cd $GITHUB_WORKSPACE/spec && npm ci && xvfb-run npm run test
 
   build-windows:
     runs-on: windows-latest
