@@ -9,6 +9,7 @@
 #include "api/filesystem/filesystem.h"
 
 #if defined(_WIN32)
+#include <windows.h>
 #include <fileapi.h>
 #endif
 
