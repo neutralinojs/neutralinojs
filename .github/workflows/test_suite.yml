@@ -8,29 +8,29 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-      
+
     - name: Install Libraries
-      run: | 
+      run: |
         sudo apt-get update
         sudo apt-get install -y -f \
         libgtk-3-dev \
         libwebkit2gtk-4.0-37 \
         libwebkit2gtk-4.0-dev \
-        libayatana-appindicator3-dev 
+        libayatana-appindicator3-dev
         sudo apt-get install -y -f xvfb
-        
+
     - name: Build
       run: |
         ./scripts/bz.py
         chmod +x ./bin/neutralino-linux_x64
-        
+
     - name: Setup Spec Requirements
-      working-directory: ./bin/extensions/sampleextension 
+      working-directory: ./bin/extensions/sampleextension
       run: npm ci
-      
+
     - name: Run Spec
-      working-directory: ./spec 
-      run: | 
+      working-directory: ./spec
+      run: |
         npm ci
         xvfb-run npm run test
 
@@ -76,7 +76,7 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-      
+
     - name: Build
       run: python ./scripts/bz.py
       shell: cmd
@@ -86,18 +86,18 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
-      
+
     - name: Build
       run: |
         ./scripts/bz.py
         chmod +x ./bin/neutralino-mac_x64
-        
+
     - name: Setup Spec Requirements
-      working-directory: ./bin/extensions/sampleextension 
+      working-directory: ./bin/extensions/sampleextension
       run: npm ci
-      
+
     - name: Run Spec
-      working-directory: ./spec 
-      run: | 
+      working-directory: ./spec
+      run: |
         npm ci
         npm run test
