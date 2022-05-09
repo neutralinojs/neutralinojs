@@ -29,7 +29,7 @@ jobs:
         name: linux_binary
         path: bin/neutralino-linux_x64
 
-  build-aarch64:
+  build-arm64:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
@@ -59,8 +59,8 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: aarch64_binary
-          path: bin/neutralino-linux_aarch64
+          name: arm64_binary
+          path: bin/neutralino-linux_arm64
 
   build-windows:
     runs-on: windows-latest
@@ -90,7 +90,7 @@ jobs:
         path: bin/neutralino-mac_x64
         
   create-release:
-    needs: [build-linux, build-aarch64, build-windows, build-darwin]
+    needs: [build-linux, build-arm64, build-windows, build-darwin]
     runs-on: ubuntu-latest
     steps:
     - name: Checkout 
@@ -100,7 +100,7 @@ jobs:
       run: |
         rm -f \
         ./bin/neutralino-linux_x64 \
-        ./bin/neutralino-linux_aarch64 \
+        ./bin/neutralino-linux_arm64 \
         ./bin/neutralino-win_x64.exe \
         ./bin/neutralino-mac_x64
         
@@ -110,10 +110,10 @@ jobs:
         name: linux_binary
         path: ./bin
 
-    - name: Download Aarch64 build artifacts
+    - name: Download Arm64 build artifacts
       uses: actions/download-artifact@v2
       with:
-        name: aarch64_binary
+        name: arm64_binary
         path: ./bin
 
     - name: Download Windows build artifacts
@@ -131,7 +131,7 @@ jobs:
     - name: Create Release zip
       uses: vimtor/action-zip@v1
       with:
-        files: ./bin/neutralino-linux_x64 ./bin/neutralino-linux_aarch64 ./bin/neutralino-win_x64.exe ./bin/neutralino-mac_x64 ./bin/WebView2Loader.dll
+        files: ./bin/neutralino-linux_x64 ./bin/neutralino-linux_arm64 ./bin/neutralino-win_x64.exe ./bin/neutralino-mac_x64 ./bin/WebView2Loader.dll
         dest: './bin/neutralinojs-v${{github.event.inputs.version}}.zip'
         
     - name: Create Release Notes

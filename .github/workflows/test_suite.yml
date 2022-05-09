@@ -64,10 +64,9 @@ jobs:
             apt-get install -y nodejs
           githubToken: ${{ github.token }}
           run: |
-            git config --global --add safe.directory ${GITHUB_WORKSPACE}
             git branch main
             ./scripts/bz.py --verbose
-            chmod +x ./bin/neutralino-linux_aarch64
+            chmod +x ./bin/neutralino-linux_arm64
             cd $GITHUB_WORKSPACE/bin/extensions/sampleextension && npm ci
             cd $GITHUB_WORKSPACE/spec && npm ci && xvfb-run npm run test
 
