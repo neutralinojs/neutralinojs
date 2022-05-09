@@ -207,6 +207,7 @@ def compile(cmd):
     print(msg)
 
 def print_ascii_art():
+    print('runninnggggggggggggggg')
     print('''
   ____        _ _     _ ______     _
  |  _ \      (_) |   | |___  /    (_)
