@@ -68,7 +68,6 @@ jobs:
             apt-get install -y nodejs
           githubToken: ${{ github.token }}
           run: |
-            # silent startx on video console
             startx > /dev/null 2>&1
             git config --global --add safe.directory ${GITHUB_WORKSPACE}
             ./scripts/bz.py --verbose
