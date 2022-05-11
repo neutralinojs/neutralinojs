@@ -82,7 +82,7 @@ function getOutput() {
 function makeCommand(optArgs = '') {
     let command = `..${path.sep}bin${path.sep}neutralino-`;
     if(process.platform == 'linux') {
-        command += 'linux_' + (process.arch === 'arm64' ? process.arch : 'x64')
+        command += 'linux_' + process.arch
     }
     else if(process.platform == 'darwin') {
         command += 'mac_x64'
