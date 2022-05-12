@@ -75,8 +75,8 @@ jobs:
             cp ./bin/neutralino-linux_arm64 /artifacts/neutralino-linux_arm64
           
       - name: "Run"
-      - run: |
-          ls
+        run: |
+          ls artifacts
             
       - name: Commit and Push Changelog
         uses: EndBug/add-and-commit@v7.4.0
