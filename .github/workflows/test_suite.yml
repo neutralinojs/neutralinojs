@@ -34,7 +34,7 @@ jobs:
         npm ci
         xvfb-run npm run test
 
-  build-aarch64:
+  build-linux-aarch64:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
