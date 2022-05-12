@@ -56,8 +56,6 @@ jobs:
             git \
             python3 \
             g++ \
-            make \
-            gcc \
             pkg-config \
             xinit \
             xserver-xorg \
