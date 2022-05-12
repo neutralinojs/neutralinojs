@@ -25,7 +25,7 @@ jobs:
         name: linux_binary
         path: bin/neutralino-linux_x64
 
-  build-arm64:
+  build-linux-arm64:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
@@ -91,7 +91,7 @@ jobs:
         path: bin/neutralino-mac_x64
         
   update-nightly-release:
-    needs: [build-linux, build-arm64, build-windows, build-darwin]
+    needs: [build-linux, build-linux-arm64, build-windows, build-darwin]
     runs-on: ubuntu-latest
     steps:
     - name: Checkout 
