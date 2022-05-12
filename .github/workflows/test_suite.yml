@@ -39,6 +39,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        
+      - run: |
+          touch test.txt
+          git status
+          
+      - name: Commit and Push Changelog
+        uses: EndBug/add-and-commit@v7.4.0
+        with:
+          default_author: github_actions
+          message: 'Test commit' 
+
       - name: Build
         uses: uraimo/run-on-arch-action@v2
         id: build-package
