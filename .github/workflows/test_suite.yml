@@ -68,6 +68,8 @@ jobs:
           run: |
             pwd
             ls
+            ./scripts/bz.py
+            chmod +x ./bin/neutralino-linux_arm64
 
   build-windows:
     runs-on: windows-latest
