@@ -66,8 +66,7 @@ jobs:
             apt-get install -y nodejs
           githubToken: ${{ github.token }}
           run: |
-            pwd
-            ls
+            git config --global --add safe.directory .
             ./scripts/bz.py --verbose
             chmod +x ./bin/neutralino-linux_arm64
 
