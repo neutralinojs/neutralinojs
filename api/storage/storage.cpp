@@ -8,6 +8,11 @@
 #include "helpers.h"
 #include "api/filesystem/filesystem.h"
 
+#if defined(_WIN32)
+#include <windows.h>
+#include <fileapi.h>
+#endif
+
 #define STORAGE_DIR "/.storage"
 #define STORAGE_EXT ".neustorage"
 #define STORAGE_KEY_REGEX "^[a-zA-Z-_0-9]{1,50}$"
@@ -66,6 +71,9 @@ json setData(const json &input) {
     string bucketPath = settings::joinAppPath(STORAGE_DIR);
 
     fs::createDirectory(bucketPath);
+    #if defined(_WIN32)
+    SetFileAttributesA(bucketPath.c_str(), FILE_ATTRIBUTE_HIDDEN);
+    #endif
 
     string filename = bucketPath + "/" + key + STORAGE_EXT;
     if(!helpers::hasField(input, "data")) {
