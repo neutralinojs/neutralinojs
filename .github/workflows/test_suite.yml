@@ -34,12 +34,12 @@ jobs:
         npm ci
         xvfb-run npm run test
 
-  build-linux-aarch64:
+  build-linux-arm64:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Build package
+      - name: Build
         uses: uraimo/run-on-arch-action@v2
         id: build-package
         with:
@@ -58,11 +58,17 @@ jobs:
             g++ \
             pkg-config \
             xvfb
+            curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+            apt-get install -y nodejs
           githubToken: ${{ github.token }}
           run: |
             git config --global --add safe.directory $GITHUB_WORKSPACE
-            ./scripts/bz.py --verbose
+            ./scripts/bz.py
             chmod +x ./bin/neutralino-linux_arm64
+            (cd ./bin/extensions/sampleextension && npm ci)
+            cd spec
+            npm ci
+            xvfb-run npm run test
 
   build-windows:
     runs-on: windows-latest
