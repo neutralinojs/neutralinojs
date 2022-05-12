@@ -62,14 +62,29 @@ jobs:
             curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
             apt-get install -y nodejs
           githubToken: ${{ github.token }}
+          
+          setup: |
+            mkdir -p "${PWD}/artifacts"
+            
+          dockerRunArgs: |
+            --volume "${PWD}/artifacts:/artifacts"
+            
           run: |
             git config --global --add safe.directory $GITHUB_WORKSPACE
             ./scripts/bz.py
-            chmod +x ./bin/neutralino-linux_arm64
-            (cd ./bin/extensions/sampleextension && npm ci)
-            cd spec
-            npm ci
-            xvfb-run npm run test
+            cp ./bin/neutralino-linux_arm64 /artifacts/neutralino-linux_arm64
+          
+      - name: "Run"
+      - run: |
+          ls
+            
+      - name: Commit and Push Changelog
+        uses: EndBug/add-and-commit@v7.4.0
+        with:
+          default_author: github_actions
+          message: 'Add binaries' 
+          add: 'artifacts'
+
 
   build-windows:
     runs-on: windows-latest
