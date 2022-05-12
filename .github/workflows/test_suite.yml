@@ -69,11 +69,7 @@ jobs:
           githubToken: ${{ github.token }}
           run: |
             pwd
-            git config --global --add safe.directory ${GITHUB_WORKSPACE}
-            ./scripts/bz.py --verbose
-            chmod +x ./bin/neutralino-linux_arm64
-            cd $GITHUB_WORKSPACE/bin/extensions/sampleextension && npm ci
-            cd $GITHUB_WORKSPACE/spec && npm ci
+            ls
 
   build-windows:
     runs-on: windows-latest
