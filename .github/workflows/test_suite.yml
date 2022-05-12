@@ -57,6 +57,7 @@ jobs:
             python3 \
             g++ \
             pkg-config \
+            xorg \
             dbus-x11 \
             at-spi2-core \
             xvfb
