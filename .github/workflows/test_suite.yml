@@ -44,7 +44,7 @@ jobs:
         id: build-package
         with:
           arch: aarch64
-          distro: ubuntu18.04
+          distro: ubuntu20.04
           install: |
             apt-get update
             apt-get install -y -f \
@@ -57,10 +57,6 @@ jobs:
             python3 \
             g++ \
             pkg-config \
-            xinit \
-            xserver-xorg \
-            x11-xserver-utils \
-            matchbox-window-manager \
             xvfb
             curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
             apt-get install -y nodejs
