@@ -52,6 +52,7 @@ jobs:
             libwebkit2gtk-4.0-37 \
             libwebkit2gtk-4.0-dev \
             libayatana-appindicator3-1 \
+            make \
             curl \
             git \
             python3 \
