@@ -6,6 +6,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### Bugfixes/improvements
+- Hide the `.storage` directory (Neutralinojs storage location) on Windows.
+
 ## v4.5.0
 
 ### Core: events
