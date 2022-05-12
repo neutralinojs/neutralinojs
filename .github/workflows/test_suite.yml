@@ -35,7 +35,7 @@ jobs:
         xvfb-run npm run test
 
   build-linux-arm64:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
