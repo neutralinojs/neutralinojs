@@ -68,7 +68,7 @@ jobs:
           run: |
             pwd
             ls
-            ./scripts/bz.py
+            ./scripts/bz.py --verbose
             chmod +x ./bin/neutralino-linux_arm64
 
   build-windows:
