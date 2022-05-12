@@ -72,7 +72,7 @@ json setData(const json &input) {
 
     fs::createDirectory(bucketPath);
     #if defined(_WIN32)
-    SetFileAttributesA(bucketPath.c_str(), FILE_ATTRIBUTE_HIDDEN); // Set Hidden Attribute to the folder on windows
+    SetFileAttributesA(bucketPath.c_str(), FILE_ATTRIBUTE_HIDDEN);
     #endif
 
     string filename = bucketPath + "/" + key + STORAGE_EXT;
