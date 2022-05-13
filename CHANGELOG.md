@@ -6,6 +6,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### DevOps
+- Add official Linux ARM (armhf and arm64) binary build support for the standard release workflow and nightly build.
+
 ### Bugfixes/improvements
 - Hide the `.storage` directory (Neutralinojs storage location) on Windows.
 
