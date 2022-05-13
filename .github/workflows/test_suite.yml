@@ -58,7 +58,7 @@ jobs:
           githubToken: ${{ github.token }}
             
           dockerRunArgs: |
-            --volume "./bin:/artifacts"
+            --volume "${PWD}/bin:/artifacts"
             
           run: |
             git config --global --add safe.directory $GITHUB_WORKSPACE
