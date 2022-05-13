@@ -5,11 +5,17 @@ on: [push, pull_request]
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        arch: [x64, arm64, armhf]
+        
     steps:
     - name: Checkout
       uses: actions/checkout@v2
 
     - name: Install Libraries
+      if: ${{ matrix.arch == 'x64' }}
       run: |
         sudo apt-get update
         sudo apt-get install -y -f \
@@ -20,52 +26,45 @@ jobs:
         xvfb
 
     - name: Build
+      if: ${{ matrix.arch == 'x64' }}
       run: |
         ./scripts/bz.py
         chmod +x ./bin/neutralino-linux_x64
+        
+    - name: Build
+      if: ${{ matrix.arch == 'arm64' || matrix.arch == 'armhf' }}
+      uses: uraimo/run-on-arch-action@v2
+      id: build-package
+      with:
+        arch: ${{ matrix.arch == 'arm64' && 'aarch64' || 'armv7' }}
+        distro: ubuntu20.04
+        install: |
+          apt-get update
+          apt-get install -y -f \
+          libgtk-3-dev \
+          libwebkit2gtk-4.0-dev \
+          git \
+          python3 \
+          g++ \
+          pkg-config
+
+        githubToken: ${{ github.token }}
+
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          ./scripts/bz.py --verbose
 
     - name: Setup Spec Requirements
+      if: ${{ matrix.arch == 'x64' }}
       working-directory: ./bin/extensions/sampleextension
       run: npm ci
 
     - name: Run Spec
+      if: ${{ matrix.arch == 'x64' }}
       working-directory: ./spec
       run: |
         npm ci
         xvfb-run npm run test
-
-  build-linux-arm:
-    runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        arch: [arm64, armhf]
-        
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Build
-        uses: uraimo/run-on-arch-action@v2
-        id: build-package
-        with:
-          arch: ${{ matrix.arch == 'arm64' && 'aarch64' || 'armv7' }}
-          distro: ubuntu20.04
-          install: |
-            apt-get update
-            apt-get install -y -f \
-            libgtk-3-dev \
-            libwebkit2gtk-4.0-dev \
-            git \
-            python3 \
-            g++ \
-            pkg-config
-            
-          githubToken: ${{ github.token }}
-            
-          run: |
-            git config --global --add safe.directory $GITHUB_WORKSPACE
-            ./scripts/bz.py --verbose
 
 
   build-windows:
