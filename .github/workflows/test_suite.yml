@@ -43,16 +43,29 @@ jobs:
           apt-get install -y -f \
           libgtk-3-dev \
           libwebkit2gtk-4.0-dev \
+          libwebkit2gtk-4.0-37 \
+          libayatana-appindicator3-1 \
+          dbus-x11 \
+          at-spi2-core \
+          xvfb \
+          curl \
+          make \
           git \
           python3 \
           g++ \
           pkg-config
+          curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
+          apt-get install -y nodejs
 
         githubToken: ${{ github.token }}
 
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
-          ./scripts/bz.py --verbose
+          ./scripts/bz.py
+          (cd ./bin/extensions/sampleextension && npm ci)
+          cd spec && npm ci
+          chmod +x ./bin/neutralino-linux_${{ matrix.arch }}
+          xvfb-run npm run test
 
     - name: Setup Spec Requirements
       if: ${{ matrix.arch == 'x64' }}
