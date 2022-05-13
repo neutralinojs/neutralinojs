@@ -34,7 +34,7 @@ jobs:
         npm ci
         xvfb-run npm run test
 
-  build-linux-arm64:
+  build-linux-arm:
     runs-on: ubuntu-latest
     
     strategy:
