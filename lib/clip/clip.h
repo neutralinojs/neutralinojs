@@ -1,5 +1,5 @@
 // Clip Library
-// Copyright (c) 2015-2018 David Capello
+// Copyright (c) 2015-2022 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -118,6 +118,8 @@ namespace clip {
     unsigned long green_shift = 0;
     unsigned long blue_shift = 0;
     unsigned long alpha_shift = 0;
+
+    unsigned long required_data_size() const;
   };
 
   // The image data must contain straight RGB values

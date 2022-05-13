@@ -16,10 +16,10 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #   define WIN32_LEAN_AND_MEAN 1
 #endif
-#include <Windows.h>
+#include <windows.h>
 #include <commdlg.h>
-#include <ShlObj.h>
-#include <ShObjIdl.h> // IFileDialog
+#include <shlobj.h>
+#include <shobjidl.h> // IFileDialog
 #include <shellapi.h>
 #include <strsafe.h>
 #include <future>     // std::async
@@ -506,6 +506,9 @@ inline bool settings::available()
     return true;
 #elif __APPLE__
     return true;
+#elif __EMSCRIPTEN__
+    // FIXME: Return true after implementation is complete.
+    return false;
 #else
     settings tmp;
     return tmp.flags(flag::has_zenity) ||
@@ -599,7 +602,6 @@ inline bool internal::executor::kill()
     }
 #elif __EMSCRIPTEN__ || __NX__
     // FIXME: do something
-    (void)timeout;
     return false; // cannot kill
 #else
     ::kill(m_pid, SIGKILL);
@@ -900,9 +902,9 @@ inline std::string internal::dialog::get_icon_name(icon _icon)
         // Zenity wants "information" but WinForms wants "info"
         /* case icon::info: */ default:
 #if _WIN32
-            return "information";
-#else
             return "info";
+#else
+            return "information";
 #endif
     }
 }
@@ -992,7 +994,6 @@ inline internal::file_dialog::file_dialog(type in_type,
             BROWSEINFOW bi;
             memset(&bi, 0, sizeof(bi));
 
-            bi.hwndOwner = GetForegroundWindow();
             bi.lpfn = &bffcallback;
             bi.lParam = (LPARAM)this;
 
@@ -1020,7 +1021,7 @@ inline internal::file_dialog::file_dialog(type in_type,
         OPENFILENAMEW ofn;
         memset(&ofn, 0, sizeof(ofn));
         ofn.lStructSize = sizeof(OPENFILENAMEW);
-        ofn.hwndOwner = GetForegroundWindow();
+        ofn.hwndOwner = GetActiveWindow();
 
         ofn.lpstrFilter = wfilter_list.c_str();
 
@@ -1092,6 +1093,13 @@ inline internal::file_dialog::file_dialog(type in_type,
 
         return "";
     });
+#elif __EMSCRIPTEN__
+    // FIXME: do something
+    (void)in_type;
+    (void)title;
+    (void)default_path;
+    (void)filters;
+    (void)options;
 #else
     auto command = desktop_helper();
 
@@ -1304,7 +1312,7 @@ inline std::string internal::file_dialog::select_folder_vista(IFileDialog *ifd, 
     ifd->SetOptions(FOS_PICKFOLDERS);
     ifd->SetTitle(m_wtitle.c_str());
 
-    hr = ifd->Show(GetForegroundWindow());
+    hr = ifd->Show(GetActiveWindow());
     if (SUCCEEDED(hr))
     {
         IShellItem* item;
@@ -1400,6 +1408,10 @@ inline notify::notify(std::string const &title,
 
     // Display the new icon
     Shell_NotifyIconW(NIM_ADD, nid.get());
+#elif __EMSCRIPTEN__
+    // FIXME: do something
+    (void)title;
+    (void)message;
 #else
     auto command = desktop_helper();
 

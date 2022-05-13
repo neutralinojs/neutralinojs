@@ -237,6 +237,16 @@ std::string getCacheDir() {
 #endif
 }
 
+std::string getStateDir() {
+#ifdef _WIN32
+	return GetAppDataLocal();
+#elif defined(__APPLE__)
+	return getHome()+"/Library/Application Support";
+#else
+	return getLinuxFolderDefault("XDG_STATE_HOME", ".local/state");
+#endif
+}
+
 void appendAdditionalDataDirectories(std::vector<std::string>& homes) {
 #ifdef _WIN32
 	homes.push_back(GetAppDataCommon());

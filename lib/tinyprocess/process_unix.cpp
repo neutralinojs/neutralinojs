@@ -100,8 +100,8 @@ Process::id_type Process::open(const std::function<void()> &function) noexcept {
     }
 
     setpgid(0, 0);
-    //TODO: See here on how to emulate tty for colors: http://stackoverflow.com/questions/1401002/trick-an-application-into-thinking-its-stdin-is-interactive-not-a-pipe
-    //TODO: One solution is: echo "command;exit"|script -q /dev/null
+    // TODO: See here on how to emulate tty for colors: http://stackoverflow.com/questions/1401002/trick-an-application-into-thinking-its-stdin-is-interactive-not-a-pipe
+    // TODO: One solution is: echo "command;exit"|script -q /dev/null
 
     if(function)
       function();
