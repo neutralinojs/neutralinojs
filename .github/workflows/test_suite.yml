@@ -50,25 +50,15 @@ jobs:
             apt-get update
             apt-get install -y -f \
             libgtk-3-dev \
-            libwebkit2gtk-4.0-37 \
             libwebkit2gtk-4.0-dev \
-            libayatana-appindicator3-1 \
-            make \
-            curl \
             git \
             python3 \
             g++ \
-            pkg-config \
-            xvfb
-            curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
-            apt-get install -y nodejs
+            pkg-config
           githubToken: ${{ github.token }}
-          
-          setup: |
-            mkdir -p "${PWD}/artifacts"
             
           dockerRunArgs: |
-            --volume "${PWD}/artifacts:/artifacts"
+            --volume "./bin:/artifacts"
             
           run: |
             git config --global --add safe.directory $GITHUB_WORKSPACE
@@ -77,14 +67,7 @@ jobs:
           
       - name: "Run"
         run: |
-          ls artifacts
-            
-      - name: Commit and Push Changelog
-        uses: EndBug/add-and-commit@v7.4.0
-        with:
-          default_author: github_actions
-          message: 'Add binaries' 
-          add: 'artifacts'
+          ls bin
 
 
   build-windows:
