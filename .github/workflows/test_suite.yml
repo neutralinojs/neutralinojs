@@ -63,7 +63,6 @@ jobs:
           run: |
             git config --global --add safe.directory $GITHUB_WORKSPACE
             ./scripts/bz.py
-            cp ./bin/neutralino-linux_arm64 /artifacts/neutralino-linux_arm64
           
       - name: "Run"
         run: |
