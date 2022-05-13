@@ -1,6 +1,6 @@
 name: Test suite
 
-on: workflow_dispatch
+on: [push, pull_request]
 
 jobs:
   build-linux:
