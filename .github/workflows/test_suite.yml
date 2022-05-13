@@ -36,6 +36,11 @@ jobs:
 
   build-linux-arm64:
     runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        arch: [arm64, armhf]
+        
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -44,7 +49,7 @@ jobs:
         uses: uraimo/run-on-arch-action@v2
         id: build-package
         with:
-          arch: aarch64
+          arch: ${{ matrix.arch == 'arm64' && 'aarch64' || 'armv7' }}
           distro: ubuntu20.04
           install: |
             apt-get update
@@ -55,18 +60,12 @@ jobs:
             python3 \
             g++ \
             pkg-config
-          githubToken: ${{ github.token }}
             
-          dockerRunArgs: |
-            --volume "${PWD}/bin:${PWD}/bin"
+          githubToken: ${{ github.token }}
             
           run: |
             git config --global --add safe.directory $GITHUB_WORKSPACE
-            ./scripts/bz.py
-          
-      - name: "Run"
-        run: |
-          ls bin
+            ./scripts/bz.py --verbose
 
 
   build-windows:
