@@ -28,6 +28,10 @@ def get_arch(short_names = True, use_mac_rosetta = True):
 
     if short_names and (arch in ['aarch64']):
         arch = 'arm64'
+    
+    if short_names and (arch in ['armv7l']):
+        arch = 'armhf'
+    
     return arch
 
 def get_os_shortname():
