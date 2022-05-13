@@ -7,61 +7,58 @@ on:
 jobs:
   build-linux:
     runs-on: ubuntu-18.04
+    
+    strategy:
+      matrix:
+        arch: [x64, arm64, armhf]
+        
     steps:
     - name: Checkout 
       uses: actions/checkout@v2
+      
     - name: Configure
+      if: ${{ matrix.arch == 'x64' }}
       run: |
         sudo apt-get update
         sudo apt-get install -y -f \
         libgtk-3-dev \
         libwebkit2gtk-4.0-37 \
         libwebkit2gtk-4.0-dev
+        
     - name: Build
+      if: ${{ matrix.arch == 'x64' }}
       run: ./scripts/bz.py
+      
+    - name: Build
+      if: ${{ matrix.arch == 'arm64' || matrix.arch == 'armhf' }}
+      uses: uraimo/run-on-arch-action@v2
+      id: build-package
+      with:
+        arch: ${{ matrix.arch == 'arm64' && 'aarch64' || 'armv7' }}
+        distro: ubuntu18.04
+        install: |
+          apt-get update
+          apt-get install -y -f \
+          libgtk-3-dev \
+          libwebkit2gtk-4.0-dev \
+          git \
+          python3 \
+          g++ \
+          pkg-config
+        githubToken: ${{ github.token }}
+        
+        dockerRunArgs: |
+            --volume "${PWD}/bin:${PWD}/bin"
+
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          ./scripts/bz.py
+      
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
-        name: linux_binary
-        path: bin/neutralino-linux_x64
-
-  build-linux-arm64:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Build package
-        uses: uraimo/run-on-arch-action@v2
-        id: build-package
-        with:
-          arch: aarch64
-          distro: ubuntu18.04
-          install: |
-            apt-get update
-            apt-get install -y -f \
-            libgtk-3-dev \
-            libwebkit2gtk-4.0-37 \
-            libwebkit2gtk-4.0-dev \
-            libayatana-appindicator3-dev \
-            curl \
-            git \
-            python3 \
-            g++ \
-            make \
-            gcc \
-            pkg-config \
-            xvfb
-            curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
-            apt-get install -y nodejs
-          githubToken: ${{ github.token }}
-          run: |
-            git branch main
-            ./scripts/bz.py --verbose
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: arm64_binary
-          path: bin/neutralino-linux_arm64
+        name: linux_${{ matrix.arch }}_binary
+        path: bin/neutralino-linux_${{ matrix.arch }}
 
   build-windows:
     runs-on: windows-latest
@@ -91,7 +88,7 @@ jobs:
         path: bin/neutralino-mac_x64
         
   update-nightly-release:
-    needs: [build-linux, build-linux-arm64, build-windows, build-darwin]
+    needs: [build-linux, build-windows, build-darwin]
     runs-on: ubuntu-latest
     steps:
     - name: Checkout 
@@ -107,13 +104,19 @@ jobs:
     - name: Download Linux build artifacts 
       uses: actions/download-artifact@v2
       with:
-        name: linux_binary
+        name: linux_x64_binary
         path: ./bin
-
-    - name: Download Arm64 build artifacts
+        
+    - name: Download Linux build artifacts 
       uses: actions/download-artifact@v2
       with:
-        name: arm64_binary
+        name: linux_arm64_binary
+        path: ./bin
+        
+    - name: Download Linux build artifacts 
+      uses: actions/download-artifact@v2
+      with:
+        name: linux_armhf_binary
         path: ./bin
 
     - name: Download Windows build artifacts
@@ -131,7 +134,7 @@ jobs:
     - name: Create Release zip
       uses: vimtor/action-zip@v1
       with:
-        files: ./bin/neutralino-linux_x64 ./bin/neutralino-linux_arm64 ./bin/neutralino-win_x64.exe ./bin/neutralino-mac_x64 ./bin/WebView2Loader.dll
+        files: ./bin/neutralino-linux_x64 ./bin/neutralino-linux_arm64 ./bin/neutralino-linux_armhf ./bin/neutralino-win_x64.exe ./bin/neutralino-mac_x64 ./bin/WebView2Loader.dll
         dest: './bin/neutralinojs-nightly.zip'
         
     - name: Create Release Notes
