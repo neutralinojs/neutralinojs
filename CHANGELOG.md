@@ -6,8 +6,6 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
-## v4.6.0
-
 ### Bugfixes/improvements
 - Hide the `.storage` directory (Neutralinojs storage location) on Windows.
 
