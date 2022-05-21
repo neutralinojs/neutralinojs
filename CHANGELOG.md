@@ -9,6 +9,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### DevOps
 - Add official Linux ARM (armhf and arm64) binary build support for the standard release workflow and nightly build.
 
+### API: filesystem
+- Expose `createdAt` and `modifiedAt` JavaScript timestamps via the `filesystem.getStats` function.
+
 ### Bugfixes/improvements
 - Hide the `.storage` directory (Neutralinojs storage location) on Windows.
 
