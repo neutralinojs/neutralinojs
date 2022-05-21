@@ -14,6 +14,9 @@
 #include <atlstr.h>
 #include <shlwapi.h>
 #include <winbase.h>
+
+#define WINDOWS_TICK 10000000
+#define SEC_TO_UNIX_EPOCH 11644473600LL
 #endif
 
 #include "lib/json/json.hpp"
@@ -27,6 +30,13 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace fs {
+    
+#if defined(_WIN32)
+// From: https://stackoverflow.com/a/6161842/3565513
+long long __winTickToUnixMS(long long windowsTicks) {
+    return (windowsTicks / WINDOWS_TICK - SEC_TO_UNIX_EPOCH) * 1000;
+}
+#endif
 
 bool createDirectory(const string &path) {
     #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
@@ -118,6 +128,8 @@ fs::FileStats getStats(const string &path) {
         fileStats.size = statBuffer.st_size;
         fileStats.isFile = S_ISREG(statBuffer.st_mode);
         fileStats.isDirectory = S_ISDIR(statBuffer.st_mode);
+        fileStats.createdAt = statBuffer.st_ctime * 1000;
+        fileStats.modifiedAt = statBuffer.st_mtime * 1000;
     }
 
     #elif defined(_WIN32)
@@ -133,6 +145,8 @@ fs::FileStats getStats(const string &path) {
         fileStats.size = size.QuadPart;
         fileStats.isFile = !(basicInfo.FileAttributes & FILE_ATTRIBUTE_DIRECTORY);
         fileStats.isDirectory = basicInfo.FileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+        fileStats.createdAt = __winTickToUnixMS(basicInfo.CreationTime.QuadPart);
+        fileStats.modifiedAt = __winTickToUnixMS(basicInfo.ChangeTime.QuadPart);
     }
 
     #endif
@@ -419,6 +433,8 @@ json getStats(const json &input) {
         stats["size"] = fileStats.size;
         stats["isFile"] = fileStats.isFile;
         stats["isDirectory"] = fileStats.isDirectory;
+        stats["createdAt"] = fileStats.createdAt;
+        stats["modifiedAt"] = fileStats.modifiedAt;
         output["returnValue"] = stats;
         output["success"] = true;
     }
