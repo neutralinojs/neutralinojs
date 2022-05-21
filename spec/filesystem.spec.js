@@ -181,6 +181,8 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             assert.ok(stats.isDirectory === true);
             assert.ok(typeof stats.isFile == 'boolean');
             assert.ok(stats.isFile === false);
+            assert.ok(typeof stats.createdAt == 'number');
+            assert.ok(typeof stats.modifiedAt == 'number');
         });
     });
 });
