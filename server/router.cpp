@@ -103,6 +103,9 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
         {"filesystem.getStats", fs::controllers::getStats},
         // Neutralino.os
         {"os.execCommand", os::controllers::execCommand},
+        {"os.spawnProcess", os::controllers::spawnProcess},
+        {"os.updateSpawnedProcess", os::controllers::updateSpawnedProcess},
+        {"os.getSpawnedProcesses", os::controllers::getSpawnedProcesses},
         {"os.getEnv", os::controllers::getEnv},
         {"os.showOpenDialog", os::controllers::showOpenDialog},
         {"os.showFolderDialog", os::controllers::showFolderDialog},

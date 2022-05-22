@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <stdexcept>
 #include <string>
 #include <array>
@@ -50,6 +51,16 @@ namespace os {
     struct tray_menu menus[MAX_TRAY_MENU_ITEMS];
     struct tray tray;
     bool trayInitialized = false;
+    map<int, TinyProcessLib::Process*> spawnedProcesses;
+    mutex spawnedProcessesLock;
+
+    void __dispatchSpawnedProcessEvt(int virtualPid, const string &action, const json &data) {
+        json evt;
+        evt["id"] = virtualPid;
+        evt["action"] = action;
+        evt["data"] = data;
+        events::dispatch("spawnedProcess", evt);
+    }
 
     bool isTrayInitialized() {
         return trayInitialized;
@@ -103,6 +114,63 @@ namespace os {
         }
         delete childProcess;
         return commandResult;
+    }
+
+    int spawnProcess(string command) {
+        #if defined(_WIN32)
+        command = "cmd.exe /c \"" + command + "\"";
+        #endif
+
+        TinyProcessLib::Process *childProcess;
+        lock_guard<mutex> guard(spawnedProcessesLock);
+        int virtualPid = spawnedProcesses.size();
+
+        childProcess = new TinyProcessLib::Process(
+            command, "",
+            [&](const char *bytes, size_t n) {
+                __dispatchSpawnedProcessEvt(virtualPid, "stdOut", string(bytes, n));
+            },
+            [&](const char *bytes, size_t n) {
+                __dispatchSpawnedProcessEvt(virtualPid, "stdErr", string(bytes, n));
+            }, true
+        );
+
+        spawnedProcesses[virtualPid] = childProcess;
+        __dispatchSpawnedProcessEvt(virtualPid, "spawn", childProcess->get_id());
+
+        thread processThread([=](){
+            int exitCode = childProcess->get_exit_status(); // sync wait
+            __dispatchSpawnedProcessEvt(virtualPid, "exit", exitCode);
+            lock_guard<mutex> guard(spawnedProcessesLock);
+            spawnedProcesses.erase(virtualPid);
+            delete childProcess;
+        });
+        processThread.detach();
+
+        return virtualPid;
+    }
+
+    bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt) {
+        if(spawnedProcesses.find(evt.id) == spawnedProcesses.end()) {
+            return false;
+        }
+
+        TinyProcessLib::Process *childProcess = spawnedProcesses[evt.id];
+
+        if(evt.type == "exit") {
+            childProcess->kill();
+        }
+        else if(evt.type == "stdIn") {
+            childProcess->write(evt.stdIn);
+        }
+        else if(evt.type == "stdInEnd") {
+            childProcess->close_stdin();
+        }
+        else {
+            return false;
+        }
+
+        return true;
     }
 
     string getPath(const string &name) {
@@ -175,6 +243,61 @@ namespace controllers {
         retVal["stdErr"] = commandResult.stdErr;
 
         output["returnValue"] = retVal;
+        output["success"] = true;
+        return output;
+    }
+
+    json spawnProcess(const json &input) {
+        json output;
+        if(!helpers::hasRequiredFields(input, {"command"})) {
+            output["error"] = helpers::makeMissingArgErrorPayload();
+            return output;
+        }
+        string command = input["command"].get<string>();
+
+        output["returnValue"] = os::spawnProcess(command);
+        output["success"] = true;
+        return output;
+    }
+
+    json updateSpawnedProcess(const json &input) {
+        json output;
+        if(!helpers::hasRequiredFields(input, {"id", "event"})) {
+            output["error"] = helpers::makeMissingArgErrorPayload();
+            return output;
+        }
+
+        os::SpawnedProcessEvent processEvt;
+        processEvt.id = input["id"].get<int>();
+        processEvt.type = input["event"].get<string>();
+
+        if(helpers::hasField(input, "data")) {
+            if(processEvt.type == "stdIn") {
+                processEvt.stdIn = input["data"].get<string>();
+            }
+        }
+
+        if(os::updateSpawnedProcess(processEvt)) {
+            output["success"] = true;
+        }
+        else {
+            output["error"] = helpers::makeErrorPayload("NE_OS_UNLTOUP",
+                                    "Unable to update process id: " + to_string(processEvt.id));
+        }
+        return output;
+    }
+
+    json getSpawnedProcesses(const json &input) {
+        json output;
+        json processes = json::array();
+        lock_guard<mutex> guard(spawnedProcessesLock);
+        for(const auto &[id, childProcess]: spawnedProcesses) {
+            json process;
+            process["id"] = id;
+            process["pid"] = childProcess->get_id();
+            processes.push_back(process);
+        }
+        output["returnValue"] = processes;
         output["success"] = true;
         return output;
     }
