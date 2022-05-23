@@ -27,7 +27,7 @@ bool isTrayInitialized();
 void cleanupTray();
 void open(const string &url);
 os::CommandResult execCommand(string command, const string &input = "", bool background = false);
-int spawnProcess(string command);
+pair<int, int> spawnProcess(string command);
 bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt);
 string getPath(const string &name);
 string getEnv(const string &key);

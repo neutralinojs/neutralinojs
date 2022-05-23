@@ -116,7 +116,7 @@ namespace os {
         return commandResult;
     }
 
-    int spawnProcess(string command) {
+    pair<int, int> spawnProcess(string command) {
         #if defined(_WIN32)
         command = "cmd.exe /c \"" + command + "\"";
         #endif
@@ -136,7 +136,6 @@ namespace os {
         );
 
         spawnedProcesses[virtualPid] = childProcess;
-        __dispatchSpawnedProcessEvt(virtualPid, "spawn", childProcess->get_id());
 
         thread processThread([=](){
             int exitCode = childProcess->get_exit_status(); // sync wait
@@ -147,7 +146,7 @@ namespace os {
         });
         processThread.detach();
 
-        return virtualPid;
+        return make_pair(virtualPid, childProcess->get_id());
     }
 
     bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt) {
@@ -255,7 +254,12 @@ namespace controllers {
         }
         string command = input["command"].get<string>();
 
-        output["returnValue"] = os::spawnProcess(command);
+        auto spawnedData = os::spawnProcess(command);
+        
+        json process;
+        process["id"] = spawnedData.first;
+        process["pid"] = spawnedData.second;
+        output["returnValue"] = process;
         output["success"] = true;
         return output;
     }

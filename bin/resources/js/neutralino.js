@@ -277,7 +277,7 @@ var Neutralino = (function (exports) {
     function updateSpawnedProcess(id, event, data) {
         return sendMessage('os.updateSpawnedProcess', { id, event, data });
     }
-    function getSpawnedProcess() {
+    function getSpawnedProcesses() {
         return sendMessage('os.getSpawnedProcesses');
     }
     function getEnv(key) {
@@ -315,7 +315,7 @@ var Neutralino = (function (exports) {
         execCommand: execCommand,
         spawnProcess: spawnProcess,
         updateSpawnedProcess: updateSpawnedProcess,
-        getSpawnedProcess: getSpawnedProcess,
+        getSpawnedProcesses: getSpawnedProcesses,
         getEnv: getEnv,
         showOpenDialog: showOpenDialog,
         showFolderDialog: showFolderDialog,
