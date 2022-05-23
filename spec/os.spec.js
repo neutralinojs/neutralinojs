@@ -55,7 +55,6 @@ describe('os.spec: os namespace tests', () => {
 
                 let proc = await Neutralino.os.spawnProcess('node --version');
                 // Immediate command, so we get exit code instantly
-
                 Neutralino.events.on('spawnedProcess', async (evt) => {
                     if(evt.detail.id == proc.id && evt.detail.action == 'exit') {
                         await __close(evt.detail.data.toString());
@@ -69,7 +68,6 @@ describe('os.spec: os namespace tests', () => {
         it('sends stdOut with the stdOut action via the spawnProcess event', async () => {
             runner.run(`
                 let proc = Neutralino.os.spawnProcess('node --version');
-
                 Neutralino.events.on('spawnedProcess', async (evt) => {
                     if(evt.detail.action == 'stdOut') {
                         await __close(evt.detail.data);
@@ -88,8 +86,6 @@ describe('os.spec: os namespace tests', () => {
                         await __close(evt.detail.data);
                     }
                 });
-
-
             `);
             let output = runner.getOutput();
             assert.ok(output.length > 0);
@@ -132,13 +128,11 @@ describe('os.spec: os namespace tests', () => {
         it('accepts the exit action', async () => {
             runner.run(`
                 let proc = await Neutralino.os.spawnProcess('node');
-
                 Neutralino.events.on('spawnedProcess', async (evt) => {
                     if(evt.detail.action == 'exit') {
                         await __close(evt.detail.data.toString());
                     }
                 });
-
                 setTimeout(async () => {
                     await Neutralino.os.updateSpawnedProcess(proc.id, 'exit');
                 }, 1000);
