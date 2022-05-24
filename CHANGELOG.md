@@ -6,6 +6,32 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: Process spawning API
+We have `os.execCommand` for launching processes, but it's synchronous, meaning, the developer has to wait unti process completion to receive `pid`, `stdIn` and `stdOut`. `execCommand` is not suitable for long-running processes. The new spawning API offers API functions for handling long-running processes in a multi-threaded way.
+
+- `os.spawnProcess(command)`: Spawns a process and returns `id` (A virtual Neutralino-scoped pid) and `pid` (Operating system-level pid).
+- `os.getSpawnedProcesses()`: Returns a list of spawned processes.
+- `os.updateSpawnedProcess(id, action, data)`: Sends an action event for the spawned process. Supports the following actions:
+  - `stdIn`: Sends a string via the standard input stream. `data` is the input string.
+  - `stdInEnd`: Closes the standard input stream.
+  - `exit`: Terminates the spawned process.
+
+### Core: events
+- `spawnedProcess`: Dispatched when there is a change in the spawned process. `CustomEvent` gets triggered with the following object:
+```js
+{
+  id: <id>,
+  pid: <pid>,
+  action: <action>,
+  data: <data>
+}
+```
+Available actions:
+- `stdOut`: Outputs standard output data. `data` contains the standard output payload.
+- `stdErr`: Outputs standard error data. `data` contains the standard error payload.
+- `exit`: Notified when the process terminates. `data` contains the process exit code.
+
+
 ### DevOps
 - Add official Linux ARM (armhf and arm64) binary build support for the standard release workflow and nightly build.
 
