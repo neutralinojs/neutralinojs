@@ -271,6 +271,15 @@ var Neutralino = (function (exports) {
     function execCommand(command, options) {
         return sendMessage('os.execCommand', Object.assign({ command }, options));
     }
+    function spawnProcess(command) {
+        return sendMessage('os.spawnProcess', { command });
+    }
+    function updateSpawnedProcess(id, event, data) {
+        return sendMessage('os.updateSpawnedProcess', { id, event, data });
+    }
+    function getSpawnedProcesses() {
+        return sendMessage('os.getSpawnedProcesses');
+    }
     function getEnv(key) {
         return sendMessage('os.getEnv', { key });
     }
@@ -304,6 +313,9 @@ var Neutralino = (function (exports) {
         get Icon () { return Icon; },
         get MessageBoxChoice () { return MessageBoxChoice; },
         execCommand: execCommand,
+        spawnProcess: spawnProcess,
+        updateSpawnedProcess: updateSpawnedProcess,
+        getSpawnedProcesses: getSpawnedProcesses,
         getEnv: getEnv,
         showOpenDialog: showOpenDialog,
         showFolderDialog: showFolderDialog,
@@ -725,7 +737,7 @@ var Neutralino = (function (exports) {
         writeText: writeText
     });
 
-    var version = "3.3.0";
+    var version = "3.4.0";
 
     let initialized = false;
     function init() {
@@ -740,7 +752,7 @@ var Neutralino = (function (exports) {
             }));
         }
         window.NL_CVERSION = version;
-        window.NL_CCOMMIT = 'a68e0b75c4889d2836a5f7d9fc599e23eefa2cc5'; // only the build server will update this
+        window.NL_CCOMMIT = '6d93ed508a4c01de1a00e66f7bbb20c5756c1b21'; // only the build server will update this
         initialized = true;
     }
 

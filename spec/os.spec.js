@@ -32,6 +32,116 @@ describe('os.spec: os namespace tests', () => {
     });
 
 
+     describe('os.spawnProcess', () => {
+        it('spawns a processes and returns the virtual pid and pid', async () => {
+            runner.run(`
+                let vids = [];
+                let vid = await Neutralino.os.spawnProcess('node'); // This is non-blocking (multi-threaded)
+                vids.push(vid);
+                vid = await Neutralino.os.spawnProcess('node');
+                vids.push(vid);
+                await __close(JSON.stringify(vids));
+            `);
+            let vids = JSON.parse(runner.getOutput());
+            assert.equal(vids[0].id, 0);
+            assert.equal(vids[1].id, 1);
+            assert.ok(vids[0].pid > 0);
+            assert.ok(vids[1].pid > 0);
+        });
+
+
+        it('sends the exit code with the exit action via the spawnProcess event', async () => {
+            runner.run(`
+
+                let proc = await Neutralino.os.spawnProcess('node --version');
+                // Immediate command, so we get exit code instantly
+                Neutralino.events.on('spawnedProcess', async (evt) => {
+                    if(evt.detail.id == proc.id && evt.detail.action == 'exit') {
+                        await __close(evt.detail.data.toString());
+                    }
+                });
+            `);
+            let vid = parseInt(runner.getOutput());
+            assert.equal(vid, 0);
+        });
+
+        it('sends stdOut with the stdOut action via the spawnProcess event', async () => {
+            runner.run(`
+                let proc = Neutralino.os.spawnProcess('node --version');
+                Neutralino.events.on('spawnedProcess', async (evt) => {
+                    if(evt.detail.action == 'stdOut') {
+                        await __close(evt.detail.data);
+                    }
+                });
+            `);
+            let output = runner.getOutput();
+            assert.ok(output.charAt(0) == 'v');
+        });
+
+        it('sends stdErr with the stdErr action via the spawnProcess event', async () => {
+            runner.run(`
+                let proc = await Neutralino.os.spawnProcess('node --unknown-option');
+                Neutralino.events.on('spawnedProcess', async (evt) => {
+                    if(evt.detail.id == proc.id && evt.detail.action == 'stdErr') {
+                        await __close(evt.detail.data);
+                    }
+                });
+            `);
+            let output = runner.getOutput();
+            assert.ok(output.length > 0);
+        });
+    });
+
+
+    describe('os.getSpawnedProcesses', () => {
+        it('returns spawned processes', async () => {
+            runner.run(`
+                let vid = await Neutralino.os.spawnProcess('node');
+                let processes = await Neutralino.os.getSpawnedProcesses();
+                await __close(JSON.stringify(processes));
+            `);
+            let processes = JSON.parse(runner.getOutput());
+            assert.ok(processes.length > 0);
+            assert.ok(typeof processes[0].id == 'number');
+            assert.ok(typeof processes[0].pid == 'number');
+            assert.equal(processes[0].id, 0);
+            assert.ok(processes[0].pid > 0);
+        });
+    });
+
+    describe('os.updateSpawnedProcesses', () => {
+        it('accepts stdIn and stdInEnd actions', async () => {
+            runner.run(`
+                let proc = await Neutralino.os.spawnProcess('node');
+                Neutralino.events.on('spawnedProcess', async (evt) => {
+                    if(evt.detail.id == proc.id && evt.detail.action == 'stdOut') {
+                        await __close(evt.detail.data);
+                    }
+                });
+                await Neutralino.os.updateSpawnedProcess(proc.id, 'stdIn', 'console.log(5+5);');
+                await Neutralino.os.updateSpawnedProcess(proc.id, 'stdInEnd');
+            `);
+            let output = parseInt(runner.getOutput().trim());
+            assert.equal(output, 10);
+        });
+
+        it('accepts the exit action', async () => {
+            runner.run(`
+                let proc = await Neutralino.os.spawnProcess('node');
+                Neutralino.events.on('spawnedProcess', async (evt) => {
+                    if(evt.detail.action == 'exit') {
+                        await __close(evt.detail.data.toString());
+                    }
+                });
+                setTimeout(async () => {
+                    await Neutralino.os.updateSpawnedProcess(proc.id, 'exit');
+                }, 1000);
+            `);
+            let exitCode = parseInt(runner.getOutput().trim());
+            assert.ok(exitCode > 0);
+        });
+    });
+
     describe('os.getEnv', () => {
         it('returns an environment variable value', async () => {
             runner.run(`
