@@ -41,7 +41,7 @@
             "hidden": false,
             "resizable": true,
             "exitProcessOnClose": false,
-            "port": 0
+            "port": 80
         },
         "browser": {
             "globalVariables": {

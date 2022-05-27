@@ -3,6 +3,7 @@
 #include <thread>
 #if defined(_WIN32)
 #include <winsock2.h>
+#include <websocketpp/error.hpp>
 #endif
 
 #include "lib/json/json.hpp"
@@ -98,7 +99,17 @@ void __startServerAsync() {
     json jEnableServer = settings::getOptionForCurrentMode("enableServer");
 
     if(!jEnableServer.is_null() && jEnableServer.get<bool>()) {
-        navigationUrl = neuserver::init();
+        try {
+            navigationUrl = neuserver::init();
+        }
+        catch(websocketpp::exception &e) {
+            int port = settings::getOptionForCurrentMode("port");
+            pfd::message("Unable to start server",
+                "Neutralinojs can't initialize the application server on port: " + to_string(port),
+                pfd::choice::ok,
+                pfd::icon::error);
+            std::exit(1);
+        }
         neuserver::startAsync();
     }
 }
