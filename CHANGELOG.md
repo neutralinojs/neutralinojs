@@ -40,6 +40,8 @@ Available actions:
 
 ### Bugfixes/improvements
 - Hide the `.storage` directory (Neutralinojs storage location) on Windows.
+- Support using query parameters in resources URLs.
+- Show a user-friendly error message for Neutralinojs server initialization failures. 
 
 ## v4.5.0
 
