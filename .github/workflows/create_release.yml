@@ -137,7 +137,7 @@ jobs:
     - name: Create Release zip
       uses: vimtor/action-zip@v1
       with:
-        files: ./bin/neutralino-linux_x64 ./bin/neutralino-linux_arm64 ./bin/neutralino-win_x64.exe ./bin/neutralino-mac_x64 ./bin/WebView2Loader.dll
+        files: ./bin/neutralino-linux_x64 ./bin/neutralino-linux_arm64 ./bin/neutralino-linux_armhf ./bin/neutralino-win_x64.exe ./bin/neutralino-mac_x64 ./bin/WebView2Loader.dll
         dest: './bin/neutralinojs-v${{github.event.inputs.version}}.zip'
         
     - name: Create Release Notes
