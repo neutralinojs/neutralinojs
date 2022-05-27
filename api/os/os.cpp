@@ -127,10 +127,10 @@ namespace os {
 
         childProcess = new TinyProcessLib::Process(
             command, "",
-            [&](const char *bytes, size_t n) {
+            [=](const char *bytes, size_t n) {
                 __dispatchSpawnedProcessEvt(virtualPid, "stdOut", string(bytes, n));
             },
-            [&](const char *bytes, size_t n) {
+            [=](const char *bytes, size_t n) {
                 __dispatchSpawnedProcessEvt(virtualPid, "stdErr", string(bytes, n));
             }, true
         );
