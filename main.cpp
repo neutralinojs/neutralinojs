@@ -103,9 +103,13 @@ void __startServerAsync() {
             navigationUrl = neuserver::init();
         }
         catch(websocketpp::exception &e) {
-            int port = settings::getOptionForCurrentMode("port");
+            json jPort = settings::getOptionForCurrentMode("port");
+            string errorMsg = "Neutralinojs can't initialize the application server";
+            if(!jPort.is_null()) {
+                errorMsg += " on port: " + to_string(jPort.get<int>());
+            }
             pfd::message("Unable to start server",
-                "Neutralinojs can't initialize the application server on port: " + to_string(port),
+                errorMsg,
                 pfd::choice::ok,
                 pfd::icon::error);
             std::exit(1);
