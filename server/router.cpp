@@ -251,6 +251,9 @@ router::Response serve(string path) {
     path = string(decodedPath);
     delete []decodedPath;
 
+    // Ignore query params
+    path = path.substr(0, path.find("?"));
+
     bool isClientLibrary = regex_match(path, regex(".*neutralino.js$"));
 
     if(isClientLibrary) {
