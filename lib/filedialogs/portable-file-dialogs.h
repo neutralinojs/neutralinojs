@@ -1,7 +1,7 @@
 //
 //  Portable File Dialogs
 //
-//  Copyright © 2018—2020 Sam Hocevar <sam@hocevar.net>
+//  Copyright © 2018–2022 Sam Hocevar <sam@hocevar.net>
 //
 //  This library is free software. It comes without any warranty, to
 //  the extent permitted by applicable law. You can redistribute it
@@ -478,6 +478,11 @@ inline settings::settings(bool resync)
     if (flags(flag::is_scanned))
         return;
 
+    auto pfd_verbose = std::getenv("PFD_VERBOSE");
+    auto match_no = std::regex("(|0|no|false)", std::regex_constants::icase);
+    if (pfd_verbose && !std::regex_match(pfd_verbose, match_no))
+        flags(flag::is_verbose) = true;
+
 #if _WIN32
     flags(flag::is_vista) = internal::is_vista();
 #elif !__APPLE__
@@ -598,7 +603,11 @@ inline bool internal::executor::kill()
         EnumWindows(&enum_windows_callback, (LPARAM)this);
         for (auto hwnd : m_windows)
             if (previous_windows.find(hwnd) == previous_windows.end())
+            {
                 SendMessage(hwnd, WM_CLOSE, 0, 0);
+                // Also send IDNO in case of a Yes/No or Abort/Retry/Ignore messagebox
+                SendMessage(hwnd, WM_COMMAND, IDNO, 0);
+            }
     }
 #elif __EMSCRIPTEN__ || __NX__
     // FIXME: do something
@@ -1522,45 +1531,45 @@ inline message::message(std::string const &title,
     {
         std::string script = "display dialog " + osascript_quote(text) +
                              " with title " + osascript_quote(title);
+        auto if_cancel = button::cancel;
         switch (_choice)
         {
             case choice::ok_cancel:
                 script += "buttons {\"OK\", \"Cancel\"}"
                           " default button \"OK\""
                           " cancel button \"Cancel\"";
-                m_mappings[256] = button::cancel;
                 break;
             case choice::yes_no:
                 script += "buttons {\"Yes\", \"No\"}"
                           " default button \"Yes\""
                           " cancel button \"No\"";
-                m_mappings[256] = button::no;
+                if_cancel = button::no;
                 break;
             case choice::yes_no_cancel:
                 script += "buttons {\"Yes\", \"No\", \"Cancel\"}"
                           " default button \"Yes\""
                           " cancel button \"Cancel\"";
-                m_mappings[256] = button::cancel;
                 break;
             case choice::retry_cancel:
                 script += "buttons {\"Retry\", \"Cancel\"}"
                           " default button \"Retry\""
                           " cancel button \"Cancel\"";
-                m_mappings[256] = button::cancel;
                 break;
             case choice::abort_retry_ignore:
                 script += "buttons {\"Abort\", \"Retry\", \"Ignore\"}"
-                          " default button \"Retry\""
+                          " default button \"Abort\""
                           " cancel button \"Retry\"";
-                m_mappings[256] = button::cancel;
+                if_cancel = button::retry;
                 break;
             case choice::ok: default:
                 script += "buttons {\"OK\"}"
                           " default button \"OK\""
                           " cancel button \"OK\"";
-                m_mappings[256] = button::ok;
+                if_cancel = button::ok;
                 break;
         }
+        m_mappings[1] = if_cancel;
+        m_mappings[256] = if_cancel; // XXX: I think this was never correct
         script += " with icon ";
         switch (_icon)
         {
@@ -1604,6 +1613,7 @@ inline message::message(std::string const &title,
 
         command.insert(command.end(), { "--title", title,
                                         "--width=300", "--height=0", // sensible defaults
+                                        "--no-markup", // do not interpret text as Pango markup
                                         "--text", text,
                                         "--icon-name=dialog-" + get_icon_name(_icon) });
     }
@@ -1656,8 +1666,7 @@ inline button message::result()
     auto ret = m_async->result(&exit_code);
     // osascript will say "button returned:Cancel\n"
     // and others will just say "Cancel\n"
-    if (exit_code < 0 || // this means cancel
-        internal::ends_with(ret, "Cancel\n"))
+    if (internal::ends_with(ret, "Cancel\n"))
         return button::cancel;
     if (internal::ends_with(ret, "OK\n"))
         return button::ok;
