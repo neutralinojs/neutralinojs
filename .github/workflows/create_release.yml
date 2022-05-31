@@ -95,14 +95,6 @@ jobs:
     steps:
     - name: Checkout 
       uses: actions/checkout@v2
-      
-    - name: Clean previous binaries
-      run: |
-        rm -f \
-        ./bin/neutralino-linux_x64 \
-        ./bin/neutralino-linux_arm64 \
-        ./bin/neutralino-win_x64.exe \
-        ./bin/neutralino-mac_x64
         
     - name: Download Linux build artifacts 
       uses: actions/download-artifact@v2
