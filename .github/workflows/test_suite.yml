@@ -55,12 +55,10 @@ jobs:
           ./scripts/bz.py
 
     - name: Setup Spec Requirements
-      if: ${{ matrix.arch == 'x64' }}
       working-directory: ./bin/extensions/sampleextension
       run: npm ci
 
     - name: Run Spec
-      if: ${{ matrix.arch == 'x64' }}
       working-directory: ./spec
       run: |
         npm ci
