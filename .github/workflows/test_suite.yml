@@ -61,6 +61,9 @@ jobs:
     - name: Run Spec
       working-directory: ./spec
       run: |
+        cd ..
+        cd bin
+        ls
         npm ci
         xvfb-run npm run test
 
