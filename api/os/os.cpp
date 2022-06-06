@@ -367,6 +367,8 @@ json showFolderDialog(const json &input) {
 json showSaveDialog(const json &input) {
     json output;
     string title = "Save a file";
+    string defaultPath = "";
+    string defaultFile = "";
     vector <string> filters = {"All files", "*"};
     pfd::opt option = pfd::opt::none;
 
@@ -383,7 +385,15 @@ json showSaveDialog(const json &input) {
         filters = __extensionsToVector(input["filters"]);
     }
 
-    string selectedEntry = pfd::save_file(title, "", filters, option).result();
+    if(helpers::hasField(input, "defaultPath")) {
+        defaultPath = input["defaultPath"].get<string>();
+    }
+
+    if(helpers::hasField(input, "defaultFile")) {
+        defaultFile = input["defaultFile"].get<string>();
+    }
+
+    string selectedEntry = pfd::save_file(title, defaultPath, defaultFile, filters, option).result();
 
     output["returnValue"] = helpers::normalizePath(selectedEntry);
     output["success"] = true;

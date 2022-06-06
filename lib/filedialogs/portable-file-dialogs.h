@@ -293,6 +293,7 @@ protected:
     file_dialog(type in_type,
                 std::string const &title,
                 std::string const &default_path = "",
+                std::string const &default_file = "",
                 std::vector<std::string> const &filters = {},
                 opt options = opt::none);
 
@@ -377,6 +378,7 @@ class save_file : public internal::file_dialog
 public:
     save_file(std::string const &title,
               std::string const &default_path = "",
+              std::string const &default_file = "",
               std::vector<std::string> const &filters = { "All Files", "*" },
               opt options = opt::none);
 
@@ -388,6 +390,7 @@ public:
 #endif
     save_file(std::string const &title,
               std::string const &default_path,
+              std::string const &default_file,
               std::vector<std::string> const &filters,
               bool confirm_overwrite);
 
@@ -945,6 +948,7 @@ inline std::string internal::dialog::shell_quote(std::string const &str) const
 inline internal::file_dialog::file_dialog(type in_type,
             std::string const &title,
             std::string const &default_path /* = "" */,
+            std::string const &default_file /* = "" */,
             std::vector<std::string> const &filters /* = {} */,
             opt options /* = opt::none */)
 {
@@ -958,7 +962,7 @@ inline internal::file_dialog::file_dialog(type in_type,
     }
     filter_list += '\0';
 
-    m_async->start_func([this, in_type, title, default_path, filter_list,
+    m_async->start_func([this, in_type, title, default_path, default_file, filter_list,
                          options](int *exit_code) -> std::string
     {
         (void)exit_code;
@@ -1024,9 +1028,15 @@ inline internal::file_dialog::file_dialog(type in_type,
 
         ofn.lpstrFilter = wfilter_list.c_str();
 
-        auto woutput = std::wstring(MAX_PATH * 256, L'\0');
+        //auto woutput = std::wstring(MAX_PATH * 256, L'\0');
+        //ofn.lpstrFile = (LPWSTR)woutput.data();
+        //ofn.nMaxFile = (DWORD)woutput.size();
+
+        const std::wstring default_file_w = internal::str2wstr(default_file);
+        auto woutput = default_file_w + std::wstring(MAX_PATH * 256 - default_file_w.size(), L'\0');
         ofn.lpstrFile = (LPWSTR)woutput.data();
         ofn.nMaxFile = (DWORD)woutput.size();
+
         if (!m_wdefault_path.empty())
         {
             // If a directory was provided, use it as the initial directory. If
@@ -1670,7 +1680,7 @@ inline open_file::open_file(std::string const &title,
                             std::string const &default_path /* = "" */,
                             std::vector<std::string> const &filters /* = { "All Files", "*" } */,
                             opt options /* = opt::none */)
-  : file_dialog(type::open, title, default_path, filters, options)
+  : file_dialog(type::open, title, default_path, "", filters, options)
 {
 }
 
@@ -1692,17 +1702,19 @@ inline std::vector<std::string> open_file::result()
 
 inline save_file::save_file(std::string const &title,
                             std::string const &default_path /* = "" */,
+                            std::string const &default_file /* = "" */,
                             std::vector<std::string> const &filters /* = { "All Files", "*" } */,
                             opt options /* = opt::none */)
-  : file_dialog(type::save, title, default_path, filters, options)
+  : file_dialog(type::save, title, default_path, default_file, filters, options)
 {
 }
 
 inline save_file::save_file(std::string const &title,
                             std::string const &default_path,
+                            std::string const &default_file /* = "" */,
                             std::vector<std::string> const &filters,
                             bool confirm_overwrite)
-  : save_file(title, default_path, filters,
+  : save_file(title, default_path, default_file, filters,
               (confirm_overwrite ? opt::none : opt::force_overwrite))
 {
 }
@@ -1717,7 +1729,7 @@ inline std::string save_file::result()
 inline select_folder::select_folder(std::string const &title,
                                     std::string const &default_path /* = "" */,
                                     opt options /* = opt::none */)
-  : file_dialog(type::folder, title, default_path, {}, options)
+  : file_dialog(type::folder, title, default_path, "", {}, options)
 {
 }
 
