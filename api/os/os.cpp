@@ -337,8 +337,12 @@ json showOpenDialog(const json &input) {
         filters.clear();
         filters = __extensionsToVector(input["filters"]);
     }
+    
+    if(helpers::hasField(input, "defaultPath")) {
+        defaultPath = input["defaultPath"].get<string>();
+    }
 
-    vector<string> selectedEntries = pfd::open_file(title, "", filters, option).result();
+    vector<string> selectedEntries = pfd::open_file(title, defaultPath, filters, option).result();
 
     for(string &entry: selectedEntries) {
         entry = helpers::normalizePath(entry);
@@ -356,8 +360,12 @@ json showFolderDialog(const json &input) {
     if(helpers::hasField(input, "title")) {
         title = input["title"].get<string>();
     }
+    
+    if(helpers::hasField(input, "defaultPath")) {
+        defaultPath = input["defaultPath"].get<string>();
+    }
 
-    string selectedEntry = pfd::select_folder(title, "", pfd::opt::none).result();
+    string selectedEntry = pfd::select_folder(title, defaultPath, pfd::opt::none).result();
 
     output["returnValue"] = helpers::normalizePath(selectedEntry);
     output["success"] = true;
