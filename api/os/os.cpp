@@ -322,6 +322,7 @@ json getEnv(const json &input) {
 json showOpenDialog(const json &input) {
     json output;
     string title = "Open a file";
+    string defaultPath = "";
     vector <string> filters = {"All files", "*"};
     pfd::opt option = pfd::opt::none;
 
@@ -356,6 +357,7 @@ json showOpenDialog(const json &input) {
 json showFolderDialog(const json &input) {
     json output;
     string title = "Select a folder";
+    string defaultPath = "";
 
     if(helpers::hasField(input, "title")) {
         title = input["title"].get<string>();
