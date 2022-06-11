@@ -322,6 +322,7 @@ json getEnv(const json &input) {
 json showOpenDialog(const json &input) {
     json output;
     string title = "Open a file";
+    string defaultPath = "";
     vector <string> filters = {"All files", "*"};
     pfd::opt option = pfd::opt::none;
 
@@ -337,8 +338,12 @@ json showOpenDialog(const json &input) {
         filters.clear();
         filters = __extensionsToVector(input["filters"]);
     }
+    
+    if(helpers::hasField(input, "defaultPath")) {
+        defaultPath = input["defaultPath"].get<string>();
+    }
 
-    vector<string> selectedEntries = pfd::open_file(title, "", filters, option).result();
+    vector<string> selectedEntries = pfd::open_file(title, defaultPath, filters, option).result();
 
     for(string &entry: selectedEntries) {
         entry = helpers::normalizePath(entry);
@@ -352,12 +357,17 @@ json showOpenDialog(const json &input) {
 json showFolderDialog(const json &input) {
     json output;
     string title = "Select a folder";
+    string defaultPath = "";
 
     if(helpers::hasField(input, "title")) {
         title = input["title"].get<string>();
     }
+    
+    if(helpers::hasField(input, "defaultPath")) {
+        defaultPath = input["defaultPath"].get<string>();
+    }
 
-    string selectedEntry = pfd::select_folder(title, "", pfd::opt::none).result();
+    string selectedEntry = pfd::select_folder(title, defaultPath, pfd::opt::none).result();
 
     output["returnValue"] = helpers::normalizePath(selectedEntry);
     output["success"] = true;
@@ -367,6 +377,7 @@ json showFolderDialog(const json &input) {
 json showSaveDialog(const json &input) {
     json output;
     string title = "Save a file";
+    string defaultPath = "";
     vector <string> filters = {"All files", "*"};
     pfd::opt option = pfd::opt::none;
 
@@ -383,7 +394,11 @@ json showSaveDialog(const json &input) {
         filters = __extensionsToVector(input["filters"]);
     }
 
-    string selectedEntry = pfd::save_file(title, "", filters, option).result();
+    if(helpers::hasField(input, "defaultPath")) {
+        defaultPath = input["defaultPath"].get<string>();
+    }
+
+    string selectedEntry = pfd::save_file(title, defaultPath, filters, option).result();
 
     output["returnValue"] = helpers::normalizePath(selectedEntry);
     output["success"] = true;
