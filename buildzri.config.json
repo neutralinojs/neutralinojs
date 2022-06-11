@@ -59,7 +59,7 @@
             "/EHsc",
             "/Os",
             "/Fobin/",
-            "/link lib/webview/windows/WebView2Loader.dll.lib"
+            "/link lib/webview/windows/WebView2Loader.dll.lib gdi32.lib version.lib Ole32.lib OleAut32.lib wbemuuid.lib ntdll.lib"
         ]
     },
     "definitions": {
