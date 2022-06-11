@@ -212,6 +212,7 @@ def compile(cmd):
         msg = 'ERR: Unable to compile %s' % C['name']
 
     print(msg)
+    sys.exit(exit_code)
 
 def print_ascii_art():
     print('''
