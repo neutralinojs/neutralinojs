@@ -110,7 +110,7 @@ def get_source_files():
         if file_def not in C['source']:
             continue
         for entry in C['source'][file_def]:
-            glob_files = glob.glob(entry)
+            glob_files = glob.glob(entry, recursive = True)
             if len(glob_files) > 0:
                 files += ' '.join(glob_files) + ' '
 

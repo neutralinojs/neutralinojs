@@ -7,7 +7,8 @@
         "*": [
             ".",
             "lib",
-            "lib/asio/include"
+            "lib/asio/include",
+            "lib/infoware/include"
         ],
         "windows": [
             "lib/webview/windows"
@@ -23,7 +24,8 @@
             "lib/easylogging/easylogging++.cc",
             "lib/platformfolders/platform_folders.cpp",
             "lib/clip/clip.cpp",
-            "lib/clip/image.cpp"
+            "lib/clip/image.cpp",
+            "lib/infoware/src/**/*.cpp"
         ],
         "linux": [
             "lib/tinyprocess/process_unix.cpp",
@@ -65,7 +67,8 @@
             "NL_VERSION=\\\"${BZ_VERSION}\\\"",
             "NL_COMMIT=\\\"${BZ_COMMIT}\\\"",
             "ELPP_NO_DEFAULT_LOG_FILE=1",
-            "ASIO_STANDALONE"
+            "ASIO_STANDALONE",
+            "INFOWARE_VERSION=\\\"0.6.0\\\""
         ],
         "linux": [
             "HAVE_XCB_XLIB_H",

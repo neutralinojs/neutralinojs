@@ -1,0 +1,22 @@
+---
+Language                         : Cpp
+BasedOnStyle                     : LLVM
+AlignAfterOpenBracket            : true
+AlignEscapedNewlinesLeft         : true
+AlignConsecutiveAssignments      : true
+AllowShortFunctionsOnASingleLine : Inline
+AlwaysBreakTemplateDeclarations  : true
+ColumnLimit                      : 160
+ConstructorInitializerIndentWidth: 6
+IndentCaseLabels                 : true
+MaxEmptyLinesToKeep              : 2
+KeepEmptyLinesAtTheStartOfBlocks : false
+NamespaceIndentation             : All
+PointerAlignment                 : Left
+SpacesBeforeTrailingComments     : 2
+IndentWidth                      : 2
+TabWidth                         : 2
+UseTab                           : ForIndentation
+SpaceBeforeParens                : Never
+...
+

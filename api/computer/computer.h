@@ -13,6 +13,7 @@ namespace computer {
 namespace controllers {
 
 json getMemoryInfo(const json &input);
+json getArch(const json &input);
 
 } // namespace controllers
 

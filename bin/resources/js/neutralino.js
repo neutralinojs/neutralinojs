@@ -330,10 +330,14 @@ var Neutralino = (function (exports) {
     function getMemoryInfo() {
         return sendMessage('computer.getMemoryInfo');
     }
+    function getArch() {
+        return sendMessage('computer.getArch');
+    }
 
     var computer = /*#__PURE__*/Object.freeze({
         __proto__: null,
-        getMemoryInfo: getMemoryInfo
+        getMemoryInfo: getMemoryInfo,
+        getArch: getArch
     });
 
     function setData(key, data) {
@@ -737,7 +741,7 @@ var Neutralino = (function (exports) {
         writeText: writeText
     });
 
-    var version = "3.4.0";
+    var version = "3.5.0";
 
     let initialized = false;
     function init() {
@@ -752,7 +756,7 @@ var Neutralino = (function (exports) {
             }));
         }
         window.NL_CVERSION = version;
-        window.NL_CCOMMIT = '4f36ae73290a69c509bc562e32b69100b6e5b4eb'; // only the build server will update this
+        window.NL_CCOMMIT = '42fe64f825208b9d402725bdf52e267039f07df2'; // only the build server will update this
         initialized = true;
     }
 
