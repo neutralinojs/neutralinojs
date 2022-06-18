@@ -342,8 +342,8 @@ void __createWindow() {
     if(windowProps.maximize)
         window::maximize();
 
-    if(windowProps.hidden)
-        window::hide();
+    if(!windowProps.hidden)
+        window::show();
 
     if(windowProps.fullScreen)
         window::setFullScreen();
