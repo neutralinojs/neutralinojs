@@ -1285,9 +1285,10 @@ public:
     }
 
     setDpi();
-    ShowWindow(m_window, SW_SHOW);
-    UpdateWindow(m_window);
-    SetFocus(m_window);
+    ShowWindow(m_window, SW_HIDE);
+    // ShowWindow(m_window, SW_SHOW);
+    // UpdateWindow(m_window);
+    // SetFocus(m_window);
 
     auto cb =
         std::bind(&win32_edge_engine::on_message, this, std::placeholders::_1);
