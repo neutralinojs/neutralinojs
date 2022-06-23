@@ -77,6 +77,16 @@ jobs:
       run: python ./scripts/bz.py
       shell: cmd
 
+    - name: Setup Spec Requirements
+      working-directory: ./bin/extensions/sampleextension
+      run: npm ci
+
+    - name: Run Spec
+      working-directory: ./spec
+      run: |
+        npm ci
+        npm run test
+
   build-darwin:
     runs-on: macos-latest
     steps:
