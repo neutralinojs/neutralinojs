@@ -6,6 +6,11 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### Bugfixes/improvements
+
+- Hide the automation info bar from the Chrome mode by default -- Developers can add the `--enable-automation` flag to the config file if they need the particular command-line switch.
+
+
 ## v4.6.0
 
 ### API: Process spawning API
