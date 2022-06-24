@@ -41,7 +41,6 @@ string __getDefaultChromeArgs() {
     "--no-first-run "
     "--no-default-browser-check "
     "--safebrowsing-disable-auto-update "
-    "--enable-automation "
     "--password-store=basic "
     "--use-mock-keychain";
 }
