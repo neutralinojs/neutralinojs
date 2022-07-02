@@ -1,0 +1,15 @@
+*
+!src
+!src/**
+!examples
+!examples/**
+!include
+!include/**
+!tools
+!tools/**
+!.gitignore
+!.github/**
+!.clang-format
+!CMakeLists.txt
+!LICENSE
+!README.md

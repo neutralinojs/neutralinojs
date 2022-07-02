@@ -85,6 +85,10 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
         {"window.setAlwaysOnTop", window::controllers::setAlwaysOnTop},
         // Neutralino.computer
         {"computer.getMemoryInfo", computer::controllers::getMemoryInfo},
+        {"computer.getArch", computer::controllers::getArch},
+        {"computer.getKernelInfo", computer::controllers::getKernelInfo},
+        {"computer.getOSInfo", computer::controllers::getOSInfo},
+        {"computer.getDisplays", computer::controllers::getDisplays},
         // Neutralino.log
         {"debug.log", debug::controllers::log},
         // Neutralino.filesystem

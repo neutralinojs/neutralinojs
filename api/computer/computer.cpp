@@ -14,56 +14,122 @@
 #include <windows.h>
 #endif
 
+#include <infoware/system.hpp>
+#include <infoware/cpu.hpp>
 #include "lib/json/json.hpp"
 
 using namespace std;
 using json = nlohmann::json;
 
-#define DIV 1024
-
 namespace computer {
 
 namespace controllers {
 
+string __getArch(const iware::cpu::architecture_t &architecture) {
+    switch(architecture) {
+        case iware::cpu::architecture_t::x64:
+            return "x64";
+        case iware::cpu::architecture_t::arm:
+            return "arm";
+        case iware::cpu::architecture_t::itanium:
+            return "itanium";
+        case iware::cpu::architecture_t::x86:
+            return "x86";
+        default:
+            return "unknown";
+    }
+}
+
+string __getKernelVariant(const iware::system::kernel_t &variant) {
+	switch(variant) {
+		case iware::system::kernel_t::windows_nt:
+			return "Windows NT";
+		case iware::system::kernel_t::linux:
+			return "Linux";
+		case iware::system::kernel_t::darwin:
+			return "Darwin";
+		default:
+			return "Unknown";
+	}
+}
+
 json getMemoryInfo(const json &input) {
     json output;
-    #if defined(__linux__)
-    struct sysinfo sys_info;
-    sysinfo(&sys_info);
-    output["returnValue"] = {
-        { "total", (sys_info.totalram * sys_info.mem_unit) / DIV },
-        { "available", (sys_info.freeram * sys_info.mem_unit) / DIV }
+    const auto memory = iware::system::memory();
+
+    output["returnValue"]["physical"] = {
+        { "total", memory.physical_total },
+        { "available", memory.physical_available }
     };
 
-    #elif defined(__APPLE__) || defined(__FreeBSD__)
-    long pages = sysconf(_SC_PHYS_PAGES);
-    long page_size = sysconf(_SC_PAGE_SIZE);
-
-    int mib[2];
-    int64_t physical_memory;
-    mib[0] = CTL_HW;
-
-#if defined(__FreeBSD__)
-#define HW_MEMSIZE HW_PHYSMEM
-#endif
-    mib[1] = HW_MEMSIZE;
-    size_t length = sizeof(int64_t);
-    sysctl(mib, 2, &physical_memory, &length, NULL, 0);
-    output["returnValue"] = {
-        { "total", (pages * page_size) / DIV },
-        { "available", 0 / DIV } // TODO: implement
+    output["returnValue"]["virtual"] = {
+        { "total", memory.virtual_total },
+        { "available", memory.virtual_available }
     };
 
-    #elif defined(_WIN32)
-    MEMORYSTATUSEX statex;
-    statex.dwLength = sizeof (statex);
+    output["success"] = true;
+    return output;
+}
 
-    GlobalMemoryStatusEx (&statex);
+json getArch(const json &input) {
+    json output;
+    const auto memory = iware::system::memory();
+
+    output["returnValue"] = __getArch(iware::cpu::architecture());
+    output["success"] = true;
+    return output;
+}
+
+json getKernelInfo(const json &input) {
+    json output;
+    const auto kernelInfo = iware::system::kernel_info();
+    string version = to_string(kernelInfo.major) + "." + to_string(kernelInfo.minor) + "." +
+                            to_string(kernelInfo.patch) + "-" + to_string(kernelInfo.build_number);
+
     output["returnValue"] = {
-        {"total", statex.ullTotalPhys / DIV },
-        {"available", statex.ullAvailPhys / DIV },
+        { "variant", __getKernelVariant(kernelInfo.variant) },
+        { "version", version }
     };
-    #endif
+    output["success"] = true;
+    return output;
+}
+
+json getOSInfo(const json &input) {
+    json output;
+    const auto osInfo = iware::system::OS_info();
+    string version = to_string(osInfo.major) + "." + to_string(osInfo.minor) + "." +
+                            to_string(osInfo.patch) + "-" + to_string(osInfo.build_number);
+
+    output["returnValue"] = {
+        { "name", osInfo.name },
+        { "description", osInfo.full_name },
+        { "version", version }
+    };
+    output["success"] = true;
+    return output;
+}
+
+json getDisplays(const json &input) {
+    json output;
+    output["returnValue"] = json::array();
+    const auto displays = iware::system::displays();
+
+    unsigned int displayId = 0;
+    for(const auto &display: displays) {
+        json displayInfo = {
+            { "id", displayId },
+            { "resolution", {
+                { "width", display.width },
+                { "height", display.height }
+            }},
+            { "dpi", display.dpi },
+            { "bpp", display.bpp },
+            { "refreshRate", display.refresh_rate }
+        };
+
+        output["returnValue"].push_back(displayInfo);
+        displayId++;
+    }
     output["success"] = true;
     return output;
 }

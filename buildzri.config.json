@@ -7,7 +7,8 @@
         "*": [
             ".",
             "lib",
-            "lib/asio/include"
+            "lib/asio/include",
+            "lib/infoware/include"
         ],
         "windows": [
             "lib/webview/windows"
@@ -23,7 +24,8 @@
             "lib/easylogging/easylogging++.cc",
             "lib/platformfolders/platform_folders.cpp",
             "lib/clip/clip.cpp",
-            "lib/clip/image.cpp"
+            "lib/clip/image.cpp",
+            "lib/infoware/src/**/*.cpp"
         ],
         "linux": [
             "lib/tinyprocess/process_unix.cpp",
@@ -40,7 +42,7 @@
     },
     "options": {
         "linux": [
-            "`pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0 glib-2.0 xcb x11`",
+            "$(pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0 glib-2.0 xcb x11 xrandr)",
             "-pthread",
             "-ldl",
             "-no-pie",
@@ -57,7 +59,7 @@
             "/EHsc",
             "/Os",
             "/Fobin/",
-            "/link lib/webview/windows/WebView2Loader.dll.lib"
+            "/link lib/webview/windows/WebView2Loader.dll.lib gdi32.lib version.lib Ole32.lib OleAut32.lib wbemuuid.lib ntdll.lib"
         ]
     },
     "definitions": {
@@ -65,7 +67,9 @@
             "NL_VERSION=\\\"${BZ_VERSION}\\\"",
             "NL_COMMIT=\\\"${BZ_COMMIT}\\\"",
             "ELPP_NO_DEFAULT_LOG_FILE=1",
-            "ASIO_STANDALONE"
+            "ASIO_STANDALONE",
+            "INFOWARE_VERSION=\\\"0.6.0\\\"",
+            "INFOWARE_USE_X11"
         ],
         "linux": [
             "HAVE_XCB_XLIB_H",
