@@ -40,6 +40,19 @@ string __getArch(const iware::cpu::architecture_t &architecture) {
     }
 }
 
+string __getKernelVariant(const iware::system::kernel_t &variant) {
+	switch(variant) {
+		case iware::system::kernel_t::windows_nt:
+			return "Windows NT";
+		case iware::system::kernel_t::linux:
+			return "Linux";
+		case iware::system::kernel_t::darwin:
+			return "Darwin";
+		default:
+			return "Unknown";
+	}
+}
+
 json getMemoryInfo(const json &input) {
     json output;
     const auto memory = iware::system::memory();
@@ -63,6 +76,20 @@ json getArch(const json &input) {
     const auto memory = iware::system::memory();
 
     output["returnValue"] = __getArch(iware::cpu::architecture());
+    output["success"] = true;
+    return output;
+}
+
+json getKernelInfo(const json &input) {
+    json output;
+    const auto kernelInfo = iware::system::kernel_info();
+    string version = to_string(kernelInfo.major) + "." + to_string(kernelInfo.minor) + "." +
+                            to_string(kernelInfo.patch) + "-" + to_string(kernelInfo.build_number);
+
+    output["returnValue"] = {
+        { "variant", __getKernelVariant(kernelInfo.variant) },
+        { "version", version }
+    };
     output["success"] = true;
     return output;
 }

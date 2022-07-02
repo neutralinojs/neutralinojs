@@ -333,11 +333,15 @@ var Neutralino = (function (exports) {
     function getArch() {
         return sendMessage('computer.getArch');
     }
+    function getKernelInfo() {
+        return sendMessage('computer.getKernelInfo');
+    }
 
     var computer = /*#__PURE__*/Object.freeze({
         __proto__: null,
         getMemoryInfo: getMemoryInfo,
-        getArch: getArch
+        getArch: getArch,
+        getKernelInfo: getKernelInfo
     });
 
     function setData(key, data) {

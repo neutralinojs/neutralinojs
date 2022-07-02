@@ -14,6 +14,7 @@ namespace controllers {
 
 json getMemoryInfo(const json &input);
 json getArch(const json &input);
+json getKernelInfo(const json &input);
 
 } // namespace controllers
 
