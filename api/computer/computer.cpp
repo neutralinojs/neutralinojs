@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include <string>
-#include <iostream>
 
 #if defined(__linux__)
 #include <sys/sysinfo.h>
