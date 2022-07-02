@@ -336,12 +336,20 @@ var Neutralino = (function (exports) {
     function getKernelInfo() {
         return sendMessage('computer.getKernelInfo');
     }
+    function getOSInfo() {
+        return sendMessage('computer.getOSInfo');
+    }
+    function getDisplays() {
+        return sendMessage('computer.getDisplays');
+    }
 
     var computer = /*#__PURE__*/Object.freeze({
         __proto__: null,
         getMemoryInfo: getMemoryInfo,
         getArch: getArch,
-        getKernelInfo: getKernelInfo
+        getKernelInfo: getKernelInfo,
+        getOSInfo: getOSInfo,
+        getDisplays: getDisplays
     });
 
     function setData(key, data) {

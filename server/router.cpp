@@ -87,6 +87,8 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
         {"computer.getMemoryInfo", computer::controllers::getMemoryInfo},
         {"computer.getArch", computer::controllers::getArch},
         {"computer.getKernelInfo", computer::controllers::getKernelInfo},
+        {"computer.getOSInfo", computer::controllers::getOSInfo},
+        {"computer.getDisplays", computer::controllers::getDisplays},
         // Neutralino.log
         {"debug.log", debug::controllers::log},
         // Neutralino.filesystem

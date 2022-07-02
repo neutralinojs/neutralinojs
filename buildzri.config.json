@@ -42,7 +42,7 @@
     },
     "options": {
         "linux": [
-            "`pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0 glib-2.0 xcb x11`",
+            "$(pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0 glib-2.0 xcb x11 xrandr)",
             "-pthread",
             "-ldl",
             "-no-pie",
@@ -68,7 +68,8 @@
             "NL_COMMIT=\\\"${BZ_COMMIT}\\\"",
             "ELPP_NO_DEFAULT_LOG_FILE=1",
             "ASIO_STANDALONE",
-            "INFOWARE_VERSION=\\\"0.6.0\\\""
+            "INFOWARE_VERSION=\\\"0.6.0\\\"",
+            "INFOWARE_USE_X11"
         ],
         "linux": [
             "HAVE_XCB_XLIB_H",

@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <string>
+#include <iostream>
 
 #if defined(__linux__)
 #include <sys/sysinfo.h>
@@ -90,6 +91,47 @@ json getKernelInfo(const json &input) {
         { "variant", __getKernelVariant(kernelInfo.variant) },
         { "version", version }
     };
+    output["success"] = true;
+    return output;
+}
+
+json getOSInfo(const json &input) {
+    json output;
+    const auto osInfo = iware::system::OS_info();
+    string version = to_string(osInfo.major) + "." + to_string(osInfo.minor) + "." +
+                            to_string(osInfo.patch) + "-" + to_string(osInfo.build_number);
+
+    output["returnValue"] = {
+        { "name", osInfo.name },
+        { "description", osInfo.full_name },
+        { "version", version }
+    };
+    output["success"] = true;
+    return output;
+}
+
+json getDisplays(const json &input) {
+    json output;
+    output["returnValue"] = json::array();
+    const auto displays = iware::system::displays();
+
+    unsigned int displayId = 0;
+    for(const auto &display: displays) {
+        cout << display.width << endl;
+        json displayInfo = {
+            { "id", displayId },
+            { "resolution", {
+                { "width", display.width },
+                { "height", display.height }
+            }},
+            { "dpi", display.dpi },
+            { "bpp", display.bpp },
+            { "refreshRate", display.refresh_rate }
+        };
+
+        output["returnValue"].push_back(displayInfo);
+        displayId++;
+    }
     output["success"] = true;
     return output;
 }
