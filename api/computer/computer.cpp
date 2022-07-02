@@ -116,7 +116,6 @@ json getDisplays(const json &input) {
 
     unsigned int displayId = 0;
     for(const auto &display: displays) {
-        cout << display.width << endl;
         json displayInfo = {
             { "id", displayId },
             { "resolution", {
