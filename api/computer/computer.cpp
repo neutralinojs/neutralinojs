@@ -73,8 +73,6 @@ json getMemoryInfo(const json &input) {
 
 json getArch(const json &input) {
     json output;
-    const auto memory = iware::system::memory();
-
     output["returnValue"] = __getArch(iware::cpu::architecture());
     output["success"] = true;
     return output;
