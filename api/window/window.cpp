@@ -143,10 +143,12 @@ bool isVisible() {
 
 bool isFakeHidden() {
     //ensureOnScreen
+    #if defined(_WIN32)
     RECT rect = { NULL };
     if(GetWindowRect( windowHandle, &rect)) {
         return rect.left > 9999;
     }
+    #endif
     return false;
 }
 

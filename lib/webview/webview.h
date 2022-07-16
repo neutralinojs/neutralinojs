@@ -1384,7 +1384,9 @@ public:
   void eval(const std::string js) { m_browser->eval(js); }
   void init(const std::string js) { m_browser->init(js); }
 
+  #if defined(_WIN32)
   DWORD m_originalStyleEx;
+  #endif
 
 private:
   virtual void on_message(const std::string msg) = 0;
