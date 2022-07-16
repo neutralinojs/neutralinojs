@@ -57,6 +57,23 @@ describe('computer.spec: computer namespace tests', () => {
         });
     });
 
+    describe('computer.getCPUInfo', () => {
+        it('returns CPU details', async () => {
+            runner.run(`
+                let cpuInfo = await Neutralino.computer.getCPUInfo();
+                await __close(JSON.stringify(cpuInfo));
+            `);
+            let cpuInfo = JSON.parse(runner.getOutput());
+            assert.ok(typeof cpuInfo.vendor == 'string');
+            assert.ok(typeof cpuInfo.model == 'string');
+            assert.ok(typeof cpuInfo.frequency == 'number');
+            assert.ok(typeof cpuInfo.architecture == 'string');
+            assert.ok(typeof cpuInfo.logicalThreads == 'number');
+            assert.ok(typeof cpuInfo.physicalCores == 'number');
+            assert.ok(typeof cpuInfo.physicalUnits == 'number');
+        });
+    });
+
     describe('computer.getDisplays', () => {
         it('returns available displays', async () => {
             runner.run(`

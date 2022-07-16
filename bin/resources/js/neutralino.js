@@ -339,6 +339,9 @@ var Neutralino = (function (exports) {
     function getOSInfo() {
         return sendMessage('computer.getOSInfo');
     }
+    function getCPUInfo() {
+        return sendMessage('computer.getCPUInfo');
+    }
     function getDisplays() {
         return sendMessage('computer.getDisplays');
     }
@@ -349,6 +352,7 @@ var Neutralino = (function (exports) {
         getArch: getArch,
         getKernelInfo: getKernelInfo,
         getOSInfo: getOSInfo,
+        getCPUInfo: getCPUInfo,
         getDisplays: getDisplays
     });
 

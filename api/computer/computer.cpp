@@ -107,6 +107,23 @@ json getOSInfo(const json &input) {
     return output;
 }
 
+json getCPUInfo(const json &input) {
+    json output;
+    const auto quantities = iware::cpu::quantities();
+
+    output["returnValue"] = {
+        { "vendor", iware::cpu::vendor() },
+        { "model", iware::cpu::model_name() },
+        { "frequency", iware::cpu::frequency() },
+        { "architecture", __getArch(iware::cpu::architecture()) },
+        { "logicalThreads", quantities.logical },
+        { "physicalCores", quantities.physical },
+        { "physicalUnits", quantities.packages }
+    };
+    output["success"] = true;
+    return output;
+}
+
 json getDisplays(const json &input) {
     json output;
     output["returnValue"] = json::array();
