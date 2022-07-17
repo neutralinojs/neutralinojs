@@ -6,6 +6,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: os dialogs
+- Add the `defaultPath` option to `showSaveDialog`, `showOpenDialog`, and `showFolderDialog` functions to set the initial path/filename of system dialogs.
+
 ### DevOps
 - Run the test suite on Windows GitHub Actions instance.
 
