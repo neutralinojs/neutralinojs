@@ -23,7 +23,6 @@ Ealier, we had the `getMemoryInfo` function in the `computer` namespace to retri
 - Fix the `armhf` framework binary generation issue in the GitHub Actions workflow.
 
 ### Bugfixes/improvements
-
 - Hide the automation info bar from the Chrome mode by default -- Developers can add the `--enable-automation` flag to the config file if they need the particular command-line switch.
 
 
@@ -64,7 +63,7 @@ Available actions:
 ### Bugfixes/improvements
 - Hide the `.storage` directory (Neutralinojs storage location) on Windows.
 - Support using query parameters in resources URLs. i.e., `index.html?v=2.0` is supported, but caching is not yet implemented.
-- Show a user-friendly error message for Neutralinojs server initialization failures. 
+- Show a user-friendly error message for Neutralinojs server initialization failures.
 
 ## v4.5.0
 
