@@ -9,9 +9,9 @@
 
 Neutralinojs is a lightweight and portable desktop application development framework. It lets you develop lightweight cross-platform desktop applications using JavaScript, HTML and CSS. Apps built with Neutralinojs can run on Linux, macOS, Windows, Web, and Chrome. Also, you can extend Neutralinojs with any programming language (via extensions IPC) and use Neutralinojs as a part of any source file (via child processes IPC). 
 
-- [Neutralinojs vs Electron vs NW.JS vs Tauri vs NodeGui vs Flutter vs .Net MAUI](https://github.com/Elanis/web-to-desktop-framework-comparison)
-- [Neutralinojs vs Electron vs NW.js (2018)](https://github.com/neutralinojs/evaluation)
-- [Roadmap for 2022](https://github.com/neutralinojs/roadmap#roadmap-2022)
+- [Neutralinojs vs. Electron vs. NW.JS vs. Tauri vs. NodeGui vs. Flutter vs. .Net MAUI](https://github.com/Elanis/web-to-desktop-framework-comparison)
+- [Neutralinojs vs. Electron vs. NW.js (2018)](https://github.com/neutralinojs/evaluation)
+- [Roadmap 2022](https://github.com/neutralinojs/roadmap#roadmap-2022)
 
 Get started with the neu CLI.
 
@@ -79,7 +79,7 @@ If you like to support our work, you can donate to Neutralinojs via [Patreon](ht
 - Cross-platform C++ system information library: CC0 1.0 Universal from [ThePhD/infoware](https://github.com/ThePhD/infoware). Written in 2016-2020 by nabijaczleweli and ThePhD
 - Logo design credits: [IconsPng](https://www.iconspng.com/image/2688/atom-orange). Copyright free as mentioned in their website. 
 
-[Complete license details](LICENSE)
+[See the complete license file](LICENSE)
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fneutralinojs%2Fneutralinojs.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fneutralinojs%2Fneutralinojs?ref=badge_large)
 
