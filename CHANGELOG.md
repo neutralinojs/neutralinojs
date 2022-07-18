@@ -7,10 +7,10 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ## Unreleased
 
 ### API: System information API
-Ealier, we had the `getMemoryInfo` function in the `computer` namespace to retrieve system memory statistics. Now, we have added more functions to get details about the CPU, operating system, Kernel, and connected displays:
+Ealier, we had the `getMemoryInfo` function in the `computer` namespace to retrieve system memory statistics. Now, we have added more functions to get details about the CPU, operating system, kernel, and connected displays:
 
 - `computer.getArch`: Returns the CPU architecture. i.e, `x64`, `arm`, etc.
-- `computer.getKernelInfo`: Returns the operating system's Kernel details.
+- `computer.getKernelInfo`: Returns the operating system's kernel details.
 - `computer.getOSInfo`: Returns the operating system details.
 - `computer.getCPUInfo`: Returns the CPU details.
 - `computer.getDisplays`: Returns an array of all connected displays with the resolution, frequency-like information.
