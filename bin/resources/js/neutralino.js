@@ -286,8 +286,8 @@ var Neutralino = (function (exports) {
     function showOpenDialog(title, options) {
         return sendMessage('os.showOpenDialog', Object.assign({ title }, options));
     }
-    function showFolderDialog(title) {
-        return sendMessage('os.showFolderDialog', { title });
+    function showFolderDialog(title, options) {
+        return sendMessage('os.showFolderDialog', Object.assign({ title }, options));
     }
     function showSaveDialog(title, options) {
         return sendMessage('os.showSaveDialog', Object.assign({ title }, options));
@@ -772,7 +772,7 @@ var Neutralino = (function (exports) {
             }));
         }
         window.NL_CVERSION = version;
-        window.NL_CCOMMIT = '42fe64f825208b9d402725bdf52e267039f07df2'; // only the build server will update this
+        window.NL_CCOMMIT = 'd24755b556105bdcc2981fab28f2d13cbf167bee'; // only the build server will update this
         initialized = true;
     }
 

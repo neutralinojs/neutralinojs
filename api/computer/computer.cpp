@@ -34,7 +34,7 @@ string __getArch(const iware::cpu::architecture_t &architecture) {
         case iware::cpu::architecture_t::itanium:
             return "itanium";
         case iware::cpu::architecture_t::x86:
-            return "x86";
+            return "ia32";
         default:
             return "unknown";
     }
