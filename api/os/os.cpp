@@ -17,7 +17,11 @@
 #include "lib/platformfolders/platform_folders.h"
 #include "lib/filedialogs/portable-file-dialogs.h"
 
-#if defined(_WIN32)
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
+#include <unistd.h>
+extern char **environ;
+
+#elif defined(_WIN32)
 #define _WINSOCKAPI_
 #include <windows.h>
 #include <gdiplus.h>
@@ -319,6 +323,21 @@ json getEnv(const json &input) {
     return output;
 }
 
+json getEnvs(const json &input) {
+    json output;
+    #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
+    char **envs = environ;
+    for(; *envs; envs++) {
+        vector<string> env = helpers::split(string(*envs), '=');
+        string key = env[0];
+        string value = env.size() > 1 ? env[1] : "";
+        output["returnValue"][key] = value;
+    }
+    output["success"] = true;
+    #endif
+    return output;
+}
+
 json showOpenDialog(const json &input) {
     json output;
     string title = "Open a file";
@@ -338,7 +357,7 @@ json showOpenDialog(const json &input) {
         filters.clear();
         filters = __extensionsToVector(input["filters"]);
     }
-    
+
     if(helpers::hasField(input, "defaultPath")) {
         defaultPath = input["defaultPath"].get<string>();
     }
@@ -362,7 +381,7 @@ json showFolderDialog(const json &input) {
     if(helpers::hasField(input, "title")) {
         title = input["title"].get<string>();
     }
-    
+
     if(helpers::hasField(input, "defaultPath")) {
         defaultPath = input["defaultPath"].get<string>();
     }

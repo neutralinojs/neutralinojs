@@ -39,6 +39,7 @@ json spawnProcess(const json &input);
 json updateSpawnedProcess(const json &input);
 json getSpawnedProcesses(const json &input);
 json getEnv(const json &input);
+json getEnvs(const json &input);
 json showOpenDialog(const json &input);
 json showFolderDialog(const json &input);
 json showSaveDialog(const json &input);
