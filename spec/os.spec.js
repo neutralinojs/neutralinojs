@@ -172,6 +172,18 @@ describe('os.spec: os namespace tests', () => {
         });
     });
 
+    describe('os.getEnvs', () => {
+        it('returns all environment variables', async () => {
+            runner.run(`
+                let envs = await Neutralino.os.getEnvs();
+                await __close(JSON.stringify(envs));
+            `);
+            let envs = JSON.parse(runner.getOutput());
+            assert.ok(typeof envs == 'object');
+            assert.ok(envs['PATH'] || envs['Path']);
+        });
+    });
+
     describe('os.showOpenDialog', () => {
         it('exports the function to the app', async () => {
             runner.run(`
