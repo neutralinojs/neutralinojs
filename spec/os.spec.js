@@ -109,7 +109,7 @@ describe('os.spec: os namespace tests', () => {
         });
     });
 
-    describe('os.updateSpawnedProcesses', () => {
+    describe('os.updateSpawnedProcess', () => {
         it('accepts stdIn and stdInEnd actions', async () => {
             runner.run(`
                 let proc = await Neutralino.os.spawnProcess('node');
