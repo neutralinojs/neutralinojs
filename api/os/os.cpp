@@ -330,11 +330,30 @@ json getEnvs(const json &input) {
     for(; *envs; envs++) {
         vector<string> env = helpers::split(string(*envs), '=');
         string key = env[0];
-        string value = env.size() > 1 ? env[1] : "";
+        string value = env.size() == 2 ? env[1] : "";
         output["returnValue"][key] = value;
     }
-    output["success"] = true;
+    #elif defined(_WIN32)
+    const char *envsO = GetEnvironmentStrings();
+    const char *envs = envsO;
+    int prevIndex = 0;
+    for(int i = 0; ; i++) {
+        if(envs[i] != '\0') {
+            continue;
+        }
+        vector<string> env = helpers::split(string(envs + prevIndex, envs + i), '=');
+        string key = env[0];
+        string value = env.size() == 2 ? env[1] : "";
+        output["returnValue"][key] = value;
+
+        prevIndex = i + 1;
+        if(envs[i + 1] == '\0') {
+            break;
+        }
+    }
+    FreeEnvironmentStrings((LPCH) envsO);
     #endif
+    output["success"] = true;
     return output;
 }
 
