@@ -16,6 +16,11 @@ struct FileReaderResult {
     string data;
 };
 
+struct FileReaderOptions {
+    long long pos = -1;
+    long long size = -1;
+};
+
 struct FileWriterOptions {
     string filename;
     string data;
@@ -34,7 +39,7 @@ struct FileStats {
 
 bool createDirectory(const string &path);
 bool removeFile(const string &filename);
-fs::FileReaderResult readFile(const string &filename);
+fs::FileReaderResult readFile(const string &filename, const fs::FileReaderOptions &fileReaderOptions = {});
 bool writeFile(const fs::FileWriterOptions &fileWriterOptions);
 string getDirectoryName(const string &filename);
 string getCurrentDirectory();

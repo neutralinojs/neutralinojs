@@ -191,12 +191,12 @@ var Neutralino = (function (exports) {
             data: arrayBufferToBase64(data)
         });
     }
-    function readFile(path) {
-        return sendMessage('filesystem.readFile', { path });
+    function readFile(path, options) {
+        return sendMessage('filesystem.readFile', Object.assign({ path }, options));
     }
-    function readBinaryFile(path) {
+    function readBinaryFile(path, options) {
         return new Promise((resolve, reject) => {
-            sendMessage('filesystem.readBinaryFile', { path })
+            sendMessage('filesystem.readBinaryFile', Object.assign({ path }, options))
                 .then((base64Data) => {
                 let binaryData = window.atob(base64Data);
                 let len = binaryData.length;

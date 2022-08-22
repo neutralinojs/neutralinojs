@@ -30,7 +30,7 @@ using namespace std;
 using json = nlohmann::json;
 
 namespace fs {
-    
+
 #if defined(_WIN32)
 // From: https://stackoverflow.com/a/6161842/3565513
 long long __winTickToUnixMS(long long windowsTicks) {
@@ -84,7 +84,7 @@ string getFullPathFromRelative(const string &path) {
     #endif
 }
 
-fs::FileReaderResult readFile(const string &filename) {
+fs::FileReaderResult readFile(const string &filename, const fs::FileReaderOptions &fileReaderOptions) {
     fs::FileReaderResult fileReaderResult;
     ifstream reader(filename.c_str(), ios::binary | ios::ate);
     if(!reader.is_open()) {
@@ -93,8 +93,19 @@ fs::FileReaderResult readFile(const string &filename) {
         return fileReaderResult;
     }
     vector<char> buffer;
-    int size = reader.tellg();
-    reader.seekg(0, ios::beg);
+    long long origSize = reader.tellg();
+    long long size = origSize;
+    long long pos = 0;
+
+    if(fileReaderOptions.pos > -1) {
+        pos = min(fileReaderOptions.pos, origSize);
+        size = origSize - pos;
+    }
+    if(fileReaderOptions.size > -1) {
+        size = min(fileReaderOptions.size, size);
+    }
+    reader.seekg(pos, ios::beg);
+
     buffer.resize(size);
     reader.read(buffer.data(), size);
     string result(buffer.begin(), buffer.end());
@@ -246,8 +257,15 @@ json readFile(const json &input) {
         output["error"] = helpers::makeMissingArgErrorPayload();
         return output;
     }
+    fs::FileReaderOptions readerOptions;
+    if(helpers::hasField(input, "pos")) {
+        readerOptions.pos = input["pos"].get<long long>();
+    }
+    if(helpers::hasField(input, "size")) {
+        readerOptions.size = input["size"].get<long long>();
+    }
     fs::FileReaderResult fileReaderResult;
-    fileReaderResult = fs::readFile(input["path"].get<string>());
+    fileReaderResult = fs::readFile(input["path"].get<string>(), readerOptions);
     if(fileReaderResult.hasError) {
         output["error"] = helpers::makeErrorPayload("NE_FS_FILRDER", fileReaderResult.error);
     }
@@ -264,8 +282,15 @@ json readBinaryFile(const json &input) {
         output["error"] = helpers::makeMissingArgErrorPayload();
         return output;
     }
+    fs::FileReaderOptions readerOptions;
+    if(helpers::hasField(input, "pos")) {
+        readerOptions.pos = input["pos"].get<long long>();
+    }
+    if(helpers::hasField(input, "size")) {
+        readerOptions.size = input["size"].get<long long>();
+    }
     fs::FileReaderResult fileReaderResult;
-    fileReaderResult = fs::readFile(input["path"].get<string>());
+    fileReaderResult = fs::readFile(input["path"].get<string>(), readerOptions);
     if(fileReaderResult.hasError) {
         output["error"] = helpers::makeErrorPayload("NE_FS_FILRDER", fileReaderResult.error);
     }
