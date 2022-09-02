@@ -15,6 +15,7 @@
 
 #define STORAGE_DIR "/.storage"
 #define STORAGE_EXT ".neustorage"
+#define STORAGE_EXT_REGEX ".*neustorage$"
 #define STORAGE_KEY_REGEX "^[a-zA-Z-_0-9]{1,50}$"
 
 using namespace std;
@@ -88,6 +89,27 @@ json setData(const json &input) {
             output["error"] = helpers::makeErrorPayload("NE_ST_STKEYWE",
                                 "Unable to write data to key: " + key);
             return output;
+        }
+    }
+    output["success"] = true;
+    return output;
+}
+
+json getKeys(const json &input) {
+    json output;
+    output["returnValue"] = json::array();
+    string bucketPath = settings::joinAppPath(STORAGE_DIR);
+
+    fs::DirReaderResult dirResult;
+    dirResult = fs::readDirectory(bucketPath);
+    if(dirResult.hasError) {
+        output["error"] = helpers::makeErrorPayload("NE_ST_NOSTDIR", "Unable to read storage: " + bucketPath);
+        return output;
+    }
+
+    for(const fs::DirReaderEntry &entry: dirResult.entries) {
+        if(entry.type == fs::EntryTypeFile && regex_match(entry.name, regex(STORAGE_EXT_REGEX))) {
+            output["returnValue"].push_back(regex_replace(entry.name, regex(STORAGE_EXT), ""));
         }
     }
     output["success"] = true;

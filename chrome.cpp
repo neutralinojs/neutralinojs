@@ -83,7 +83,7 @@ string __findChrome() {
 
     for(const string &cmd: chromeBins) {
         fs::FileStats stats = fs::getStats(cmd);
-        if(!stats.hasError && stats.isFile) {
+        if(!stats.hasError && stats.entryType == fs::EntryTypeFile) {
             chromePath = cmd;
             break;
         }

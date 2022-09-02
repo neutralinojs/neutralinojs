@@ -137,8 +137,12 @@ fs::FileStats getStats(const string &path) {
     struct stat statBuffer;
     if(stat(path.c_str(), &statBuffer) == 0) {
         fileStats.size = statBuffer.st_size;
-        fileStats.isFile = S_ISREG(statBuffer.st_mode);
-        fileStats.isDirectory = S_ISDIR(statBuffer.st_mode);
+        if(S_ISREG(statBuffer.st_mode)) {
+            fileStats.entryType = fs::EntryTypeFile;
+        }
+        if(S_ISDIR(statBuffer.st_mode)) {
+            fileStats.entryType = fs::EntryTypeDir;
+        }
         fileStats.createdAt = statBuffer.st_ctime * 1000;
         fileStats.modifiedAt = statBuffer.st_mtime * 1000;
     }
@@ -154,8 +158,12 @@ fs::FileStats getStats(const string &path) {
         GetFileInformationByHandleEx(hFile, FileBasicInfo, &basicInfo, sizeof(basicInfo))
     ) {
         fileStats.size = size.QuadPart;
-        fileStats.isFile = !(basicInfo.FileAttributes & FILE_ATTRIBUTE_DIRECTORY);
-        fileStats.isDirectory = basicInfo.FileAttributes & FILE_ATTRIBUTE_DIRECTORY;
+        if(!(basicInfo.FileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+            fileStats.entryType = fs::EntryTypeFile;
+        }
+        if(basicInfo.FileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+            fileStats.entryType = fs::EntryTypeDir;
+        }
         fileStats.createdAt = __winTickToUnixMS(basicInfo.CreationTime.QuadPart);
         fileStats.modifiedAt = __winTickToUnixMS(basicInfo.ChangeTime.QuadPart);
     }
@@ -169,6 +177,54 @@ fs::FileStats getStats(const string &path) {
     CloseHandle(hFile);
     #endif
     return fileStats;
+}
+
+fs::DirReaderResult readDirectory(const string &path) {
+    fs::DirReaderResult dirResult;
+    fs::FileStats fileStats = fs::getStats(path);
+    if(fileStats.hasError) {
+        dirResult.hasError = true;
+        return dirResult;
+    }
+
+    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+    DIR *dirp;
+    struct dirent *directory;
+    dirp = opendir(path.c_str());
+    if(dirp) {
+        while((directory = readdir(dirp)) != nullptr) {
+            fs::EntryType type = fs::EntryTypeOther;
+            if(directory->d_type == DT_DIR) {
+                type = fs::EntryTypeDir;
+            }
+            else if(directory->d_type == DT_REG) {
+                type = fs::EntryTypeFile;
+            }
+
+            dirResult.entries.push_back({ directory->d_name, type });
+        }
+        closedir(dirp);
+    }
+    #elif defined(_WIN32)
+    string search_path = path + "/*.*";
+    WIN32_FIND_DATA fd;
+    HANDLE hFind = FindFirstFile(search_path.c_str(), &fd);
+    if(hFind != INVALID_HANDLE_VALUE) {
+        do {
+            fs::EntryType type = fs::EntryTypeOther;
+            if((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY) {
+                type = fs::EntryTypeDir;
+            }
+            else {
+                type = fs::EntryTypeFile;
+            }
+            
+            dirResult.entries.push_back({ fd.cFileName, type });
+        } while(FindNextFile(hFind, &fd));
+        FindClose(hFind);
+    }
+    #endif
+    return dirResult;
 }
 
 namespace controllers {
@@ -337,59 +393,34 @@ json removeFile(const json &input) {
 
 json readDirectory(const json &input) {
     json output;
+    output["returnValue"] = json::array();
     if(!helpers::hasRequiredFields(input, {"path"})) {
         output["error"] = helpers::makeMissingArgErrorPayload();
         return output;
     }
     string path = input["path"].get<string>();
-    fs::FileStats fileStats = fs::getStats(path);
-    if(fileStats.hasError) {
-        output["error"] = helpers::makeErrorPayload("NE_FS_NOPATHE", fileStats.error);
+    fs::DirReaderResult dirResult = fs::readDirectory(path);
+    if(dirResult.hasError) {
+        output["error"] = helpers::makeErrorPayload("NE_FS_NOPATHE", "Unable to open " + path);
         return output;
     }
 
-    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-    DIR *dirp;
-    struct dirent *directory;
-    dirp = opendir(path.c_str());
-    if (dirp) {
-        while ((directory = readdir(dirp)) != nullptr) {
-            string type = "OTHER";
-            if(directory->d_type == DT_DIR)
-                type = "DIRECTORY";
-            else if(directory->d_type == DT_REG)
-                type = "FILE";
-            json file = {
-                {"entry", directory->d_name},
-                {"type", type},
-            };
-            output["returnValue"].push_back(file);
-        }
-        closedir(dirp);
-        output["success"] = true;
-    }
-    #elif defined(_WIN32)
-    string search_path = path + "/*.*";
-    WIN32_FIND_DATA fd;
-    HANDLE hFind = FindFirstFile(search_path.c_str(), &fd);
-    if(hFind != INVALID_HANDLE_VALUE) {
-        do {
-            string type = "OTHER";
-            if((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
-                type = "DIRECTORY";
-            else
-                type = "FILE";
+    for(const fs::DirReaderEntry &entry: dirResult.entries) {
+        string type = "OTHER";
 
-            json file = {
-                {"entry", fd.cFileName},
-                {"type", type}
-            };
-            output["returnValue"].push_back(file);
-        } while(FindNextFile(hFind, &fd));
-        FindClose(hFind);
-        output["success"] = true;
+        if(entry.type == fs::EntryTypeDir) {
+            type = "DIRECTORY";
+        }
+        else if(entry.type == fs::EntryTypeFile) {
+            type = "FILE";
+        }
+
+        output["returnValue"].push_back({
+            {"entry", entry.name},
+            {"type", type}
+        });
     }
-    #endif
+    output["success"] = true;
     return output;
 }
 
@@ -456,8 +487,8 @@ json getStats(const json &input) {
     if(!fileStats.hasError) {
         json stats;
         stats["size"] = fileStats.size;
-        stats["isFile"] = fileStats.isFile;
-        stats["isDirectory"] = fileStats.isDirectory;
+        stats["isFile"] = fileStats.entryType == fs::EntryTypeFile;
+        stats["isDirectory"] = fileStats.entryType == fs::EntryTypeDir;
         stats["createdAt"] = fileStats.createdAt;
         stats["modifiedAt"] = fileStats.modifiedAt;
         output["returnValue"] = stats;

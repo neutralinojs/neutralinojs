@@ -2,6 +2,7 @@
 #define NEU_FILESYSTEM_H
 
 #include <string>
+#include <vector>
 
 #include "lib/json/json.hpp"
 
@@ -27,14 +28,25 @@ struct FileWriterOptions {
     bool append = false;
 };
 
+enum EntryType { EntryTypeFile, EntryTypeDir, EntryTypeOther };
+
 struct FileStats {
     bool hasError = false;
     string error;
     long long size;
-    bool isDirectory;
-    bool isFile;
+    EntryType entryType = fs::EntryTypeOther;
     long long createdAt;
     long long modifiedAt;
+};
+
+struct DirReaderEntry {
+    string name;
+    EntryType type = fs::EntryTypeOther;
+};
+
+struct DirReaderResult {
+    bool hasError = false;
+    vector<DirReaderEntry> entries;
 };
 
 bool createDirectory(const string &path);
@@ -45,6 +57,7 @@ string getDirectoryName(const string &filename);
 string getCurrentDirectory();
 string getFullPathFromRelative(const string &path);
 fs::FileStats getStats(const string &path);
+fs::DirReaderResult readDirectory(const string &path);
 
 namespace controllers {
 

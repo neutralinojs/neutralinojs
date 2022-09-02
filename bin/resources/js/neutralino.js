@@ -366,11 +366,15 @@ var Neutralino = (function (exports) {
     function getData(key) {
         return sendMessage('storage.getData', { key });
     }
+    function getKeys() {
+        return sendMessage('storage.getKeys');
+    }
 
     var storage = /*#__PURE__*/Object.freeze({
         __proto__: null,
         setData: setData,
-        getData: getData
+        getData: getData,
+        getKeys: getKeys
     });
 
     var LoggerType;

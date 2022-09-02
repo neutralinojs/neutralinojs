@@ -124,6 +124,7 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
         // Neutralino.storage
         {"storage.setData", storage::controllers::setData},
         {"storage.getData", storage::controllers::getData},
+        {"storage.getKeys", storage::controllers::getKeys},
         // Neutralino.events
         {"events.broadcast", events::controllers::broadcast},
         // Neutralino.extensions
