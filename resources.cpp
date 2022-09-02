@@ -119,7 +119,8 @@ fs::FileReaderResult getFile(const string &filename) {
 
     fs::FileReaderResult fileReaderResult = fs::readFile(settings::joinAppPath(filename));
     if(fileReaderResult.hasError) {
-        debug::log("ERROR", fileReaderResult.error);
+        debug::log("ERROR", "Unable to load " + filename + " resource under the " +
+                    resources::getMode() + " mode");
     }
     return fileReaderResult;
 }

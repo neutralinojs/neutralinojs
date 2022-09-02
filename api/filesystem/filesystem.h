@@ -13,7 +13,6 @@ namespace fs {
 
 struct FileReaderResult {
     bool hasError = false;
-    string error;
     string data;
 };
 
@@ -32,7 +31,6 @@ enum EntryType { EntryTypeFile, EntryTypeDir, EntryTypeOther };
 
 struct FileStats {
     bool hasError = false;
-    string error;
     long long size;
     EntryType entryType = fs::EntryTypeOther;
     long long createdAt;

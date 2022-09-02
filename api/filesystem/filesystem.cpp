@@ -89,7 +89,6 @@ fs::FileReaderResult readFile(const string &filename, const fs::FileReaderOption
     ifstream reader(filename.c_str(), ios::binary | ios::ate);
     if(!reader.is_open()) {
         fileReaderResult.hasError = true;
-        fileReaderResult.error = "Unable to open " + filename;
         return fileReaderResult;
     }
     vector<char> buffer;
@@ -171,7 +170,6 @@ fs::FileStats getStats(const string &path) {
     #endif
     else {
         fileStats.hasError = true;
-        fileStats.error = path + " doesn't exists or access error";
     }
     #if defined(_WIN32)
     CloseHandle(hFile);
@@ -218,7 +216,7 @@ fs::DirReaderResult readDirectory(const string &path) {
             else {
                 type = fs::EntryTypeFile;
             }
-            
+
             dirResult.entries.push_back({ fd.cFileName, type });
         } while(FindNextFile(hFind, &fd));
         FindClose(hFind);
@@ -320,10 +318,11 @@ json readFile(const json &input) {
     if(helpers::hasField(input, "size")) {
         readerOptions.size = input["size"].get<long long>();
     }
+    string path = input["path"].get<string>();
     fs::FileReaderResult fileReaderResult;
-    fileReaderResult = fs::readFile(input["path"].get<string>(), readerOptions);
+    fileReaderResult = fs::readFile(path, readerOptions);
     if(fileReaderResult.hasError) {
-        output["error"] = helpers::makeErrorPayload("NE_FS_FILRDER", fileReaderResult.error);
+        output["error"] = helpers::makeErrorPayload("NE_FS_FILRDER", "Unable to open text file: " + path);
     }
     else {
         output["returnValue"] = fileReaderResult.data;
@@ -345,10 +344,11 @@ json readBinaryFile(const json &input) {
     if(helpers::hasField(input, "size")) {
         readerOptions.size = input["size"].get<long long>();
     }
+    string path = input["path"].get<string>();
     fs::FileReaderResult fileReaderResult;
-    fileReaderResult = fs::readFile(input["path"].get<string>(), readerOptions);
+    fileReaderResult = fs::readFile(path, readerOptions);
     if(fileReaderResult.hasError) {
-        output["error"] = helpers::makeErrorPayload("NE_FS_FILRDER", fileReaderResult.error);
+        output["error"] = helpers::makeErrorPayload("NE_FS_FILRDER", "Unable to open binary file: " + path);
     }
     else {
         output["returnValue"] = base64::to_base64(fileReaderResult.data);
@@ -495,7 +495,7 @@ json getStats(const json &input) {
         output["success"] = true;
     }
     else{
-        output["error"] = helpers::makeErrorPayload("NE_FS_NOPATHE", fileStats.error);
+        output["error"] = helpers::makeErrorPayload("NE_FS_NOPATHE", path + " doesn't exists or access error");
     }
     return output;
 }

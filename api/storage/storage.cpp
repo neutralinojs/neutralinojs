@@ -50,8 +50,7 @@ json getData(const json &input) {
     fs::FileReaderResult fileReaderResult;
     fileReaderResult = fs::readFile(filename);
     if(fileReaderResult.hasError) {
-        output["error"] = helpers::makeErrorPayload("NE_ST_NOSTKEX", "Unable to find storage key: " + key +
-                             ". " + fileReaderResult.error);
+        output["error"] = helpers::makeErrorPayload("NE_ST_NOSTKEX", "Unable to find storage key: " + key);
         return output;
     }
     output["returnValue"] = fileReaderResult.data;
