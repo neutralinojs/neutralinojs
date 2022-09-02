@@ -65,6 +65,34 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             `);
             assert.equal(runner.getOutput(), 'Hello');
         });
+
+        it('allows changing file cursor', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'World');
+                let content = await Neutralino.filesystem.readFile(NL_PATH + '/.tmp/test.txt', { pos: 2 });
+                await __close(content);
+            `);
+            assert.equal(runner.getOutput(), 'rld');
+        });
+
+        it('allows changing file reader buffer size', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Neutralinojs');
+                let content = await Neutralino.filesystem.readFile(NL_PATH + '/.tmp/test.txt', { size: 3 });
+                await __close(content);
+            `);
+            assert.equal(runner.getOutput(), 'Neu');
+        });
+
+        it('works properly with both pos and size options', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Neutralinojs');
+                let content = await Neutralino.filesystem
+                                    .readFile(NL_PATH + '/.tmp/test.txt', { pos: 6, size: 4 });
+                await __close(content);
+            `);
+            assert.equal(runner.getOutput(), 'lino');
+        });
     });
 
     describe('filesystem.writeBinaryFile', () => {
@@ -110,16 +138,66 @@ describe('filesystem.spec: filesystem namespace tests', () => {
     describe('filesystem.readBinaryFile', () => {
         it('works without throwing errors', async () => {
             runner.run(`
-                let rawBin = new ArrayBuffer(1);
-                let view = new Uint8Array(rawBin);
+                let view = new Uint8Array(1);
                 view[0] = 64; // Saves ASCII '@' to the binary file
-                await Neutralino.filesystem.writeBinaryFile(NL_PATH + '/.tmp/test.bin', rawBin);
+                await Neutralino.filesystem.writeBinaryFile(NL_PATH + '/.tmp/test.bin', view.buffer);
 
                 let buffer = await Neutralino.filesystem.readBinaryFile(NL_PATH + '/.tmp/test.bin');
                 view = new Uint8Array(buffer);
                 await __close(view[0].toString());
             `);
             assert.equal(runner.getOutput(), '64');
+        });
+
+        it('allows changing file cursor', async () => {
+            runner.run(`
+                let view = new Uint8Array([64, 65, 66, 67]);
+                await Neutralino.filesystem.writeBinaryFile(NL_PATH + '/.tmp/test.bin', view.buffer);
+
+                let buffer = await Neutralino.filesystem
+                                    .readBinaryFile(NL_PATH + '/.tmp/test.bin', { pos: 2 });
+                view = new Uint8Array(buffer);
+                await __close(JSON.stringify(Array.from(view)));
+            `);
+            let data = JSON.parse(runner.getOutput());
+            assert.ok(typeof data == 'object');
+            assert.equal(data.length, 2);
+            assert.equal(data[0], 66);
+            assert.equal(data[1], 67);
+        });
+
+        it('allows changing file reader buffer size', async () => {
+            runner.run(`
+                let view = new Uint8Array([164, 165, 166, 167]);
+                await Neutralino.filesystem.writeBinaryFile(NL_PATH + '/.tmp/test.bin', view.buffer);
+
+                let buffer = await Neutralino.filesystem
+                                    .readBinaryFile(NL_PATH + '/.tmp/test.bin', { size: 1 });
+                view = new Uint8Array(buffer);
+                await __close(JSON.stringify(Array.from(view)));
+            `);
+            let data = JSON.parse(runner.getOutput());
+            assert.ok(typeof data == 'object');
+            assert.equal(data.length, 1);
+            assert.equal(data[0], 164);
+        });
+
+        it('works properly with both pos and size options', async () => {
+            runner.run(`
+                let view = new Uint8Array([1, 2, 3, 4]);
+                await Neutralino.filesystem.writeBinaryFile(NL_PATH + '/.tmp/test.bin', view.buffer);
+
+                let buffer = await Neutralino.filesystem
+                                    .readBinaryFile(NL_PATH + '/.tmp/test.bin', { pos: 1, size: 3 });
+                view = new Uint8Array(buffer);
+                await __close(JSON.stringify(Array.from(view)));
+            `);
+            let data = JSON.parse(runner.getOutput());
+            assert.ok(typeof data == 'object');
+            assert.equal(data.length, 3);
+            assert.equal(data[0], 2);
+            assert.equal(data[1], 3);
+            assert.equal(data[2], 4);
         });
     });
 

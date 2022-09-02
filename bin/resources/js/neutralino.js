@@ -776,7 +776,7 @@ var Neutralino = (function (exports) {
             }));
         }
         window.NL_CVERSION = version;
-        window.NL_CCOMMIT = 'd6884b796ff43bd1eec8909d7168a17bdba7b795'; // only the build server will update this
+        window.NL_CCOMMIT = '07c5eacccecea385b689e14c6225b7944b275142'; // only the build server will update this
         initialized = true;
     }
 
