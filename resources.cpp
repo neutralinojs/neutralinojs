@@ -26,7 +26,7 @@ unsigned int asarHeaderSize;
 resources::ResourceMode mode = resources::ResourceModeBundle;
 
 pair<int, string> __seekFilePos(const string &path, json node, const string &curpath) {
-    vector <string> pathSegments = helpers::split(path, '/');
+    vector<string> pathSegments = helpers::split(path, '/');
     string filename = pathSegments[pathSegments.size() - 1];
     json json = node;
     for(const auto &pathSegment: pathSegments) {

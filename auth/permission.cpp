@@ -15,10 +15,10 @@ using json = nlohmann::json;
 
 namespace permission {
 
-vector <string> blockedMethods;
-vector <string> blockedModules;
-vector <string> allowedMethods;
-vector <string> allowedModules;
+vector<string> blockedMethods;
+vector<string> blockedModules;
+vector<string> allowedMethods;
+vector<string> allowedModules;
 bool shouldCheckBlockList = false;
 bool shouldCheckAllowList = false;
 
@@ -27,7 +27,7 @@ bool __isWildcardMatch(const string &methodMatch) {
 }
 
 string __getModuleFromMethod(const string &nativeMethod) {
-    vector <string> methodParts = helpers::split(nativeMethod, '.');
+    vector<string> methodParts = helpers::split(nativeMethod, '.');
     return methodParts[0];
 }
 

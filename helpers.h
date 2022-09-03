@@ -17,7 +17,7 @@ void urldecode(char *dst, const char *src);
 char* cStrCopy(const string &str);
 bool hasRequiredFields(const json &input, const vector<string> &keys);
 bool hasField(const json &input, const string &key);
-vector <string> getModes();
+vector<string> getModes();
 string normalizePath(string &path);
 
 } // namespace helpers

@@ -277,7 +277,7 @@ void broadcastToAllApps(const json &message) {
 }
 
 vector<string> getConnectedExtensions() {
-    vector <string> extensions;
+    vector<string> extensions;
     for (const auto &[extensionId, _]: extConnections) {
         extensions.push_back(extensionId);
     }

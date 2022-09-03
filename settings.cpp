@@ -26,7 +26,7 @@ json options;
 json globalArgs;
 string appPath;
 
-vector <settings::ConfigOverride> configOverrides;
+vector<settings::ConfigOverride> configOverrides;
 
 string joinAppPath(const string &filename) {
     return appPath + filename;

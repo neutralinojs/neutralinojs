@@ -211,7 +211,7 @@ string getEnv(const string &key) {
 namespace controllers {
 
 vector<string> __extensionsToVector(const json &filters) {
-    vector <string> filtersV = {};
+    vector<string> filtersV = {};
     for (auto &filter: filters) {
         filtersV.push_back(filter["name"].get<string>());
         string extensions = "";
@@ -361,7 +361,7 @@ json showOpenDialog(const json &input) {
     json output;
     string title = "Open a file";
     string defaultPath = "";
-    vector <string> filters = {"All files", "*"};
+    vector<string> filters = {"All files", "*"};
     pfd::opt option = pfd::opt::none;
 
     if(helpers::hasField(input, "title")) {
@@ -416,7 +416,7 @@ json showSaveDialog(const json &input) {
     json output;
     string title = "Save a file";
     string defaultPath = "";
-    vector <string> filters = {"All files", "*"};
+    vector<string> filters = {"All files", "*"};
     pfd::opt option = pfd::opt::none;
 
     if(helpers::hasField(input, "title")) {
