@@ -52,7 +52,7 @@ void __startApp() {
     }
     else if(mode == "cloud") {
         if(neuserver::isInitialized()) {
-            debug::log("INFO", options["applicationId"].get<string>() +
+            debug::log(debug::LogTypeInfo, options["applicationId"].get<string>() +
                      " is available at " + navigationUrl);
         }
         __wait();

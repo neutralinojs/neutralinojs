@@ -13,6 +13,7 @@
 #include "lib/json/json.hpp"
 #include "settings.h"
 #include "helpers.h"
+#include "errors.h"
 #include "server/neuserver.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
@@ -80,7 +81,7 @@ json getConfig(const json &input) {
 json broadcast(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"event"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string event = input["event"].get<string>();

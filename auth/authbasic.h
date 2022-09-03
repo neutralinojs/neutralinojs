@@ -7,6 +7,8 @@ using namespace std;
 
 namespace authbasic {
 
+enum TokenSecurity { TokenSecurityOneTime, TokenSecurityNone };
+
 void init();
 void exportAuthInfo();
 bool verifyToken(const string &token);

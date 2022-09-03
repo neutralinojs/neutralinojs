@@ -3,6 +3,7 @@
 #include "server/neuserver.h"
 #include "lib/json/json.hpp"
 #include "helpers.h"
+#include "errors.h"
 #include "extensions_loader.h"
 #include "api/events/events.h"
 
@@ -16,7 +17,7 @@ namespace controllers {
 json dispatch(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"extensionId", "event"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string extensionId = input["extensionId"].get<string>();
@@ -31,8 +32,7 @@ json dispatch(const json &input) {
         output["success"] = true;
     }
     else {
-        output["error"] = helpers::makeErrorPayload("NE_EX_EXTNOTC",
-                                    extensionId + " is not connected yet");
+        output["error"] = errors::makeErrorPayload(errors::NE_EX_EXTNOTC, extensionId);
     }
     return output;
 }
@@ -40,7 +40,7 @@ json dispatch(const json &input) {
 json broadcast(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"event"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string event = input["event"].get<string>();

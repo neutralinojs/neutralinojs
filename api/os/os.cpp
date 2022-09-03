@@ -34,6 +34,7 @@ extern char **environ;
 #include "lib/json/json.hpp"
 #include "lib/tray/tray.h"
 #include "helpers.h"
+#include "errors.h"
 #include "settings.h"
 #include "resources.h"
 #include "api/events/events.h"
@@ -225,7 +226,7 @@ vector<string> __extensionsToVector(const json &filters) {
 json execCommand(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"command"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string command = input["command"].get<string>();
@@ -253,7 +254,7 @@ json execCommand(const json &input) {
 json spawnProcess(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"command"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string command = input["command"].get<string>();
@@ -271,7 +272,7 @@ json spawnProcess(const json &input) {
 json updateSpawnedProcess(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"id", "event"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
 
@@ -289,8 +290,7 @@ json updateSpawnedProcess(const json &input) {
         output["success"] = true;
     }
     else {
-        output["error"] = helpers::makeErrorPayload("NE_OS_UNLTOUP",
-                                "Unable to update process id: " + to_string(processEvt.id));
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_UNLTOUP, to_string(processEvt.id));
     }
     return output;
 }
@@ -313,7 +313,7 @@ json getSpawnedProcesses(const json &input) {
 json getEnv(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"key"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string key = input["key"].get<string>();
@@ -446,7 +446,7 @@ json showSaveDialog(const json &input) {
 json showNotification(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"title", "content"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string title = input["title"].get<string>();
@@ -468,8 +468,7 @@ json showNotification(const json &input) {
         pfd::notify(title, content, iconMap[icon]);
     }
     else {
-        output["error"] = helpers::makeErrorPayload("NE_OS_INVNOTA",
-                                "Invalid notification style arguments: " + icon);
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_INVNOTA, icon);
     }
     output["success"] = true;
     return output;
@@ -478,7 +477,7 @@ json showNotification(const json &input) {
 json showMessageBox(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"title", "content"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string icon = "INFO";
@@ -526,8 +525,7 @@ json showMessageBox(const json &input) {
         output["success"] = true;
     }
     else {
-        output["error"] = helpers::makeErrorPayload("NE_OS_INVMSGA",
-                                "Invalid message box style arguments: " + choice + " or/and " + icon);
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_INVMSGA, choice + "/" + icon);
     }
     return output;
 }
@@ -587,7 +585,7 @@ json setTray(const json &input) {
         string iconPath = input["icon"].get<string>();
         #if defined(__linux__)
         string fullIconPath;
-        if(resources::getMode() == "directory") {
+        if(resources::getMode() == resources::ResourceModeDir) {
             fullIconPath = fs::getFullPathFromRelative(settings::joinAppPath("")) + iconPath;
         }
         else {
@@ -637,8 +635,7 @@ json setTray(const json &input) {
         output["success"] = true;
     }
     else {
-        output["error"] = helpers::makeErrorPayload("NE_OS_TRAYIER",
-                    "Unable to initialize the tray menu");
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_TRAYIER);
     }
     return output;
 }
@@ -646,7 +643,7 @@ json setTray(const json &input) {
 json open(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"url"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string url = input["url"].get<string>();
@@ -658,7 +655,7 @@ json open(const json &input) {
 json getPath(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"name"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string name = input["name"].get<string>();
@@ -668,8 +665,7 @@ json getPath(const json &input) {
         output["success"] = true;
     }
     else {
-        output["error"] = helpers::makeErrorPayload("NE_OS_INVKNPT",
-                                "Invalid platform path name: " + name);
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_INVKNPT, name);
     }
     return output;
 }

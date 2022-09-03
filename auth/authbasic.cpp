@@ -11,7 +11,7 @@ using namespace std;
 namespace authbasic {
 
 string token = "";
-string tokenSecurity = "one-time";
+authbasic::TokenSecurity tokenSecurity = authbasic::TokenSecurityOneTime;
 bool tokenSent = false;
 
 json __makeAuthInfoPayload() {
@@ -25,7 +25,8 @@ void init() {
     token = helpers::generateToken();
     json jTokenSecurity = settings::getOptionForCurrentMode("tokenSecurity");
     if(!jTokenSecurity.is_null()) {
-        tokenSecurity = jTokenSecurity.get<string>();
+        tokenSecurity = jTokenSecurity.get<string>() == "one-time"
+                            ? authbasic::TokenSecurityOneTime : authbasic::TokenSecurityNone;
     }
 }
 
@@ -39,11 +40,11 @@ void exportAuthInfo() {
     };
     fs::writeFile(fileWriterOptions);
 
-    debug::log("INFO", "Auth info was exported to " + tempAuthInfoPath);
+    debug::log(debug::LogTypeInfo, "Auth info was exported to " + tempAuthInfoPath);
 }
 
 string getToken() {
-    if(tokenSent && tokenSecurity == "one-time") {
+    if(tokenSent && tokenSecurity == authbasic::TokenSecurityOneTime) {
         return "";
     }
     tokenSent = true;

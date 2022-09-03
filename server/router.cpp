@@ -11,6 +11,7 @@
 #include "auth/permission.h"
 #include "server/router.h"
 #include "helpers.h"
+#include "errors.h"
 #include "settings.h"
 #include "resources.h"
 #include "api/os/os.h"
@@ -42,18 +43,15 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
     response.method = request.method;
 
     if(!authbasic::verifyToken(request.accessToken)) {
-        response.data["error"] = helpers::makeErrorPayload("NE_RT_INVTOKN",
-                        "Invalid or expired NL_TOKEN value from client");
+        response.data["error"] = errors::makeErrorPayload(errors::NE_RT_INVTOKN);
         return response;
     }
     if(!permission::hasAPIAccess()) {
-        response.data["error"] = helpers::makeErrorPayload("NE_RT_APIPRME",
-                        "Missing permission to access Native API");
+        response.data["error"] = errors::makeErrorPayload(errors::NE_RT_APIPRME);
         return response;
     }
     if(!permission::hasMethodAccess(nativeMethodId)) {
-        response.data["error"] = helpers::makeErrorPayload("NE_RT_NATPRME",
-                        "Missing permission to execute the native method: " + nativeMethodId);
+        response.data["error"] = errors::makeErrorPayload(errors::NE_RT_NATPRME, nativeMethodId);
         return response;
     }
 
@@ -162,15 +160,12 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
             return response;
         }
         catch(exception e){
-            response.data["error"] = helpers::makeErrorPayload("NE_RT_NATRTER",
-                    "Native method execution error occurred. Failed because of: " + std::string(e.what()) +
-                    ". Make sure that you've provided required parameters properly.");
+            response.data["error"] = errors::makeErrorPayload(errors::NE_RT_NATRTER);
             return response;
         }
     }
     else {
-        response.data["error"] = helpers::makeErrorPayload("NE_RT_NATNTIM",
-                    nativeMethodId + " is not implemented in the Neutralinojs server");
+        response.data["error"] = errors::makeErrorPayload(errors::NE_RT_NATNTIM, nativeMethodId);
         return response;
     }
 }
@@ -238,8 +233,11 @@ router::Response getAsset(string path, const string &prependData) {
     };
 
     fs::FileReaderResult fileReaderResult = resources::getFile(path);
+    if(fileReaderResult.status != errors::NE_ST_OK) {
+        debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_RS_UNBLDRE, path));
+    }
     response.data = fileReaderResult.data;
-    response.status = fileReaderResult.hasError ? websocketpp::http::status_code::not_found
+    response.status = fileReaderResult.status != errors::NE_ST_OK ? websocketpp::http::status_code::not_found
                                 : websocketpp::http::status_code::ok;
     if(prependData != "")
         response.data = prependData + response.data;

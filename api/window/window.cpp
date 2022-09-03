@@ -27,6 +27,7 @@
 #include "lib/webview/webview.h"
 #include "resources.h"
 #include "helpers.h"
+#include "errors.h"
 #include "server/neuserver.h"
 #include "auth/permission.h"
 #include "api/app/app.h"
@@ -538,7 +539,7 @@ json focus(const json &input) {
 json setIcon(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"icon"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string icon = input["icon"].get<string>();
@@ -550,7 +551,7 @@ json setIcon(const json &input) {
 json move(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"x", "y"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     int x = input["x"].get<int>();

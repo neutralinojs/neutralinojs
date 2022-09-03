@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "errors.h"
 #include "lib/json/json.hpp"
 
 using json = nlohmann::json;
@@ -12,7 +13,7 @@ using namespace std;
 namespace fs {
 
 struct FileReaderResult {
-    bool hasError = false;
+    errors::StatusCode status = errors::NE_ST_OK;
     string data;
 };
 
@@ -30,20 +31,20 @@ struct FileWriterOptions {
 enum EntryType { EntryTypeFile, EntryTypeDir, EntryTypeOther };
 
 struct FileStats {
-    bool hasError = false;
+    errors::StatusCode status = errors::NE_ST_OK;
     long long size;
-    EntryType entryType = fs::EntryTypeOther;
+    fs::EntryType entryType = fs::EntryTypeOther;
     long long createdAt;
     long long modifiedAt;
 };
 
 struct DirReaderEntry {
     string name;
-    EntryType type = fs::EntryTypeOther;
+    fs::EntryType type = fs::EntryTypeOther;
 };
 
 struct DirReaderResult {
-    bool hasError = false;
+    errors::StatusCode status = errors::NE_ST_OK;
     vector<DirReaderEntry> entries;
 };
 

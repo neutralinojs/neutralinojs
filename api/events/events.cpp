@@ -3,6 +3,7 @@
 #include "server/neuserver.h"
 #include "lib/json/json.hpp"
 #include "helpers.h"
+#include "errors.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -37,7 +38,7 @@ namespace controllers {
 json broadcast(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"event"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string event = input["event"].get<string>();

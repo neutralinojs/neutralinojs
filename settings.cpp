@@ -72,8 +72,8 @@ json getConfig() {
             options = options.patch(patches);
         }
     }
-    catch(exception e){
-        debug::log("ERROR", "Unable to load: " + string(APP_CONFIG_FILE));
+    catch(exception e) {
+        debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_CF_UNBLDCF, string(APP_CONFIG_FILE)));
     }
     return options;
 }
@@ -93,7 +93,7 @@ string getGlobalVars(){
     jsSnippet += "var NL_ARGS=" + globalArgs.dump() + ";";
     jsSnippet += "var NL_PATH='" + appPath + "';";
     jsSnippet += "var NL_PID=" + to_string(app::getProcessId()) + ";";
-    jsSnippet += "var NL_RESMODE='" + resources::getMode() + "';";
+    jsSnippet += "var NL_RESMODE='" + resources::getModeString() + "';";
     jsSnippet += "var NL_EXTENABLED=" + json(extensions::isInitialized()).dump() + ";";
 
     json jGlobalVariables = settings::getOptionForCurrentMode("globalVariables");
@@ -133,7 +133,7 @@ void setGlobalArgs(const json &args) {
 
         // Resources read mode (resources.neu or from directory)
         if(cliArg.key == "--load-dir-res") {
-            resources::setMode("directory");
+            resources::setMode(resources::ResourceModeDir);
             continue;
         }
 
@@ -145,7 +145,7 @@ void setGlobalArgs(const json &args) {
 
         // Enable dev tools connection (as an extension)
         // Not available for production (resources.neu-based) apps
-        if(cliArg.key == "--neu-dev-extension" && resources::getMode() == "directory") {
+        if(cliArg.key == "--neu-dev-extension" && resources::getMode() == resources::ResourceModeDir) {
             extensions::loadOne("js.neutralino.devtools");
             continue;
         }
@@ -221,7 +221,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
             vector<string> modes = helpers::getModes();
 
             if(find(modes.begin(), modes.end(), arg.value) == modes.end()) {
-                debug::log("ERROR", "Unsupported mode: '" + arg.value + "'. The default mode is selected.");
+                debug::log(debug::LogTypeError,  errors::makeErrorMsg(errors::NE_CF_UNSUPMD, arg.value));
                 return;
             }
         }

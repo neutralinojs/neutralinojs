@@ -23,6 +23,7 @@
 #include "lib/base64/base64.hpp"
 #include "settings.h"
 #include "helpers.h"
+#include "errors.h"
 #include "api/filesystem/filesystem.h"
 #include "api/os/os.h"
 
@@ -88,7 +89,7 @@ fs::FileReaderResult readFile(const string &filename, const fs::FileReaderOption
     fs::FileReaderResult fileReaderResult;
     ifstream reader(filename.c_str(), ios::binary | ios::ate);
     if(!reader.is_open()) {
-        fileReaderResult.hasError = true;
+        fileReaderResult.status = errors::NE_FS_FILRDER;
         return fileReaderResult;
     }
     vector<char> buffer;
@@ -169,7 +170,7 @@ fs::FileStats getStats(const string &path) {
 
     #endif
     else {
-        fileStats.hasError = true;
+        fileStats.status = errors::NE_FS_NOPATHE;
     }
     #if defined(_WIN32)
     CloseHandle(hFile);
@@ -180,8 +181,8 @@ fs::FileStats getStats(const string &path) {
 fs::DirReaderResult readDirectory(const string &path) {
     fs::DirReaderResult dirResult;
     fs::FileStats fileStats = fs::getStats(path);
-    if(fileStats.hasError) {
-        dirResult.hasError = true;
+    if(fileStats.status != errors::NE_ST_OK) {
+        dirResult.status = fileStats.status;
         return dirResult;
     }
 
@@ -230,7 +231,7 @@ namespace controllers {
 json __writeOrAppendFile(const json &input, bool append = false) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path", "data"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     fs::FileWriterOptions fileWriterOptions;
@@ -241,15 +242,14 @@ json __writeOrAppendFile(const json &input, bool append = false) {
     if(fs::writeFile(fileWriterOptions))
         output["success"] = true;
     else
-        output["error"] = helpers::makeErrorPayload("NE_FS_FILWRER",
-                            "Unable to write file: " + fileWriterOptions.filename);
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_FILWRER, fileWriterOptions.filename);
     return output;
 }
 
 json __writeOrAppendBinaryFile(const json &input, bool append = false) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path", "data"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     fs::FileWriterOptions fileWriterOptions;
@@ -260,15 +260,14 @@ json __writeOrAppendBinaryFile(const json &input, bool append = false) {
     if(fs::writeFile(fileWriterOptions))
         output["success"] = true;
     else
-        output["error"] = helpers::makeErrorPayload("NE_FS_FILWRER",
-                            "Unable to write file: " + fileWriterOptions.filename);
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_FILWRER, fileWriterOptions.filename);
     return output;
 }
 
 json createDirectory(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string path = input["path"].get<string>();
@@ -277,8 +276,7 @@ json createDirectory(const json &input) {
         output["message"] = "Directory " + path + " was created";
     }
     else{
-        output["error"] = helpers::makeErrorPayload("NE_FS_DIRCRER",
-                            "Cannot create a directory in " + path);
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_DIRCRER, path);
     }
     return output;
 }
@@ -286,7 +284,7 @@ json createDirectory(const json &input) {
 json removeDirectory(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string path = input["path"].get<string>();
@@ -299,8 +297,7 @@ json removeDirectory(const json &input) {
         output["message"] = "Directory " + path + " was removed";
     }
     else{
-        output["error"] = helpers::makeErrorPayload("NE_FS_RMDIRER",
-                            "Cannot remove " + path);
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_RMDIRER, path);
     }
     return output;
 }
@@ -308,7 +305,7 @@ json removeDirectory(const json &input) {
 json readFile(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     fs::FileReaderOptions readerOptions;
@@ -321,8 +318,8 @@ json readFile(const json &input) {
     string path = input["path"].get<string>();
     fs::FileReaderResult fileReaderResult;
     fileReaderResult = fs::readFile(path, readerOptions);
-    if(fileReaderResult.hasError) {
-        output["error"] = helpers::makeErrorPayload("NE_FS_FILRDER", "Unable to open text file: " + path);
+    if(fileReaderResult.status != errors::NE_ST_OK) {
+        output["error"] = errors::makeErrorPayload(fileReaderResult.status, path);
     }
     else {
         output["returnValue"] = fileReaderResult.data;
@@ -334,7 +331,7 @@ json readFile(const json &input) {
 json readBinaryFile(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     fs::FileReaderOptions readerOptions;
@@ -347,8 +344,8 @@ json readBinaryFile(const json &input) {
     string path = input["path"].get<string>();
     fs::FileReaderResult fileReaderResult;
     fileReaderResult = fs::readFile(path, readerOptions);
-    if(fileReaderResult.hasError) {
-        output["error"] = helpers::makeErrorPayload("NE_FS_FILRDER", "Unable to open binary file: " + path);
+    if(fileReaderResult.status != errors::NE_ST_OK) {
+        output["error"] = errors::makeErrorPayload(fileReaderResult.status, path);
     }
     else {
         output["returnValue"] = base64::to_base64(fileReaderResult.data);
@@ -376,7 +373,7 @@ json appendBinaryFile(const json &input) {
 json removeFile(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string filename = input["path"].get<string>();
@@ -385,8 +382,7 @@ json removeFile(const json &input) {
         output["message"] = filename + " was deleted";
     }
     else{
-        output["error"] = helpers::makeErrorPayload("NE_FS_FILRMER",
-                            "Cannot remove " + filename);
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_FILRMER, filename);
     }
     return output;
 }
@@ -395,13 +391,13 @@ json readDirectory(const json &input) {
     json output;
     output["returnValue"] = json::array();
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string path = input["path"].get<string>();
     fs::DirReaderResult dirResult = fs::readDirectory(path);
-    if(dirResult.hasError) {
-        output["error"] = helpers::makeErrorPayload("NE_FS_NOPATHE", "Unable to open " + path);
+    if(dirResult.status != errors::NE_ST_OK) {
+        output["error"] = errors::makeErrorPayload(dirResult.status, path);
         return output;
     }
 
@@ -427,7 +423,7 @@ json readDirectory(const json &input) {
 json copyFile(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"source", "destination"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string source = input["source"].get<string>();
@@ -444,8 +440,7 @@ json copyFile(const json &input) {
         output["message"] = "File copy operation was successful";
     }
     else{
-        output["error"] = helpers::makeErrorPayload("NE_FS_COPYFER",
-                            "Cannot copy " + source + " to " + destination);
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_COPYFER, source + " -> " + destination);
     }
     return output;
 }
@@ -453,7 +448,7 @@ json copyFile(const json &input) {
 json moveFile(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"source", "destination"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string source = input["source"].get<string>();
@@ -470,8 +465,7 @@ json moveFile(const json &input) {
         output["message"] = "File move operation was successful";
     }
     else{
-        output["error"] = helpers::makeErrorPayload("NE_FS_MOVEFER",
-                            "Cannot move " + source + " to " + destination);
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_MOVEFER, source + " -> " + destination);
     }
     return output;
 }
@@ -479,12 +473,12 @@ json moveFile(const json &input) {
 json getStats(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string path = input["path"].get<string>();
     fs::FileStats fileStats = fs::getStats(path);
-    if(!fileStats.hasError) {
+    if(fileStats.status == errors::NE_ST_OK) {
         json stats;
         stats["size"] = fileStats.size;
         stats["isFile"] = fileStats.entryType == fs::EntryTypeFile;
@@ -495,7 +489,7 @@ json getStats(const json &input) {
         output["success"] = true;
     }
     else{
-        output["error"] = helpers::makeErrorPayload("NE_FS_NOPATHE", path + " doesn't exists or access error");
+        output["error"] = errors::makeErrorPayload(fileStats.status, path);
     }
     return output;
 }

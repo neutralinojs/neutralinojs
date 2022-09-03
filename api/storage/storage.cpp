@@ -6,6 +6,7 @@
 #include "lib/json/json.hpp"
 #include "settings.h"
 #include "helpers.h"
+#include "errors.h"
 #include "api/filesystem/filesystem.h"
 
 #if defined(_WIN32)
@@ -29,15 +30,14 @@ json __validateStorageBucket(const string &key) {
     if(regex_match(key, regex(STORAGE_KEY_REGEX)))
         return nullptr;
     json output;
-    output["error"] = helpers::makeErrorPayload("NE_ST_INVSTKY",
-                        "Invalid storage key format. The key should match regex: ^[a-zA-Z-_0-9]{1,50}$");
+    output["error"] = errors::makeErrorPayload(errors::NE_ST_INVSTKY, string(STORAGE_KEY_REGEX));
     return output;
 }
 
 json getData(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"key"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string key = input["key"].get<string>();
@@ -49,8 +49,8 @@ json getData(const json &input) {
 
     fs::FileReaderResult fileReaderResult;
     fileReaderResult = fs::readFile(filename);
-    if(fileReaderResult.hasError) {
-        output["error"] = helpers::makeErrorPayload("NE_ST_NOSTKEX", "Unable to find storage key: " + key);
+    if(fileReaderResult.status != errors::NE_ST_OK) {
+        output["error"] = errors::makeErrorPayload(errors::NE_ST_NOSTKEX, key);
         return output;
     }
     output["returnValue"] = fileReaderResult.data;
@@ -61,7 +61,7 @@ json getData(const json &input) {
 json setData(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"key"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string key = input["key"].get<string>();
@@ -85,8 +85,7 @@ json setData(const json &input) {
         fileWriterOptions.filename = filename;
 
         if(!fs::writeFile(fileWriterOptions)) {
-            output["error"] = helpers::makeErrorPayload("NE_ST_STKEYWE",
-                                "Unable to write data to key: " + key);
+            output["error"] = errors::makeErrorPayload(errors::NE_ST_STKEYWE, key);
             return output;
         }
     }
@@ -101,8 +100,8 @@ json getKeys(const json &input) {
 
     fs::DirReaderResult dirResult;
     dirResult = fs::readDirectory(bucketPath);
-    if(dirResult.hasError) {
-        output["error"] = helpers::makeErrorPayload("NE_ST_NOSTDIR", "Unable to read storage: " + bucketPath);
+    if(dirResult.status != errors::NE_ST_OK) {
+        output["error"] = errors::makeErrorPayload(errors::NE_ST_NOSTDIR, bucketPath);
         return output;
     }
 

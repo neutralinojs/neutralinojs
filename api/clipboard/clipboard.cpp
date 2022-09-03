@@ -3,6 +3,7 @@
 #include "lib/json/json.hpp"
 #include "lib/clip/clip.h"
 #include "helpers.h"
+#include "errors.h"
 #include "api/clipboard/clipboard.h"
 
 using namespace std;
@@ -25,7 +26,7 @@ json readText(const json &input) {
 json writeText(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"data"})) {
-        output["error"] = helpers::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string data = input["data"].get<string>();

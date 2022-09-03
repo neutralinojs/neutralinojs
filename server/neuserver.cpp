@@ -12,6 +12,7 @@
 
 #include "lib/json/json.hpp"
 #include "settings.h"
+#include "errors.h"
 #include "extensions_loader.h"
 #include "server/neuserver.h"
 #include "server/router.h"
@@ -171,13 +172,11 @@ void handleMessage(websocketpp::connection_hdl handler, websocketserver::message
 
             server->send(handler, nativeMessage.dump(), msg->get_opcode());
         } catch (websocketpp::exception const & e) {
-            debug::log("ERROR",
-                "Unable to send native message: " + std::string(e.what()));
+            debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_SR_UNBSEND));
         }
     }
     catch(exception e) {
-        debug::log("ERROR",
-                "Unable to parse native call payload: " + std::string(e.what()));
+        debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_SR_UNBPARS));
     }
 }
 

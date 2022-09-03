@@ -10,7 +10,9 @@ using namespace std;
 
 namespace debug {
 
-void log(const string &type, const string &message);
+enum LogType { LogTypeInfo, LogTypeError, LogTypeWarning, LogTypeDebug };
+
+void log(const debug::LogType type, const string &message);
 
 namespace controllers {
 

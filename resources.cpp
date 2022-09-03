@@ -8,6 +8,7 @@
 #include "lib/easylogging/easylogging++.h"
 #include "lib/json/json.hpp"
 #include "helpers.h"
+#include "errors.h"
 #include "settings.h"
 #include "resources.h"
 #include "api/debug/debug.h"
@@ -22,7 +23,7 @@ namespace resources {
 
 json fileTree = nullptr;
 unsigned int asarHeaderSize;
-bool loadResFromDir = false;
+resources::ResourceMode mode = resources::ResourceModeBundle;
 
 pair<int, string> __seekFilePos(const string &path, json node, const string &curpath) {
     vector <string> pathSegments = helpers::split(path, '/');
@@ -45,7 +46,7 @@ ifstream __openResourceFile() {
     resFileName = settings::joinAppPath(resFileName);
     asarArchive.open(resFileName, ios::binary);
     if(!asarArchive) {
-        debug::log("ERROR", "Resource file tree generation error: " + resFileName + " is missing.");
+        debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_RS_TREEGER, resFileName));
     }
     return asarArchive;
 }
@@ -56,7 +57,7 @@ fs::FileReaderResult __getFileFromBundle(const string &filename) {
     if(p.first != -1) {
         ifstream asarArchive = __openResourceFile();
         if (!asarArchive) {
-            fileReaderResult.hasError = true;
+            fileReaderResult.status = errors::NE_RS_TREEGER;
             return fileReaderResult;
         }
         unsigned int uSize = p.first;
@@ -70,7 +71,7 @@ fs::FileReaderResult __getFileFromBundle(const string &filename) {
         asarArchive.close();
    }
    else {
-        fileReaderResult.hasError = true;
+        fileReaderResult.status = errors::NE_RS_TREEGER;
    }
    return fileReaderResult;
 }
@@ -98,7 +99,7 @@ bool __makeFileTree() {
         files = json::parse(headerContent);
     }
     catch(exception e) {
-        debug::log("ERROR", e.what());
+        debug::log(debug::LogTypeError, e.what());
     }
     fileTree = files;
     return fileTree != nullptr;
@@ -113,34 +114,32 @@ void extractFile(const string &filename, const string &outputFilename) {
 }
 
 fs::FileReaderResult getFile(const string &filename) {
-    if(resources::getMode() == "bundle") {
+    if(resources::getMode() == resources::ResourceModeBundle) {
         return __getFileFromBundle(filename);
     }
-
-    fs::FileReaderResult fileReaderResult = fs::readFile(settings::joinAppPath(filename));
-    if(fileReaderResult.hasError) {
-        debug::log("ERROR", "Unable to load " + filename + " resource under the " +
-                    resources::getMode() + " mode");
-    }
-    return fileReaderResult;
+    return fs::readFile(settings::joinAppPath(filename));
 }
 
 void init() {
-    if(resources::getMode() == "directory") {
+    if(resources::getMode() == resources::ResourceModeDir) {
         return;
     }
     bool resourceLoaderStatus = __makeFileTree();
     if(!resourceLoaderStatus) {
-        resources::setMode("directory"); // fallback to directory mode
+        resources::setMode(resources::ResourceModeDir); // fallback to directory mode
     }
 }
 
-void setMode(const string &mode) {
-    loadResFromDir = mode == "directory";
+void setMode(const resources::ResourceMode m) {
+    mode = m;
 }
 
-string getMode() {
-    return loadResFromDir ? "directory" : "bundle";
+resources::ResourceMode getMode() {
+    return mode;
+}
+
+string getModeString() {
+    return mode == resources::ResourceModeDir ? "directory" : "bundle";
 }
 
 } // namespace resources
