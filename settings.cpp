@@ -173,6 +173,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
     map<string, vector<string>> cliMappings = {
         // Top level
         {"--mode", {"/defaultMode", "string"}},
+		{"--document-root", {"/documentRoot", "string"}},
         {"--url", {"/url", "string"}},
         {"--port", {"/port", "int"}},
         {"--logging-enabled", {"/logging/enabled", "bool"}},
