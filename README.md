@@ -1,6 +1,10 @@
 <div align="center">
-  <img src="https://cdn.rawgit.com/neutralinojs/neutralinojs.github.io/b667f2c2/docs/nllogo.png" style="width:300px;"/>
-</div>
+  <picture>
+    <source media="(prefers-color-scheme: light)" srcset="https://cdn.rawgit.com/neutralinojs/neutralinojs.github.io/b667f2c2/docs/nllogo.png">
+    <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/48746437/189286773-360ae1aa-cf42-434c-aacf-5c3b51644a1c.png">
+    <img alt="Neutralinojs logo" src="https://cdn.rawgit.com/neutralinojs/neutralinojs.github.io/b667f2c2/docs/nllogo.png">
+  </picture>
+ </div>
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/neutralinojs/neutralinojs)](https://github.com/neutralinojs/neutralinojs/releases)
 [![GitHub last commit](https://img.shields.io/github/last-commit/neutralinojs/neutralinojs.svg)](https://github.com/neutralinojs/neutralinojs/commits/main)
