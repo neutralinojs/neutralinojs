@@ -6,6 +6,19 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: os.getEnvs
+`os.getEnv` returns a value for a given environment variable key. Developers had to use alternative methods to retrieve a list of all environment variables with values. The `os.getEnvs` returns all environment variables as a JavaScript object similar to Node's [`process.env`](https://nodejs.dev/en/api/v18/process/#processenv).
+
+### API: filesystem
+- Added `pos` and `size` options for `readFile` and `readBinaryFile` methods to set the file cursor position and buffer size respectively.
+
+### API: storage.getKeys
+Added the `storage.getKeys` function to get an array of Neutralinojs storage keys. Now, developers don't need to write their own functions to retrieve storage keys with the filesystem API.
+
+### Bugfixes/improvements
+- Replaced string error codes with enums in the C++ source code.
+- Some refactorings done in C++ struct definitions and return values. 
+
 ## v4.7.0
 
 ### API: System information API
