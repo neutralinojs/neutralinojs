@@ -349,6 +349,9 @@ var Neutralino = (function (exports) {
     function getDisplays() {
         return sendMessage('computer.getDisplays');
     }
+    function getMousePosition() {
+        return sendMessage('computer.getMousePosition');
+    }
 
     var computer = /*#__PURE__*/Object.freeze({
         __proto__: null,
@@ -357,7 +360,8 @@ var Neutralino = (function (exports) {
         getKernelInfo: getKernelInfo,
         getOSInfo: getOSInfo,
         getCPUInfo: getCPUInfo,
-        getDisplays: getDisplays
+        getDisplays: getDisplays,
+        getMousePosition: getMousePosition
     });
 
     function setData(key, data) {

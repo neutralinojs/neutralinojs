@@ -3,6 +3,7 @@
 
 #if defined(__linux__)
 #include <sys/sysinfo.h>
+#include <gdk/gdk.h>
 
 #elif defined(__APPLE__) || defined(__FreeBSD__)
 #include <unistd.h>
@@ -145,6 +146,26 @@ json getDisplays(const json &input) {
         output["returnValue"].push_back(displayInfo);
         displayId++;
     }
+    output["success"] = true;
+    return output;
+}
+
+json getMousePosition(const json &input) {
+    json output;
+    int x, y;
+
+    #if defined(__linux__)
+    GdkDisplay* display = gdk_display_get_default();
+    GdkSeat* seat = gdk_display_get_default_seat(display);
+    GdkDevice* device = gdk_seat_get_pointer(seat);
+    gdk_device_get_position(device, nullptr, &x, &y);
+    #endif
+
+    json posRes = {
+        {"x", x},
+        {"y", y}
+    };
+    output["returnValue"] = posRes;
     output["success"] = true;
     return output;
 }
