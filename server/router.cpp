@@ -88,6 +88,7 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
         {"computer.getOSInfo", computer::controllers::getOSInfo},
         {"computer.getCPUInfo", computer::controllers::getCPUInfo},
         {"computer.getDisplays", computer::controllers::getDisplays},
+        {"computer.getMousePosition", computer::controllers::getMousePosition},
         // Neutralino.log
         {"debug.log", debug::controllers::log},
         // Neutralino.filesystem

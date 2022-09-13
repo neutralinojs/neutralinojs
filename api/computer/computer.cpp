@@ -3,11 +3,15 @@
 
 #if defined(__linux__)
 #include <sys/sysinfo.h>
+#include <gdk/gdk.h>
 
 #elif defined(__APPLE__) || defined(__FreeBSD__)
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/sysctl.h>
+#if defined(__APPLE__)
+#include <CoreGraphics/CGEvent.h>
+#endif
 
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
@@ -145,6 +149,39 @@ json getDisplays(const json &input) {
         output["returnValue"].push_back(displayInfo);
         displayId++;
     }
+    output["success"] = true;
+    return output;
+}
+
+json getMousePosition(const json &input) {
+    json output;
+    int x, y;
+
+    #if defined(__linux__)
+    GdkDisplay* display = gdk_display_get_default();
+    GdkSeat* seat = gdk_display_get_default_seat(display);
+    GdkDevice* device = gdk_seat_get_pointer(seat);
+    gdk_device_get_position(device, nullptr, &x, &y);
+
+    #elif defined(_WIN32)
+    POINT pos;
+    GetCursorPos(&pos);
+    x = pos.x;
+    y = pos.y;
+
+    #elif defined(__APPLE__)
+    CGEventRef event = CGEventCreate(nullptr);
+    CGPoint pos = CGEventGetLocation(event);
+    x = pos.x;
+    y = pos.y;
+    CFRelease(event);
+    #endif
+
+    json posRes = {
+        {"x", x},
+        {"y", y}
+    };
+    output["returnValue"] = posRes;
     output["success"] = true;
     return output;
 }
