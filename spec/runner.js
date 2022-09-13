@@ -92,7 +92,6 @@ function makeCommand(optArgs = '') {
     }
     command += ' --load-dir-res --window-exit-process-on-close ' +
         '--url=/index_spec.html --window-enable-inspector=false ' + optArgs;
-    console.log(command)
     return command;
 }
 
