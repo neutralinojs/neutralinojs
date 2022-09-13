@@ -159,6 +159,13 @@ json getMousePosition(const json &input) {
     GdkSeat* seat = gdk_display_get_default_seat(display);
     GdkDevice* device = gdk_seat_get_pointer(seat);
     gdk_device_get_position(device, nullptr, &x, &y);
+
+    #elif defined(_WIN32)
+    POINT pos;
+    GetCursorPos(&pos);
+    x = pos.x;
+    y = pos.y;
+
     #endif
 
     json posRes = {
