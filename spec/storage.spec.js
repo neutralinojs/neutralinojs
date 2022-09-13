@@ -76,4 +76,17 @@ describe('storage.spec: storage namespace tests', () => {
             assert.ok(runner.getOutput() == 'NE_ST_NOSTKEX');
         });
     });
+
+    describe('storage.getKeys', () => {
+        it('returns a list of storage keys', async () => {
+            let exitCode = runner.run(`
+                await Neutralino.storage.setData('test_key_test', 'data');
+                let keys = await Neutralino.storage.getKeys();
+                await __close(JSON.stringify(keys));
+            `);
+            let keys = JSON.parse(runner.getOutput());
+            assert.ok(typeof keys == 'object');
+            assert.ok(keys.indexOf('test_key_test') != -1);
+        });
+    });
 });
