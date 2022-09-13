@@ -15,6 +15,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### API: storage.getKeys
 Added the `storage.getKeys` function to get an array of Neutralinojs storage keys. Now, developers don't need to write their own functions to retrieve storage keys with the filesystem API.
 
+### API: computer.getMouseLocation
+Returns the current mouse cursor position via a JavaScript object that has `x` and `y` props. This function is helpful for develping interactive desktop widgets on all supported platforms.
+
 ### Bugfixes/improvements
 - Replaced string error codes with enums in the C++ source code.
 - Some refactorings done in C++ struct definitions and return values. 
