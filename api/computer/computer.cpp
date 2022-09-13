@@ -9,6 +9,9 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/sysctl.h>
+#if defined(__APPLE__)
+#include <CoreGraphics/CGEvent.h>
+#endif
 
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
@@ -166,6 +169,12 @@ json getMousePosition(const json &input) {
     x = pos.x;
     y = pos.y;
 
+    #elif defined(__APPLE__)
+    CGEventRef event = CGEventCreate(nullptr);
+    CGPoint pos = CGEventGetLocation(event);
+    x = pos.x;
+    y = pos.y;
+    CFRelease(event);
     #endif
 
     json posRes = {
