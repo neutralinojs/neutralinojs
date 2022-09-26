@@ -1,8 +1,8 @@
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: light)" srcset="media/nllogo-light-theme.png" width="300">
-    <source media="(prefers-color-scheme: dark)" srcset="media/nllogo-dark-theme.png" width="300">
-    <img alt="Neutralinojs logo" src="media/nllogo-light-theme.png" width="300">
+    <source media="(prefers-color-scheme: light)" srcset="media/nllogo-light-theme.png" width="300"/>
+    <source media="(prefers-color-scheme: dark)" srcset="media/nllogo-dark-theme.png" width="300"/>
+    <img alt="Neutralinojs logo" src="media/nllogo-light-theme.png" width="300"/>
   </picture>
  </div>
 
