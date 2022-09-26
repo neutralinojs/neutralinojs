@@ -1,8 +1,8 @@
 <div align="center">
   <picture>
-    <source media="(prefers-color-scheme: light)" srcset="https://cdn.rawgit.com/neutralinojs/neutralinojs.github.io/b667f2c2/docs/nllogo.png">
-    <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/48746437/189286773-360ae1aa-cf42-434c-aacf-5c3b51644a1c.png">
-    <img alt="Neutralinojs logo" src="https://cdn.rawgit.com/neutralinojs/neutralinojs.github.io/b667f2c2/docs/nllogo.png">
+    <source media="(prefers-color-scheme: light)" srcset="media/nllogo-light-theme.png" width="300">
+    <source media="(prefers-color-scheme: dark)" srcset="media/nllogo-dark-theme.png" width="300">
+    <img alt="Neutralinojs logo" src="media/nllogo-light-theme.png" width="300">
   </picture>
  </div>
 
