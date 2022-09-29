@@ -769,7 +769,7 @@ var Neutralino = (function (exports) {
         writeText: writeText
     });
 
-    var version = "3.6.0";
+    var version = "3.7.0";
 
     let initialized = false;
     function init() {
@@ -784,7 +784,7 @@ var Neutralino = (function (exports) {
             }));
         }
         window.NL_CVERSION = version;
-        window.NL_CCOMMIT = '07c5eacccecea385b689e14c6225b7944b275142'; // only the build server will update this
+        window.NL_CCOMMIT = '7e0bbbbad9b50f435259f346de98052cf713cfb8'; // only the build server will update this
         initialized = true;
     }
 
