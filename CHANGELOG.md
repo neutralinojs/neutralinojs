@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v4.8.0
+
 ### API: os.getEnvs
 `os.getEnv` returns a value for a given environment variable key. Developers had to use alternative methods to retrieve a list of all environment variables with values. The `os.getEnvs` returns all environment variables as a JavaScript object similar to Node's [`process.env`](https://nodejs.dev/en/api/v18/process/#processenv).
 
