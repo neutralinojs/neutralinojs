@@ -17,7 +17,7 @@ BZ_ISDARWIN = BZ_OS == 'darwin'
 BZ_ISWIN = BZ_OS == 'windows'
 BZ_ISVERBOSE = '--verbose' in sys.argv
 
-def get_arch(short_names = True, use_mac_rosetta = True):
+def get_arch(short_names = True, use_mac_rosetta = False):
     arch = platform.machine().lower()
 
     if BZ_ISDARWIN and arch == 'arm64' and use_mac_rosetta:
@@ -28,10 +28,10 @@ def get_arch(short_names = True, use_mac_rosetta = True):
 
     if short_names and (arch in ['aarch64']):
         arch = 'arm64'
-    
+
     if short_names and (arch in ['armv7l']):
         arch = 'armhf'
-    
+
     return arch
 
 def get_os_shortname():
