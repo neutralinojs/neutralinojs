@@ -797,12 +797,10 @@ var Neutralino = (function (exports) {
         }
         if (options.exportCustomMethods && window.NL_CMETHODS && window.NL_CMETHODS.length > 0) {
             for (let method of window.NL_CMETHODS) {
-                if (method == 'getMethods')
-                    continue;
                 Neutralino.custom[method] = (...args) => {
                     let data = {};
                     for (let [argi, argv] of args.entries()) {
-                        if (typeof argv == 'object') {
+                        if (typeof argv == 'object' && !Array.isArray(argv) && argv != null) {
                             data = Object.assign(Object.assign({}, data), argv);
                         }
                         else {
@@ -814,7 +812,7 @@ var Neutralino = (function (exports) {
             }
         }
         window.NL_CVERSION = version;
-        window.NL_CCOMMIT = '2d24587ddeca823bc56df0e052bdb4af231edccc'; // only the build server will update this
+        window.NL_CCOMMIT = '16a7362d651884a36acff7f989a0bf327bf3f6d6'; // only the build server will update this
         initialized = true;
     }
 
