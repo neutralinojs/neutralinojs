@@ -46,20 +46,16 @@ namespace window {
 webview::webview *nativeWindow;
 #if defined(__linux__) || defined(__FreeBSD__)
 bool isGtkWindowFullScreen = false;
-GtkWidget* windowHandle;
-
-#elif defined(__APPLE__)
-id windowHandle;
 
 #elif defined(_WIN32)
 bool isWinWindowFullScreen = false;
 DWORD savedStyle;
 DWORD savedStyleX;
 RECT savedRect;
-HWND windowHandle;
 #endif
 
 window::WindowOptions windowProps;
+NEU_W_HANDLE windowHandle;
 
 namespace handlers {
 
@@ -86,6 +82,10 @@ void windowStateChange(int state) {
 }
 
 } // namespace handlers
+
+NEU_W_HANDLE getWindowHandle() {
+    return windowHandle;
+}
 
 void executeJavaScript(const string &js) {
     if(nativeWindow)

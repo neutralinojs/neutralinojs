@@ -16,6 +16,7 @@
 #include "api/filesystem/filesystem.h"
 #include "api/debug/debug.h"
 #include "api/app/app.h"
+#include "api/custom/custom.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -95,6 +96,7 @@ string getGlobalVars(){
     jsSnippet += "var NL_PID=" + to_string(app::getProcessId()) + ";";
     jsSnippet += "var NL_RESMODE='" + resources::getModeString() + "';";
     jsSnippet += "var NL_EXTENABLED=" + json(extensions::isInitialized()).dump() + ";";
+    jsSnippet += "var NL_CMETHODS=" + json(custom::getMethods()).dump() + ";";
 
     json jGlobalVariables = settings::getOptionForCurrentMode("globalVariables");
     if(!jGlobalVariables.is_null()) {

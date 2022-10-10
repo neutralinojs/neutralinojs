@@ -235,7 +235,7 @@ var Neutralino = (function (exports) {
         return window.btoa(asciiStr);
     }
 
-    var filesystem = /*#__PURE__*/Object.freeze({
+    var filesystem = {
         __proto__: null,
         createDirectory: createDirectory,
         removeDirectory: removeDirectory,
@@ -250,7 +250,7 @@ var Neutralino = (function (exports) {
         copyFile: copyFile,
         moveFile: moveFile,
         getStats: getStats$1
-    });
+    };
 
     var Icon;
     (function (Icon) {
@@ -311,7 +311,7 @@ var Neutralino = (function (exports) {
         return sendMessage('os.getPath', { name });
     }
 
-    var os = /*#__PURE__*/Object.freeze({
+    var os = {
         __proto__: null,
         get Icon () { return Icon; },
         get MessageBoxChoice () { return MessageBoxChoice; },
@@ -329,7 +329,7 @@ var Neutralino = (function (exports) {
         setTray: setTray,
         open: open,
         getPath: getPath
-    });
+    };
 
     function getMemoryInfo() {
         return sendMessage('computer.getMemoryInfo');
@@ -353,7 +353,7 @@ var Neutralino = (function (exports) {
         return sendMessage('computer.getMousePosition');
     }
 
-    var computer = /*#__PURE__*/Object.freeze({
+    var computer = {
         __proto__: null,
         getMemoryInfo: getMemoryInfo,
         getArch: getArch,
@@ -362,7 +362,7 @@ var Neutralino = (function (exports) {
         getCPUInfo: getCPUInfo,
         getDisplays: getDisplays,
         getMousePosition: getMousePosition
-    });
+    };
 
     function setData(key, data) {
         return sendMessage('storage.setData', { key, data });
@@ -374,12 +374,12 @@ var Neutralino = (function (exports) {
         return sendMessage('storage.getKeys');
     }
 
-    var storage = /*#__PURE__*/Object.freeze({
+    var storage = {
         __proto__: null,
         setData: setData,
         getData: getData,
         getKeys: getKeys
-    });
+    };
 
     var LoggerType;
     (function (LoggerType) {
@@ -391,11 +391,11 @@ var Neutralino = (function (exports) {
         return sendMessage('debug.log', { message, type });
     }
 
-    var debug = /*#__PURE__*/Object.freeze({
+    var debug = {
         __proto__: null,
         get LoggerType () { return LoggerType; },
         log: log
-    });
+    };
 
     function exit(code) {
         return sendMessage('app.exit', { code });
@@ -424,14 +424,14 @@ var Neutralino = (function (exports) {
         return sendMessage('app.broadcast', { event, data });
     }
 
-    var app = /*#__PURE__*/Object.freeze({
+    var app = {
         __proto__: null,
         exit: exit,
         killProcess: killProcess,
         restartProcess: restartProcess,
         getConfig: getConfig,
         broadcast: broadcast$2
-    });
+    };
 
     const draggableRegions = new WeakMap();
     function setTitle(title) {
@@ -608,7 +608,7 @@ var Neutralino = (function (exports) {
         });
     }
 
-    var window$1 = /*#__PURE__*/Object.freeze({
+    var window$1 = {
         __proto__: null,
         setTitle: setTitle,
         getTitle: getTitle,
@@ -632,19 +632,19 @@ var Neutralino = (function (exports) {
         getPosition: getPosition,
         setAlwaysOnTop: setAlwaysOnTop,
         create: create
-    });
+    };
 
     function broadcast$1(event, data) {
         return sendMessage('events.broadcast', { event, data });
     }
 
-    var events = /*#__PURE__*/Object.freeze({
+    var events = {
         __proto__: null,
         broadcast: broadcast$1,
         on: on,
         off: off,
         dispatch: dispatch$1
-    });
+    };
 
     function dispatch(extensionId, event, data) {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
@@ -680,12 +680,12 @@ var Neutralino = (function (exports) {
         return sendMessage('extensions.getStats');
     }
 
-    var extensions = /*#__PURE__*/Object.freeze({
+    var extensions = {
         __proto__: null,
         dispatch: dispatch,
         broadcast: broadcast,
         getStats: getStats
-    });
+    };
 
     let manifest = null;
     function checkForUpdates(url) {
@@ -750,11 +750,11 @@ var Neutralino = (function (exports) {
         }));
     }
 
-    var updater = /*#__PURE__*/Object.freeze({
+    var updater = {
         __proto__: null,
         checkForUpdates: checkForUpdates,
         install: install
-    });
+    };
 
     function readText(key, data) {
         return sendMessage('clipboard.readText', { key, data });
@@ -763,16 +763,28 @@ var Neutralino = (function (exports) {
         return sendMessage('clipboard.writeText', { data });
     }
 
-    var clipboard = /*#__PURE__*/Object.freeze({
+    var clipboard = {
         __proto__: null,
         readText: readText,
         writeText: writeText
-    });
+    };
+
+    function getMethods() {
+        return sendMessage('custom.getMethods');
+    }
+
+    var custom = {
+        __proto__: null,
+        getMethods: getMethods
+    };
 
     var version = "3.7.0";
 
     let initialized = false;
-    function init() {
+    function init(options = {}) {
+        options = Object.assign({
+            exportCustomMethods: true
+        }, options);
         if (initialized) {
             return;
         }
@@ -783,14 +795,33 @@ var Neutralino = (function (exports) {
                 location.reload();
             }));
         }
+        if (options.exportCustomMethods && window.NL_CMETHODS && window.NL_CMETHODS.length > 0) {
+            for (let method of window.NL_CMETHODS) {
+                if (method == 'getMethods')
+                    continue;
+                Neutralino.custom[method] = (...args) => {
+                    let data = {};
+                    for (let [argi, argv] of args.entries()) {
+                        if (typeof argv == 'object') {
+                            data = Object.assign(Object.assign({}, data), argv);
+                        }
+                        else {
+                            data = Object.assign(Object.assign({}, data), { ['arg' + argi]: argv });
+                        }
+                    }
+                    return sendMessage('custom.' + method, data);
+                };
+            }
+        }
         window.NL_CVERSION = version;
-        window.NL_CCOMMIT = '7e0bbbbad9b50f435259f346de98052cf713cfb8'; // only the build server will update this
+        window.NL_CCOMMIT = '2d24587ddeca823bc56df0e052bdb4af231edccc'; // only the build server will update this
         initialized = true;
     }
 
     exports.app = app;
     exports.clipboard = clipboard;
     exports.computer = computer;
+    exports.custom = custom;
     exports.debug = debug;
     exports.events = events;
     exports.extensions = extensions;
@@ -800,8 +831,6 @@ var Neutralino = (function (exports) {
     exports.storage = storage;
     exports.updater = updater;
     exports.window = window$1;
-
-    Object.defineProperty(exports, '__esModule', { value: true });
 
     return exports;
 

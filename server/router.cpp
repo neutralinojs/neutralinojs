@@ -24,6 +24,7 @@
 #include "api/events/events.h"
 #include "api/extensions/extensions.h"
 #include "api/clipboard/clipboard.h"
+#include "api/custom/custom.h"
 
 #if defined(__APPLE__)
 #include <dispatch/dispatch.h>
@@ -32,9 +33,95 @@
 using namespace std;
 
 using json = nlohmann::json;
-typedef json (*NativeMethod)(const json &);
 
 namespace router {
+
+const map<string, router::NativeMethod> methodMap = {
+    // Neutralino.app
+    {"app.exit", app::controllers::exit},
+    {"app.killProcess", app::controllers::killProcess},
+    {"app.getConfig", app::controllers::getConfig},
+    {"app.broadcast", app::controllers::broadcast},
+    // Neutralino.window
+    {"window.setTitle", window::controllers::setTitle},
+    {"window.getTitle", window::controllers::getTitle},
+    {"window.maximize", window::controllers::maximize},
+    {"window.isMaximized", window::controllers::isMaximized},
+    {"window.unmaximize", window::controllers::unmaximize},
+    {"window.minimize", window::controllers::minimize},
+    {"window.isVisible", window::controllers::isVisible},
+    {"window.show", window::controllers::show},
+    {"window.hide", window::controllers::hide},
+    {"window.isFullScreen", window::controllers::isFullScreen},
+    {"window.setFullScreen", window::controllers::setFullScreen},
+    {"window.exitFullScreen", window::controllers::exitFullScreen},
+    {"window.focus", window::controllers::focus},
+    {"window.setIcon", window::controllers::setIcon},
+    {"window.move", window::controllers::move},
+    {"window.setSize", window::controllers::setSize},
+    {"window.getSize", window::controllers::getSize},
+    {"window.getPosition", window::controllers::getPosition},
+    {"window.setAlwaysOnTop", window::controllers::setAlwaysOnTop},
+    // Neutralino.computer
+    {"computer.getMemoryInfo", computer::controllers::getMemoryInfo},
+    {"computer.getArch", computer::controllers::getArch},
+    {"computer.getKernelInfo", computer::controllers::getKernelInfo},
+    {"computer.getOSInfo", computer::controllers::getOSInfo},
+    {"computer.getCPUInfo", computer::controllers::getCPUInfo},
+    {"computer.getDisplays", computer::controllers::getDisplays},
+    {"computer.getMousePosition", computer::controllers::getMousePosition},
+    // Neutralino.log
+    {"debug.log", debug::controllers::log},
+    // Neutralino.filesystem
+    {"filesystem.createDirectory", fs::controllers::createDirectory},
+    {"filesystem.removeDirectory", fs::controllers::removeDirectory},
+    {"filesystem.readFile", fs::controllers::readFile},
+    {"filesystem.readBinaryFile", fs::controllers::readBinaryFile},
+    {"filesystem.writeFile", fs::controllers::writeFile},
+    {"filesystem.writeBinaryFile", fs::controllers::writeBinaryFile},
+    {"filesystem.appendFile", fs::controllers::appendFile},
+    {"filesystem.appendBinaryFile", fs::controllers::appendBinaryFile},
+    {"filesystem.removeFile", fs::controllers::removeFile},
+    {"filesystem.readDirectory", fs::controllers::readDirectory},
+    {"filesystem.copyFile", fs::controllers::copyFile},
+    {"filesystem.moveFile", fs::controllers::moveFile},
+    {"filesystem.getStats", fs::controllers::getStats},
+    // Neutralino.os
+    {"os.execCommand", os::controllers::execCommand},
+    {"os.spawnProcess", os::controllers::spawnProcess},
+    {"os.updateSpawnedProcess", os::controllers::updateSpawnedProcess},
+    {"os.getSpawnedProcesses", os::controllers::getSpawnedProcesses},
+    {"os.getEnv", os::controllers::getEnv},
+    {"os.getEnvs", os::controllers::getEnvs},
+    {"os.showOpenDialog", os::controllers::showOpenDialog},
+    {"os.showFolderDialog", os::controllers::showFolderDialog},
+    {"os.showSaveDialog", os::controllers::showSaveDialog},
+    {"os.showNotification", os::controllers::showNotification},
+    {"os.showMessageBox", os::controllers::showMessageBox},
+    {"os.setTray", os::controllers::setTray},
+    {"os.open", os::controllers::open},
+    {"os.getPath", os::controllers::getPath},
+    // Neutralino.storage
+    {"storage.setData", storage::controllers::setData},
+    {"storage.getData", storage::controllers::getData},
+    {"storage.getKeys", storage::controllers::getKeys},
+    // Neutralino.events
+    {"events.broadcast", events::controllers::broadcast},
+    // Neutralino.extensions
+    {"extensions.dispatch", extensions::controllers::dispatch},
+    {"extensions.broadcast", extensions::controllers::broadcast},
+    {"extensions.getStats", extensions::controllers::getStats},
+    // Neutralino.clipboard
+    {"clipboard.readText", clipboard::controllers::readText},
+    {"clipboard.writeText", clipboard::controllers::writeText},
+    // Neutralino.custom
+    {"custom.getMethods", custom::controllers::getMethods},
+    // {"custom.add", custom::controllers::add} // Sample custom method
+};
+
+map<string, router::NativeMethod> getMethodMap() {
+    return methodMap;
+}
 
 router::NativeMessage executeNativeMethod(const router::NativeMessage &request) {
     string nativeMethodId = request.method;
@@ -54,90 +141,11 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
         response.data["error"] = errors::makeErrorPayload(errors::NE_RT_NATPRME, nativeMethodId);
         return response;
     }
+    map<string, router::NativeMethod> methodMapRef = router::getMethodMap();
 
-    map <string, NativeMethod> methodMap = {
-        // Neutralino.app
-        {"app.exit", app::controllers::exit},
-        {"app.killProcess", app::controllers::killProcess},
-        {"app.getConfig", app::controllers::getConfig},
-        {"app.broadcast", app::controllers::broadcast},
-        // Neutralino.window
-        {"window.setTitle", window::controllers::setTitle},
-        {"window.getTitle", window::controllers::getTitle},
-        {"window.maximize", window::controllers::maximize},
-        {"window.isMaximized", window::controllers::isMaximized},
-        {"window.unmaximize", window::controllers::unmaximize},
-        {"window.minimize", window::controllers::minimize},
-        {"window.isVisible", window::controllers::isVisible},
-        {"window.show", window::controllers::show},
-        {"window.hide", window::controllers::hide},
-        {"window.isFullScreen", window::controllers::isFullScreen},
-        {"window.setFullScreen", window::controllers::setFullScreen},
-        {"window.exitFullScreen", window::controllers::exitFullScreen},
-        {"window.focus", window::controllers::focus},
-        {"window.setIcon", window::controllers::setIcon},
-        {"window.move", window::controllers::move},
-        {"window.setSize", window::controllers::setSize},
-        {"window.getSize", window::controllers::getSize},
-        {"window.getPosition", window::controllers::getPosition},
-        {"window.setAlwaysOnTop", window::controllers::setAlwaysOnTop},
-        // Neutralino.computer
-        {"computer.getMemoryInfo", computer::controllers::getMemoryInfo},
-        {"computer.getArch", computer::controllers::getArch},
-        {"computer.getKernelInfo", computer::controllers::getKernelInfo},
-        {"computer.getOSInfo", computer::controllers::getOSInfo},
-        {"computer.getCPUInfo", computer::controllers::getCPUInfo},
-        {"computer.getDisplays", computer::controllers::getDisplays},
-        {"computer.getMousePosition", computer::controllers::getMousePosition},
-        // Neutralino.log
-        {"debug.log", debug::controllers::log},
-        // Neutralino.filesystem
-        {"filesystem.createDirectory", fs::controllers::createDirectory},
-        {"filesystem.removeDirectory", fs::controllers::removeDirectory},
-        {"filesystem.readFile", fs::controllers::readFile},
-        {"filesystem.readBinaryFile", fs::controllers::readBinaryFile},
-        {"filesystem.writeFile", fs::controllers::writeFile},
-        {"filesystem.writeBinaryFile", fs::controllers::writeBinaryFile},
-        {"filesystem.appendFile", fs::controllers::appendFile},
-        {"filesystem.appendBinaryFile", fs::controllers::appendBinaryFile},
-        {"filesystem.removeFile", fs::controllers::removeFile},
-        {"filesystem.readDirectory", fs::controllers::readDirectory},
-        {"filesystem.copyFile", fs::controllers::copyFile},
-        {"filesystem.moveFile", fs::controllers::moveFile},
-        {"filesystem.getStats", fs::controllers::getStats},
-        // Neutralino.os
-        {"os.execCommand", os::controllers::execCommand},
-        {"os.spawnProcess", os::controllers::spawnProcess},
-        {"os.updateSpawnedProcess", os::controllers::updateSpawnedProcess},
-        {"os.getSpawnedProcesses", os::controllers::getSpawnedProcesses},
-        {"os.getEnv", os::controllers::getEnv},
-        {"os.getEnvs", os::controllers::getEnvs},
-        {"os.showOpenDialog", os::controllers::showOpenDialog},
-        {"os.showFolderDialog", os::controllers::showFolderDialog},
-        {"os.showSaveDialog", os::controllers::showSaveDialog},
-        {"os.showNotification", os::controllers::showNotification},
-        {"os.showMessageBox", os::controllers::showMessageBox},
-        {"os.setTray", os::controllers::setTray},
-        {"os.open", os::controllers::open},
-        {"os.getPath", os::controllers::getPath},
-        // Neutralino.storage
-        {"storage.setData", storage::controllers::setData},
-        {"storage.getData", storage::controllers::getData},
-        {"storage.getKeys", storage::controllers::getKeys},
-        // Neutralino.events
-        {"events.broadcast", events::controllers::broadcast},
-        // Neutralino.extensions
-        {"extensions.dispatch", extensions::controllers::dispatch},
-        {"extensions.broadcast", extensions::controllers::broadcast},
-        {"extensions.getStats", extensions::controllers::getStats},
-        // Neutralino.clipboard
-        {"clipboard.readText", clipboard::controllers::readText},
-        {"clipboard.writeText", clipboard::controllers::writeText}
-    };
-
-    if(methodMap.find(nativeMethodId) != methodMap.end()) {
+    if(methodMapRef.find(nativeMethodId) != methodMapRef.end()) {
         try {
-            NativeMethod nativeMethod = methodMap[nativeMethodId];
+            router::NativeMethod nativeMethod = methodMapRef[nativeMethodId];
             #if defined(__linux__) || defined(_WIN32) || defined(__FreeBSD__)
             json apiOutput;
             #endif

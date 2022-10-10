@@ -12,6 +12,8 @@ using json = nlohmann::json;
 
 namespace router {
 
+typedef json (*NativeMethod)(const json &);
+
 struct Response {
     websocketpp::http::status_code::value status = websocketpp::http::status_code::ok;
     string contentType = "application/octet-stream";
@@ -28,6 +30,7 @@ struct NativeMessage {
 router::Response serve(string path);
 router::NativeMessage executeNativeMethod(const router::NativeMessage &request);
 router::Response getAsset(string path, const string &prependData = "");
+map<string, router::NativeMethod> getMethodMap();
 
 } // namespace router
 
