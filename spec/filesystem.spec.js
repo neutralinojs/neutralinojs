@@ -219,7 +219,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
                 await __close(JSON.stringify(entries));
             `);
             let entries = JSON.parse(runner.getOutput());
-            assert.ok(typeof entries == 'object');
+            assert.ok(Array.isArray(entries));
             assert.ok(entries.length > 0);
             assert.ok(entries.find((entry) => entry.type == 'DIRECTORY' && entry.entry == 'resources'))
         });
