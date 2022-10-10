@@ -12,6 +12,8 @@
 using namespace std;
 using json = nlohmann::json;
 
+#define NEU_CMETHOD_REGEX "(^custom\\.)(.*)"
+
 namespace custom {
 vector<string> getMethods() {
     auto methodMap = router::getMethodMap();
@@ -21,8 +23,8 @@ vector<string> getMethods() {
             continue;
         }
 
-        if(regex_match(methodName, regex("^custom\\..*"))) {
-            string cMethodName = regex_replace(methodName, regex("^custom\\."), "");
+        if(regex_match(methodName, regex(NEU_CMETHOD_REGEX))) {
+            string cMethodName = regex_replace(methodName, regex(NEU_CMETHOD_REGEX), "$2");
             customMethods.push_back(cMethodName);
         }
     }
