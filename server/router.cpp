@@ -36,7 +36,7 @@ using json = nlohmann::json;
 
 namespace router {
 
-const map<string, router::NativeMethod> methodMap = {
+map<string, router::NativeMethod> methodMap = {
     // Neutralino.app
     {"app.exit", app::controllers::exit},
     {"app.killProcess", app::controllers::killProcess},
@@ -141,11 +141,10 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
         response.data["error"] = errors::makeErrorPayload(errors::NE_RT_NATPRME, nativeMethodId);
         return response;
     }
-    map<string, router::NativeMethod> methodMapRef = router::getMethodMap();
 
-    if(methodMapRef.find(nativeMethodId) != methodMapRef.end()) {
+    if(methodMap.find(nativeMethodId) != methodMap.end()) {
         try {
-            router::NativeMethod nativeMethod = methodMapRef[nativeMethodId];
+            router::NativeMethod nativeMethod = methodMap[nativeMethodId];
             #if defined(__linux__) || defined(_WIN32) || defined(__FreeBSD__)
             json apiOutput;
             #endif
