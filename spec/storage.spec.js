@@ -85,7 +85,7 @@ describe('storage.spec: storage namespace tests', () => {
                 await __close(JSON.stringify(keys));
             `);
             let keys = JSON.parse(runner.getOutput());
-            assert.ok(typeof keys == 'object');
+            assert.ok(Array.isArray(keys));
             assert.ok(keys.indexOf('test_key_test') != -1);
         });
     });

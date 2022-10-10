@@ -81,7 +81,7 @@ describe('computer.spec: computer namespace tests', () => {
                 await __close(JSON.stringify(displays));
             `);
             let displays = JSON.parse(runner.getOutput());
-            assert.ok(typeof displays == 'object');
+            assert.ok(Array.isArray(displays));
 
             if(displays.length > 0) {
                 let display = displays[0];

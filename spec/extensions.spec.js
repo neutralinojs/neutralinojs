@@ -16,10 +16,10 @@ describe('extensions.spec: extensions namespace tests', () => {
 
             let stats = JSON.parse(runner.getOutput());
             assert.ok(typeof stats == 'object');
-            assert.ok(typeof stats.loaded == 'object');
+            assert.ok(Array.isArray(stats.loaded));
             assert.ok(stats.loaded.length > 0);
             assert.ok(stats.loaded.find((extension) => extension == 'js.neutralino.sampleextension'));
-            assert.ok(typeof stats.connected == 'object');
+            assert.ok(Array.isArray(stats.connected));
             assert.ok(stats.loaded.length > 0);
             assert.ok(stats.connected.find((extension) => extension == 'js.neutralino.sampleextension'));
         });
