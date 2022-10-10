@@ -14,7 +14,7 @@
 #include "api/debug/debug.h"
 #include "api/filesystem/filesystem.h"
 
-#define APP_RES_FILE "/resources.neu"
+#define NEU_APP_RES_FILE "/resources.neu"
 
 using namespace std;
 using json = nlohmann::json;
@@ -42,7 +42,7 @@ pair<int, string> __seekFilePos(const string &path, json node, const string &cur
 // Needs explicit close later
 ifstream __openResourceFile() {
     ifstream asarArchive;
-    string resFileName = APP_RES_FILE;
+    string resFileName = NEU_APP_RES_FILE;
     resFileName = settings::joinAppPath(resFileName);
     asarArchive.open(resFileName, ios::binary);
     if(!asarArchive) {

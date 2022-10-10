@@ -17,6 +17,10 @@ vector<string> getMethods() {
     auto methodMap = router::getMethodMap();
     vector<string> customMethods = {};
     for(const auto &[methodName, _]: methodMap) {
+        if(methodName == "custom.getMethods") {
+            continue;
+        }
+
         if(regex_match(methodName, regex("^custom\\..*"))) {
             string cMethodName = regex_replace(methodName, regex("^custom\\."), "");
             customMethods.push_back(cMethodName);

@@ -43,7 +43,7 @@ extern char **environ;
 #include "api/os/os.h"
 #include "api/window/window.h"
 
-#define MAX_TRAY_MENU_ITEMS 50
+#define NEU_MAX_TRAY_MENU_ITEMS 50
 
 using namespace std;
 using json = nlohmann::json;
@@ -53,7 +53,7 @@ using namespace Gdiplus;
 
 namespace os {
 
-struct tray_menu menus[MAX_TRAY_MENU_ITEMS];
+struct tray_menu menus[NEU_MAX_TRAY_MENU_ITEMS];
 struct tray tray;
 bool trayInitialized = false;
 map<int, TinyProcessLib::Process*> spawnedProcesses;

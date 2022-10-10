@@ -42,7 +42,7 @@ json getConfig() {
         return options;
     json config;
     try {
-        fs::FileReaderResult fileReaderResult = resources::getFile(APP_CONFIG_FILE);
+        fs::FileReaderResult fileReaderResult = resources::getFile(NEU_APP_CONFIG_FILE);
         config = json::parse(fileReaderResult.data);
         options = config;
 
@@ -74,15 +74,15 @@ json getConfig() {
         }
     }
     catch(exception e) {
-        debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_CF_UNBLDCF, string(APP_CONFIG_FILE)));
+        debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_CF_UNBLDCF, string(NEU_APP_CONFIG_FILE)));
     }
     return options;
 }
 
 string getGlobalVars(){
-    string jsSnippet = "var NL_OS='" + string(OS_NAME) + "';";
-    jsSnippet += "var NL_VERSION='" + string(NL_VERSION) + "';";
-    jsSnippet += "var NL_COMMIT='" + string(NL_COMMIT) + "';";
+    string jsSnippet = "var NL_OS='" + string(NEU_OS_NAME) + "';";
+    jsSnippet += "var NL_VERSION='" + string(NEU_VERSION) + "';";
+    jsSnippet += "var NL_COMMIT='" + string(NEU_COMMIT) + "';";
     jsSnippet += "var NL_APPID='" + options["applicationId"].get<string>() + "';";
     if(!options["version"].is_null()) {
         jsSnippet += "var NL_APPVERSION='" + options["version"].get<string>() + "';";
