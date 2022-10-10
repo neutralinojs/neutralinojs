@@ -2,19 +2,19 @@
 #define NEU_SETTINGS_H
 
 #if defined(__linux__)
-#define OS_NAME "Linux"
+#define NEU_OS_NAME "Linux"
 
 #elif defined(_WIN32)
-#define OS_NAME "Windows"
+#define NEU_OS_NAME "Windows"
 
 #elif defined(__APPLE__)
-#define OS_NAME "Darwin"
+#define NEU_OS_NAME "Darwin"
 
 #elif defined(__FreeBSD__)
-#define OS_NAME "FreeBSD"
+#define NEU_OS_NAME "FreeBSD"
 #endif
 
-#define APP_CONFIG_FILE "/neutralino.config.json"
+#define NEU_APP_CONFIG_FILE "/neutralino.config.json"
 
 #include <string>
 

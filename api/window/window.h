@@ -5,16 +5,25 @@
 
 #include "lib/json/json.hpp"
 
-#if defined(__APPLE__)
+#if defined(__linux__) || defined(__FreeBSD__)
+#include <gtk/gtk.h>
+#define NEU_W_HANDLE GtkWidget*
+
+#elif defined(__APPLE__)
 #include <objc/objc-runtime.h>
 
-// Helpers to avoid too much typing with the Objective c runtime.
+// Helpers to avoid too much typing with the Objective C runtime.
 inline id operator"" _cls(const char *s, size_t) { return (id)objc_getClass(s); }
 inline SEL operator"" _sel(const char *s, size_t) { return sel_registerName(s); }
 inline id operator"" _str(const char *s, size_t) {
   return ((id(*)(id, SEL, const char *))objc_msgSend)(
       "NSString"_cls, "stringWithUTF8String:"_sel, s);
 }
+#define NEU_W_HANDLE id
+
+#elif defined(_WIN32)
+#include <windows.h>
+#define NEU_W_HANDLE HWND
 #endif
 
 using json = nlohmann::json;
@@ -53,6 +62,7 @@ void onClose();
 
 } // namespace handlers
 
+NEU_W_HANDLE getWindowHandle();
 void executeJavaScript(const string &js);
 bool isMaximized();
 void maximize();

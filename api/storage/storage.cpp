@@ -14,10 +14,10 @@
 #include <fileapi.h>
 #endif
 
-#define STORAGE_DIR "/.storage"
-#define STORAGE_EXT ".neustorage"
-#define STORAGE_EXT_REGEX ".*neustorage$"
-#define STORAGE_KEY_REGEX "^[a-zA-Z-_0-9]{1,50}$"
+#define NEU_STORAGE_DIR "/.storage"
+#define NEU_STORAGE_EXT ".neustorage"
+#define NEU_STORAGE_EXT_REGEX ".*neustorage$"
+#define NEU_STORAGE_KEY_REGEX "^[a-zA-Z-_0-9]{1,50}$"
 
 using namespace std;
 using json = nlohmann::json;
@@ -27,10 +27,10 @@ namespace storage {
 namespace controllers {
 
 json __validateStorageBucket(const string &key) {
-    if(regex_match(key, regex(STORAGE_KEY_REGEX)))
+    if(regex_match(key, regex(NEU_STORAGE_KEY_REGEX)))
         return nullptr;
     json output;
-    output["error"] = errors::makeErrorPayload(errors::NE_ST_INVSTKY, string(STORAGE_KEY_REGEX));
+    output["error"] = errors::makeErrorPayload(errors::NE_ST_INVSTKY, string(NEU_STORAGE_KEY_REGEX));
     return output;
 }
 
@@ -44,8 +44,8 @@ json getData(const json &input) {
     json errorPayload = __validateStorageBucket(key);
     if(!errorPayload.is_null())
         return errorPayload;
-    string bucketPath = settings::joinAppPath(STORAGE_DIR);
-    string filename = bucketPath + "/" + key + STORAGE_EXT;
+    string bucketPath = settings::joinAppPath(NEU_STORAGE_DIR);
+    string filename = bucketPath + "/" + key + NEU_STORAGE_EXT;
 
     fs::FileReaderResult fileReaderResult;
     fileReaderResult = fs::readFile(filename);
@@ -68,14 +68,14 @@ json setData(const json &input) {
     json errorPayload = __validateStorageBucket(key);
     if(!errorPayload.is_null())
         return errorPayload;
-    string bucketPath = settings::joinAppPath(STORAGE_DIR);
+    string bucketPath = settings::joinAppPath(NEU_STORAGE_DIR);
 
     fs::createDirectory(bucketPath);
     #if defined(_WIN32)
     SetFileAttributesA(bucketPath.c_str(), FILE_ATTRIBUTE_HIDDEN);
     #endif
 
-    string filename = bucketPath + "/" + key + STORAGE_EXT;
+    string filename = bucketPath + "/" + key + NEU_STORAGE_EXT;
     if(!helpers::hasField(input, "data")) {
         fs::removeFile(filename);
     }
@@ -96,7 +96,7 @@ json setData(const json &input) {
 json getKeys(const json &input) {
     json output;
     output["returnValue"] = json::array();
-    string bucketPath = settings::joinAppPath(STORAGE_DIR);
+    string bucketPath = settings::joinAppPath(NEU_STORAGE_DIR);
 
     fs::DirReaderResult dirResult;
     dirResult = fs::readDirectory(bucketPath);
@@ -106,8 +106,8 @@ json getKeys(const json &input) {
     }
 
     for(const fs::DirReaderEntry &entry: dirResult.entries) {
-        if(entry.type == fs::EntryTypeFile && regex_match(entry.name, regex(STORAGE_EXT_REGEX))) {
-            output["returnValue"].push_back(regex_replace(entry.name, regex(STORAGE_EXT), ""));
+        if(entry.type == fs::EntryTypeFile && regex_match(entry.name, regex(NEU_STORAGE_EXT_REGEX))) {
+            output["returnValue"].push_back(regex_replace(entry.name, regex(NEU_STORAGE_EXT), ""));
         }
     }
     output["success"] = true;

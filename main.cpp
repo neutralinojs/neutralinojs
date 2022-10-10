@@ -21,8 +21,8 @@
 #include "api/os/os.h"
 #include "api/debug/debug.h"
 
-#define APP_LOG_FILE "/neutralinojs.log"
-#define APP_LOG_FORMAT "%level %datetime %msg %loc %user@%host"
+#define NEU_APP_LOG_FILE "/neutralinojs.log"
+#define NEU_APP_LOG_FORMAT "%level %datetime %msg %loc %user@%host"
 #define ELPP_THREAD_SAFE
 
 INITIALIZE_EASYLOGGINGPP
@@ -80,11 +80,11 @@ void __configureLogger() {
     el::Configurations defaultConf;
     defaultConf.setToDefault();
     defaultConf.setGlobally(
-            el::ConfigurationType::Format, APP_LOG_FORMAT);
+            el::ConfigurationType::Format, NEU_APP_LOG_FORMAT);
 
     if(enableLogFile) {
         defaultConf.setGlobally(
-                el::ConfigurationType::Filename, settings::joinAppPath(APP_LOG_FILE));
+                el::ConfigurationType::Filename, settings::joinAppPath(NEU_APP_LOG_FILE));
     }
     defaultConf.setGlobally(
             el::ConfigurationType::ToFile, enableLogFile ? "true" : "false");

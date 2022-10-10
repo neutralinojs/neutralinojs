@@ -64,8 +64,8 @@
     },
     "definitions": {
         "*": [
-            "NL_VERSION=\\\"${BZ_VERSION}\\\"",
-            "NL_COMMIT=\\\"${BZ_COMMIT}\\\"",
+            "NEU_VERSION=\\\"${BZ_VERSION}\\\"",
+            "NEU_COMMIT=\\\"${BZ_COMMIT}\\\"",
             "ELPP_NO_DEFAULT_LOG_FILE=1",
             "ASIO_STANDALONE",
             "INFOWARE_VERSION=\\\"0.6.0\\\"",

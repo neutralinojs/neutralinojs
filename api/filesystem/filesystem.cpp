@@ -15,8 +15,8 @@
 #include <shlwapi.h>
 #include <winbase.h>
 
-#define WINDOWS_TICK 10000000
-#define SEC_TO_UNIX_EPOCH 11644473600LL
+#define NEU_WINDOWS_TICK 10000000
+#define NEU_SEC_TO_UNIX_EPOCH 11644473600LL
 #endif
 
 #include "lib/json/json.hpp"
@@ -35,7 +35,7 @@ namespace fs {
 #if defined(_WIN32)
 // From: https://stackoverflow.com/a/6161842/3565513
 long long __winTickToUnixMS(long long windowsTicks) {
-    return (windowsTicks / WINDOWS_TICK - SEC_TO_UNIX_EPOCH) * 1000;
+    return (windowsTicks / NEU_WINDOWS_TICK - NEU_SEC_TO_UNIX_EPOCH) * 1000;
 }
 #endif
 

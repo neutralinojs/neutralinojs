@@ -33,7 +33,7 @@ void init() {
         return;
     vector<json> extensions = jExtensions.get<vector<json>>();
     for(const json &extension: extensions) {
-        string commandKeyForOs = "command" + string(OS_NAME);
+        string commandKeyForOs = "command" + string(NEU_OS_NAME);
 
         if(!helpers::hasField(extension, "id")) {
             continue;
