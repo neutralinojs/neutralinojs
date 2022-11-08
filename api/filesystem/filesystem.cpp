@@ -523,6 +523,7 @@ json getOpenedFileInfo(const json &input) {
     file["id"] = fileId;
     file["eof"] = reader->eof();
     file["pos"] = pos;
+    file["lastRead"] = reader->gcount();
 
     output["returnValue"] = file;
     output["success"] = true;
