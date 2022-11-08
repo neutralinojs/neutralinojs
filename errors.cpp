@@ -35,6 +35,9 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_FS_NOPATHE: return "NE_FS_NOPATHE";
         case errors::NE_FS_COPYFER: return "NE_FS_COPYFER";
         case errors::NE_FS_MOVEFER: return "NE_FS_MOVEFER";
+        case errors::NE_FS_FILOPER: return "NE_FS_FILOPER";
+        case errors::NE_FS_UNLTOUP: return "NE_FS_UNLTOUP";
+        case errors::NE_FS_UNLTFOP: return "NE_FS_UNLTFOP";
         // router
         case errors::NE_RT_INVTOKN: return "NE_RT_INVTOKN";
         case errors::NE_RT_APIPRME: return "NE_RT_APIPRME";
@@ -80,6 +83,9 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_FS_NOPATHE: return "Unable to open path %1";
         case errors::NE_FS_COPYFER: return "Cannot perform copy: %1";
         case errors::NE_FS_MOVEFER: return "Cannot perform move: %1";
+        case errors::NE_FS_FILOPER: return "Unable to open file: %1";
+        case errors::NE_FS_UNLTOUP: return "Unable to update opened file id: %1";
+        case errors::NE_FS_UNLTFOP: return "Unable to find opened file id: %1";
         // router
         case errors::NE_RT_INVTOKN: return "Invalid or expired NL_TOKEN value from client";
         case errors::NE_RT_APIPRME: return "Missing permission to access Native API";

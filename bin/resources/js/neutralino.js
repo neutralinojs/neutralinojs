@@ -211,6 +211,15 @@ var Neutralino = (function (exports) {
             });
         });
     }
+    function openFile(path) {
+        return sendMessage('filesystem.openFile', { path });
+    }
+    function updateOpenedFile(id, event, data) {
+        return sendMessage('filesystem.updateOpenedFile', { id, event, data });
+    }
+    function getOpenedFileInfo(id) {
+        return sendMessage('filesystem.getOpenedFileInfo', { id });
+    }
     function removeFile(path) {
         return sendMessage('filesystem.removeFile', { path });
     }
@@ -245,6 +254,9 @@ var Neutralino = (function (exports) {
         appendBinaryFile: appendBinaryFile,
         readFile: readFile,
         readBinaryFile: readBinaryFile,
+        openFile: openFile,
+        updateOpenedFile: updateOpenedFile,
+        getOpenedFileInfo: getOpenedFileInfo,
         removeFile: removeFile,
         readDirectory: readDirectory,
         copyFile: copyFile,

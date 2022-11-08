@@ -35,6 +35,9 @@ enum StatusCode {
     NE_FS_NOPATHE,
     NE_FS_COPYFER,
     NE_FS_MOVEFER,
+    NE_FS_FILOPER,
+    NE_FS_UNLTOUP,
+    NE_FS_UNLTFOP,
     // router
     NE_RT_INVTOKN,
     NE_RT_APIPRME,

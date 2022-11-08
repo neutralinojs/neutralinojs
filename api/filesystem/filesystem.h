@@ -28,6 +28,13 @@ struct FileWriterOptions {
     bool append = false;
 };
 
+struct OpenedFileEvent {
+    int id = -1;
+    string type = "";
+    long long pos = -1;
+    long long size = -1;
+};
+
 enum EntryType { EntryTypeFile, EntryTypeDir, EntryTypeOther };
 
 struct FileStats {
@@ -55,6 +62,8 @@ bool writeFile(const fs::FileWriterOptions &fileWriterOptions);
 string getDirectoryName(const string &filename);
 string getCurrentDirectory();
 string getFullPathFromRelative(const string &path);
+int openFile(const string &path);
+bool updateOpenedFile(const OpenedFileEvent &evt);
 fs::FileStats getStats(const string &path);
 fs::DirReaderResult readDirectory(const string &path);
 
@@ -68,6 +77,9 @@ json appendFile(const json &input);
 json appendBinaryFile(const json &input);
 json readFile(const json &input);
 json readBinaryFile(const json &input);
+json openFile(const json &input);
+json updateOpenedFile(const json &input);
+json getOpenedFileInfo(const json &input);
 json removeFile(const json &input);
 json readDirectory(const json &input);
 json copyFile(const json &input);

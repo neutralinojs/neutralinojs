@@ -1,3 +1,5 @@
+#include <map>
+#include <mutex>
 #include <iostream>
 #include <fstream>
 
@@ -26,11 +28,56 @@
 #include "errors.h"
 #include "api/filesystem/filesystem.h"
 #include "api/os/os.h"
+#include "api/events/events.h"
 
 using namespace std;
 using json = nlohmann::json;
 
+map<int, ifstream*> openedFiles;
+mutex openedFilesLock;
+
+#define NEU_DEFAULT_STREAM_BUF_SIZE 256
+
 namespace fs {
+
+void __dispatchOpenedFileEvt(int virtualFileId, const string &action, const json &data) {
+    json evt;
+    evt["id"] = virtualFileId;
+    evt["action"] = action;
+    evt["data"] = data;
+    events::dispatch("openedFile", evt);
+}
+
+void __readStreamBlock(const OpenedFileEvent &evt, ifstream *reader, vector<char> &buffer) {
+    long long size = evt.size > -1 ? evt.size : NEU_DEFAULT_STREAM_BUF_SIZE;
+
+    buffer.clear();
+    buffer.resize(size);
+    reader->read(buffer.data(), size);
+    string result(buffer.begin(), buffer.end());
+
+    __dispatchOpenedFileEvt(evt.id, "data", result);
+}
+
+void __readStream(const OpenedFileEvent &evt, ifstream *reader) {
+    if(reader->eof()) {
+        __dispatchOpenedFileEvt(evt.id, "end", nullptr);
+        return;
+    }
+
+    vector<char> buffer;
+    while(reader->peek() != char_traits<char>::eof()) {
+        __readStreamBlock(evt, reader, buffer);
+
+        if(evt.type == "read") {
+            break;
+        }
+    }
+
+    if(reader->eof()) {
+        __dispatchOpenedFileEvt(evt.id, "end", nullptr);
+    }
+}
 
 #if defined(_WIN32)
 // From: https://stackoverflow.com/a/6161842/3565513
@@ -128,6 +175,44 @@ bool writeFile(const fs::FileWriterOptions &fileWriterOptions) {
         return false;
     writer << fileWriterOptions.data;
     writer.close();
+    return true;
+}
+
+int openFile(const string &filename) {
+    int virtualFileId = openedFiles.size();
+    ifstream *reader = new ifstream(filename.c_str(), ios::binary);
+    if(!reader->is_open()) {
+        delete reader;
+        return -1;
+    }
+    lock_guard<mutex> guard(openedFilesLock);
+    openedFiles[virtualFileId] = reader;
+    return virtualFileId;
+}
+
+bool updateOpenedFile(const OpenedFileEvent &evt) {
+    lock_guard<mutex> guard(openedFilesLock);
+    if(openedFiles.find(evt.id) == openedFiles.end()) {
+        return false;
+    }
+    ifstream *reader = openedFiles[evt.id];
+
+    if(evt.type == "close") {
+        reader->close();
+        delete reader;
+        openedFiles.erase(evt.id);
+    }
+    else if(evt.type == "read" || evt.type == "readAll") {
+        __readStream(evt, reader);
+    }
+    else if(evt.type == "seek") {
+        long long pos = evt.pos > -1 ? evt.pos : 0;
+        reader->clear();
+        reader->seekg(pos, ios::beg);
+    }
+    else {
+        return false;
+    }
     return true;
 }
 
@@ -368,6 +453,80 @@ json writeBinaryFile(const json &input) {
 
 json appendBinaryFile(const json &input) {
     return __writeOrAppendBinaryFile(input, true);
+}
+
+json openFile(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    string path = input["path"].get<string>();
+    int fileId = fs::openFile(path);
+    if(fileId == -1) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_FILOPER, path);
+    }
+    else {
+        output["returnValue"] = fileId;
+        output["success"] = true;
+    }
+    return output;
+}
+
+json updateOpenedFile(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"id", "event"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+
+    fs::OpenedFileEvent fileEvt;
+    fileEvt.id = input["id"].get<int>();
+    fileEvt.type = input["event"].get<string>();
+
+    if(helpers::hasField(input, "data")) {
+        if(fileEvt.type == "read" || fileEvt.type == "readAll") {
+            fileEvt.size = input["data"].get<long long>();
+        }
+        else if(fileEvt.type == "seek") {
+            fileEvt.pos = input["data"].get<long long>();
+        }
+    }
+
+    if(fs::updateOpenedFile(fileEvt)) {
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_UNLTOUP, to_string(fileEvt.id));
+    }
+    return output;
+}
+
+json getOpenedFileInfo(const json &input) {
+    json output;
+    lock_guard<mutex> guard(openedFilesLock);
+
+    if(!helpers::hasRequiredFields(input, {"id"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    int fileId = input["id"].get<int>();
+
+    if(openedFiles.find(fileId) == openedFiles.end()) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_UNLTFOP, to_string(fileId));
+        return output;
+    }
+    ifstream *reader = openedFiles[fileId];
+    long long pos = reader->tellg();
+
+    json file;
+    file["id"] = fileId;
+    file["eof"] = reader->eof();
+    file["pos"] = pos;
+
+    output["returnValue"] = file;
+    output["success"] = true;
+    return output;
 }
 
 json removeFile(const json &input) {
