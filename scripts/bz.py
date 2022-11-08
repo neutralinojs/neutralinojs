@@ -6,6 +6,12 @@ import subprocess
 import platform
 import json
 import glob
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--verbose', action='store_true')
+parser.add_argument('--target_arch', choices=['x64', 'arm64', 'armhf'])
+args = parser.parse_args()
 
 C = {}
 
@@ -15,13 +21,9 @@ BZ_OS = platform.system().lower()
 BZ_ISLINUX = BZ_OS == 'linux'
 BZ_ISDARWIN = BZ_OS == 'darwin'
 BZ_ISWIN = BZ_OS == 'windows'
-BZ_ISVERBOSE = '--verbose' in sys.argv
 
-def get_arch(short_names = True, use_mac_rosetta = False):
+def get_arch(short_names = True):
     arch = platform.machine().lower()
-
-    if BZ_ISDARWIN and arch == 'arm64' and use_mac_rosetta:
-        arch = 'x86_64'
 
     if short_names and (arch in ['x86_64', 'amd64']):
         arch = 'x64'
@@ -33,6 +35,11 @@ def get_arch(short_names = True, use_mac_rosetta = False):
         arch = 'armhf'
 
     return arch
+    
+def get_target_arch():
+    if args.target_arch != None:
+        return args.target_arch
+    return get_arch()
 
 def get_os_shortname():
     osnames = {'linux': 'linux', 'windows': 'win', 'darwin': 'mac'}
@@ -51,6 +58,7 @@ def apply_template_vars(text):
         .replace('${BZ_VERSION}', C['version']) \
         .replace('${BZ_ARCH}', get_arch()) \
         .replace('${BZ_ARCHL}', get_arch(short_names = False)) \
+        .replace('${BZ_TARGET_ARCH}', get_target_arch()) \
         .replace('${BZ_COMMIT}', get_latest_commit())
 
 def get_target_name():
@@ -76,7 +84,7 @@ def configure_vs_tools():
         print('ERR: Unable to find vswhere.exe')
         sys.exit(1)
 
-    if BZ_ISVERBOSE:
+    if args.verbose:
         print('vswhere.exe path: %s' % vsw_path)
 
     vs_paths = subprocess\
@@ -90,7 +98,7 @@ def configure_vs_tools():
         print('ERR: Unable to find VS dev command-line tools')
         sys.exit(1)
 
-    return '"%s" -host_arch=%s -arch=%s' % (vs_devcmd_file, get_arch(), get_arch())
+    return '"%s" -host_arch=%s -arch=%s' % (vs_devcmd_file, get_arch(), get_target_arch())
 
 
 def get_std():
@@ -186,6 +194,10 @@ def get_options():
     return opts
 
 def build_compiler_cmd():
+
+    arch = get_arch()
+    target_arch = get_target_arch()
+
     cmd = ''
     if BZ_ISWIN:
         cmd += '%s && ' % configure_vs_tools()
@@ -196,12 +208,25 @@ def build_compiler_cmd():
     cmd += get_definitions()
     cmd += get_options()
     cmd += get_target()
+
+    if BZ_ISDARWIN:
+        if target_arch  == 'x64':
+            cmd += '-arch x86_64 '
+        elif target_arch == 'arm64':
+            cmd += '-arch arm64 '
+        else:
+            print('ERR: Unsupported target architecture for macOS cross-compile: %s' % (target_arch))
+            sys.exit(1)
+    else:
+        if target_arch != arch:
+            print('ERR: Unable to cross-compile: target %s host %s' % (target_arch, arch))
+            sys.exit(1)
     return cmd
 
 def compile(cmd):
     print('Compiling %s...' % C['name'])
 
-    if BZ_ISVERBOSE:
+    if args.verbose:
         print('Running command: %s' % cmd)
 
     exit_code = subprocess.call(cmd, shell = True)

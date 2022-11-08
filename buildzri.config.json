@@ -2,7 +2,7 @@
     "std": "c++17",
     "name": "Neutralinojs",
     "version": "4.9.0",
-    "output": "./bin/neutralino-${BZ_OS}_${BZ_ARCH}",
+    "output": "./bin/neutralino-${BZ_OS}_${BZ_TARGET_ARCH}",
     "include": {
         "*": [
             ".",
@@ -49,7 +49,6 @@
             "-Os"
         ],
         "darwin": [
-            "-arch ${BZ_ARCHL}",
             "-Wno-deprecated-declarations",
             "-framework WebKit",
             "-framework Cocoa",
