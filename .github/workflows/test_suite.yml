@@ -95,7 +95,7 @@ jobs:
 
     - name: Build
       run: |
-        ./scripts/bz.py
+        ./scripts/bz.py --target_arch x64
         chmod +x ./bin/neutralino-mac_x64
 
     - name: Setup Spec Requirements
