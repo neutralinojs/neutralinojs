@@ -78,8 +78,7 @@
         ],
         "darwin": [
             "WEBVIEW_COCOA=1",
-            "TRAY_APPKIT=1",
-            "OBJC_OLD_DISPATCH_PROTOTYPES=1"
+            "TRAY_APPKIT=1"
         ],
         "windows": [
             "_WEBSOCKETPP_CPP11_STL_",
