@@ -1,0 +1,18 @@
+#include <iostream>
+#include <string>
+#include <fstream>
+#include <windows.h>
+
+using namespace std;
+
+int main() {
+  SetConsoleOutputCP(65001);
+  SetConsoleCP(65001);
+  string str;
+  ifstream in("test.txt");
+  while (getline(in, str)) {
+    cout << str << endl;
+  }
+  in.close();
+  return 0;
+}
