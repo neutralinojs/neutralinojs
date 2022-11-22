@@ -74,7 +74,7 @@ void setFullScreen();
 void exitFullScreen();
 bool isFullScreen();
 void setIcon(const string &icon);
-void setAwaysOnTop(bool onTop);
+void setAlwaysOnTop(bool onTop);
 void setBorderless();
 
 void _close(int exitCode);
