@@ -201,6 +201,193 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         });
     });
 
+    describe('filesystem.openFile', () => {
+        it('returns file identifiers without throwing errors', async () => {
+            runner.run(`
+                let fileIds = [];
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Hello');
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test2.txt', 'Hello');
+
+                let fileId = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/test.txt');
+                fileIds.push(fileId);
+                fileId = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/test2.txt');
+                fileIds.push(fileId);
+
+                await __close(JSON.stringify(fileIds));
+            `);
+            let fileIds = JSON.parse(runner.getOutput());
+            assert.ok(Array.isArray(fileIds));
+            assert.equal(fileIds[0], 0);
+            assert.equal(fileIds[1], 1);
+        });
+
+        it('throws an error for missing args', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.openFile();
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+        });
+    });
+
+    describe('filesystem.updateOpenedFile', () => {
+        it('triggers the data event', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Neutralinojs');
+
+                let fileId = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/test.txt');
+                Neutralino.events.on('openedFile', async (evt) => {
+                  if(evt.detail.id == fileId && evt.detail.action == 'data') {
+                      await __close(evt.detail.data);
+                  }
+                });
+                await Neutralino.filesystem.updateOpenedFile(fileId, 'read', 3); // Reads the first 3 bytes
+            `);
+            assert.equal(runner.getOutput(), 'Neu');
+        });
+
+        it('triggers the end event', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Neutralinojs');
+
+                let fileId = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/test.txt');
+                Neutralino.events.on('openedFile', async (evt) => {
+                  if(evt.detail.id == fileId && evt.detail.action == 'end') {
+                      await __close('done');
+                  }
+                });
+                // Reads the first 3 bytes
+                await Neutralino.filesystem.updateOpenedFile(fileId, 'read', 3);
+                // Reads the next 10 bytes (reaches EOF)
+                await Neutralino.filesystem.updateOpenedFile(fileId, 'read', 10);
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+
+        it('reads the entire file with readAll', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Neutralinojs');
+
+                let fileId = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/test.txt');
+                let content = '';
+                Neutralino.events.on('openedFile', async (evt) => {
+                  if(evt.detail.id == fileId) {
+                    switch(evt.detail.action) {
+                      case 'data':
+                        content += evt.detail.data;
+                        break;
+                      case 'end':
+                        await __close(content);
+                        break;
+                    }
+                  }
+                });
+                // Reads all bytes with a 2-bytes-sized buffer
+                await Neutralino.filesystem.updateOpenedFile(fileId, 'readAll', 2);
+            `);
+            assert.equal(runner.getOutput(), 'Neutralinojs');
+        });
+
+        it('changes the file cursor', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Neutralinojs');
+
+                let fileId = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/test.txt');
+                let content = '';
+                Neutralino.events.on('openedFile', async (evt) => {
+                  if(evt.detail.id == fileId) {
+                    switch(evt.detail.action) {
+                      case 'data':
+                        content += evt.detail.data;
+                        break;
+                      case 'end':
+                        await __close(content);
+                        break;
+                    }
+                  }
+                });
+                // Sets the file cursor to 10th byte
+                await Neutralino.filesystem.updateOpenedFile(fileId, 'seek', 10);
+                // Reads 2 bytes from the cursor position
+                await Neutralino.filesystem.updateOpenedFile(fileId, 'read', 2);
+                // Reads the next 1 byte (reaches EOF)
+                await Neutralino.filesystem.updateOpenedFile(fileId, 'read', 1);
+            `);
+            assert.equal(runner.getOutput(), 'js');
+        });
+    });
+
+
+    describe('filesystem.getOpenedFileInfo', () => {
+        it('returns opened file information', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Hello');
+                let fileId = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/test.txt');
+                let info = await Neutralino.filesystem.getOpenedFileInfo(fileId);
+                await __close(JSON.stringify(info));
+            `);
+            let info = JSON.parse(runner.getOutput());
+            assert.ok(typeof info == 'object');
+            assert.ok(typeof info.id == 'number');
+            assert.ok(typeof info.eof == 'boolean');
+            assert.ok(typeof info.pos == 'number');
+            assert.ok(typeof info.lastRead == 'number');
+        });
+
+
+        it('returns the file identifier properly', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Hello');
+                let fileId = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/test.txt');
+                let info = await Neutralino.filesystem.getOpenedFileInfo(fileId);
+                await __close(JSON.stringify(info));
+            `);
+            let info = JSON.parse(runner.getOutput());
+            assert.equal(info.id, 0);
+        });
+
+        it('returns updated eof properly', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Hello');
+                let fileId = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/test.txt');
+                await Neutralino.filesystem.updateOpenedFile(fileId, 'readAll');
+                let info = await Neutralino.filesystem.getOpenedFileInfo(fileId);
+                await __close(JSON.stringify(info));
+            `);
+            let info = JSON.parse(runner.getOutput());
+            assert.equal(info.eof, true);
+        });
+
+        it('returns returns updated pos properly', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Hello');
+                let fileId = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/test.txt');
+                await Neutralino.filesystem.updateOpenedFile(fileId, 'seek', 3);
+                let info = await Neutralino.filesystem.getOpenedFileInfo(fileId);
+                await __close(JSON.stringify(info));
+            `);
+            let info = JSON.parse(runner.getOutput());
+            assert.equal(info.pos, 3);
+        });
+
+        it('returns returns updated lastRead properly', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Hello');
+                let fileId = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/test.txt');
+                await Neutralino.filesystem.updateOpenedFile(fileId, 'read', 2);
+                let info = await Neutralino.filesystem.getOpenedFileInfo(fileId);
+                await __close(JSON.stringify(info));
+            `);
+            let info = JSON.parse(runner.getOutput());
+            assert.equal(info.lastRead, 2);
+        });
+    });
+
+
     describe('filesystem.removeFile', () => {
         it('works without throwing errors', async () => {
             runner.run(`
