@@ -17,10 +17,7 @@ struct FileReaderResult {
     string data;
 };
 
-struct FileReaderOptions {
-    long long pos = -1;
-    long long size = -1;
-};
+
 
 struct FileWriterOptions {
     string filename;
