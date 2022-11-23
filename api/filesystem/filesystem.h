@@ -1,7 +1,7 @@
 #ifndef NEU_FILESYSTEM_H
 #define NEU_FILESYSTEM_H
 
-
+#include <string>
 #include <vector>
 
 #include "errors.h"
