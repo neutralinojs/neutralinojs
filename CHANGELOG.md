@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v4.9.0
+
 ### API: Custom methods
 
 Neutralinojs offers the extensions API to write custom backend code with any programming language, but extensions come with the following drawbacks that affect apps in several scenarios:
