@@ -219,7 +219,7 @@ def build_compiler_cmd():
             sys.exit(1)
     else:
         if target_arch != arch:
-            print('ERR: Unable to cross-compile: target %s host %s' % target_arch, arch)
+            print('ERR: Unable to cross-compile: target %s host %s' % (target_arch, arch))
             sys.exit(1)
     return cmd
 
