@@ -82,12 +82,18 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Build
-      run: ./scripts/bz.py
+      run: |
+        ./scripts/bz.py --target_arch x64
+        ./scripts/bz.py --target_arch arm64
+        lipo bin/neutralino-mac_x64 bin/neutralino-mac_arm64 -create -output bin/neutralino-mac_universal
     - name: Upload Artifacts
       uses: actions/upload-artifact@v2
       with:
         name: darwin_binary
-        path: bin/neutralino-mac_x64
+        path: |
+          bin/neutralino-mac_x64
+          bin/neutralino-mac_arm64
+          bin/neutralino-mac_universal
         
   create-release:
     needs: [build-linux, build-windows, build-darwin]
@@ -129,7 +135,7 @@ jobs:
     - name: Create Release zip
       uses: vimtor/action-zip@v1
       with:
-        files: ./bin/neutralino-linux_x64 ./bin/neutralino-linux_arm64 ./bin/neutralino-linux_armhf ./bin/neutralino-win_x64.exe ./bin/neutralino-mac_x64 ./bin/WebView2Loader.dll
+        files: ./bin/neutralino-linux_x64 ./bin/neutralino-linux_arm64 ./bin/neutralino-linux_armhf ./bin/neutralino-win_x64.exe ./bin/neutralino-mac_x64 ./bin/neutralino-mac_arm64 ./bin/neutralino-mac_universal ./bin/WebView2Loader.dll
         dest: './bin/neutralinojs-v${{github.event.inputs.version}}.zip'
         
     - name: Create Release Notes
