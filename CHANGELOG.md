@@ -6,6 +6,15 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### DevOPS
+
+- Generate official macOS `arm64` (For Apple M1 and higher devices) and universal binaries with the GitHub workflow.
+
+### Improvements/bugfixes
+
+- Add a [JSON schema](https://json-schema.org/) definition for the `neutralino.config.json` file. 
+- Fix source code compilation issues on macOS `arm64` systems.
+
 ## v4.9.0
 
 ### API: Custom methods
