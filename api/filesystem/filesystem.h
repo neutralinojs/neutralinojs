@@ -84,6 +84,7 @@ json removeFile(const json &input);
 json readDirectory(const json &input);
 json copyFile(const json &input);
 json moveFile(const json &input);
+json movetoTrash(const json &input);
 json getStats(const json &input);
 
 } // namespace controllers

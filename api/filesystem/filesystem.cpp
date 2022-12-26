@@ -630,6 +630,41 @@ json moveFile(const json &input) {
     return output;
 }
 
+json movetoTrash(const json &input){
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    string source = input["path"].get<string>();
+    string username = "";
+
+    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+    os::CommandResult getUserDetails = os::execCommand("whoami");
+    username = getUserDetails.stdOut;
+    username.pop_back();
+    string destination = "/Users/"+username+"/.Trash";
+    #if defined(__linux__)
+    destination = "/home/"+username+"/.local/share/Trash";
+    #endif
+    string command = "mv \"" + source + "\" \"" + destination + "\"";
+    os::CommandResult commandResult = os::execCommand(command);
+    
+    if(commandResult.stdErr.empty()) {
+
+    #elif defined(_WIN32)
+    destination = "C:\\$Recycle.Bin";
+    if(MoveFile(source.c_str(), destination.c_str()) == 1) {
+    #endif
+        output["success"] = true;
+        output["destination"] =destination.c_str();
+    }
+    else{
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_MOVEFER, source + " -> " + destination);
+    }
+    return output;
+}
+
 json getStats(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {

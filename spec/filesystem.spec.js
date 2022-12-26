@@ -399,6 +399,17 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         });
     });
 
+    describe('filesystem.movetoTrash', () => {
+        it('works without throwing errors', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test_new.txt', 'Hello');
+                await Neutralino.filesystem.copyFile(NL_PATH + '/.tmp/test_new.txt', NL_PATH + '/.tmp/test.txt');
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+    });
+
     describe('filesystem.readDirectory', () => {
         it('returns directory entries', async () => {
             runner.run(`

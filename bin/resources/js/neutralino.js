@@ -232,6 +232,9 @@ var Neutralino = (function (exports) {
     function moveFile(source, destination) {
         return sendMessage('filesystem.moveFile', { source, destination });
     }
+    function movetoTrash(path) {
+        return sendMessage('filesystem.movetoTrash', { path });
+    }
     function getStats$1(path) {
         return sendMessage('filesystem.getStats', { path });
     }
@@ -261,6 +264,7 @@ var Neutralino = (function (exports) {
         readDirectory: readDirectory,
         copyFile: copyFile,
         moveFile: moveFile,
+        movetoTrash: movetoTrash,
         getStats: getStats$1
     };
 
