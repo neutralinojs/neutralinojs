@@ -11,6 +11,47 @@ var Neutralino = (function (exports) {
         });
     }
 
+    function dispatch$1(extensionId, event, data) {
+        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
+            let stats = yield getStats$1();
+            if (!stats.loaded.includes(extensionId)) {
+                reject({
+                    code: 'NE_EX_EXTNOTL',
+                    message: `${extensionId} is not loaded`
+                });
+            }
+            else if (stats.connected.includes(extensionId)) {
+                try {
+                    let result = yield sendMessage('extensions.dispatch', { extensionId, event, data });
+                    resolve(result);
+                }
+                catch (err) {
+                    reject(err);
+                }
+            }
+            else {
+                // loaded but not connected yet.
+                sendWhenExtReady(extensionId, {
+                    method: 'extensions.dispatch',
+                    data: { extensionId, event, data }, resolve, reject
+                });
+            }
+        }));
+    }
+    function broadcast$2(event, data) {
+        return sendMessage('extensions.broadcast', { event, data });
+    }
+    function getStats$1() {
+        return sendMessage('extensions.getStats');
+    }
+
+    var extensions = {
+        __proto__: null,
+        dispatch: dispatch$1,
+        broadcast: broadcast$2,
+        getStats: getStats$1
+    };
+
     function on(event, handler) {
         window.addEventListener(event, handler);
         return Promise.resolve({
@@ -25,7 +66,7 @@ var Neutralino = (function (exports) {
             message: 'Event listener removed'
         });
     }
-    function dispatch$1(event, data) {
+    function dispatch(event, data) {
         let customEvent = new CustomEvent(event, { detail: data });
         window.dispatchEvent(customEvent);
         return Promise.resolve({
@@ -73,23 +114,23 @@ var Neutralino = (function (exports) {
         }
     }
     function registerLibraryEvents() {
-        Neutralino.events.on('ready', () => __awaiter(this, void 0, void 0, function* () {
+        on('ready', () => __awaiter(this, void 0, void 0, function* () {
             yield processQueue(offlineMessageQueue);
             if (!window.NL_EXTENABLED) {
                 return;
             }
-            let stats = yield Neutralino.extensions.getStats();
+            let stats = yield getStats$1();
             for (let extension of stats.connected) {
-                dispatch$1('extensionReady', extension);
+                dispatch('extensionReady', extension);
             }
         }));
-        Neutralino.events.on('extClientConnect', (evt) => {
-            dispatch$1('extensionReady', evt.detail);
+        on('extClientConnect', (evt) => {
+            dispatch('extensionReady', evt.detail);
         });
         if (!window.NL_EXTENABLED) {
             return;
         }
-        Neutralino.events.on('extensionReady', (evt) => __awaiter(this, void 0, void 0, function* () {
+        on('extensionReady', (evt) => __awaiter(this, void 0, void 0, function* () {
             if (evt.detail in extensionMessageQueue) {
                 yield processQueue(extensionMessageQueue[evt.detail]);
                 delete extensionMessageQueue[evt.detail];
@@ -120,18 +161,18 @@ var Neutralino = (function (exports) {
             }
             else if (message.event) {
                 // Event from process
-                dispatch$1(message.event, message.data);
+                dispatch(message.event, message.data);
             }
         });
         ws.addEventListener('open', (event) => __awaiter(this, void 0, void 0, function* () {
-            dispatch$1('ready');
+            dispatch('ready');
         }));
         ws.addEventListener('close', (event) => __awaiter(this, void 0, void 0, function* () {
             let error = {
                 code: 'NE_CL_NSEROFF',
                 message: 'Neutralino server is offline. Try restarting the application'
             };
-            dispatch$1('serverOffline', error);
+            dispatch('serverOffline', error);
         }));
     }
     function processQueue(messageQueue) {
@@ -232,7 +273,7 @@ var Neutralino = (function (exports) {
     function moveFile(source, destination) {
         return sendMessage('filesystem.moveFile', { source, destination });
     }
-    function getStats$1(path) {
+    function getStats(path) {
         return sendMessage('filesystem.getStats', { path });
     }
     function arrayBufferToBase64(data) {
@@ -261,7 +302,7 @@ var Neutralino = (function (exports) {
         readDirectory: readDirectory,
         copyFile: copyFile,
         moveFile: moveFile,
-        getStats: getStats$1
+        getStats: getStats
     };
 
     var Icon;
@@ -424,15 +465,15 @@ var Neutralino = (function (exports) {
             if (options === null || options === void 0 ? void 0 : options.args) {
                 command += ' ' + options.args;
             }
-            yield Neutralino.os.execCommand(command, { background: true });
-            Neutralino.app.exit();
+            yield execCommand(command, { background: true });
+            exit();
             resolve();
         }));
     }
     function getConfig() {
         return sendMessage('app.getConfig');
     }
-    function broadcast$2(event, data) {
+    function broadcast$1(event, data) {
         return sendMessage('app.broadcast', { event, data });
     }
 
@@ -442,7 +483,7 @@ var Neutralino = (function (exports) {
         killProcess: killProcess,
         restartProcess: restartProcess,
         getConfig: getConfig,
-        broadcast: broadcast$2
+        broadcast: broadcast$1
     };
 
     const draggableRegions = new WeakMap();
@@ -514,7 +555,7 @@ var Neutralino = (function (exports) {
             draggableRegions.set(draggableRegion, { pointerdown: startPointerCapturing, pointerup: endPointerCapturing });
             function onPointerMove(evt) {
                 return __awaiter(this, void 0, void 0, function* () {
-                    yield Neutralino.window.move(evt.screenX - initialClientX, evt.screenY - initialClientY);
+                    yield move(evt.screenX - initialClientX, evt.screenY - initialClientY);
                 });
             }
             function startPointerCapturing(evt) {
@@ -563,7 +604,7 @@ var Neutralino = (function (exports) {
     }
     function setSize(options) {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
-            let sizeOptions = yield Neutralino.window.getSize();
+            let sizeOptions = yield getSize();
             options = Object.assign(Object.assign({}, sizeOptions), options); // merge prioritizing options arg
             sendMessage('window.setSize', options)
                 .then((response) => {
@@ -610,7 +651,7 @@ var Neutralino = (function (exports) {
             }
             if (options && options.processArgs)
                 command += " " + options.processArgs;
-            Neutralino.os.execCommand(command, { background: true })
+            execCommand(command, { background: true })
                 .then((processInfo) => {
                 resolve(processInfo);
             })
@@ -646,57 +687,16 @@ var Neutralino = (function (exports) {
         create: create
     };
 
-    function broadcast$1(event, data) {
+    function broadcast(event, data) {
         return sendMessage('events.broadcast', { event, data });
     }
 
     var events = {
         __proto__: null,
-        broadcast: broadcast$1,
+        broadcast: broadcast,
         on: on,
         off: off,
-        dispatch: dispatch$1
-    };
-
-    function dispatch(extensionId, event, data) {
-        return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
-            let stats = yield Neutralino.extensions.getStats();
-            if (!stats.loaded.includes(extensionId)) {
-                reject({
-                    code: 'NE_EX_EXTNOTL',
-                    message: `${extensionId} is not loaded`
-                });
-            }
-            else if (stats.connected.includes(extensionId)) {
-                try {
-                    let result = yield sendMessage('extensions.dispatch', { extensionId, event, data });
-                    resolve(result);
-                }
-                catch (err) {
-                    reject(err);
-                }
-            }
-            else {
-                // loaded but not connected yet.
-                sendWhenExtReady(extensionId, {
-                    method: 'extensions.dispatch',
-                    data: { extensionId, event, data }, resolve, reject
-                });
-            }
-        }));
-    }
-    function broadcast(event, data) {
-        return sendMessage('extensions.broadcast', { event, data });
-    }
-    function getStats() {
-        return sendMessage('extensions.getStats');
-    }
-
-    var extensions = {
-        __proto__: null,
-        dispatch: dispatch,
-        broadcast: broadcast,
-        getStats: getStats
+        dispatch: dispatch
     };
 
     let manifest = null;
@@ -747,7 +747,7 @@ var Neutralino = (function (exports) {
             try {
                 let response = yield fetch(manifest.resourcesURL);
                 let resourcesBuffer = yield response.arrayBuffer();
-                yield Neutralino.filesystem.writeBinaryFile(window.NL_PATH + "/resources.neu", resourcesBuffer);
+                yield writeBinaryFile(window.NL_PATH + "/resources.neu", resourcesBuffer);
                 resolve({
                     success: true,
                     message: 'Update installed. Restart the process to see updates'
@@ -802,8 +802,8 @@ var Neutralino = (function (exports) {
         }
         init$1();
         if (window.NL_ARGS.find((arg) => arg == '--neu-dev-auto-reload')) {
-            Neutralino.events.on('neuDev_reloadApp', () => __awaiter(this, void 0, void 0, function* () {
-                yield Neutralino.debug.log('Reloading the application...');
+            on('neuDev_reloadApp', () => __awaiter(this, void 0, void 0, function* () {
+                yield log('Reloading the application...');
                 location.reload();
             }));
         }
@@ -824,7 +824,7 @@ var Neutralino = (function (exports) {
             }
         }
         window.NL_CVERSION = version;
-        window.NL_CCOMMIT = '95a1dd600e0a76a878cf13f644595e1cb1b62b2f'; // only the build server will update this
+        window.NL_CCOMMIT = '7687da348e08fb56646aebafe2211b14dedc71b8'; // only the build server will update this
         initialized = true;
     }
 

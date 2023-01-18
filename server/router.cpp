@@ -271,9 +271,17 @@ router::Response serve(string path) {
     path = path.substr(0, path.find("?"));
 
     bool isClientLibrary = regex_match(path, regex(".*neutralino.js$"));
+    bool isGlobalsRequest = regex_match(path, regex(".*__neutralino_globals.js$"));
 
     if(isClientLibrary) {
         return getAsset(path, settings::getGlobalVars());
+    }
+    else if(isGlobalsRequest) {
+        return router::Response {
+            websocketpp::http::status_code::ok,
+            "application/javascript",
+            settings::getGlobalVars()
+        };
     }
     else {
         return getAsset(path);
