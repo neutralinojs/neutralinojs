@@ -288,6 +288,7 @@ static void PlatformFoldersFillData(std::map<std::string, std::string>& folders)
 	folders["XDG_PICTURES_DIR"] = "$HOME/Pictures";
 	folders["XDG_PUBLICSHARE_DIR"] = "$HOME/Public";
 	folders["XDG_TEMPLATES_DIR"] = "$HOME/.Templates";
+	folders["XDG_TRASH_DIR"] = "$HOME/.local/share/Trash";
 	folders["XDG_VIDEOS_DIR"] = "$HOME/Videos";
 	PlatformFoldersAddFromFile( getConfigHome()+"/user-dirs.dirs", folders);
 	for (std::map<std::string, std::string>::iterator itr = folders.begin() ; itr != folders.end() ; ++itr ) {
@@ -378,6 +379,17 @@ std::string PlatformFolders::getMusicFolder() const {
 #endif
 }
 
+std::string PlatformFolders::getTrashFolder() const {
+#ifdef _WIN32
+	// SHGetKnownFolderPath WIN32 API does not work for Recycle as it is a Virtual Folder. 
+	return "C:\\$Recycle.Bin";
+#elif defined(__APPLE__)
+	return getHome()+"/.Trash";
+#else
+	return data->folders["XDG_TRASH_DIR"]
+#endif
+}
+
 std::string PlatformFolders::getVideoFolder() const {
 #ifdef _WIN32
 	return GetKnownWindowsFolder(FOLDERID_Videos, "Failed to find My Video folder");
@@ -426,6 +438,10 @@ std::string getPublicFolder() {
 
 std::string getMusicFolder() {
 	return PlatformFolders().getMusicFolder();
+}
+
+std::string getTrashFolder(){
+	return PlatformFolders().getTrashFolder();
 }
 
 std::string getVideoFolder() {

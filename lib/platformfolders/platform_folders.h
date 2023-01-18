@@ -164,6 +164,11 @@ std::string getPublicFolder();
  */
 std::string getMusicFolder();
 
+/*
+* Returns the trash folder
+*/
+std::string getTrashFolder();
+
 /**
  * The folder where video is stored
  * @return Absolute path to the video folder
@@ -239,6 +244,10 @@ public:
 	 * @return Absolute path to the music folder
 	 */
 	std::string getMusicFolder() const;
+	/*
+	* The folder where Trash folder is located
+	*/
+	std::string getTrashFolder() const;
 	/**
 	 * The folder where video is stored
 	 * @return Absolute path to the video folder
