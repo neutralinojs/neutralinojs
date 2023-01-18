@@ -6,7 +6,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
-### DevOPS
+### DevOps
 
 - Generate official macOS `arm64` (For Apple M1 and higher devices) and universal binaries with the GitHub workflow.
 
@@ -14,6 +14,11 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 - Add a [JSON schema](https://json-schema.org/) definition for the `neutralino.config.json` file. 
 - Fix source code compilation issues on macOS `arm64` systems.
+
+### ESM/NPM support
+
+Neutralinojs typically stores the client library implementation in a separate file (`neutralino.js`). This approach makes Neutralinojs app development 
+process easier with a globally exposed JavaScript object, `Neutralino`. But, modern web developers use ESM modules and they usually like to fetch dependencies from NPM. So, now, developers can load the `__neutralino_globals.js` internal script (i.e., `<script src="__neutralino_globals.js"></script>`) to load only globals. Then, they can use the client library implementation via `neutralino.mjs` or from NPM (work-in-progress).
 
 ## v4.9.0
 
