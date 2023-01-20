@@ -18,7 +18,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### ESM/NPM support
 
 Neutralinojs typically stores the client library implementation in a separate file (`neutralino.js`). This approach makes Neutralinojs app development 
-process easier with a globally exposed JavaScript object, `Neutralino`. But, modern web developers use ESM modules and they usually like to fetch dependencies from NPM. So, now, developers can load the `__neutralino_globals.js` internal script (i.e., `<script src="__neutralino_globals.js"></script>`) to load only globals. Then, they can use the client library implementation via `neutralino.mjs` or from `@neutralinojs/lib`.
+process easier with a globally exposed JavaScript object, `Neutralino`. But, modern web developers use ESM modules and they usually like to fetch dependencies from NPM. So, now, developers can load the `__neutralino_globals.js` internal script (i.e., `<script src="__neutralino_globals.js"></script>`) to load only globals. Then, they can use the client library implementation via `neutralino.mjs` with the neu CLI or from [`@neutralinojs/lib`](https://www.npmjs.com/package/@neutralinojs/lib) with a Node package manager.
 
 ## v4.9.0
 
