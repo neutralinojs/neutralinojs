@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v4.10.0
+
 ### DevOps
 
 - Generate official macOS `arm64` (For Apple M1 and higher devices) and universal binaries with the GitHub workflow.
