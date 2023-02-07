@@ -787,7 +787,16 @@ var custom = /*#__PURE__*/Object.freeze({
     getMethods: getMethods
 });
 
-var version = "3.8.0";
+function fetch$1(data) {
+    return sendMessage('net.fetch', { data });
+}
+
+var net = /*#__PURE__*/Object.freeze({
+    __proto__: null,
+    fetch: fetch$1
+});
+
+var version = "3.8.2";
 
 let initialized = false;
 function init(options = {}) {
@@ -821,9 +830,9 @@ function init(options = {}) {
         }
     }
     window.NL_CVERSION = version;
-    window.NL_CCOMMIT = '7687da348e08fb56646aebafe2211b14dedc71b8'; // only the build server will update this
+    window.NL_CCOMMIT = '590d453ef302521346740453b9ffe169689c8a00'; // only the build server will update this
     initialized = true;
 }
 
-export { app, clipboard, computer, custom, debug, events, extensions, filesystem, init, os, storage, updater, window$1 as window };
+export { app, clipboard, computer, custom, debug, events, extensions, filesystem, init, net, os, storage, updater, window$1 as window };
 //# sourceMappingURL=neutralino.mjs.map

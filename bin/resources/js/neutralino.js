@@ -790,7 +790,16 @@ var Neutralino = (function (exports) {
         getMethods: getMethods
     };
 
-    var version = "3.8.0";
+    function fetch$1(data) {
+        return sendMessage('net.fetch', { data });
+    }
+
+    var net = {
+        __proto__: null,
+        fetch: fetch$1
+    };
+
+    var version = "3.8.2";
 
     let initialized = false;
     function init(options = {}) {
@@ -824,7 +833,7 @@ var Neutralino = (function (exports) {
             }
         }
         window.NL_CVERSION = version;
-        window.NL_CCOMMIT = '7687da348e08fb56646aebafe2211b14dedc71b8'; // only the build server will update this
+        window.NL_CCOMMIT = '590d453ef302521346740453b9ffe169689c8a00'; // only the build server will update this
         initialized = true;
     }
 
@@ -837,6 +846,7 @@ var Neutralino = (function (exports) {
     exports.extensions = extensions;
     exports.filesystem = filesystem;
     exports.init = init;
+    exports.net = net;
     exports.os = os;
     exports.storage = storage;
     exports.updater = updater;

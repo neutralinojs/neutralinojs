@@ -25,6 +25,7 @@
 #include "api/extensions/extensions.h"
 #include "api/clipboard/clipboard.h"
 #include "api/custom/custom.h"
+#include "api/net/net.h"
 
 #if defined(__APPLE__)
 #include <dispatch/dispatch.h>
@@ -120,6 +121,8 @@ map<string, router::NativeMethod> methodMap = {
     // Neutralino.custom
     {"custom.getMethods", custom::controllers::getMethods},
     // {"custom.add", custom::controllers::add} // Sample custom method
+    //net.fetch
+    {"net.fetch", net::controllers::fetch}
 };
 
 map<string, router::NativeMethod> getMethodMap() {
