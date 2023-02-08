@@ -66,12 +66,12 @@ json fetch(const json &input){
 
     curl = curl_easy_init();
     if(curl) {
-        headers = curl_slist_append(headers, "Accept: application/json");
-        headers = curl_slist_append(headers, "Content-Type: application/json");
+        // headers = curl_slist_append(headers, "Accept: application/json");
+        // headers = curl_slist_append(headers, "Content-Type: application/json");
 
         curl_easy_setopt(curl, CURLOPT_URL, d);
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "{\"key1\":\"value1\",\"key2\":\"value2\"}");
+        // curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+        // curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "{\"key1\":\"value1\",\"key2\":\"value2\"}");
 
         init_string(&s);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
