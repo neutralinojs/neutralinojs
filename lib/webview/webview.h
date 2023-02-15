@@ -1295,7 +1295,6 @@ public:
     ShowWindow(m_window, SW_HIDE);
     SetWindowLong(m_window, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
     ShowWindow(m_window, SW_SHOW);
-
     SetFocus(m_window);
 
     auto cb =
