@@ -191,6 +191,8 @@ string getPath(const string &name) {
         path = sago::getPicturesFolder();
     else if(name == "music")
         path = sago::getMusicFolder();
+    else if(name == "trash")
+        path = sago::getTrashFolder();
     else if(name == "video")
         path = sago::getVideoFolder();
     else if(name == "downloads")
