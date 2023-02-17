@@ -167,7 +167,7 @@ bool writeFile(const fs::FileWriterOptions &fileWriterOptions) {
     ios_base::openmode mode = ios_base::out | ios_base::binary;
     // For portability we use LF ('\n') always via ::binary
     if(fileWriterOptions.append) {
-        mode = ios_base::app;
+        mode |= ios_base::app;
     }
 
     ofstream writer(fileWriterOptions.filename, mode);
