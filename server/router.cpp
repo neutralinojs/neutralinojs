@@ -250,7 +250,7 @@ router::Response getAsset(string path, const string &prependData) {
     response.data = fileReaderResult.data;
     response.status = fileReaderResult.status != errors::NE_ST_OK ? websocketpp::http::status_code::not_found
                                 : websocketpp::http::status_code::ok;
-    if(prependData != "")
+    if(fileReaderResult.status == errors::NE_ST_OK && prependData != "")
         response.data = prependData + response.data;
 
     // If MIME-type is not defined in neuserver, application/octet-stream will be used by default.
