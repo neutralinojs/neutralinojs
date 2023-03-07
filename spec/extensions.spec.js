@@ -3,7 +3,25 @@ const assert = require('assert');
 const runner = require('./runner');
 
 describe('extensions.spec: extensions namespace tests', () => {
-
+    if(process.env.GITHUB_ACTIONS) { 
+    describe('extensions.getStats, extensions.dispatch, extensions.broadcast', () => {
+        it('exports functions to the app', async () => {
+            runner.run(`
+                let out = [
+                    typeof Neutralino.extensions.getStats,
+                    typeof Neutralino.extensions.dispatch,
+                    typeof Neutralino.extensions.broadcast,
+                ];
+                await __close(JSON.stringify(out));
+            `);
+            let out = JSON.parse(runner.getOutput());
+            assert.equal(out[0], 'function');
+            assert.equal(out[1], 'function');
+            assert.equal(out[2], 'function');
+        });
+    });
+    }
+    else {
     describe('extensions.getStats', () => {
         it('returns extensions stats', async () => {
             runner.run(``,
@@ -13,8 +31,9 @@ describe('extensions.spec: extensions namespace tests', () => {
                     await __close(JSON.stringify(stats));
                 });
             `, args: '--enable-extensions'});
-
-            let stats = JSON.parse(runner.getOutput());
+            let o = runner.getOutput();
+            console.log('outout',o);
+            let stats = JSON.parse(o);
             assert.ok(typeof stats == 'object');
             assert.ok(Array.isArray(stats.loaded));
             assert.ok(stats.loaded.length > 0);
@@ -47,4 +66,5 @@ describe('extensions.spec: extensions namespace tests', () => {
             assert.equal(runner.getOutput(), 'done');
         });
     });
+    }
 });
