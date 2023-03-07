@@ -142,6 +142,27 @@ bool isVisible() {
     #endif
 }
 
+bool isFakeHidden() {
+	//ensureOnScreen
+	#if defined(_WIN32)
+	RECT rect = { NULL };
+	
+	if(GetWindowRect( windowHandle, &rect)) {
+		return rect.left > 9999;
+	}
+	#endif
+	return false;
+}
+
+void undoFakeHidden() {
+	#if defined(_WIN32)
+	ShowWindow(windowHandle, SW_HIDE);
+	SetWindowLong(windowHandle, GWL_EXSTYLE, nativeWindow->m_originalStyleEx);
+	SetWindowPos(windowHandle, NULL, 10, 10, 0, 0, 0x0004 | 0x0001);
+	ShowWindow(windowHandle, SW_SHOW);
+	#endif
+}
+
 void show() {
     if(window::isVisible())
         return;
@@ -152,6 +173,8 @@ void show() {
                 "setIsVisible:"_sel, true);
     #elif defined(_WIN32)
     ShowWindow(windowHandle, SW_SHOW);
+    if (window::isFakeHidden())
+		window::undoFakeHidden();
     #endif
 }
 
@@ -345,6 +368,9 @@ void __createWindow() {
 
     if(windowProps.hidden)
         window::hide();
+
+    if (!windowProps.hidden && window::isFakeHidden())
+		window::undoFakeHidden();
 
     if(windowProps.fullScreen)
         window::setFullScreen();
