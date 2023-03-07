@@ -67,9 +67,9 @@ describe('os.spec: os namespace tests', () => {
 
         it('sends stdOut with the stdOut action via the spawnProcess event', async () => {
             runner.run(`
-                let proc = Neutralino.os.spawnProcess('node --version');
+                let proc = await Neutralino.os.spawnProcess('node --version');
                 Neutralino.events.on('spawnedProcess', async (evt) => {
-                    if(evt.detail.action == 'stdOut') {
+                    if(evt.detail.id == proc.id && evt.detail.action == 'stdOut') {
                         await __close(evt.detail.data);
                     }
                 });
@@ -129,7 +129,7 @@ describe('os.spec: os namespace tests', () => {
             runner.run(`
                 let proc = await Neutralino.os.spawnProcess('node');
                 Neutralino.events.on('spawnedProcess', async (evt) => {
-                    if(evt.detail.action == 'exit') {
+                    if(evt.detail.id == proc.id && evt.detail.action == 'exit') {
                         await __close(evt.detail.data.toString());
                     }
                 });
