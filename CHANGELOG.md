@@ -6,6 +6,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### Improvements/bugfixes
+- Fix the initial window flashing and hidden window state issues on Windows.
+
 ## v4.10.0
 
 ### DevOps
