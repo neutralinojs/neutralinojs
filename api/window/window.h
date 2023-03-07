@@ -68,8 +68,6 @@ bool isMaximized();
 void maximize();
 void minimize();
 bool isVisible();
-bool isFakeHidden();
-void undoFakeHidden();
 void show();
 void hide();
 void setFullScreen();

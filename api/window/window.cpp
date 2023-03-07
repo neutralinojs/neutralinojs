@@ -83,6 +83,26 @@ void windowStateChange(int state) {
 
 } // namespace handlers
 
+#if defined(_WIN32)
+bool __isFakeHidden() {
+	// Checks whether the window is on the screen viewport
+	RECT winPos;
+	
+	if(GetWindowRect( windowHandle, &winPos)) {
+		return winPos.left > 9999;
+	}
+	return false;
+}
+
+void __undoFakeHidden() {
+	ShowWindow(windowHandle, SW_HIDE);
+	SetWindowLong(windowHandle, GWL_EXSTYLE, nativeWindow->m_originalStyleEx);
+	SetWindowPos(windowHandle, nullptr, 
+        10, 10, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+	ShowWindow(windowHandle, SW_SHOW);
+}
+#endif
+
 NEU_W_HANDLE getWindowHandle() {
     return windowHandle;
 }
@@ -142,27 +162,6 @@ bool isVisible() {
     #endif
 }
 
-bool isFakeHidden() {
-	//ensureOnScreen
-	#if defined(_WIN32)
-	RECT rect = { NULL };
-	
-	if(GetWindowRect( windowHandle, &rect)) {
-		return rect.left > 9999;
-	}
-	#endif
-	return false;
-}
-
-void undoFakeHidden() {
-	#if defined(_WIN32)
-	ShowWindow(windowHandle, SW_HIDE);
-	SetWindowLong(windowHandle, GWL_EXSTYLE, nativeWindow->m_originalStyleEx);
-	SetWindowPos(windowHandle, NULL, 10, 10, 0, 0, 0x0004 | 0x0001);
-	ShowWindow(windowHandle, SW_SHOW);
-	#endif
-}
-
 void show() {
     if(window::isVisible())
         return;
@@ -173,8 +172,8 @@ void show() {
                 "setIsVisible:"_sel, true);
     #elif defined(_WIN32)
     ShowWindow(windowHandle, SW_SHOW);
-    if (window::isFakeHidden())
-		window::undoFakeHidden();
+    if (__isFakeHidden())
+		__undoFakeHidden();
     #endif
 }
 
@@ -369,8 +368,10 @@ void __createWindow() {
     if(windowProps.hidden)
         window::hide();
 
-    if (!windowProps.hidden && window::isFakeHidden())
-		window::undoFakeHidden();
+    #if defined(_WIN32)
+    if (!windowProps.hidden && __isFakeHidden())
+		__undoFakeHidden();
+    #endif
 
     if(windowProps.fullScreen)
         window::setFullScreen();
