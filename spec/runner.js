@@ -31,7 +31,7 @@ async function __init() {
     setTimeout(async () => {
         await Neutralino.filesystem.writeFile(NL_PATH + "/.tmp/output.txt", 'NL_SP_MAXTIMT');
         await Neutralino.app.exit(1); // max timeout force exit
-    }, 10000);
+    }, 20000);
 }
 `;
 
