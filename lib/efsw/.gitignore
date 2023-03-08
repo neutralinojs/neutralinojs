@@ -1,0 +1,11 @@
+bin/
+obj/
+make/
+lib/
+CMakeFiles/
+/cmake
+/CMakeCache.txt
+/cmake_install.cmake
+/Makefile
+*.DS_Store
+.qtc_clangd

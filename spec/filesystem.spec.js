@@ -450,4 +450,101 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             assert.ok(typeof stats.modifiedAt == 'number');
         });
     });
+
+    describe('filesystem.createWatcher', () => {
+        it('returns watcher identifiers without throwing errors', async () => {
+            runner.run(`
+                let watcherIds = [];
+
+                let watcherId = await Neutralino.filesystem.createWatcher(NL_PATH);
+                watcherIds.push(watcherId);
+                watcherId = await Neutralino.filesystem.createWatcher(NL_PATH + '/.tmp');
+                watcherIds.push(watcherId);
+
+                await __close(JSON.stringify(watcherIds));
+            `);
+            let watcherIds = JSON.parse(runner.getOutput());
+            assert.ok(Array.isArray(watcherIds));
+            assert.ok(watcherIds[0] > 0);
+            assert.ok(watcherIds[1] > 0);
+        });
+
+        it('dispatches events for internal watcher events', async () => {
+            runner.run(`
+                let watcherId = await Neutralino.filesystem.createWatcher(NL_PATH + '/.tmp');
+                await Neutralino.events.on('watchFile', async (evt) => {
+                    if(evt.detail.id == watcherId) {
+                        await __close(JSON.stringify(evt.detail));
+                    }
+                });
+                await Neutralino.filesystem.createDirectory(NL_PATH + '/.tmp/new-dir');
+            `);
+            let data = JSON.parse(runner.getOutput());
+            assert.ok(typeof data == 'object');
+            assert.ok(typeof data.id == 'number');
+            assert.ok(typeof data.action == 'string');
+            assert.ok(typeof data.dir == 'string');
+            assert.ok(typeof data.filename == 'string');
+        });
+
+        it('throws an error for missing args', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.createWatcher();
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+        });
+
+        it('throws an error for non-existent paths', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.createWatcher(NL_PATH + '/invalid-path');
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_UNLCWAT');
+        });
+    });
+
+    describe('filesystem.removeWatcher', () => {
+        it('removes a watcher without throwing errors', async () => {
+            runner.run(`
+                let watcherId = await Neutralino.filesystem.createWatcher(NL_PATH);
+                await Neutralino.filesystem.removeWatcher(watcherId);
+                await __close(watcherId.toString());
+            `);
+            let watcherId = parseInt(runner.getOutput());
+            assert.ok(watcherId > 0);
+        });
+
+        it('throws an error for missing args', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.removeWatcher();
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+        });
+
+        it('throws an error for non-existent watcher identifiers', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.removeWatcher(1000);
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_NOWATID');
+        });
+    });
 });

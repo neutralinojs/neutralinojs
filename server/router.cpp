@@ -82,6 +82,8 @@ map<string, router::NativeMethod> methodMap = {
     {"filesystem.appendFile", fs::controllers::appendFile},
     {"filesystem.appendBinaryFile", fs::controllers::appendBinaryFile},
     {"filesystem.openFile", fs::controllers::openFile},
+    {"filesystem.createWatcher", fs::controllers::createWatcher},
+    {"filesystem.removeWatcher", fs::controllers::removeWatcher},
     {"filesystem.updateOpenedFile", fs::controllers::updateOpenedFile},
     {"filesystem.getOpenedFileInfo", fs::controllers::getOpenedFileInfo},
     {"filesystem.removeFile", fs::controllers::removeFile},

@@ -64,6 +64,8 @@ string getCurrentDirectory();
 string getFullPathFromRelative(const string &path);
 int openFile(const string &path);
 bool updateOpenedFile(const OpenedFileEvent &evt);
+long createWatcher(const string &path);
+bool removeWatcher(long watcherId);
 fs::FileStats getStats(const string &path);
 fs::DirReaderResult readDirectory(const string &path);
 
@@ -85,6 +87,8 @@ json readDirectory(const json &input);
 json copyFile(const json &input);
 json moveFile(const json &input);
 json getStats(const json &input);
+json createWatcher(const json &input);
+json removeWatcher(const json &input);
 
 } // namespace controllers
 

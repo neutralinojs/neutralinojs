@@ -21,6 +21,7 @@
 #define NEU_SEC_TO_UNIX_EPOCH 11644473600LL
 #endif
 
+#include <efsw/efsw.hpp>
 #include "lib/json/json.hpp"
 #include "lib/base64/base64.hpp"
 #include "settings.h"
@@ -35,6 +36,9 @@ using json = nlohmann::json;
 
 map<int, ifstream*> openedFiles;
 mutex openedFilesLock;
+efsw::FileWatcher* fileWatcher;
+map<efsw::WatchID, efsw::FileWatchListener*> watchListeners;
+mutex watcherLock;
 
 #define NEU_DEFAULT_STREAM_BUF_SIZE 256
 
@@ -46,6 +50,32 @@ void __dispatchOpenedFileEvt(int virtualFileId, const string &action, const json
     evt["action"] = action;
     evt["data"] = data;
     events::dispatch("openedFile", evt);
+}
+
+void __dispatchWatcherEvt(efsw::WatchID watcherId, const std::string& dir,
+                           const std::string& filename, efsw::Action action,
+                           std::string oldFilename) {
+    json evt;
+    string dirC = dir;
+    evt["id"] = watcherId;
+    evt["dir"] = helpers::normalizePath(dirC);
+    evt["filename"] = filename;
+    switch (action) {
+        case efsw::Actions::Add:
+            evt["action"] = "add";
+            break;
+        case efsw::Actions::Delete:
+            evt["action"] = "delete";
+            break;
+        case efsw::Actions::Modified:
+            evt["action"] = "modified";
+            break;
+        case efsw::Actions::Moved:
+            evt["action"] = "moved";
+            evt["oldFilename"] = oldFilename;
+            break;
+    }
+    events::dispatch("watchFile", evt);
 }
 
 void __readStreamBlock(const OpenedFileEvent &evt, ifstream *reader, vector<char> &buffer) {
@@ -213,6 +243,38 @@ bool updateOpenedFile(const OpenedFileEvent &evt) {
     else {
         return false;
     }
+    return true;
+}
+
+class __WatcherListener: public efsw::FileWatchListener {
+  public:
+    void handleFileAction( efsw::WatchID watcherId, const std::string& dir,
+                           const std::string& filename, efsw::Action action,
+                           std::string oldFilename ) override {
+        __dispatchWatcherEvt(watcherId, dir, filename, action, oldFilename);
+    }
+};
+
+long createWatcher(const string &path) {
+    lock_guard<mutex> guard(watcherLock);
+    if(fileWatcher == nullptr) {
+        fileWatcher = new efsw::FileWatcher();
+    }
+    __WatcherListener* listener = new __WatcherListener();
+    efsw::WatchID watcherId = fileWatcher->addWatch(path, listener, true);
+    watchListeners[watcherId] = listener;
+    fileWatcher->watch();
+    return (long)watcherId;
+}
+
+bool removeWatcher(long watcherId) {
+    lock_guard<mutex> guard(watcherLock);
+    if(fileWatcher == nullptr || watchListeners.find(watcherId) == watchListeners.end()) {
+        return false;
+    }
+    fileWatcher->removeWatch(watcherId);
+    delete watchListeners[watcherId];
+    watchListeners.erase(watcherId);
     return true;
 }
 
@@ -650,6 +712,43 @@ json getStats(const json &input) {
     }
     else{
         output["error"] = errors::makeErrorPayload(fileStats.status, path);
+    }
+    return output;
+}
+
+json createWatcher(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    string path = input["path"].get<string>();
+    long watcherId = fs::createWatcher(path);
+
+    if(watcherId <= 0) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_UNLCWAT, path);
+    }
+    else {
+        output["returnValue"] = watcherId;
+        output["success"] = true;
+    }
+    return output;
+}
+
+
+json removeWatcher(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"id"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    long watcherId = input["id"].get<long>();
+    if(!fs::removeWatcher(watcherId)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_NOWATID, to_string(watcherId));
+    }
+    else {
+        output["returnValue"] = watcherId;
+        output["success"] = true;
     }
     return output;
 }
