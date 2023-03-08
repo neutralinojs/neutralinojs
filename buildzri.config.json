@@ -8,7 +8,9 @@
             ".",
             "lib",
             "lib/asio/include",
-            "lib/infoware/include"
+            "lib/infoware/include",
+            "lib/efsw/include",
+            "lib/efsw/src"
         ],
         "windows": [
             "lib/webview/windows"
@@ -25,11 +27,13 @@
             "lib/platformfolders/platform_folders.cpp",
             "lib/clip/clip.cpp",
             "lib/clip/image.cpp",
-            "lib/infoware/src/**/*.cpp"
+            "lib/infoware/src/**/*.cpp",
+            "lib/efsw/src/efsw/*.cpp"
         ],
         "linux": [
             "lib/tinyprocess/process_unix.cpp",
-            "lib/clip/clip_x11.cpp"
+            "lib/clip/clip_x11.cpp",
+            "lib/efsw/src/efsw/platform/posix/*.cpp"
         ],
         "darwin": [
             "lib/tinyprocess/process_unix.cpp",

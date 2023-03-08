@@ -252,6 +252,12 @@ function readBinaryFile(path, options) {
 function openFile(path) {
     return sendMessage('filesystem.openFile', { path });
 }
+function createWatcher(path) {
+    return sendMessage('filesystem.createWatcher', { path });
+}
+function removeWatcher(id) {
+    return sendMessage('filesystem.removeWatcher', { id });
+}
 function updateOpenedFile(id, event, data) {
     return sendMessage('filesystem.updateOpenedFile', { id, event, data });
 }
@@ -293,6 +299,8 @@ var filesystem = /*#__PURE__*/Object.freeze({
     readFile: readFile,
     readBinaryFile: readBinaryFile,
     openFile: openFile,
+    createWatcher: createWatcher,
+    removeWatcher: removeWatcher,
     updateOpenedFile: updateOpenedFile,
     getOpenedFileInfo: getOpenedFileInfo,
     removeFile: removeFile,
@@ -787,13 +795,11 @@ var custom = /*#__PURE__*/Object.freeze({
     getMethods: getMethods
 });
 
-var version = "3.8.0";
+var version = "3.8.2";
 
 let initialized = false;
 function init(options = {}) {
-    options = Object.assign({
-        exportCustomMethods: true
-    }, options);
+    options = Object.assign({ exportCustomMethods: true }, options);
     if (initialized) {
         return;
     }
@@ -821,7 +827,7 @@ function init(options = {}) {
         }
     }
     window.NL_CVERSION = version;
-    window.NL_CCOMMIT = '7687da348e08fb56646aebafe2211b14dedc71b8'; // only the build server will update this
+    window.NL_CCOMMIT = '47f87d44eb586f4a90eaa9b5ae6ed7321af359a3'; // only the build server will update this
     initialized = true;
 }
 
