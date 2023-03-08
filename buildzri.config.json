@@ -37,7 +37,8 @@
         ],
         "darwin": [
             "lib/tinyprocess/process_unix.cpp",
-            "lib/clip/clip_osx.mm"
+            "lib/clip/clip_osx.mm",
+            "lib/efsw/src/efsw/platform/posix/*.cpp"
         ],
         "windows": [
             "lib/tinyprocess/process_win.cpp",
