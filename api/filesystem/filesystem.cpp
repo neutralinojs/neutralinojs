@@ -56,8 +56,9 @@ void __dispatchWatcherEvt(efsw::WatchID watcherId, const std::string& dir,
                            const std::string& filename, efsw::Action action,
                            std::string oldFilename) {
     json evt;
+    string dirC = dir;
     evt["id"] = watcherId;
-    evt["dir"] = dir;
+    evt["dir"] = helpers::normalizePath(dirC);
     evt["filename"] = filename;
     switch (action) {
         case efsw::Actions::Add:
