@@ -43,10 +43,10 @@ bool IsHighContrast() {
 bool IsDarkModePreferred() {
     HMODULE hUxtheme = LoadLibraryExW(L"uxtheme.dll", nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
     if (hUxtheme) {
-        // typedef BOOLEAN (WINAPI * fnShouldAppsUseDarkMode)(); // ordinal 132
-        typedef BOOLEAN (WINAPI * fnShouldSystemUseDarkMode)(); // ordinal 138
-        // fnShouldAppsUseDarkMode proc = (fnShouldAppsUseDarkMode)(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(132)));
-        fnShouldSystemUseDarkMode proc = (fnShouldSystemUseDarkMode)(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(138)));
+        typedef BOOLEAN (WINAPI * fnShouldAppsUseDarkMode)(); // ordinal 132
+        // typedef BOOLEAN (WINAPI * fnShouldSystemUseDarkMode)(); // ordinal 138
+        fnShouldAppsUseDarkMode proc = (fnShouldAppsUseDarkMode)(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(132)));
+        // fnShouldSystemUseDarkMode proc = (fnShouldSystemUseDarkMode)(GetProcAddress(hUxtheme, MAKEINTRESOURCEA(138)));
         if (proc != nullptr) {
             return proc();
         }
