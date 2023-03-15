@@ -6,7 +6,22 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: File watchers
+
+In some scenarios, Neutralinojs app developers need to implement file watchers in their apps. Earlier, Neutralinojs API didn't offer a native file watcher API and developers had to use less-performant workarounds, such as making recursive `filesystem.readDirectory` calls. The new file watchers API lets you create native, cross-platform, event-based file watchers for filesystem paths with the following functions:
+
+- `filesystem.createWatcher(path)`: Creates a new file watcher for a given path and returns the watcher identifier.
+- `filesystem.removeWatcher(watcherId)`: Removes a files watcher based on a file watcher identifier.
+
+Whenever a filesystem change occurs, file watcher instances dispatch the `watchFile` event with the following data:
+
+- `id`: Watcher identifier
+- `action`: Filesystem change: `add`, `delete`, `modified`, and `moved`
+- `dir`: Directory path
+- `filename`: Modified file
+
 ### Improvements/bugfixes
+
 - Fix the initial window flashing and hidden window state issues on Windows.
 
 ## v4.10.0
