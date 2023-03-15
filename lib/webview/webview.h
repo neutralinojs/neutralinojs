@@ -942,6 +942,8 @@ using browser_engine = cocoa_wkwebview_engine;
 #define TRAY_WINAPI 1
 #include "lib/tray/tray.h"
 
+#include "darkmode.h"
+
 namespace webview {
 
 using msg_cb_t = std::function<void(const std::string)>;
@@ -1296,6 +1298,9 @@ public:
     SetWindowLong(m_window, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
     ShowWindow(m_window, SW_SHOW);
     SetFocus(m_window);
+
+    // set dark mode of title bar according to system theme
+    TrySetWindowTheme(m_window);
 
     auto cb =
         std::bind(&win32_edge_engine::on_message, this, std::placeholders::_1);
