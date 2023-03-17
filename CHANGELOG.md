@@ -23,6 +23,7 @@ Whenever a filesystem change occurs, file watcher instances dispatch the `watchF
 ### Improvements/bugfixes
 
 - Fix the initial window flashing and hidden window state issues on Windows.
+- Fix data corruption in binary file appending.
 - Apply dark/light themes based on system preferences on Windows.
 
 ## v4.10.0
