@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v4.11.0
+
 ### API: File watchers
 
 In some scenarios, Neutralinojs app developers need to implement file watchers in their apps. Earlier, Neutralinojs API didn't offer a native file watcher API and developers had to use less-performant workarounds, such as making recursive `filesystem.readDirectory` calls. The new file watchers API lets you create native, cross-platform, event-based file watchers for filesystem paths with the following functions:
