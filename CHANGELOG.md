@@ -6,6 +6,10 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### Core: configuration
+- Setting the initial window position via `modes.window.x` and `modes.window.y` config props.
+- Add config overrides for the startup window position: `--window-x=<int>` and `window-y=<int>`
+
 ## v4.11.0
 
 ### API: File watchers
