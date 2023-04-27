@@ -98,7 +98,7 @@ void __undoFakeHidden() {
 	ShowWindow(windowHandle, SW_HIDE);
 	SetWindowLong(windowHandle, GWL_EXSTYLE, nativeWindow->m_originalStyleEx);
 	SetWindowPos(windowHandle, nullptr,
-        10, 10, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+        windowProps.x, windowProps.y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 	ShowWindow(windowHandle, SW_SHOW);
 }
 #endif
@@ -400,7 +400,9 @@ void __createWindow() {
     windowHandle = (HWND) nativeWindow->window();
     #endif
 
+    #if !defined(_WIN32)
     window::move(windowProps.x, windowProps.y);
+    #endif
 
     if(windowProps.maximize)
         window::maximize();
