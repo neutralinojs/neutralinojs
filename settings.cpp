@@ -190,6 +190,8 @@ void applyConfigOverride(const settings::CliArg &arg) {
         {"--window-min-height", {"/modes/window/minHeight", "int"}},
         {"--window-max-width", {"/modes/window/maxWidth", "int"}},
         {"--window-max-height", {"/modes/window/maxHeight", "int"}},
+        {"--window-x", {"/modes/window/x", "int"}},
+        {"--window-y", {"/modes/window/y", "int"}},
         {"--window-full-screen", {"/modes/window/fullScreen", "bool"}},
         {"--window-always-on-top", {"/modes/window/alwaysOnTop", "bool"}},
         {"--window-enable-inspector", {"/modes/window/enableInspector", "bool"}},

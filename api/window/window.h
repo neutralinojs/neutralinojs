@@ -54,6 +54,8 @@ struct WindowOptions {
     string title = "Neutralinojs window";
     string url = "https://neutralino.js.org";
     string icon = "";
+    int x = 0;
+    int y = 0;
 };
 
 namespace handlers {
@@ -76,6 +78,7 @@ void setFullScreen();
 void exitFullScreen();
 bool isFullScreen();
 void setIcon(const string &icon);
+void move(int x, int y);
 void setAlwaysOnTop(bool onTop);
 void setBorderless();
 

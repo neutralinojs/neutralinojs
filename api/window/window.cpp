@@ -87,7 +87,7 @@ void windowStateChange(int state) {
 bool __isFakeHidden() {
 	// Checks whether the window is on the screen viewport
 	RECT winPos;
-	
+
 	if(GetWindowRect( windowHandle, &winPos)) {
 		return winPos.left > 9999;
 	}
@@ -97,8 +97,8 @@ bool __isFakeHidden() {
 void __undoFakeHidden() {
 	ShowWindow(windowHandle, SW_HIDE);
 	SetWindowLong(windowHandle, GWL_EXSTYLE, nativeWindow->m_originalStyleEx);
-	SetWindowPos(windowHandle, nullptr, 
-        10, 10, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+	SetWindowPos(windowHandle, nullptr,
+        windowProps.x, windowProps.y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 	ShowWindow(windowHandle, SW_SHOW);
 }
 #endif
@@ -166,7 +166,7 @@ bool isFakeHidden() {
 	//ensureOnScreen
 	#if defined(_WIN32)
 	RECT rect = { NULL };
-	
+
 	if(GetWindowRect( windowHandle, &rect)) {
 		return rect.left > 9999;
 	}
@@ -324,6 +324,23 @@ void setIcon(const string &iconFile) {
     #endif
 }
 
+void move(int x, int y) {
+    #if defined(__linux__) || defined(__FreeBSD__)
+    gtk_window_move(GTK_WINDOW(windowHandle), x, y);
+    #elif defined(__APPLE__)
+    auto displayId = CGMainDisplayID();
+    int height = CGDisplayPixelsHigh(displayId);
+    ((void (*)(id, SEL, CGPoint))objc_msgSend)(
+        (id) windowHandle, "setFrameTopLeftPoint:"_sel,
+        CGPointMake(x, height - y));
+    #elif defined(_WIN32)
+    RECT winPos;
+    GetWindowRect(windowHandle, &winPos);
+    MoveWindow(windowHandle, x, y, winPos.right - winPos.left,
+                winPos.bottom - winPos.top, true);
+    #endif
+}
+
 void setAlwaysOnTop(bool onTop) {
     #if defined(__linux__) || defined(__FreeBSD__)
     gtk_window_set_keep_above(GTK_WINDOW(windowHandle), onTop);
@@ -381,6 +398,10 @@ void __createWindow() {
 
     #elif defined(_WIN32)
     windowHandle = (HWND) nativeWindow->window();
+    #endif
+
+    #if !defined(_WIN32)
+    window::move(windowProps.x, windowProps.y);
     #endif
 
     if(windowProps.maximize)
@@ -604,20 +625,7 @@ json move(const json &input) {
     }
     int x = input["x"].get<int>();
     int y = input["y"].get<int>();
-    #if defined(__linux__) || defined(__FreeBSD__)
-    gtk_window_move(GTK_WINDOW(windowHandle), x, y);
-    #elif defined(__APPLE__)
-    auto displayId = CGMainDisplayID();
-    int height = CGDisplayPixelsHigh(displayId);
-    ((void (*)(id, SEL, CGPoint))objc_msgSend)(
-        (id) windowHandle, "setFrameTopLeftPoint:"_sel,
-        CGPointMake(x, height - y));
-    #elif defined(_WIN32)
-    RECT winPos;
-    GetWindowRect(windowHandle, &winPos);
-    MoveWindow(windowHandle, x, y, winPos.right - winPos.left,
-                winPos.bottom - winPos.top, true);
-    #endif
+    window::move(x, y);
     output["success"] = true;
     return output;
 }
@@ -698,6 +706,12 @@ json init(const json &input) {
     json output;
 
     windowProps.sizeOptions = __jsonToSizeOptions(input, true);
+
+    if(helpers::hasField(input, "x"))
+        windowProps.x = input["x"].get<int>();
+
+    if(helpers::hasField(input, "y"))
+        windowProps.y = input["y"].get<int>();
 
     if(helpers::hasField(input, "fullScreen"))
         windowProps.fullScreen = input["fullScreen"].get<bool>();

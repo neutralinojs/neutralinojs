@@ -29,6 +29,8 @@
     "modes": {
         "window": {
             "title": "Neutralinojs app",
+            "x": 200,
+            "y": 400,
             "width": 800,
             "height": 500,
             "minWidth": 400,
