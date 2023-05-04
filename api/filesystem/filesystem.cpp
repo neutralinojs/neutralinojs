@@ -17,6 +17,8 @@
 #include <shlwapi.h>
 #include <winbase.h>
 
+#include "utils/win/str_conv.cpp"
+
 #define NEU_WINDOWS_TICK 10000000
 #define NEU_SEC_TO_UNIX_EPOCH 11644473600LL
 #endif
@@ -120,7 +122,7 @@ bool createDirectory(const string &path) {
     #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
     return mkdir(path.c_str(), 0700) == 0;
     #elif defined(_WIN32)
-    return CreateDirectory(path.c_str(), nullptr) == 1;
+    return CreateDirectory(str2wstr(path).c_str(), nullptr) == 1;
     #endif
 }
 
@@ -128,7 +130,7 @@ bool removeFile(const string &filename) {
     #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
     return remove(filename.c_str()) == 0;
     #elif defined(_WIN32)
-    return DeleteFile(filename.c_str()) == 1;
+    return DeleteFile(str2wstr(filename).c_str()) == 1;
     #endif
 }
 
@@ -136,10 +138,10 @@ string getDirectoryName(const string &filename){
     #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
     return dirname((char*)filename.c_str());
     #elif defined(_WIN32)
-    LPSTR pathToReplace = const_cast<char *>(filename.c_str());
-    PathRemoveFileSpecA(pathToReplace);
-    string directory(pathToReplace);
-    return helpers::normalizePath(directory);
+    wstring wideFilename = str2wstr(filename);
+    LPWSTR pathToReplace = &wideFilename[0];
+    PathRemoveFileSpec(pathToReplace);
+    return helpers::normalizePath(wcstr2str(pathToReplace));
     #endif
 }
 
@@ -149,7 +151,7 @@ string getCurrentDirectory() {
     #elif defined(_WIN32)
     TCHAR currentDir[MAX_PATH];
     GetCurrentDirectory(MAX_PATH, currentDir);
-    string currentDirStr(currentDir);
+    string currentDirStr(wstr2str(currentDir));
     return helpers::normalizePath(currentDirStr);
     #endif
 }
@@ -295,7 +297,7 @@ fs::FileStats getStats(const string &path) {
     }
 
     #elif defined(_WIN32)
-    HANDLE hFile = CreateFile(path.c_str(), GENERIC_READ,
+    HANDLE hFile = CreateFile(str2wstr(path).c_str(), GENERIC_READ,
                     FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
                     FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL);
 
@@ -353,8 +355,8 @@ fs::DirReaderResult readDirectory(const string &path) {
     }
     #elif defined(_WIN32)
     string search_path = path + "/*.*";
-    WIN32_FIND_DATA fd;
-    HANDLE hFind = FindFirstFile(search_path.c_str(), &fd);
+    WIN32_FIND_DATAW fd;
+    HANDLE hFind = FindFirstFile(str2wstr(search_path).c_str(), &fd);
     if(hFind != INVALID_HANDLE_VALUE) {
         do {
             fs::EntryType type = fs::EntryTypeOther;
@@ -365,7 +367,7 @@ fs::DirReaderResult readDirectory(const string &path) {
                 type = fs::EntryTypeFile;
             }
 
-            dirResult.entries.push_back({ fd.cFileName, type });
+            dirResult.entries.push_back({ wstr2str(fd.cFileName), type });
         } while(FindNextFile(hFind, &fd));
         FindClose(hFind);
     }
@@ -438,7 +440,7 @@ json removeDirectory(const json &input) {
     #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
     if(rmdir(path.c_str()) == 0) {
     #elif defined(_WIN32)
-    if(RemoveDirectory(path.c_str())) {
+    if(RemoveDirectory(str2wstr(path).c_str())) {
     #endif
         output["success"] = true;
         output["message"] = "Directory " + path + " was removed";
@@ -656,7 +658,7 @@ json copyFile(const json &input) {
     if(commandResult.stdErr.empty()) {
 
     #elif defined(_WIN32)
-    if(CopyFile(source.c_str(), destination.c_str(), false) == 1) {
+    if(CopyFile(str2wstr(source).c_str(), str2wstr(destination).c_str(), false) == 1) {
     #endif
         output["success"] = true;
         output["message"] = "File copy operation was successful";
@@ -681,7 +683,7 @@ json moveFile(const json &input) {
     if(commandResult.stdErr.empty()) {
 
     #elif defined(_WIN32)
-    if(MoveFile(source.c_str(), destination.c_str()) == 1) {
+    if(MoveFile(str2wstr(source).c_str(), str2wstr(destination).c_str()) == 1) {
     #endif
         output["success"] = true;
         output["message"] = "File move operation was successful";

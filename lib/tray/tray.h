@@ -350,7 +350,7 @@ static HMENU _tray_menu(struct tray_menu *m, UINT *id) {
   HMENU hmenu = CreatePopupMenu();
   for (; m != NULL && m->text != NULL; m++, (*id)++) {
     if (strcmp(m->text, "-") == 0) {
-      InsertMenu(hmenu, *id, MF_SEPARATOR, TRUE, "");
+      InsertMenu(hmenu, *id, MF_SEPARATOR, TRUE, L"");
     } else {
       MENUITEMINFO item;
       memset(&item, 0, sizeof(item));
@@ -369,7 +369,7 @@ static HMENU _tray_menu(struct tray_menu *m, UINT *id) {
         item.fState |= MFS_CHECKED;
       }
       item.wID = *id;
-      item.dwTypeData = (LPSTR)m->text;
+      item.dwTypeData = (LPWSTR)m->text;
       item.dwItemData = (ULONG_PTR)m;
 
       InsertMenuItem(hmenu, *id, TRUE, &item);
@@ -380,7 +380,7 @@ static HMENU _tray_menu(struct tray_menu *m, UINT *id) {
 
 static int tray_init(struct tray *tray) {
 
-  hwnd = FindWindow("Neutralinojs_webview", NULL);
+  hwnd = FindWindow(L"Neutralinojs_webview", NULL);
   if (hwnd == NULL) {
     return -1;
   }

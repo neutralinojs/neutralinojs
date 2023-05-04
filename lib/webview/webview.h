@@ -942,6 +942,7 @@ using browser_engine = cocoa_wkwebview_engine;
 #define TRAY_WINAPI 1
 #include "lib/tray/tray.h"
 
+#include "utils/win/str_conv.cpp"
 #include "darkmode.h"
 
 namespace webview {
@@ -1200,7 +1201,7 @@ public:
       ZeroMemory(&wc, sizeof(WNDCLASSEX));
       wc.cbSize = sizeof(WNDCLASSEX);
       wc.hInstance = hInstance;
-      wc.lpszClassName = "Neutralinojs_webview";
+      wc.lpszClassName = L"Neutralinojs_webview";
       wc.hIcon = icon;
       wc.hIconSm = icon;
       wc.lpfnWndProc =
@@ -1278,7 +1279,7 @@ public:
             return 0;
           });
       RegisterClassEx(&wc);
-      m_window = CreateWindow("Neutralinojs_webview", "", WS_OVERLAPPEDWINDOW, 99999999,
+      m_window = CreateWindow(L"Neutralinojs_webview", L"", WS_OVERLAPPEDWINDOW, 99999999,
                               CW_USEDEFAULT, 640, 480, nullptr, nullptr,
                               GetModuleHandle(nullptr), nullptr);
       SetWindowLongPtr(m_window, GWLP_USERDATA, (LONG_PTR)this);
@@ -1344,14 +1345,14 @@ public:
   }
 
   void set_title(const std::string title) {
-    SetWindowText(m_window, title.c_str());
+    SetWindowText(m_window, str2wstr(title).c_str());
   }
 
   std::string get_title() {
     int len = GetWindowTextLength(hwnd);
     std::string title;
     title.reserve(len + 1);
-    GetWindowText(hwnd, const_cast<char*>(title.c_str()), len);
+    GetWindowText(hwnd, const_cast<LPWSTR>(str2wstr(title).c_str()), len);
     return title;
   }
 

@@ -4,6 +4,7 @@
 #if defined(_WIN32)
 #include <winsock2.h>
 #include <websocketpp/error.hpp>
+#include "utils/win/str_conv.cpp"
 #endif
 
 #include "lib/json/json.hpp"
@@ -166,20 +167,22 @@ void __initExtra() {
 
 #if defined(_WIN32)
 #define ARG_C __argc
-#define ARG_V __argv
-int APIENTRY WinMain(HINSTANCE hInstance,
-                     HINSTANCE hPrevInstance,
-                     LPTSTR    lpCmdLine,
-                     int       nCmdShow)
+#define ARG_V __wargv
+#define CONVSTR(S) wcstr2str(S)
+int APIENTRY wWinMain(HINSTANCE hInstance,
+                      HINSTANCE hPrevInstance,
+                      LPTSTR    lpCmdLine,
+                      int       nCmdShow)
 #elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 #define ARG_C argc
 #define ARG_V argv
+#define CONVSTR(S) S
 int main(int argc, char ** argv)
 #endif
                                  {
     json args;
     for (int i = 0; i < ARG_C; i++) {
-        args.push_back(ARG_V[i]);
+        args.push_back(CONVSTR(ARG_V[i]));
     }
     __initFramework(args);
     __startServerAsync();
