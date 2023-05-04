@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <libgen.h>
 
+#define CONVSTR(S) S.c_str()
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
 #include <windows.h>
@@ -21,6 +22,11 @@
 
 #define NEU_WINDOWS_TICK 10000000
 #define NEU_SEC_TO_UNIX_EPOCH 11644473600LL
+
+// ifstream and ofstream do not support UTF-8 file paths on Windows.
+// However there is a non-standard extension which allows the use of wide strings.
+// So, before we pass the path string to the constructor, we have to convert it to a UTF-16 std::wstring.
+#define CONVSTR(S) str2wstr(S)
 #endif
 
 #include <efsw/efsw.hpp>
@@ -166,7 +172,7 @@ string getFullPathFromRelative(const string &path) {
 
 fs::FileReaderResult readFile(const string &filename, const fs::FileReaderOptions &fileReaderOptions) {
     fs::FileReaderResult fileReaderResult;
-    ifstream reader(filename.c_str(), ios::binary | ios::ate);
+    ifstream reader(CONVSTR(filename), ios::binary | ios::ate);
     if(!reader.is_open()) {
         fileReaderResult.status = errors::NE_FS_FILRDER;
         return fileReaderResult;
@@ -202,7 +208,7 @@ bool writeFile(const fs::FileWriterOptions &fileWriterOptions) {
         mode |= ios_base::app;
     }
 
-    ofstream writer(fileWriterOptions.filename, mode);
+    ofstream writer(CONVSTR(fileWriterOptions.filename), mode);
     if(!writer.is_open())
         return false;
     writer << fileWriterOptions.data;
@@ -212,7 +218,7 @@ bool writeFile(const fs::FileWriterOptions &fileWriterOptions) {
 
 int openFile(const string &filename) {
     int virtualFileId = openedFiles.size();
-    ifstream *reader = new ifstream(filename.c_str(), ios::binary);
+    ifstream *reader = new ifstream(CONVSTR(filename), ios::binary);
     if(!reader->is_open()) {
         delete reader;
         return -1;
@@ -369,7 +375,7 @@ fs::DirReaderResult readDirectory(const string &path) {
 
             dirResult.entries.push_back({ wstr2str(fd.cFileName), type });
         } while(FindNextFile(hFind, &fd));
-        FindClose(hFind);
+        FindClose(hFind); 
     }
     #endif
     return dirResult;
