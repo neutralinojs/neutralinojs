@@ -43,7 +43,8 @@
         "windows": [
             "lib/tinyprocess/process_win.cpp",
             "lib/clip/clip_win.cpp",
-            "lib/efsw/src/efsw/platform/win/*.cpp"
+            "lib/efsw/src/efsw/platform/win/*.cpp",
+            "utils/win/str_conv.cpp"
         ]
     },
     "options": {
@@ -88,7 +89,9 @@
         "windows": [
             "_WEBSOCKETPP_CPP11_STL_",
             "_HAS_STD_BYTE=0",
-            "TRAY_WINAPI=1"
+            "TRAY_WINAPI=1",
+            "UNICODE",
+            "_UNICODE"
         ]
     }
 }

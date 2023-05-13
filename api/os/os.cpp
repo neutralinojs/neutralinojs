@@ -21,11 +21,18 @@
 #include <unistd.h>
 extern char **environ;
 
+#define CONVSTR(S) S
+#define _T(S) S
+
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
 #include <windows.h>
+#include <tchar.h>
 #include <gdiplus.h>
 #include <shlwapi.h>
+
+#include "utils/win/str_conv.cpp"
+#define CONVSTR(S) str2wstr(S)
 
 #pragma comment(lib, "Shell32.lib")
 #pragma comment (lib,"Gdiplus.lib")
@@ -83,7 +90,7 @@ void open(const string &url) {
     #elif defined(__APPLE__)
     os::execCommand("open \"" + url + "\"", "", true);
     #elif defined(_WIN32)
-    ShellExecute(0, 0, url.c_str(), 0, 0, SW_SHOW );
+    ShellExecute(0, 0, str2wstr(url).c_str(), 0, 0, SW_SHOW );
     #endif
 }
 
@@ -97,7 +104,7 @@ os::CommandResult execCommand(string command, const string &input, bool backgrou
 
     if(!background)
         childProcess = new TinyProcessLib::Process(
-            command, "",
+            CONVSTR(command), _T(""),
             [&](const char *bytes, size_t n) {
                 commandResult.stdOut += string(bytes, n);
             },
@@ -106,7 +113,7 @@ os::CommandResult execCommand(string command, const string &input, bool backgrou
             }, !input.empty()
         );
     else {
-        childProcess = new TinyProcessLib::Process(command, "", nullptr, nullptr);
+        childProcess = new TinyProcessLib::Process(CONVSTR(command), _T(""), nullptr, nullptr);
     }
     commandResult.pid = childProcess->get_id();
 
@@ -131,7 +138,7 @@ pair<int, int> spawnProcess(string command) {
     int virtualPid = spawnedProcesses.size();
 
     childProcess = new TinyProcessLib::Process(
-        command, "",
+        CONVSTR(command), _T(""),
         [=](const char *bytes, size_t n) {
             __dispatchSpawnedProcessEvt(virtualPid, "stdOut", string(bytes, n));
         },
@@ -334,14 +341,14 @@ json getEnvs(const json &input) {
         output["returnValue"][key] = value;
     }
     #elif defined(_WIN32)
-    const char *envsO = GetEnvironmentStrings();
-    const char *envs = envsO;
+    const wchar_t *envsO = GetEnvironmentStrings();
+    const wchar_t *envs = envsO;
     int prevIndex = 0;
     for(int i = 0; ; i++) {
         if(envs[i] != '\0') {
             continue;
         }
-        vector<string> env = helpers::split(string(envs + prevIndex, envs + i), '=');
+        vector<string> env = helpers::split(wstr2str(wstring(envs + prevIndex, envs + i)), '=');
         string key = env[0];
         string value = env.size() == 2 ? env[1] : "";
         output["returnValue"][key] = value;
@@ -351,7 +358,7 @@ json getEnvs(const json &input) {
             break;
         }
     }
-    FreeEnvironmentStrings((LPCH) envsO);
+    FreeEnvironmentStrings((LPWCH) envsO);
     #endif
     output["success"] = true;
     return output;

@@ -14,6 +14,16 @@
 #include "api/debug/debug.h"
 #include "api/filesystem/filesystem.h"
 
+#if defined(_WIN32)
+// ifstream and ofstream do not support UTF-8 file paths on Windows.
+// However there is a non-standard extension which allows the use of wide strings.
+// So, before we pass the path string to the constructor, we have to convert it to a UTF-16 std::wstring.
+#include "utils/win/str_conv.cpp"
+#define CONVSTR(S) str2wstr(S)
+#else
+#define CONVSTR(S) S
+#endif
+
 #define NEU_APP_RES_FILE "/resources.neu"
 
 using namespace std;
@@ -44,7 +54,7 @@ ifstream __openResourceFile() {
     ifstream asarArchive;
     string resFileName = NEU_APP_RES_FILE;
     resFileName = settings::joinAppPath(resFileName);
-    asarArchive.open(resFileName, ios::binary);
+    asarArchive.open(CONVSTR(resFileName), ios::binary);
     if(!asarArchive) {
         debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_RS_TREEGER, resFileName));
     }
