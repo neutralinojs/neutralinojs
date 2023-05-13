@@ -10,6 +10,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 - Setting the initial window position via `modes.window.x` and `modes.window.y` config props.
 - Add config overrides for the startup window position: `--window-x=<int>` and `window-y=<int>`
 
+### Improvements/bugfixes
+- Added Unicode characters support for Neutralinojs Windows.
+
 ## v4.11.0
 
 ### API: File watchers
