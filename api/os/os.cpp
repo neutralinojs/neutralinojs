@@ -31,11 +31,10 @@ extern char **environ;
 #include <gdiplus.h>
 #include <shlwapi.h>
 
-#include "utils/win/str_conv.cpp"
-#define CONVSTR(S) str2wstr(S)
+#define CONVSTR(S) helpers::str2wstr(S)
 
 #pragma comment(lib, "Shell32.lib")
-#pragma comment (lib,"Gdiplus.lib")
+#pragma comment(lib, "Gdiplus.lib")
 #endif
 
 #include "lib/json/json.hpp"
@@ -90,7 +89,7 @@ void open(const string &url) {
     #elif defined(__APPLE__)
     os::execCommand("open \"" + url + "\"", "", true);
     #elif defined(_WIN32)
-    ShellExecute(0, 0, str2wstr(url).c_str(), 0, 0, SW_SHOW );
+    ShellExecute(0, 0, helpers::str2wstr(url).c_str(), 0, 0, SW_SHOW );
     #endif
 }
 
@@ -348,7 +347,7 @@ json getEnvs(const json &input) {
         if(envs[i] != '\0') {
             continue;
         }
-        vector<string> env = helpers::split(wstr2str(wstring(envs + prevIndex, envs + i)), '=');
+        vector<string> env = helpers::split(helpers::wstr2str(wstring(envs + prevIndex, envs + i)), '=');
         string key = env[0];
         string value = env.size() == 2 ? env[1] : "";
         output["returnValue"][key] = value;

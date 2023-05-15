@@ -20,6 +20,12 @@ bool hasField(const json &input, const string &key);
 vector<string> getModes();
 string normalizePath(string &path);
 
+#if defined(_WIN32)
+wstring str2wstr(const string &str);
+string wstr2str(const wstring &str);
+string wcstr2str(const wchar_t* wstr);
+#endif
+
 } // namespace helpers
 
 #endif // #define NEU_HELPERS_H

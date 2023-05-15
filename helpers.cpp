@@ -8,6 +8,11 @@
 #include "helpers.h"
 #include "lib/json/json.hpp"
 
+#if defined(_WIN32)
+#include <string>
+#include <windows.h>
+#endif
+
 using namespace std;
 using json = nlohmann::json;
 
@@ -106,5 +111,28 @@ string normalizePath(string &path) {
     #endif
     return path;
 }
+
+#if defined(_WIN32)
+wstring str2wstr(const string &str) {
+    int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0);
+    wstring ret(len, '\0');
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), (LPWSTR)ret.data(), (int)ret.size());
+    return ret;
+}
+
+string wstr2str(const wstring &str) {
+    int len = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0, nullptr, nullptr);
+    string ret(len, '\0');
+    WideCharToMultiByte(CP_UTF8, 0, str.c_str(), (int)str.size(), (LPSTR)ret.data(), (int)ret.size(), nullptr, nullptr);
+    return ret;
+}
+
+string wcstr2str(const wchar_t* wstr) {
+    int count = WideCharToMultiByte(CP_UTF8, 0, wstr, wcslen(wstr), NULL, 0, NULL, NULL);
+    string str(count, 0);
+    WideCharToMultiByte(CP_UTF8, 0, wstr, -1, &str[0], count, NULL, NULL);
+    return str;
+}
+#endif
 
 } // namespace helpers

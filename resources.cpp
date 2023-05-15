@@ -18,8 +18,7 @@
 // ifstream and ofstream do not support UTF-8 file paths on Windows.
 // However there is a non-standard extension which allows the use of wide strings.
 // So, before we pass the path string to the constructor, we have to convert it to a UTF-16 std::wstring.
-#include "utils/win/str_conv.cpp"
-#define CONVSTR(S) str2wstr(S)
+#define CONVSTR(S) helpers::str2wstr(S)
 #else
 #define CONVSTR(S) S
 #endif

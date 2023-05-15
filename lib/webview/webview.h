@@ -714,16 +714,16 @@ public:
                       return 0;
                      }), "c@:@");
     class_addMethod(wcls, "windowDidBecomeKey:"_sel,
-                    (IMP)(+[](id, SEL, id) { 
+                    (IMP)(+[](id, SEL, id) {
                         if(windowStateChange)
                           windowStateChange(WEBVIEW_WINDOW_FOCUS);
                     }), "c@:@");
     class_addMethod(wcls, "windowDidResignKey:"_sel,
-                    (IMP)(+[](id, SEL, id) { 
+                    (IMP)(+[](id, SEL, id) {
                         if(windowStateChange)
                           windowStateChange(WEBVIEW_WINDOW_BLUR);
                     }), "c@:@");
-            
+
     objc_registerClassPair(wcls);
 
     auto wdelegate = ((id(*)(id, SEL))objc_msgSend)((id)wcls, "new"_sel);
@@ -942,7 +942,6 @@ using browser_engine = cocoa_wkwebview_engine;
 #define TRAY_WINAPI 1
 #include "lib/tray/tray.h"
 
-#include "utils/win/str_conv.cpp"
 #include "darkmode.h"
 
 namespace webview {
@@ -1350,10 +1349,10 @@ public:
 
   std::string get_title() {
     int len = GetWindowTextLength(hwnd);
-    std::string title;
+    std::wstring title;
     title.reserve(len + 1);
-    GetWindowText(hwnd, const_cast<LPWSTR>(str2wstr(title).c_str()), len);
-    return title;
+    GetWindowText(hwnd, const_cast<WCHAR *>(title.c_str()), title.capacity());
+    return wstr2str(title);
   }
 
   void set_size(int width, int height, int minWidth, int minHeight,
@@ -1390,9 +1389,7 @@ public:
   void eval(const std::string js) { m_browser->eval(js); }
   void init(const std::string js) { m_browser->init(js); }
 
-  #if defined(_WIN32)
   DWORD m_originalStyleEx;
-  #endif
 
 private:
   virtual void on_message(const std::string msg) = 0;
@@ -1413,6 +1410,21 @@ private:
   DWORD m_main_thread = GetCurrentThreadId();
   std::unique_ptr<webview::browser> m_browser =
       std::make_unique<webview::edge_chromium>();
+
+  static std::wstring str2wstr(std::string const &str) {
+    int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0);
+    std::wstring ret(len, '\0');
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), (LPWSTR)ret.data(), (int)ret.size());
+    return ret;
+  }
+  
+  std::string wstr2str(std::wstring const &str)
+  {
+    int len = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0, nullptr, nullptr);
+    std::string ret(len, '\0');
+    WideCharToMultiByte(CP_UTF8, 0, str.c_str(), (int)str.size(), (LPSTR)ret.data(), (int)ret.size(), nullptr, nullptr);
+    return ret;
+  }
 };
 
 using browser_engine = win32_edge_engine;
