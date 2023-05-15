@@ -145,7 +145,7 @@ string getDirectoryName(const string &filename){
     wstring wideFilename = helpers::str2wstr(filename);
     LPWSTR pathToReplace = &wideFilename[0];
     PathRemoveFileSpec(pathToReplace);
-    return helpers::normalizePath(wcstr2str(pathToReplace));
+    return helpers::normalizePath(helpers::wcstr2str(pathToReplace));
     #endif
 }
 
@@ -155,7 +155,7 @@ string getCurrentDirectory() {
     #elif defined(_WIN32)
     TCHAR currentDir[MAX_PATH];
     GetCurrentDirectory(MAX_PATH, currentDir);
-    string currentDirStr(wstr2str(currentDir));
+    string currentDirStr(helpers::wstr2str(currentDir));
     return helpers::normalizePath(currentDirStr);
     #endif
 }
@@ -371,7 +371,7 @@ fs::DirReaderResult readDirectory(const string &path) {
                 type = fs::EntryTypeFile;
             }
 
-            dirResult.entries.push_back({ wstr2str(fd.cFileName), type });
+            dirResult.entries.push_back({ helpers::wstr2str(fd.cFileName), type });
         } while(FindNextFile(hFind, &fd));
         FindClose(hFind);
     }

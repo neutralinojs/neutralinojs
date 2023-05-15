@@ -1345,14 +1345,14 @@ public:
   }
 
   void set_title(const std::string title) {
-    SetWindowText(m_window, str2wstr(title).c_str());
+    SetWindowText(m_window, helpers::str2wstr(title).c_str());
   }
 
   std::string get_title() {
     int len = GetWindowTextLength(hwnd);
     std::string title;
     title.reserve(len + 1);
-    GetWindowText(hwnd, const_cast<LPWSTR>(str2wstr(title).c_str()), len);
+    GetWindowText(hwnd, const_cast<LPWSTR>(helpers::str2wstr(title).c_str()), len);
     return title;
   }
 

@@ -347,7 +347,7 @@ json getEnvs(const json &input) {
         if(envs[i] != '\0') {
             continue;
         }
-        vector<string> env = helpers::split(wstr2str(wstring(envs + prevIndex, envs + i)), '=');
+        vector<string> env = helpers::split(helpers::wstr2str(wstring(envs + prevIndex, envs + i)), '=');
         string key = env[0];
         string value = env.size() == 2 ? env[1] : "";
         output["returnValue"][key] = value;
