@@ -43,8 +43,7 @@
         "windows": [
             "lib/tinyprocess/process_win.cpp",
             "lib/clip/clip_win.cpp",
-            "lib/efsw/src/efsw/platform/win/*.cpp",
-            "utils/win/str_conv.cpp"
+            "lib/efsw/src/efsw/platform/win/*.cpp"
         ]
     },
     "options": {

@@ -31,11 +31,10 @@ extern char **environ;
 #include <gdiplus.h>
 #include <shlwapi.h>
 
-#include "utils/win/str_conv.cpp"
-#define CONVSTR(S) str2wstr(S)
+#define CONVSTR(S) helpers::str2wstr(S)
 
 #pragma comment(lib, "Shell32.lib")
-#pragma comment (lib,"Gdiplus.lib")
+#pragma comment(lib, "Gdiplus.lib")
 #endif
 
 #include "lib/json/json.hpp"
@@ -90,7 +89,7 @@ void open(const string &url) {
     #elif defined(__APPLE__)
     os::execCommand("open \"" + url + "\"", "", true);
     #elif defined(_WIN32)
-    ShellExecute(0, 0, str2wstr(url).c_str(), 0, 0, SW_SHOW );
+    ShellExecute(0, 0, helpers::str2wstr(url).c_str(), 0, 0, SW_SHOW );
     #endif
 }
 

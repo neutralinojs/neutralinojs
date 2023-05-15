@@ -26,7 +26,7 @@
 // ifstream and ofstream do not support UTF-8 file paths on Windows.
 // However there is a non-standard extension which allows the use of wide strings.
 // So, before we pass the path string to the constructor, we have to convert it to a UTF-16 std::wstring.
-#define CONVSTR(S) str2wstr(S)
+#define CONVSTR(S) helpers::str2wstr(S)
 #endif
 
 #include <efsw/efsw.hpp>
@@ -128,7 +128,7 @@ bool createDirectory(const string &path) {
     #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
     return mkdir(path.c_str(), 0700) == 0;
     #elif defined(_WIN32)
-    return CreateDirectory(str2wstr(path).c_str(), nullptr) == 1;
+    return CreateDirectory(helpers::str2wstr(path).c_str(), nullptr) == 1;
     #endif
 }
 
@@ -136,7 +136,7 @@ bool removeFile(const string &filename) {
     #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
     return remove(filename.c_str()) == 0;
     #elif defined(_WIN32)
-    return DeleteFile(str2wstr(filename).c_str()) == 1;
+    return DeleteFile(helpers::str2wstr(filename).c_str()) == 1;
     #endif
 }
 
@@ -144,7 +144,7 @@ string getDirectoryName(const string &filename){
     #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
     return dirname((char*)filename.c_str());
     #elif defined(_WIN32)
-    wstring wideFilename = str2wstr(filename);
+    wstring wideFilename = helpers::str2wstr(filename);
     LPWSTR pathToReplace = &wideFilename[0];
     PathRemoveFileSpec(pathToReplace);
     return helpers::normalizePath(wcstr2str(pathToReplace));
@@ -303,7 +303,7 @@ fs::FileStats getStats(const string &path) {
     }
 
     #elif defined(_WIN32)
-    HANDLE hFile = CreateFile(str2wstr(path).c_str(), GENERIC_READ,
+    HANDLE hFile = CreateFile(helpers::str2wstr(path).c_str(), GENERIC_READ,
                     FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
                     FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL);
 
@@ -362,7 +362,7 @@ fs::DirReaderResult readDirectory(const string &path) {
     #elif defined(_WIN32)
     string search_path = path + "/*.*";
     WIN32_FIND_DATAW fd;
-    HANDLE hFind = FindFirstFile(str2wstr(search_path).c_str(), &fd);
+    HANDLE hFind = FindFirstFile(helpers::str2wstr(search_path).c_str(), &fd);
     if(hFind != INVALID_HANDLE_VALUE) {
         do {
             fs::EntryType type = fs::EntryTypeOther;
@@ -375,7 +375,7 @@ fs::DirReaderResult readDirectory(const string &path) {
 
             dirResult.entries.push_back({ wstr2str(fd.cFileName), type });
         } while(FindNextFile(hFind, &fd));
-        FindClose(hFind); 
+        FindClose(hFind);
     }
     #endif
     return dirResult;
@@ -446,7 +446,7 @@ json removeDirectory(const json &input) {
     #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
     if(rmdir(path.c_str()) == 0) {
     #elif defined(_WIN32)
-    if(RemoveDirectory(str2wstr(path).c_str())) {
+    if(RemoveDirectory(helpers::str2wstr(path).c_str())) {
     #endif
         output["success"] = true;
         output["message"] = "Directory " + path + " was removed";
@@ -664,7 +664,7 @@ json copyFile(const json &input) {
     if(commandResult.stdErr.empty()) {
 
     #elif defined(_WIN32)
-    if(CopyFile(str2wstr(source).c_str(), str2wstr(destination).c_str(), false) == 1) {
+    if(CopyFile(helpers::str2wstr(source).c_str(), helpers::str2wstr(destination).c_str(), false) == 1) {
     #endif
         output["success"] = true;
         output["message"] = "File copy operation was successful";
@@ -689,7 +689,7 @@ json moveFile(const json &input) {
     if(commandResult.stdErr.empty()) {
 
     #elif defined(_WIN32)
-    if(MoveFile(str2wstr(source).c_str(), str2wstr(destination).c_str()) == 1) {
+    if(MoveFile(helpers::str2wstr(source).c_str(), helpers::str2wstr(destination).c_str()) == 1) {
     #endif
         output["success"] = true;
         output["message"] = "File move operation was successful";
