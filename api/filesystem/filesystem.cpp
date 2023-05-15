@@ -18,8 +18,6 @@
 #include <shlwapi.h>
 #include <winbase.h>
 
-#include "utils/win/str_conv.cpp"
-
 #define NEU_WINDOWS_TICK 10000000
 #define NEU_SEC_TO_UNIX_EPOCH 11644473600LL
 

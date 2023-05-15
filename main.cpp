@@ -4,7 +4,6 @@
 #if defined(_WIN32)
 #include <winsock2.h>
 #include <websocketpp/error.hpp>
-#include "utils/win/str_conv.cpp"
 #endif
 
 #include "lib/json/json.hpp"
@@ -15,6 +14,7 @@
 #include "server/neuserver.h"
 #include "settings.h"
 #include "resources.h"
+#include "helpers.h"
 #include "chrome.h"
 #include "extensions_loader.h"
 #include "api/app/app.h"
@@ -168,7 +168,7 @@ void __initExtra() {
 #if defined(_WIN32)
 #define ARG_C __argc
 #define ARG_V __wargv
-#define CONVSTR(S) wcstr2str(S)
+#define CONVSTR(S) helpers::wcstr2str(S)
 int APIENTRY wWinMain(HINSTANCE hInstance,
                       HINSTANCE hPrevInstance,
                       LPTSTR    lpCmdLine,

@@ -714,16 +714,16 @@ public:
                       return 0;
                      }), "c@:@");
     class_addMethod(wcls, "windowDidBecomeKey:"_sel,
-                    (IMP)(+[](id, SEL, id) { 
+                    (IMP)(+[](id, SEL, id) {
                         if(windowStateChange)
                           windowStateChange(WEBVIEW_WINDOW_FOCUS);
                     }), "c@:@");
     class_addMethod(wcls, "windowDidResignKey:"_sel,
-                    (IMP)(+[](id, SEL, id) { 
+                    (IMP)(+[](id, SEL, id) {
                         if(windowStateChange)
                           windowStateChange(WEBVIEW_WINDOW_BLUR);
                     }), "c@:@");
-            
+
     objc_registerClassPair(wcls);
 
     auto wdelegate = ((id(*)(id, SEL))objc_msgSend)((id)wcls, "new"_sel);
@@ -942,7 +942,7 @@ using browser_engine = cocoa_wkwebview_engine;
 #define TRAY_WINAPI 1
 #include "lib/tray/tray.h"
 
-#include "utils/win/str_conv.cpp"
+#include "helpers.cpp" // str conversion helpers
 #include "darkmode.h"
 
 namespace webview {
