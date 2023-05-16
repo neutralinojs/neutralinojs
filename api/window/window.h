@@ -49,6 +49,7 @@ struct WindowOptions {
     bool borderless= false;
     bool maximize = false;
     bool hidden = false;
+    bool center = false;
     bool maximizable = true;
     bool exitProcessOnClose = true;
     string title = "Neutralinojs window";
@@ -79,6 +80,7 @@ void exitFullScreen();
 bool isFullScreen();
 void setIcon(const string &icon);
 void move(int x, int y);
+void center();
 void setAlwaysOnTop(bool onTop);
 void setBorderless();
 
@@ -102,6 +104,7 @@ json isFullScreen(const json &input);
 json focus(const json &input);
 json setIcon(const json &input);
 json move(const json &input);
+json center(const json &input);
 json setSize(const json &input);
 json getSize(const json &input);
 json getPosition(const json &input);

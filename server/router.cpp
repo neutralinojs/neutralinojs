@@ -58,6 +58,7 @@ map<string, router::NativeMethod> methodMap = {
     {"window.focus", window::controllers::focus},
     {"window.setIcon", window::controllers::setIcon},
     {"window.move", window::controllers::move},
+    {"window.center", window::controllers::center},
     {"window.setSize", window::controllers::setSize},
     {"window.getSize", window::controllers::getSize},
     {"window.getPosition", window::controllers::getPosition},

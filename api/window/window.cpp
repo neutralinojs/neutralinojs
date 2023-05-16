@@ -341,6 +341,21 @@ void move(int x, int y) {
     #endif
 }
 
+void center() {
+    int x, y = 0;
+    #if defined(__linux__) || defined(__FreeBSD__)
+    GdkRectangle screen;
+    gdk_monitor_get_workarea(gdk_display_get_primary_monitor(gdk_display_get_default()), &screen);
+    x = (screen.width - windowProps.sizeOptions.width) / 2;
+    y = (screen.height - windowProps.sizeOptions.height) / 2;
+    #elif defined(__APPLE__)
+
+    #elif defined(_WIN32)
+
+    #endif
+    window::move(x, y);
+}
+
 void setAlwaysOnTop(bool onTop) {
     #if defined(__linux__) || defined(__FreeBSD__)
     gtk_window_set_keep_above(GTK_WINDOW(windowHandle), onTop);
@@ -402,6 +417,9 @@ void __createWindow() {
 
     #if !defined(_WIN32)
     window::move(windowProps.x, windowProps.y);
+
+    if(windowProps.center)
+        window::center();
     #endif
 
     if(windowProps.maximize)
@@ -630,6 +648,13 @@ json move(const json &input) {
     return output;
 }
 
+json center(const json &input) {
+    json output;
+    window::center();
+    output["success"] = true;
+    return output;
+}
+
 json setSize(const json &input) {
     json output;
     windowProps.sizeOptions = __jsonToSizeOptions(input);
@@ -739,6 +764,9 @@ json init(const json &input) {
 
     if(helpers::hasField(input, "hidden"))
         windowProps.hidden = input["hidden"].get<bool>();
+
+    if(helpers::hasField(input, "center"))
+        windowProps.center = input["center"].get<bool>();
 
     if(helpers::hasField(input, "exitProcessOnClose"))
         windowProps.exitProcessOnClose = input["exitProcessOnClose"].get<bool>();
