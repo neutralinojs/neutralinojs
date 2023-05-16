@@ -83,6 +83,28 @@ void windowStateChange(int state) {
 
 } // namespace handlers
 
+
+pair<int, int> __getCenterPos() {
+    int x, y = 0;
+    window::SizeOptions opt = window::getSize();
+    #if defined(__linux__) || defined(__FreeBSD__)
+    GdkRectangle screen;
+    gdk_monitor_get_workarea(gdk_display_get_primary_monitor(gdk_display_get_default()), &screen);
+    x = (screen.width - opt.width) / 2;
+    y = (screen.height - opt.height) / 2;
+    #elif defined(__APPLE__)
+    auto displayId = CGMainDisplayID();
+    x = (CGDisplayPixelsWide(displayId) - opt.width) / 2;
+    y = (CGDisplayPixelsHigh(displayId) - opt.height) / 2;
+    #elif defined(_WIN32)
+	RECT screen;		
+	GetWindowRect(GetDesktopWindow(), &screen);
+    x = ((screen.right - screen.left) - opt.width) / 2;
+    y = ((screen.bottom - screen.top) - opt.height) / 2;
+    #endif
+    return make_pair(x, y);
+}
+
 #if defined(_WIN32)
 bool __isFakeHidden() {
 	// Checks whether the window is on the screen viewport
@@ -95,10 +117,17 @@ bool __isFakeHidden() {
 }
 
 void __undoFakeHidden() {
+    int x = windowProps.x;
+    int y = windowProps.y;
+    if(windowProps.center) {
+        pair<int, int> pos = __getCenterPos();
+        x = pos.first;
+        y = pos.second;
+    }
 	ShowWindow(windowHandle, SW_HIDE);
 	SetWindowLong(windowHandle, GWL_EXSTYLE, nativeWindow->m_originalStyleEx);
 	SetWindowPos(windowHandle, nullptr,
-        windowProps.x, windowProps.y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+        x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 	ShowWindow(windowHandle, SW_SHOW);
 }
 #endif
@@ -341,21 +370,32 @@ void move(int x, int y) {
     #endif
 }
 
-void center() {
-    int x, y = 0;
+window::SizeOptions getSize() {
+    int width, height = 0;
     #if defined(__linux__) || defined(__FreeBSD__)
-    GdkRectangle screen;
-    gdk_monitor_get_workarea(gdk_display_get_primary_monitor(gdk_display_get_default()), &screen);
-    x = (screen.width - windowProps.sizeOptions.width) / 2;
-    y = (screen.height - windowProps.sizeOptions.height) / 2;
+    gtk_window_get_size(GTK_WINDOW(windowHandle),
+                        &width, &height);
     #elif defined(__APPLE__)
-    auto displayId = CGMainDisplayID();
-    x = (CGDisplayPixelsWide(displayId) - windowProps.sizeOptions.width) / 2;
-    y = (CGDisplayPixelsHigh(displayId) - windowProps.sizeOptions.height) / 2;
-    #elif defined(_WIN32)
+    CGRect winPos = __getWindowRect();
 
-    #endif
-    window::move(x, y);
+    width = winPos.size.width;
+    height = winPos.size.height;
+
+    #elif defined(_WIN32)
+    RECT winPos;
+    GetWindowRect(windowHandle, &winPos);
+    width = winPos.right - winPos.left;
+    height = winPos.bottom - winPos.top;
+    #endif;
+
+    windowProps.sizeOptions.width = width;
+    windowProps.sizeOptions.height = height;
+    return windowProps.sizeOptions;
+}
+
+void center() {
+    pair<int, int> pos = __getCenterPos();
+    window::move(pos.first, pos.second);
 }
 
 void setAlwaysOnTop(bool onTop) {
@@ -482,15 +522,15 @@ window::SizeOptions __jsonToSizeOptions(const json &input, bool useDefaultRect =
     return sizeOptions;
 }
 
-json __sizeOptionsToJson() {
+json __sizeOptionsToJson(const window::SizeOptions &opt) {
     json output = {
-        {"width", windowProps.sizeOptions.width},
-        {"height", windowProps.sizeOptions.height},
-        {"minWidth", windowProps.sizeOptions.minWidth},
-        {"minHeight", windowProps.sizeOptions.minHeight},
-        {"maxWidth", windowProps.sizeOptions.maxWidth},
-        {"maxHeight", windowProps.sizeOptions.maxHeight},
-        {"resizable", windowProps.sizeOptions.resizable}
+        {"width", opt.width},
+        {"height", opt.height},
+        {"minWidth", opt.minWidth},
+        {"minHeight", opt.minHeight},
+        {"maxWidth", opt.maxWidth},
+        {"maxHeight", opt.maxHeight},
+        {"resizable", opt.resizable}
     };
     return output;
 }
@@ -670,23 +710,9 @@ json setSize(const json &input) {
 
 json getSize(const json &input) {
     json output;
-    #if defined(__linux__) || defined(__FreeBSD__)
-    gtk_window_get_size(GTK_WINDOW(windowHandle),
-                        &windowProps.sizeOptions.width, &windowProps.sizeOptions.height);
-    #elif defined(__APPLE__)
-    CGRect winPos = __getWindowRect();
+    windowProps.sizeOptions = window::getSize();
 
-    windowProps.sizeOptions.width = winPos.size.width;
-    windowProps.sizeOptions.height = winPos.size.height;
-
-    #elif defined(_WIN32)
-    RECT winPos;
-    GetWindowRect(windowHandle, &winPos);
-    windowProps.sizeOptions.width = winPos.right - winPos.left;
-    windowProps.sizeOptions.height = winPos.bottom - winPos.top;
-
-    #endif
-    output["returnValue"] = __sizeOptionsToJson();
+    output["returnValue"] = __sizeOptionsToJson(windowProps.sizeOptions);
     output["success"] = true;
     return output;
 }
