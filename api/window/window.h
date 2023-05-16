@@ -80,8 +80,8 @@ void exitFullScreen();
 bool isFullScreen();
 void setIcon(const string &icon);
 void move(int x, int y);
-window::SizeOptions getSize(); 
-void center();
+window::SizeOptions getSize();
+void center(bool useConfigSizes);
 void setAlwaysOnTop(bool onTop);
 void setBorderless();
 

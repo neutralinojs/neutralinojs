@@ -26,9 +26,9 @@ describe('window.spec: window namespace tests', () => {
         it('returns a string value', async () => {
             runner.run(`
                 let title = await Neutralino.window.getTitle();
-                await __close(title);
+                await __close(JSON.stringify({out: title}));
             `);
-            assert.ok(typeof JSON.parse(runner.getOutput()) == 'string');
+            assert.ok(typeof JSON.parse(runner.getOutput()).out == 'string');
         });
     });
 

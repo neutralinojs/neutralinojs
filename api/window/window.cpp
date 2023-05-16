@@ -84,23 +84,32 @@ void windowStateChange(int state) {
 } // namespace handlers
 
 
-pair<int, int> __getCenterPos() {
+pair<int, int> __getCenterPos(bool useConfigSizes = false) {
     int x, y = 0;
-    window::SizeOptions opt = window::getSize();
+    int width, height = 0;
+    if(useConfigSizes) {
+        width = windowProps.sizeOptions.width;
+        height = windowProps.sizeOptions.height;
+    }
+    else {
+        window::SizeOptions opt = window::getSize();
+        width = opt.width;
+        height = opt.height;
+    }
     #if defined(__linux__) || defined(__FreeBSD__)
     GdkRectangle screen;
     gdk_monitor_get_workarea(gdk_display_get_primary_monitor(gdk_display_get_default()), &screen);
-    x = (screen.width - opt.width) / 2;
-    y = (screen.height - opt.height) / 2;
+    x = (screen.width - width) / 2;
+    y = (screen.height - height) / 2;
     #elif defined(__APPLE__)
     auto displayId = CGMainDisplayID();
-    x = (CGDisplayPixelsWide(displayId) - opt.width) / 2;
-    y = (CGDisplayPixelsHigh(displayId) - opt.height) / 2;
+    x = (CGDisplayPixelsWide(displayId) - width) / 2;
+    y = (CGDisplayPixelsHigh(displayId) - height) / 2;
     #elif defined(_WIN32)
 	RECT screen;
 	GetWindowRect(GetDesktopWindow(), &screen);
-    x = ((screen.right - screen.left) - opt.width) / 2;
-    y = ((screen.bottom - screen.top) - opt.height) / 2;
+    x = ((screen.right - screen.left) - width) / 2;
+    y = ((screen.bottom - screen.top) - height) / 2;
     #endif
     return make_pair(x, y);
 }
@@ -135,7 +144,7 @@ void __undoFakeHidden() {
     int x = windowProps.x;
     int y = windowProps.y;
     if(windowProps.center) {
-        pair<int, int> pos = __getCenterPos();
+        pair<int, int> pos = __getCenterPos(true);
         x = pos.first;
         y = pos.second;
     }
@@ -408,8 +417,8 @@ window::SizeOptions getSize() {
     return windowProps.sizeOptions;
 }
 
-void center() {
-    pair<int, int> pos = __getCenterPos();
+void center(bool useConfigSizes = false) {
+    pair<int, int> pos = __getCenterPos(useConfigSizes);
     window::move(pos.first, pos.second);
 }
 
@@ -476,7 +485,7 @@ void __createWindow() {
     window::move(windowProps.x, windowProps.y);
 
     if(windowProps.center)
-        window::center();
+        window::center(true);
     #endif
 
     if(windowProps.maximize)
