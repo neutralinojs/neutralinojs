@@ -349,7 +349,9 @@ void center() {
     x = (screen.width - windowProps.sizeOptions.width) / 2;
     y = (screen.height - windowProps.sizeOptions.height) / 2;
     #elif defined(__APPLE__)
-
+    auto displayId = CGMainDisplayID();
+    x = (CGDisplayPixelsWide(displayId) - windowProps.sizeOptions.width) / 2;
+    y = (CGDisplayPixelsHigh(displayId) - windowProps.sizeOptions.height) / 2;
     #elif defined(_WIN32)
 
     #endif
