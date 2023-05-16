@@ -537,6 +537,9 @@ function setIcon(icon) {
 function move(x, y) {
     return sendMessage('window.move', { x, y });
 }
+function center() {
+    return sendMessage('window.center');
+}
 function setDraggableRegion(domElementOrId) {
     return new Promise((resolve, reject) => {
         const draggableRegion = domElementOrId instanceof Element ?
@@ -683,6 +686,7 @@ var window$1 = /*#__PURE__*/Object.freeze({
     focus: focus,
     setIcon: setIcon,
     move: move,
+    center: center,
     setDraggableRegion: setDraggableRegion,
     unsetDraggableRegion: unsetDraggableRegion,
     setSize: setSize,
@@ -795,7 +799,7 @@ var custom = /*#__PURE__*/Object.freeze({
     getMethods: getMethods
 });
 
-var version = "3.8.2";
+var version = "3.9.0";
 
 let initialized = false;
 function init(options = {}) {
@@ -827,7 +831,7 @@ function init(options = {}) {
         }
     }
     window.NL_CVERSION = version;
-    window.NL_CCOMMIT = '47f87d44eb586f4a90eaa9b5ae6ed7321af359a3'; // only the build server will update this
+    window.NL_CCOMMIT = 'f1bbe004d4732b658f4ec9c2734cb6ba516c3764'; // only the build server will update this
     initialized = true;
 }
 

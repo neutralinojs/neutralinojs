@@ -31,6 +31,7 @@
             "title": "Neutralinojs app",
             "x": 200,
             "y": 400,
+            "center": true,
             "width": 800,
             "height": 500,
             "minWidth": 400,

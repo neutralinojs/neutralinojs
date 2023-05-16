@@ -200,6 +200,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
         {"--window-hidden", {"/modes/window/hidden", "bool"}},
         {"--window-resizable", {"/modes/window/resizable", "bool"}},
         {"--window-maximizable", {"/modes/window/maximizable", "bool"}},
+        {"--window-center", {"/modes/window/center", "bool"}},
         {"--window-exit-process-on-close", {"/modes/window/exitProcessOnClose", "bool"}},
         {"--window-icon", {"/modes/window/icon", "string"}},
         // Chrome mode
