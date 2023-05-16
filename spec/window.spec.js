@@ -22,6 +22,16 @@ describe('window.spec: window namespace tests', () => {
         });
     });
 
+    describe('window.getTitle', () => {
+        it('returns a string value', async () => {
+            runner.run(`
+                let title = await Neutralino.window.getTitle();
+                await __close(title);
+            `);
+            assert.ok(typeof JSON.parse(runner.getOutput()) == 'string');
+        });
+    });
+
     describe('window.maximize', () => {
         it('works without throwing errors', async () => {
             runner.run(`
@@ -173,6 +183,16 @@ describe('window.spec: window namespace tests', () => {
         });
     });
 
+    describe('window.center', () => {
+        it('centers the window without throwing errores', async () => {
+            runner.run(`
+                await Neutralino.window.center();
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+    });
+
     describe('window.setDraggableRegion', () => {
         it('registers draggable region without throwing errores', async () => {
             runner.run(`
@@ -217,7 +237,7 @@ describe('window.spec: window namespace tests', () => {
             assert.equal(runner.getOutput(), 'NE_WD_DOMNOTF');
         });
     });
-    
+
     // TODO: Remove this check after fixing: #1080
     if(process.platform == 'win32') {
     describe('window.setSize', () => {

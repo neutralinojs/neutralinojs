@@ -97,13 +97,28 @@ pair<int, int> __getCenterPos() {
     x = (CGDisplayPixelsWide(displayId) - opt.width) / 2;
     y = (CGDisplayPixelsHigh(displayId) - opt.height) / 2;
     #elif defined(_WIN32)
-	RECT screen;		
+	RECT screen;
 	GetWindowRect(GetDesktopWindow(), &screen);
     x = ((screen.right - screen.left) - opt.width) / 2;
     y = ((screen.bottom - screen.top) - opt.height) / 2;
     #endif
     return make_pair(x, y);
 }
+
+#if defined(__APPLE__)
+CGRect __getWindowRect() {
+    // "frame"_sel is the easiest way, but it crashes
+    // So, this is a workaround with low-level APIs.
+    long winId = ((long(*)(id, SEL))objc_msgSend)(windowHandle, "windowNumber"_sel);
+    auto winInfoArray = CGWindowListCopyWindowInfo(kCGWindowListOptionIncludingWindow, winId);
+    auto winInfo = CFArrayGetValueAtIndex(winInfoArray, 0);
+    auto winBounds = CFDictionaryGetValue((CFDictionaryRef) winInfo, kCGWindowBounds);
+
+    CGRect winPos;
+    CGRectMakeWithDictionaryRepresentation((CFDictionaryRef) winBounds, &winPos);
+    return winPos;
+}
+#endif
 
 #if defined(_WIN32)
 bool __isFakeHidden() {
@@ -386,7 +401,7 @@ window::SizeOptions getSize() {
     GetWindowRect(windowHandle, &winPos);
     width = winPos.right - winPos.left;
     height = winPos.bottom - winPos.top;
-    #endif;
+    #endif
 
     windowProps.sizeOptions.width = width;
     windowProps.sizeOptions.height = height;
@@ -534,21 +549,6 @@ json __sizeOptionsToJson(const window::SizeOptions &opt) {
     };
     return output;
 }
-
-#if defined(__APPLE__)
-CGRect __getWindowRect() {
-    // "frame"_sel is the easiest way, but it crashes
-    // So, this is a workaround with low-level APIs.
-    long winId = ((long(*)(id, SEL))objc_msgSend)(windowHandle, "windowNumber"_sel);
-    auto winInfoArray = CGWindowListCopyWindowInfo(kCGWindowListOptionIncludingWindow, winId);
-    auto winInfo = CFArrayGetValueAtIndex(winInfoArray, 0);
-    auto winBounds = CFDictionaryGetValue((CFDictionaryRef) winInfo, kCGWindowBounds);
-
-    CGRect winPos;
-    CGRectMakeWithDictionaryRepresentation((CFDictionaryRef) winBounds, &winPos);
-    return winPos;
-}
-#endif
 
 json setTitle(const json &input) {
     json output;
