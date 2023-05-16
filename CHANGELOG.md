@@ -6,8 +6,12 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: window
+- Add `window.center` to center the application window programmatically.
+
 ### Core: configuration
-- Setting the initial window position via `modes.window.x` and `modes.window.y` config props.
+- Setting the initial window position via `modes.window.x` and `modes.window.y` integer config props.
+- Centering the window at startup via `modes.window.center` boolean config props.
 - Add config overrides for the startup window position: `--window-x=<int>` and `window-y=<int>`
 
 ### Improvements/bugfixes
