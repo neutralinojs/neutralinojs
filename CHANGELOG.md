@@ -14,6 +14,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 - Centering the window at startup via `modes.window.center` boolean config props.
 - Add config overrides for the startup window position: `--window-x=<int>` and `window-y=<int>`
 
+### Core: webview
+- Statically link the Webview2 loader library on Windows, so app developers can package their apps without including the `WebView2Loader.dll` file.
+
 ### Improvements/bugfixes
 - Added Unicode characters support for Neutralinojs Windows.
 
