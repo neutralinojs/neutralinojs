@@ -1038,7 +1038,7 @@ private:
 class edge_chromium : public browser {
 public:
   bool embed(HWND wnd, bool debug, msg_cb_t cb) override {
-    CoInitializeEx(nullptr, 0);
+    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
     std::atomic_flag flag = ATOMIC_FLAG_INIT;
     flag.test_and_set();
 
@@ -1052,25 +1052,27 @@ public:
     std::wstring currentExeNameW = wideCharConverter.from_bytes(currentExeName);
 
     HRESULT res = CreateCoreWebView2EnvironmentWithOptions(
-        nullptr, (userDataFolder + L"/" + currentExeNameW).c_str(), nullptr,
-        new webview2_com_handler(wnd, cb,
-                                 [&](ICoreWebView2Controller *controller) {
-                                   m_controller = controller;
-                                   m_controller->get_CoreWebView2(&m_webview);
-                                   m_webview->AddRef();
+        nullptr,
+        (userDataFolder + L"/" + currentExeNameW).c_str(),
+        nullptr,
+        new webview2_com_handler(wnd, cb, [&](ICoreWebView2Controller* controller) {
+            m_controller = controller;
+            m_controller->get_CoreWebView2(&m_webview);
+            m_webview->AddRef();
 
-                                   ICoreWebView2Settings *m_settings;
-                                   m_webview->get_Settings(&m_settings);
-                                   if(debug) {
-                                      m_settings->put_AreDevToolsEnabled(TRUE);
-                                      m_webview->OpenDevToolsWindow();
-                                   }
-                                   else {
-                                      m_settings->put_AreDevToolsEnabled(FALSE);
-                                      m_settings->put_IsStatusBarEnabled(FALSE);
-                                   }
-                                   flag.clear();
-                                 }));
+            ICoreWebView2Settings* m_settings;
+            m_webview->get_Settings(&m_settings);
+            if (debug) {
+                m_settings->put_AreDevToolsEnabled(TRUE);
+                m_webview->OpenDevToolsWindow();
+            }
+            else {
+                m_settings->put_AreDevToolsEnabled(FALSE);
+                m_settings->put_IsStatusBarEnabled(FALSE);
+            }
+            flag.clear();
+        }
+    ));
     if (res != S_OK) {
       CoUninitialize();
       return false;
