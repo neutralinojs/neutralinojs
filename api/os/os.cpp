@@ -595,9 +595,17 @@ json setTray(const json &input) {
             fullIconPath = fs::getFullPathFromRelative(settings::joinAppPath("")) + iconPath;
         }
         else {
+            // Use alternating tempIconPath since tray_update()
+            // doesn't update the icon if the path is the same as the previous one,
+            // regardless whether the file contents changed or not.
+            static bool useOtherTempFile = true;
+            useOtherTempFile = !useOtherTempFile;
+            string tempIconPath = settings::joinAppPath(
+                    useOtherTempFile ?  "/.tmp/tray_icon_linux.png" : "/.tmp/tray_icon_linux2.png"
+            );
+
             string tempDirPath = settings::joinAppPath("/.tmp");
             fs::createDirectory(tempDirPath);
-            string tempIconPath = settings::joinAppPath("/.tmp/tray_icon_linux.png");
             resources::extractFile(iconPath, tempIconPath);
             fullIconPath = fs::getFullPathFromRelative(tempIconPath);
         }
