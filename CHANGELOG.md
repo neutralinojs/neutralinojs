@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v4.12.0
+
 ### API: window
 - Add `window.center` to center the application window programmatically.
 
