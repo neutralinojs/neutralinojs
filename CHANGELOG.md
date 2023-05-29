@@ -12,7 +12,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### Core: configuration
 - Setting the initial window position via `modes.window.x` and `modes.window.y` integer config props.
 - Centering the window at startup via `modes.window.center` boolean config props.
-- Add config overrides for the startup window position: `--window-x=<int>` and `window-y=<int>`
+- Add config overrides for the startup window position: `--window-center=<true|false>`, `--window-x=<int>` and `--window-y=<int>`
 
 ### Core: webview
 - Statically link the Webview2 loader library on Windows, so app developers can package their apps without including the `WebView2Loader.dll` file.
