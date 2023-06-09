@@ -16,6 +16,7 @@ Neutralinojs is a lightweight and portable desktop application development frame
 - [Neutralinojs vs. Electron vs. NW.JS vs. Tauri vs. NodeGui vs. Flutter vs. .Net MAUI](https://github.com/Elanis/web-to-desktop-framework-comparison)
 - [Neutralinojs vs. Electron vs. NW.js (2018)](https://github.com/neutralinojs/evaluation)
 - [Roadmap 2023](https://github.com/neutralinojs/roadmap#roadmap-2023)
+- [Release notes](https://neutralino.js.org/docs/release-notes/framework)
 
 Get started with the neu CLI.
 
