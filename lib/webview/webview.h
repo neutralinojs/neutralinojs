@@ -1336,10 +1336,25 @@ public:
   }
   void *window() { return (void *)m_window; }
   void terminate(int exitCode = 0) {
+
+    // event to wait for window close completion
+    auto evtWindowClosed = CreateEvent(
+        NULL,               // default security attributes
+        TRUE,               // manual-reset event
+        FALSE,              // initial state is nonsignaled
+        TEXT("WindowClosedEvent")  // object name
+    );
     processExitCode = exitCode;
+
     dispatch([=]() {
         DestroyWindow(m_window);
+        SetEvent(evtWindowClosed);
     });
+
+    // wait for dispatch() to complete
+    WaitForSingleObject(evtWindowClosed, 10000);
+    CloseHandle(evtWindowClosed);
+
   }
   void dispatch(dispatch_fn_t f) {
     PostThreadMessage(m_main_thread, WM_APP, 0, (LPARAM) new dispatch_fn_t(f));
