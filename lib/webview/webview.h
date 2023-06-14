@@ -1289,17 +1289,15 @@ public:
     }
 
     setDpi();
+
+    // stop the taskbar icon from showing by removing WS_EX_APPWINDOW.
+    SetWindowLong(m_window, GWL_EXSTYLE, GetWindowLong(m_window, GWL_EXSTYLE) & ~WS_EX_APPWINDOW);
     ShowWindow(m_window, SW_SHOW);
     UpdateWindow(m_window);
+    SetForegroundWindow(m_window);
 
     // store the original initial window style
     m_originalStyleEx = GetWindowLong(m_window, GWL_EXSTYLE);
-
-    // stop the taskbar icon from showing by changing windowstyle to toolwindow.
-    ShowWindow(m_window, SW_HIDE);
-    SetWindowLong(m_window, GWL_EXSTYLE, WS_EX_TOOLWINDOW);
-    ShowWindow(m_window, SW_SHOW);
-    SetFocus(m_window);
 
     // set dark mode of title bar according to system theme
     TrySetWindowTheme(m_window);
