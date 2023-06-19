@@ -601,7 +601,7 @@ json setTray(const json &input) {
             static bool useOtherTempFile = true;
             useOtherTempFile = !useOtherTempFile;
             string tempIconPath = settings::joinAppPath(
-                    useOtherTempFile ?  "/.tmp/tray_icon_linux.png" : "/.tmp/tray_icon_linux2.png"
+                    useOtherTempFile ?  "/.tmp/tray_icon_linux_01.png" : "/.tmp/tray_icon_linux_02.png"
             );
 
             string tempDirPath = settings::joinAppPath("/.tmp");
