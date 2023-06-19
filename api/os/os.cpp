@@ -62,6 +62,9 @@ namespace os {
 struct tray_menu menus[NEU_MAX_TRAY_MENU_ITEMS];
 struct tray tray;
 bool trayInitialized = false;
+#if defined(__linux__) || defined(__FreeBSD__)
+bool useOtherTempTrayIcon = true;
+#endif
 map<int, TinyProcessLib::Process*> spawnedProcesses;
 mutex spawnedProcessesLock;
 
@@ -598,10 +601,9 @@ json setTray(const json &input) {
             // Use alternating tempIconPath since tray_update()
             // doesn't update the icon if the path is the same as the previous one,
             // regardless whether the file contents changed or not.
-            static bool useOtherTempFile = true;
-            useOtherTempFile = !useOtherTempFile;
+            useOtherTempTrayIcon = !useOtherTempTrayIcon;
             string tempIconPath = settings::joinAppPath(
-                    useOtherTempFile ?  "/.tmp/tray_icon_linux_01.png" : "/.tmp/tray_icon_linux_02.png"
+                    useOtherTempTrayIcon ?  "/.tmp/tray_icon_linux_01.png" : "/.tmp/tray_icon_linux_02.png"
             );
 
             string tempDirPath = settings::joinAppPath("/.tmp");
