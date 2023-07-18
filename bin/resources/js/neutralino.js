@@ -637,6 +637,8 @@ var Neutralino = (function (exports) {
     }
     function create(url, options) {
         return new Promise((resolve, reject) => {
+            options = Object.assign(Object.assign({}, options), { useSavedState: false });
+            // useSavedState: false -> Child windows won't save their states
             function normalize(arg) {
                 if (typeof arg != "string")
                     return arg;
@@ -802,7 +804,7 @@ var Neutralino = (function (exports) {
         getMethods: getMethods
     };
 
-    var version = "3.9.0";
+    var version = "3.10.0";
 
     let initialized = false;
     function init(options = {}) {
@@ -834,7 +836,7 @@ var Neutralino = (function (exports) {
             }
         }
         window.NL_CVERSION = version;
-        window.NL_CCOMMIT = 'f1bbe004d4732b658f4ec9c2734cb6ba516c3764'; // only the build server will update this
+        window.NL_CCOMMIT = '94289a21c67536854270fac0424a5899c3334a5a'; // only the build server will update this
         initialized = true;
     }
 

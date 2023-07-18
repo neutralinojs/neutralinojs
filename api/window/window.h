@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "errors.h"
 #include "lib/json/json.hpp"
 
 #if defined(__linux__) || defined(__FreeBSD__)
@@ -25,6 +26,8 @@ inline id operator"" _str(const char *s, size_t) {
 #include <windows.h>
 #define NEU_W_HANDLE HWND
 #endif
+
+#define NEU_WIN_CONFIG_FILE "/.tmp/window_state.config.json"
 
 using json = nlohmann::json;
 using namespace std;
@@ -52,11 +55,13 @@ struct WindowOptions {
     bool center = false;
     bool maximizable = true;
     bool exitProcessOnClose = true;
+    bool useSavedState = true;
     string title = "Neutralinojs window";
     string url = "https://neutralino.js.org";
     string icon = "";
     int x = 0;
     int y = 0;
+    errors::StatusCode savedStatus = errors::NE_ST_OK;
 };
 
 namespace handlers {
@@ -81,6 +86,7 @@ bool isFullScreen();
 void setIcon(const string &icon);
 void move(int x, int y);
 window::SizeOptions getSize();
+pair<int, int> getPosition();
 void center(bool useConfigSizes);
 void setAlwaysOnTop(bool onTop);
 void setBorderless();

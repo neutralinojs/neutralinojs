@@ -25,6 +25,7 @@
 
 #include "lib/json/json.hpp"
 #include "lib/webview/webview.h"
+#include "settings.h"
 #include "resources.h"
 #include "helpers.h"
 #include "errors.h"
@@ -34,6 +35,7 @@
 #include "api/window/window.h"
 #include "api/events/events.h"
 #include "api/filesystem/filesystem.h"
+#include "api/debug/debug.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -55,6 +57,8 @@ RECT savedRect;
 #endif
 
 window::WindowOptions windowProps;
+window::WindowOptions savedWindowProps;
+bool savedState = false;
 NEU_W_HANDLE windowHandle;
 
 namespace handlers {
@@ -141,8 +145,8 @@ bool __isFakeHidden() {
 }
 
 void __undoFakeHidden() {
-    int x = windowProps.x;
-    int y = windowProps.y;
+    int x = savedState ? savedWindowProps.x : windowProps.x;
+    int y = savedState ? savedWindowProps.y : windowProps.y;
     if(windowProps.center) {
         pair<int, int> pos = __getCenterPos(true);
         x = pos.first;
@@ -155,6 +159,55 @@ void __undoFakeHidden() {
 	ShowWindow(windowHandle, SW_SHOW);
 }
 #endif
+
+json __sizeOptionsToJson(const window::SizeOptions &opt) {
+    json output = {
+        {"width", opt.width},
+        {"height", opt.height},
+        {"minWidth", opt.minWidth},
+        {"minHeight", opt.minHeight},
+        {"maxWidth", opt.maxWidth},
+        {"maxHeight", opt.maxHeight},
+        {"resizable", opt.resizable}
+    };
+    return output;
+}
+
+void __saveWindowProps() {
+    windowProps.sizeOptions = window::getSize();
+    json options = __sizeOptionsToJson(windowProps.sizeOptions);
+    pair<int, int> pos = window::getPosition();
+    options["x"] = pos.first;
+    options["y"] = pos.second;
+    options["maximize"] = window::isMaximized();
+
+    fs::createDirectory(settings::joinAppPath("/.tmp"));
+    fs::FileWriterOptions writerOptions = { settings::joinAppPath(NEU_WIN_CONFIG_FILE), options.dump() };
+    fs::writeFile(writerOptions);
+}
+
+window::WindowOptions __getSavedWindowProps() {
+    window::WindowOptions savedOptions;
+    fs::FileReaderResult readerResult = fs::readFile(settings::joinAppPath(NEU_WIN_CONFIG_FILE));
+    if(readerResult.status != errors::NE_ST_OK) {
+        savedOptions.savedStatus = readerResult.status;
+        return savedOptions;
+    }
+
+    try {
+        json options = json::parse(readerResult.data);
+        savedOptions.x = options["x"].get<int>();
+        savedOptions.y = options["y"].get<int>();
+        savedOptions.maximize = options["maximize"].get<bool>();
+        savedOptions.sizeOptions.width = options["width"].get<int>();
+        savedOptions.sizeOptions.height = options["height"].get<int>();
+    }
+    catch(exception e) {
+        savedOptions.savedStatus = errors::NE_CF_UNBLWCF;
+        debug::log(debug::LogTypeError, errors::makeErrorMsg(savedOptions.savedStatus, string(NEU_WIN_CONFIG_FILE)));
+    }
+    return savedOptions;
+}
 
 NEU_W_HANDLE getWindowHandle() {
     return windowHandle;
@@ -213,27 +266,6 @@ bool isVisible() {
     #elif defined(_WIN32)
     return IsWindowVisible(windowHandle) == 1;
     #endif
-}
-
-bool isFakeHidden() {
-	//ensureOnScreen
-	#if defined(_WIN32)
-	RECT rect = { NULL };
-
-	if(GetWindowRect( windowHandle, &rect)) {
-		return rect.left > 9999;
-	}
-	#endif
-	return false;
-}
-
-void undoFakeHidden() {
-	#if defined(_WIN32)
-	ShowWindow(windowHandle, SW_HIDE);
-	SetWindowLong(windowHandle, GWL_EXSTYLE, nativeWindow->m_originalStyleEx);
-	SetWindowPos(windowHandle, NULL, 10, 10, 0, 0, 0x0004 | 0x0001);
-	ShowWindow(windowHandle, SW_SHOW);
-	#endif
 }
 
 void show() {
@@ -417,6 +449,26 @@ window::SizeOptions getSize() {
     return windowProps.sizeOptions;
 }
 
+pair<int, int> getPosition() {
+    int x, y;
+    #if defined(__linux__) || defined(__FreeBSD__)
+    gdk_window_get_root_origin(gtk_widget_get_window(windowHandle), &x, &y);
+
+    #elif defined(__APPLE__)
+    CGRect winPos = __getWindowRect();
+    x = winPos.origin.x;
+    y = winPos.origin.y;
+
+    #elif defined(_WIN32)
+    RECT winPos;
+    GetWindowRect(windowHandle, &winPos);
+    x = winPos.left;
+    y = winPos.top;
+    #endif
+
+    return make_pair(x, y);
+}
+
 void center(bool useConfigSizes = false) {
     pair<int, int> pos = __getCenterPos(useConfigSizes);
     window::move(pos.first, pos.second);
@@ -454,6 +506,9 @@ void setBorderless() {
 
 void _close(int exitCode) {
     if(nativeWindow) {
+        if(windowProps.useSavedState) {
+            __saveWindowProps();
+        }
         nativeWindow->terminate(exitCode);
         delete nativeWindow;
     }
@@ -462,10 +517,17 @@ void _close(int exitCode) {
 namespace controllers {
 
 void __createWindow() {
+    if(windowProps.useSavedState) {
+        savedWindowProps = __getSavedWindowProps();
+        savedState = savedWindowProps.savedStatus == errors::NE_ST_OK;
+    }
+    
     nativeWindow = new webview::webview(windowProps.enableInspector, nullptr);
     nativeWindow->set_title(windowProps.title);
-    nativeWindow->set_size(windowProps.sizeOptions.width, windowProps.sizeOptions.height, windowProps.sizeOptions.minWidth,
-                    windowProps.sizeOptions.minHeight, windowProps.sizeOptions.maxWidth, windowProps.sizeOptions.maxHeight,
+    nativeWindow->set_size(savedState ? savedWindowProps.sizeOptions.width : windowProps.sizeOptions.width,
+                    savedState ? savedWindowProps.sizeOptions.height : windowProps.sizeOptions.height,
+                    windowProps.sizeOptions.minWidth, windowProps.sizeOptions.minHeight,
+                    windowProps.sizeOptions.maxWidth, windowProps.sizeOptions.maxHeight,
                     windowProps.sizeOptions.resizable);
     nativeWindow->setEventHandler(&window::handlers::windowStateChange);
 
@@ -482,13 +544,14 @@ void __createWindow() {
     #endif
 
     #if !defined(_WIN32)
-    window::move(windowProps.x, windowProps.y);
+    window::move(savedState ? savedWindowProps.x : windowProps.x,
+                    savedState ? savedWindowProps.y : windowProps.y);
 
-    if(windowProps.center)
+    if(!savedState && windowProps.center)
         window::center(true);
     #endif
 
-    if(windowProps.maximize)
+    if((savedState && savedWindowProps.maximize) || windowProps.maximize)
         window::maximize();
 
     if(windowProps.hidden)
@@ -544,19 +607,6 @@ window::SizeOptions __jsonToSizeOptions(const json &input, bool useDefaultRect =
     if(helpers::hasField(input, "resizable"))
         sizeOptions.resizable = input["resizable"].get<bool>();
     return sizeOptions;
-}
-
-json __sizeOptionsToJson(const window::SizeOptions &opt) {
-    json output = {
-        {"width", opt.width},
-        {"height", opt.height},
-        {"minWidth", opt.minWidth},
-        {"minHeight", opt.minHeight},
-        {"maxWidth", opt.maxWidth},
-        {"maxHeight", opt.maxHeight},
-        {"resizable", opt.resizable}
-    };
-    return output;
 }
 
 json setTitle(const json &input) {
@@ -739,26 +789,10 @@ json setAlwaysOnTop(const json &input) {
 
 json getPosition(const json &input) {
     json output;
-
-    int x, y;
-    #if defined(__linux__) || defined(__FreeBSD__)
-    gdk_window_get_root_origin(gtk_widget_get_window(windowHandle), &x, &y);
-
-    #elif defined(__APPLE__)
-    CGRect winPos = __getWindowRect();
-    x = winPos.origin.x;
-    y = winPos.origin.y;
-
-    #elif defined(_WIN32)
-    RECT winPos;
-    GetWindowRect(windowHandle, &winPos);
-    x = winPos.left;
-    y = winPos.top;
-    #endif
-
     json posRes;
-    posRes["x"] = x;
-    posRes["y"] = y;
+    pair<int, int> pos = window::getPosition();
+    posRes["x"] = pos.first;
+    posRes["y"] = pos.second;
     output["returnValue"] = posRes;
     output["success"] = true;
     return output;
@@ -807,6 +841,9 @@ json init(const json &input) {
 
     if(helpers::hasField(input, "exitProcessOnClose"))
         windowProps.exitProcessOnClose = input["exitProcessOnClose"].get<bool>();
+
+    if(helpers::hasField(input, "useSavedState"))
+        windowProps.useSavedState = input["useSavedState"].get<bool>();
 
     __createWindow();
     output["success"] = true;

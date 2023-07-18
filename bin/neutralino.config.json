@@ -45,6 +45,7 @@
             "hidden": false,
             "resizable": true,
             "exitProcessOnClose": false,
+            "useSavedState": true,
             "port": 0
         },
         "browser": {

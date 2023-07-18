@@ -202,6 +202,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
         {"--window-maximizable", {"/modes/window/maximizable", "bool"}},
         {"--window-center", {"/modes/window/center", "bool"}},
         {"--window-exit-process-on-close", {"/modes/window/exitProcessOnClose", "bool"}},
+        {"--window-use-saved-state", {"/modes/window/useSavedState", "bool"}},
         {"--window-icon", {"/modes/window/icon", "string"}},
         // Chrome mode
         {"--chrome-width", {"/modes/chrome/width", "int"}},
