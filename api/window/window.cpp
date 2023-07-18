@@ -237,6 +237,7 @@ void maximize() {
     gtk_window_maximize(GTK_WINDOW(windowHandle));
     #elif defined(_WIN32)
     ShowWindow(windowHandle, SW_MAXIMIZE);
+    SetForegroundWindow(windowHandle);
     #elif defined(__APPLE__)
     ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
         "zoom:"_sel, NULL);
@@ -250,6 +251,7 @@ void unmaximize() {
     gtk_window_unmaximize(GTK_WINDOW(windowHandle));
     #elif defined(_WIN32)
     ShowWindow(windowHandle, SW_RESTORE);
+    SetForegroundWindow(windowHandle);
     #elif defined(__APPLE__)
     ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
         "zoom:"_sel, NULL);
@@ -278,6 +280,7 @@ void show() {
                 "setIsVisible:"_sel, true);
     #elif defined(_WIN32)
     ShowWindow(windowHandle, SW_SHOW);
+    SetForegroundWindow(windowHandle);
     if (__isFakeHidden())
 		__undoFakeHidden();
     #endif
