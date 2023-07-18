@@ -12,7 +12,7 @@ jobs:
         
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Install Libraries
       if: ${{ matrix.arch == 'x64' }}
@@ -71,7 +71,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Build
       run: python ./scripts/bz.py
@@ -91,7 +91,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Build
       run: |
