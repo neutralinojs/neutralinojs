@@ -17,7 +17,7 @@ jobs:
         
     steps:
     - name: Checkout 
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       
     - name: Configure
       if: ${{ matrix.arch == 'x64' }}
@@ -66,7 +66,7 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Checkout 
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Build
       run: python ./scripts/bz.py
       shell: cmd
@@ -80,7 +80,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Build
       run: |
         ./scripts/bz.py --target_arch x64
@@ -100,7 +100,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout 
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
         
     - name: Download Linux build artifacts 
       uses: actions/download-artifact@v2
