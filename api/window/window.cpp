@@ -147,7 +147,7 @@ bool __isFakeHidden() {
 void __undoFakeHidden() {
     int x = savedState ? savedWindowProps.x : windowProps.x;
     int y = savedState ? savedWindowProps.y : windowProps.y;
-    if(windowProps.center) {
+    if(!savedState && windowProps.center) {
         pair<int, int> pos = __getCenterPos(true);
         x = pos.first;
         y = pos.second;
@@ -524,7 +524,7 @@ void __createWindow() {
         savedWindowProps = __getSavedWindowProps();
         savedState = savedWindowProps.savedStatus == errors::NE_ST_OK;
     }
-    
+
     nativeWindow = new webview::webview(windowProps.enableInspector, nullptr);
     nativeWindow->set_title(windowProps.title);
     nativeWindow->set_size(savedState ? savedWindowProps.sizeOptions.width : windowProps.sizeOptions.width,
