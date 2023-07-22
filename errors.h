@@ -42,7 +42,6 @@ enum StatusCode {
     NE_FS_NOWATID,
     // window
     NE_CF_UNBLWCF,
-    NE_CF_CFNTLOD,
     // router
     NE_RT_INVTOKN,
     NE_RT_APIPRME,
