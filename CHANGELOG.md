@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v4.13.0
+
 ### Core: persistent window state
 
 Now the framework stores the primary window state in a temporary file (JSON formatted) and loads during the startup process.
