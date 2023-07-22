@@ -146,7 +146,7 @@ bool __isFakeHidden() {
 void __undoFakeHidden() {
     int x = windowProps.x;
     int y = windowProps.y;
-    if(windowProps.center) {
+    if(!window::isSavedStateLoaded() && windowProps.center) {
         pair<int, int> pos = __getCenterPos(true);
         x = pos.first;
         y = pos.second;
@@ -547,7 +547,7 @@ void __createWindow() {
     #if !defined(_WIN32)
     window::move(windowProps.x, windowProps.y);
 
-    if(windowProps.center)
+    if(!window::isSavedStateLoaded() && windowProps.center)
         window::center(true);
     #endif
 
