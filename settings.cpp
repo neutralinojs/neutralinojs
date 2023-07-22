@@ -17,6 +17,7 @@
 #include "api/debug/debug.h"
 #include "api/app/app.h"
 #include "api/custom/custom.h"
+#include "api/window/window.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -97,6 +98,7 @@ string getGlobalVars(){
     jsSnippet += "var NL_RESMODE='" + resources::getModeString() + "';";
     jsSnippet += "var NL_EXTENABLED=" + json(extensions::isInitialized()).dump() + ";";
     jsSnippet += "var NL_CMETHODS=" + json(custom::getMethods()).dump() + ";";
+    jsSnippet += "var NL_WSAVSTLOADED=" + json(window::isSavedStateLoaded()).dump() + ";";
 
     json jGlobalVariables = settings::getOptionForCurrentMode("globalVariables");
     if(!jGlobalVariables.is_null()) {

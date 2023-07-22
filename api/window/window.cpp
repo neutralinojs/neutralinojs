@@ -57,7 +57,6 @@ RECT savedRect;
 #endif
 
 window::WindowOptions windowProps;
-window::WindowOptions savedWindowProps;
 bool savedState = false;
 NEU_W_HANDLE windowHandle;
 
@@ -145,9 +144,9 @@ bool __isFakeHidden() {
 }
 
 void __undoFakeHidden() {
-    int x = savedState ? savedWindowProps.x : windowProps.x;
-    int y = savedState ? savedWindowProps.y : windowProps.y;
-    if(!savedState && windowProps.center) {
+    int x = windowProps.x;
+    int y = windowProps.y;
+    if(windowProps.center) {
         pair<int, int> pos = __getCenterPos(true);
         x = pos.first;
         y = pos.second;
@@ -186,31 +185,33 @@ void __saveWindowProps() {
     fs::writeFile(writerOptions);
 }
 
-window::WindowOptions __getSavedWindowProps() {
-    window::WindowOptions savedOptions;
+bool __loadSavedWindowProps() {
     fs::FileReaderResult readerResult = fs::readFile(settings::joinAppPath(NEU_WIN_CONFIG_FILE));
     if(readerResult.status != errors::NE_ST_OK) {
-        savedOptions.savedStatus = readerResult.status;
-        return savedOptions;
+        return false;
     }
 
     try {
         json options = json::parse(readerResult.data);
-        savedOptions.x = options["x"].get<int>();
-        savedOptions.y = options["y"].get<int>();
-        savedOptions.maximize = options["maximize"].get<bool>();
-        savedOptions.sizeOptions.width = options["width"].get<int>();
-        savedOptions.sizeOptions.height = options["height"].get<int>();
+        windowProps.x = options["x"].get<int>();
+        windowProps.y = options["y"].get<int>();
+        windowProps.maximize = options["maximize"].get<bool>();
+        windowProps.sizeOptions.width = options["width"].get<int>();
+        windowProps.sizeOptions.height = options["height"].get<int>();
     }
     catch(exception e) {
-        savedOptions.savedStatus = errors::NE_CF_UNBLWCF;
-        debug::log(debug::LogTypeError, errors::makeErrorMsg(savedOptions.savedStatus, string(NEU_WIN_CONFIG_FILE)));
+        debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_CF_UNBLWCF, string(NEU_WIN_CONFIG_FILE)));
+        return false;
     }
-    return savedOptions;
+    return true;
 }
 
 NEU_W_HANDLE getWindowHandle() {
     return windowHandle;
+}
+
+bool isSavedStateLoaded() {
+  return savedState;
 }
 
 void executeJavaScript(const string &js) {
@@ -520,15 +521,12 @@ void _close(int exitCode) {
 namespace controllers {
 
 void __createWindow() {
-    if(windowProps.useSavedState) {
-        savedWindowProps = __getSavedWindowProps();
-        savedState = savedWindowProps.savedStatus == errors::NE_ST_OK;
-    }
+    savedState = windowProps.useSavedState && __loadSavedWindowProps();
 
     nativeWindow = new webview::webview(windowProps.enableInspector, nullptr);
     nativeWindow->set_title(windowProps.title);
-    nativeWindow->set_size(savedState ? savedWindowProps.sizeOptions.width : windowProps.sizeOptions.width,
-                    savedState ? savedWindowProps.sizeOptions.height : windowProps.sizeOptions.height,
+    nativeWindow->set_size(windowProps.sizeOptions.width,
+                    windowProps.sizeOptions.height,
                     windowProps.sizeOptions.minWidth, windowProps.sizeOptions.minHeight,
                     windowProps.sizeOptions.maxWidth, windowProps.sizeOptions.maxHeight,
                     windowProps.sizeOptions.resizable);
@@ -547,14 +545,13 @@ void __createWindow() {
     #endif
 
     #if !defined(_WIN32)
-    window::move(savedState ? savedWindowProps.x : windowProps.x,
-                    savedState ? savedWindowProps.y : windowProps.y);
+    window::move(windowProps.x, windowProps.y);
 
-    if(!savedState && windowProps.center)
+    if(windowProps.center)
         window::center(true);
     #endif
 
-    if((savedState && savedWindowProps.maximize) || windowProps.maximize)
+    if(windowProps.maximize)
         window::maximize();
 
     if(windowProps.hidden)
