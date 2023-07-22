@@ -545,10 +545,10 @@ void __createWindow() {
     #endif
 
     #if !defined(_WIN32)
-    window::move(windowProps.x, windowProps.y);
-
     if(!window::isSavedStateLoaded() && windowProps.center)
         window::center(true);
+    else
+        window::move(windowProps.x, windowProps.y);
     #endif
 
     if(windowProps.maximize)
