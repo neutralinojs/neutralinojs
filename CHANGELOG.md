@@ -11,6 +11,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 Now the framework stores the primary window state in a temporary file (JSON formatted) and loads during the startup process.
 This feature stores and sets the window position (x, y coordinates), size (width and height), and maximized status. This feature is enabled by default in all platforms, but app developers can turn it off by using `false` for the `window.useSavedState` configuration attribute or `--window-use-saved-state` internal CLI argument.
 
+Also, the window state loading status is available via the `NL_WSAVSTLOADED` global variable. The framework sets `true` for this boolean variable if the window state was loaded from the saved configuration.
+
 ### Improvements/bugfixes
 - Fix several issues in the webview Windows code (i.e., Wait for the window close event, window style fixes, etc.).
 
