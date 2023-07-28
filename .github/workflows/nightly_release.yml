@@ -108,31 +108,31 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.COMMIT_TOKEN }}
         
     - name: Download Linux build artifacts 
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: linux_x64_binary
         path: ./bin
         
     - name: Download Linux build artifacts 
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: linux_arm64_binary
         path: ./bin
         
     - name: Download Linux build artifacts 
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: linux_armhf_binary
         path: ./bin
 
     - name: Download Windows build artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: win_binary
         path: ./bin
         
     - name: Download Darwin build artifacts 
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: darwin_binary
         path: ./bin
