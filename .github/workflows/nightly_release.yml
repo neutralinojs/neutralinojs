@@ -78,7 +78,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Build
       run: |
         ./scripts/bz.py --target_arch x64
