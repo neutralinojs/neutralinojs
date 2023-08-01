@@ -346,6 +346,13 @@ static NOTIFYICONDATA nid;
 static HWND hwnd;
 static HMENU hmenu = NULL;
 
+static std::wstring cstr2wstr(const char* str) {
+    int len = MultiByteToWideChar(CP_UTF8, 0, str, strlen(str), nullptr, 0);
+    std::wstring ret(len, '\0');
+    MultiByteToWideChar(CP_UTF8, 0, str, strlen(str), (LPWSTR)ret.data(), len);
+    return ret;
+}
+
 static HMENU _tray_menu(struct tray_menu *m, UINT *id) {
   HMENU hmenu = CreatePopupMenu();
   for (; m != NULL && m->text != NULL; m++, (*id)++) {
@@ -369,7 +376,8 @@ static HMENU _tray_menu(struct tray_menu *m, UINT *id) {
         item.fState |= MFS_CHECKED;
       }
       item.wID = *id;
-      item.dwTypeData = (LPWSTR)m->text;
+      std::wstring wtext = cstr2wstr(m->text);
+      item.dwTypeData = (LPWSTR)wtext.data();
       item.dwItemData = (ULONG_PTR)m;
 
       InsertMenuItem(hmenu, *id, TRUE, &item);
