@@ -55,7 +55,7 @@ jobs:
           ./scripts/bz.py
       
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: linux_${{ matrix.arch }}_binary
         path: bin/neutralino-linux_${{ matrix.arch }}
@@ -69,7 +69,7 @@ jobs:
       run: python ./scripts/bz.py
       shell: cmd
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: win_binary
         path: bin/neutralino-win_x64.exe
@@ -78,14 +78,14 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Build
       run: |
         ./scripts/bz.py --target_arch x64
         ./scripts/bz.py --target_arch arm64
         lipo bin/neutralino-mac_x64 bin/neutralino-mac_arm64 -create -output bin/neutralino-mac_universal
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: darwin_binary
         path: |
@@ -108,31 +108,31 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.COMMIT_TOKEN }}
         
     - name: Download Linux build artifacts 
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: linux_x64_binary
         path: ./bin
         
     - name: Download Linux build artifacts 
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: linux_arm64_binary
         path: ./bin
         
     - name: Download Linux build artifacts 
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: linux_armhf_binary
         path: ./bin
 
     - name: Download Windows build artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: win_binary
         path: ./bin
         
     - name: Download Darwin build artifacts 
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v3
       with:
         name: darwin_binary
         path: ./bin
