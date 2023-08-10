@@ -6,6 +6,12 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### Improvements/bugfixes
+- Fix Unicode charactor issues in the tray menu on Windows.
+
+### DevOps
+- Update external GitHub Action packages to their latest versions.
+
 ## v4.13.0
 
 ### Core: persistent window state
