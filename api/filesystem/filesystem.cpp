@@ -43,7 +43,7 @@ using json = nlohmann::json;
 map<int, ifstream*> openedFiles;
 mutex openedFilesLock;
 efsw::FileWatcher* fileWatcher;
-map<efsw::WatchID, efsw::FileWatchListener*> watchListeners;
+map<efsw::WatchID, pair<efsw::FileWatchListener*, string>> watchListeners;
 mutex watcherLock;
 
 #define NEU_DEFAULT_STREAM_BUF_SIZE 256
@@ -268,7 +268,7 @@ long createWatcher(const string &path) {
     }
     __WatcherListener* listener = new __WatcherListener();
     efsw::WatchID watcherId = fileWatcher->addWatch(path, listener, true);
-    watchListeners[watcherId] = listener;
+    watchListeners[watcherId] = make_pair(listener, path);
     fileWatcher->watch();
     return (long)watcherId;
 }
@@ -279,7 +279,7 @@ bool removeWatcher(long watcherId) {
         return false;
     }
     fileWatcher->removeWatch(watcherId);
-    delete watchListeners[watcherId];
+    delete watchListeners[watcherId].first;
     watchListeners.erase(watcherId);
     return true;
 }
@@ -756,6 +756,19 @@ json removeWatcher(const json &input) {
         output["returnValue"] = watcherId;
         output["success"] = true;
     }
+    return output;
+}
+
+json getWatchers(const json &input) {
+    json output;
+    output["returnValue"] = json::array();
+    for(const auto &[watcherId, info]: watchListeners) {
+        output["returnValue"].push_back({
+            {"id", watcherId},
+            {"path", info.second}
+        });
+    }
+    output["success"] = true;
     return output;
 }
 

@@ -261,6 +261,9 @@ var Neutralino = (function (exports) {
     function removeWatcher(id) {
         return sendMessage('filesystem.removeWatcher', { id });
     }
+    function getWatchers() {
+        return sendMessage('filesystem.getWatchers');
+    }
     function updateOpenedFile(id, event, data) {
         return sendMessage('filesystem.updateOpenedFile', { id, event, data });
     }
@@ -304,6 +307,7 @@ var Neutralino = (function (exports) {
         openFile: openFile,
         createWatcher: createWatcher,
         removeWatcher: removeWatcher,
+        getWatchers: getWatchers,
         updateOpenedFile: updateOpenedFile,
         getOpenedFileInfo: getOpenedFileInfo,
         removeFile: removeFile,
@@ -549,6 +553,9 @@ var Neutralino = (function (exports) {
                 domElementOrId : document.getElementById(domElementOrId);
             let initialClientX = 0;
             let initialClientY = 0;
+            let absDragMovementDistance = 0;
+            let isPointerCaptured = false;
+            let lastMoveTimestamp = performance.now();
             if (!draggableRegion) {
                 return reject({
                     code: 'NE_WD_DOMNOTF',
@@ -566,7 +573,27 @@ var Neutralino = (function (exports) {
             draggableRegions.set(draggableRegion, { pointerdown: startPointerCapturing, pointerup: endPointerCapturing });
             function onPointerMove(evt) {
                 return __awaiter(this, void 0, void 0, function* () {
-                    yield move(evt.screenX - initialClientX, evt.screenY - initialClientY);
+                    if (isPointerCaptured) {
+                        const currentMilliseconds = performance.now();
+                        const timeTillLastMove = currentMilliseconds - lastMoveTimestamp;
+                        // Limit move calls to 1 per every 5ms - TODO: introduce constant instead of magic number?
+                        if (timeTillLastMove < 5) {
+                            // Do not execute move more often than 1x every 5ms or performance will drop 
+                            return;
+                        }
+                        // Store current time minus the offset
+                        lastMoveTimestamp = currentMilliseconds - (timeTillLastMove - 5);
+                        yield move(evt.screenX - initialClientX, evt.screenY - initialClientY);
+                        return;
+                    }
+                    // Add absolute drag distance 
+                    absDragMovementDistance = Math.sqrt(evt.movementX * evt.movementX + evt.movementY * evt.movementY);
+                    // Only start pointer capturing when the user dragged more than a certain amount of distance 
+                    // This ensures that the user can also click on the dragable area, e.g. if the area is menu / navbar
+                    if (absDragMovementDistance >= 10) { // TODO: introduce constant instead of magic number? 
+                        isPointerCaptured = true;
+                        draggableRegion.setPointerCapture(evt.pointerId);
+                    }
                 });
             }
             function startPointerCapturing(evt) {
@@ -575,7 +602,6 @@ var Neutralino = (function (exports) {
                 initialClientX = evt.clientX;
                 initialClientY = evt.clientY;
                 draggableRegion.addEventListener('pointermove', onPointerMove);
-                draggableRegion.setPointerCapture(evt.pointerId);
             }
             function endPointerCapturing(evt) {
                 draggableRegion.removeEventListener('pointermove', onPointerMove);
@@ -804,7 +830,7 @@ var Neutralino = (function (exports) {
         getMethods: getMethods
     };
 
-    var version = "3.10.0";
+    var version = "3.11.0";
 
     let initialized = false;
     function init(options = {}) {
@@ -836,7 +862,7 @@ var Neutralino = (function (exports) {
             }
         }
         window.NL_CVERSION = version;
-        window.NL_CCOMMIT = '94289a21c67536854270fac0424a5899c3334a5a'; // only the build server will update this
+        window.NL_CCOMMIT = '958e6389700cd8b81c26d38c41d619db60bbf119'; // only the build server will update this
         initialized = true;
     }
 

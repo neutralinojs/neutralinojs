@@ -547,4 +547,23 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             assert.equal(runner.getOutput(), 'NE_FS_NOWATID');
         });
     });
+
+
+
+    describe('filesystem.getWatchers', () => {
+        it('returns current watchers', async () => {
+            runner.run(`
+                let watcherId = await Neutralino.filesystem.createWatcher(NL_PATH);
+                let watchers = await Neutralino.filesystem.getWatchers();
+                await Neutralino.filesystem.removeWatcher(watcherId);
+                await __close(JSON.stringify(watchers));
+            `);
+            let watchers = JSON.parse(runner.getOutput());
+            assert.ok(typeof watchers == 'object');
+            assert.equal(watchers.length, 1);
+            assert.ok(typeof watchers[0] == 'object');
+            assert.ok(typeof watchers[0].id == 'number');
+            assert.ok(typeof watchers[0].path == 'string');
+        });
+    });
 });
