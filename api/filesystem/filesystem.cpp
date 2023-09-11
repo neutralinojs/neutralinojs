@@ -90,6 +90,7 @@ void __readStreamBlock(const OpenedFileEvent &evt, ifstream *reader, vector<char
     buffer.clear();
     buffer.resize(size);
     reader->read(buffer.data(), size);
+    buffer.resize(reader->gcount());
     string result(buffer.begin(), buffer.end());
 
     __dispatchOpenedFileEvt(evt.id, "data", result);
