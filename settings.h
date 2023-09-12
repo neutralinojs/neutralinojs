@@ -36,12 +36,14 @@ struct ConfigOverride {
     string convertTo;
 };
 
+enum AppMode { AppModeWindow, AppModeBrowser, AppModeCloud, AppModeChrome };
+
 json getConfig();
 string getGlobalVars();
 void setGlobalArgs(const json &args);
 string joinAppPath(const string &filename);
 string getAppPath();
-string getMode();
+settings::AppMode getMode();
 void setPort(int port);
 void applyConfigOverride(const settings::CliArg &arg);
 json getOptionForCurrentMode(const string &key);

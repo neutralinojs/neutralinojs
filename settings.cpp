@@ -161,8 +161,13 @@ void setGlobalArgs(const json &args) {
     }
 }
 
-string getMode() {
-    return options["defaultMode"].get<string>();
+settings::AppMode getMode() {
+    string mode = options["defaultMode"].get<string>();
+    if(mode == "window") return settings::AppModeWindow;
+    if(mode == "browser") return settings::AppModeBrowser;
+    if(mode == "cloud") return settings::AppModeCloud;
+    if(mode == "chrome") return settings::AppModeChrome;
+    return settings::AppModeWindow;
 }
 
 void setPort(int port) {
@@ -171,6 +176,7 @@ void setPort(int port) {
     options["/modes/window/port"_json_pointer] = port;
     options["/modes/browser/port"_json_pointer] = port;
     options["/modes/cloud/port"_json_pointer] = port;
+    options["/modes/chrome/port"_json_pointer] = port;
 }
 
 void applyConfigOverride(const settings::CliArg &arg) {
@@ -261,7 +267,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
 
 // Priority: mode -> root -> null
 json getOptionForCurrentMode(const string &key) {
-    string mode = settings::getMode();
+    string mode = options["defaultMode"].get<string>();
     json value = options["modes"][mode][key];
     if(value.is_null()) {
         value = options[key];

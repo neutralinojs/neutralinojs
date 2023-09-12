@@ -103,7 +103,7 @@ string init() {
     server->set_reuse_addr(true);
 
     string hostAddress = "127.0.0.1";
-    if(settings::getMode() == "cloud") {
+    if(settings::getMode() == settings::AppModeCloud) {
         hostAddress = "0.0.0.0";
     }
     websocketpp::lib::asio::ip::tcp::endpoint
@@ -229,9 +229,9 @@ void handleDisconnect(websocketpp::connection_hdl handler) {
         events::dispatch("extClientDisconnect", extensionId);
     }
     else {
-        string mode = settings::getMode();
+        settings::AppMode mode = settings::getMode();
         appConnections.erase(handler);
-        if(mode == "browser" || mode == "chrome") {
+        if(mode == settings::AppModeBrowser || mode == settings::AppModeChrome) {
             __exitProcessIfIdle();
         }
         events::dispatch("appClientDisconnect", appConnections.size());

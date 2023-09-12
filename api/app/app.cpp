@@ -29,7 +29,7 @@ void exit(int code) {
     if(neuserver::isInitialized()) {
         neuserver::stop();
     }
-    if(settings::getMode() == "window") {
+    if(settings::getMode() == settings::AppModeWindow) {
         if(os::isTrayInitialized()) {
             os::cleanupTray();
         }

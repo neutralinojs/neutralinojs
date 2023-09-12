@@ -151,6 +151,12 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
 
     if(methodMap.find(nativeMethodId) != methodMap.end()) {
         try {
+            if(settings::getMode() != settings::AppModeWindow
+                && regex_match(nativeMethodId, regex("^window.*"))) {
+                response.data["success"] = true;
+                response.data["message"] = "Discarded. "+ nativeMethodId + " works within the window mode only";
+                return response;
+            }
             router::NativeMethod nativeMethod = methodMap[nativeMethodId];
             #if defined(__linux__) || defined(_WIN32) || defined(__FreeBSD__)
             json apiOutput;

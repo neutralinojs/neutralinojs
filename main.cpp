@@ -41,28 +41,31 @@ void __wait() {
 
 void __startApp() {
     json options = settings::getConfig();
-    string mode = settings::getMode();
-    if(mode == "browser") {
-        os::open(navigationUrl);
-        __wait();
-    }
-    else if(mode == "window") {
-        json windowOptions = options["modes"]["window"];
-        windowOptions["url"] = navigationUrl;
-        window::controllers::init(windowOptions);
-    }
-    else if(mode == "cloud") {
-        if(neuserver::isInitialized()) {
-            debug::log(debug::LogTypeInfo, options["applicationId"].get<string>() +
-                     " is available at " + navigationUrl);
-        }
-        __wait();
-    }
-    else if(mode == "chrome") {
-        json chromeOptions = options["modes"]["chrome"];
-        chromeOptions["url"] = navigationUrl;
-        chrome::init(chromeOptions);
-        __wait();
+    switch(settings::getMode()) {
+        case settings::AppModeBrowser:
+            os::open(navigationUrl);
+            __wait();
+            break;
+        case settings::AppModeWindow: {
+            json windowOptions = options["modes"]["window"];
+            windowOptions["url"] = navigationUrl;
+            window::controllers::init(windowOptions);
+            }
+            break;
+        case settings::AppModeCloud:
+            if(neuserver::isInitialized()) {
+                debug::log(debug::LogTypeInfo, options["applicationId"].get<string>() +
+                        " is available at " + navigationUrl);
+            }
+            __wait();
+            break;
+        case settings::AppModeChrome: {
+            json chromeOptions = options["modes"]["chrome"];
+            chromeOptions["url"] = navigationUrl;
+            chrome::init(chromeOptions);
+            __wait();
+            }
+            break;
     }
 }
 
