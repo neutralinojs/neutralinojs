@@ -6,8 +6,12 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### Filesystem API
+- Introduce the `filesystem.getWatchers` function to get all created watchers. 
+
 ### Improvements/bugfixes
 - Fix Unicode charactor issues in the tray menu on Windows.
+- Avoid including null bytes to file reader events initiated by the `filesystem.openFile` function.
 
 ### DevOps
 - Update external GitHub Action packages to their latest versions.
