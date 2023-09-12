@@ -12,6 +12,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### Improvements/bugfixes
 - Fix Unicode charactor issues in the tray menu on Windows.
 - Avoid including null bytes to file reader events initiated by the `filesystem.openFile` function.
+- Discard `window` method executions on non-window modes.
 
 ### DevOps
 - Update external GitHub Action packages to their latest versions.
