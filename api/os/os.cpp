@@ -22,7 +22,6 @@
 extern char **environ;
 
 #define CONVSTR(S) S
-#define _T(S) S
 
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
@@ -96,7 +95,7 @@ void open(const string &url) {
     #endif
 }
 
-os::CommandResult execCommand(string command, const string &input, bool background) {
+os::CommandResult execCommand(string command, const string &input, bool background, const string &cwd) {
     #if defined(_WIN32)
     command = "cmd.exe /c \"" + command + "\"";
     #endif
@@ -106,7 +105,7 @@ os::CommandResult execCommand(string command, const string &input, bool backgrou
 
     if(!background)
         childProcess = new TinyProcessLib::Process(
-            CONVSTR(command), _T(""),
+            CONVSTR(command), CONVSTR(cwd),
             [&](const char *bytes, size_t n) {
                 commandResult.stdOut += string(bytes, n);
             },
@@ -115,7 +114,7 @@ os::CommandResult execCommand(string command, const string &input, bool backgrou
             }, !input.empty()
         );
     else {
-        childProcess = new TinyProcessLib::Process(CONVSTR(command), _T(""), nullptr, nullptr);
+        childProcess = new TinyProcessLib::Process(CONVSTR(command), CONVSTR(cwd), nullptr, nullptr);
     }
     commandResult.pid = childProcess->get_id();
 
@@ -130,7 +129,7 @@ os::CommandResult execCommand(string command, const string &input, bool backgrou
     return commandResult;
 }
 
-pair<int, int> spawnProcess(string command) {
+pair<int, int> spawnProcess(string command, const string &cwd) {
     #if defined(_WIN32)
     command = "cmd.exe /c \"" + command + "\"";
     #endif
@@ -140,7 +139,7 @@ pair<int, int> spawnProcess(string command) {
     int virtualPid = spawnedProcesses.size();
 
     childProcess = new TinyProcessLib::Process(
-        CONVSTR(command), _T(""),
+        CONVSTR(command), CONVSTR(cwd),
         [=](const char *bytes, size_t n) {
             __dispatchSpawnedProcessEvt(virtualPid, "stdOut", string(bytes, n));
         },
@@ -241,13 +240,17 @@ json execCommand(const json &input) {
     string command = input["command"].get<string>();
     bool background = false;
     string stdIn = "";
+    string cwd = "";
     if(helpers::hasField(input, "stdIn")) {
         stdIn = input["stdIn"].get<string>();
     }
     if(helpers::hasField(input, "background")) {
         background = input["background"].get<bool>();
     }
-    os::CommandResult commandResult = os::execCommand(command, stdIn, background);
+    if(helpers::hasField(input, "cwd")) {
+        cwd = input["cwd"].get<string>();
+    }
+    os::CommandResult commandResult = os::execCommand(command, stdIn, background, cwd);
 
     json retVal;
     retVal["pid"] = commandResult.pid;
@@ -267,8 +270,12 @@ json spawnProcess(const json &input) {
         return output;
     }
     string command = input["command"].get<string>();
+    string cwd = "";
+    if(helpers::hasField(input, "cwd")) {
+        cwd = input["cwd"].get<string>();
+    }
 
-    auto spawnedData = os::spawnProcess(command);
+    auto spawnedData = os::spawnProcess(command, cwd);
 
     json process;
     process["id"] = spawnedData.first;

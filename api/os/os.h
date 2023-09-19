@@ -26,8 +26,8 @@ struct SpawnedProcessEvent {
 bool isTrayInitialized();
 void cleanupTray();
 void open(const string &url);
-os::CommandResult execCommand(string command, const string &input = "", bool background = false);
-pair<int, int> spawnProcess(string command);
+os::CommandResult execCommand(string command, const string &input = "", bool background = false, const string &cwd = "");
+pair<int, int> spawnProcess(string command, const string &cwd = "");
 bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt);
 string getPath(const string &name);
 string getEnv(const string &key);

@@ -333,8 +333,8 @@ var MessageBoxChoice;
 function execCommand(command, options) {
     return sendMessage('os.execCommand', Object.assign({ command }, options));
 }
-function spawnProcess(command) {
-    return sendMessage('os.spawnProcess', { command });
+function spawnProcess(command, cwd) {
+    return sendMessage('os.spawnProcess', { command, cwd });
 }
 function updateSpawnedProcess(id, event, data) {
     return sendMessage('os.updateSpawnedProcess', { id, event, data });
@@ -859,7 +859,7 @@ function init(options = {}) {
         }
     }
     window.NL_CVERSION = version;
-    window.NL_CCOMMIT = '958e6389700cd8b81c26d38c41d619db60bbf119'; // only the build server will update this
+    window.NL_CCOMMIT = 'c337f4d17ac9d1147797a0159f26b0a09704b233'; // only the build server will update this
     initialized = true;
 }
 
