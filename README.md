@@ -71,7 +71,7 @@ If you like to support our work, you can donate to Neutralinojs via [Patreon](ht
 
 - Neutralinojs core: MIT. Copyright (c) 2021 Neutralinojs and contributors.
 - C++ websocket client/server library: BSD-3-Clause from [zaphoyd/websocketpp](https://github.com/zaphoyd/websocketpp). Copyright (c) 2014, Peter Thorson. All rights reserved.
-- JSON parser library: MIT from [nlohmann/json](https://github.com/nlohmann/json). Copyright (c) 2013-2021 Niels Lohmann.
+- JSON parser library: MIT from [nlohmann/json](https://github.com/nlohmann/json). Copyright (c) 2013-2022 Niels Lohmann.
 - Cross-platform webview library: MIT from [webview/webview](https://github.com/webview/webview). Copyright (c) 2017 Serge Zaitsev. 
 - Cross-platform tray library: MIT from [zserge/tray](https://github.com/zserge/tray). Copyright (c) 2017 Serge Zaitsev. 
 - Cross-platform GUI dialogs library: WTFPL from [samhocevar/portable-file-dialogs](https://github.com/samhocevar/portable-file-dialogs). Copyright (c) 2018—2020 Sam Hocevar
