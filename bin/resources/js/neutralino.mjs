@@ -468,6 +468,9 @@ function killProcess() {
 function restartProcess(options) {
     return new Promise((resolve) => __awaiter(this, void 0, void 0, function* () {
         let command = window.NL_ARGS.reduce((acc, arg) => {
+            if (arg.includes(' ')) {
+                arg = `"${arg}"`;
+            }
             acc += ' ' + arg;
             return acc;
         }, '');
@@ -827,7 +830,7 @@ var custom = /*#__PURE__*/Object.freeze({
     getMethods: getMethods
 });
 
-var version = "3.11.0";
+var version = "3.12.0";
 
 let initialized = false;
 function init(options = {}) {
@@ -859,7 +862,7 @@ function init(options = {}) {
         }
     }
     window.NL_CVERSION = version;
-    window.NL_CCOMMIT = 'c337f4d17ac9d1147797a0159f26b0a09704b233'; // only the build server will update this
+    window.NL_CCOMMIT = '63b6cd9fbe309e8631148eba1c55d7a33452fa4e'; // only the build server will update this
     initialized = true;
 }
 
