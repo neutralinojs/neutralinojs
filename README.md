@@ -13,7 +13,7 @@
 
 Neutralinojs is a lightweight and portable desktop application development framework. It lets you develop lightweight cross-platform desktop applications using JavaScript, HTML and CSS. Apps built with Neutralinojs can run on Linux, macOS, Windows, Web, and Chrome. Also, you can extend Neutralinojs with any programming language (via extensions IPC) and use Neutralinojs as a part of any source file (via child processes IPC). 
 
-- [Neutralinojs vs. Electron, NW.JS, Tauri, NodeGui, Flutter vs. .Net MAUI vs. Wails](https://github.com/Elanis/web-to-desktop-framework-comparison)
+- [Neutralinojs vs. Electron, NW.JS, Tauri, NodeGui, Flutter, .Net MAUI, Wails](https://github.com/Elanis/web-to-desktop-framework-comparison)
 - [Neutralinojs vs. Electron vs. NW.js (2018)](https://github.com/neutralinojs/evaluation)
 - [Roadmap 2023](https://github.com/neutralinojs/roadmap#roadmap-2023)
 - [Release notes](https://neutralino.js.org/docs/release-notes/framework)
