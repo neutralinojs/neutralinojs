@@ -2,6 +2,7 @@
 #include <mutex>
 #include <iostream>
 #include <fstream>
+#include <regex>
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 #include <unistd.h>
@@ -93,7 +94,12 @@ void __readStreamBlock(const OpenedFileEvent &evt, ifstream *reader, vector<char
     buffer.resize(reader->gcount());
     string result(buffer.begin(), buffer.end());
 
-    __dispatchOpenedFileEvt(evt.id, "data", result);
+    if(regex_match(evt.type, regex(".*Binary$"))) {
+        __dispatchOpenedFileEvt(evt.id, "dataBinary", base64::to_base64(result));
+    }
+    else {
+        __dispatchOpenedFileEvt(evt.id, "data", result);
+    }
 }
 
 void __readStream(const OpenedFileEvent &evt, ifstream *reader) {
@@ -106,7 +112,7 @@ void __readStream(const OpenedFileEvent &evt, ifstream *reader) {
     while(reader->peek() != char_traits<char>::eof()) {
         __readStreamBlock(evt, reader, buffer);
 
-        if(evt.type == "read") {
+        if(evt.type == "read" || evt.type == "readBinary") {
             break;
         }
     }
@@ -239,7 +245,8 @@ bool updateOpenedFile(const OpenedFileEvent &evt) {
         delete reader;
         openedFiles.erase(evt.id);
     }
-    else if(evt.type == "read" || evt.type == "readAll") {
+    else if(evt.type == "read" || evt.type == "readAll"
+            || evt.type == "readBinary" || evt.type == "readAllBinary") {
         __readStream(evt, reader);
     }
     else if(evt.type == "seek") {
@@ -554,7 +561,8 @@ json updateOpenedFile(const json &input) {
     fileEvt.type = input["event"].get<string>();
 
     if(helpers::hasField(input, "data")) {
-        if(fileEvt.type == "read" || fileEvt.type == "readAll") {
+        if(fileEvt.type == "read" || fileEvt.type == "readAll"
+            || fileEvt.type == "readBinary" || fileEvt.type == "readAllBinary") {
             fileEvt.size = input["data"].get<long long>();
         }
         else if(fileEvt.type == "seek") {

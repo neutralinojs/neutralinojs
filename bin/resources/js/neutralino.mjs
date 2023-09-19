@@ -72,6 +72,16 @@ function dispatch(event, data) {
     });
 }
 
+function base64ToBytesArray(data) {
+    let binaryData = window.atob(data);
+    let len = binaryData.length;
+    let bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+        bytes[i] = binaryData.charCodeAt(i);
+    }
+    return bytes.buffer;
+}
+
 let ws;
 let nativeCalls = {};
 let offlineMessageQueue = [];
@@ -136,7 +146,7 @@ function registerLibraryEvents() {
 }
 function registerSocketEvents() {
     ws.addEventListener('message', (event) => {
-        var _a, _b;
+        var _a, _b, _c;
         const message = JSON.parse(event.data);
         if (message.id && message.id in nativeCalls) {
             // Native call response
@@ -158,6 +168,9 @@ function registerSocketEvents() {
         }
         else if (message.event) {
             // Event from process
+            if (message.event == 'openedFile' && ((_c = message === null || message === void 0 ? void 0 : message.data) === null || _c === void 0 ? void 0 : _c.action) == 'dataBinary') {
+                message.data.data = base64ToBytesArray(message.data.data);
+            }
             dispatch(message.event, message.data);
         }
     });
@@ -236,13 +249,7 @@ function readBinaryFile(path, options) {
     return new Promise((resolve, reject) => {
         sendMessage('filesystem.readBinaryFile', Object.assign({ path }, options))
             .then((base64Data) => {
-            let binaryData = window.atob(base64Data);
-            let len = binaryData.length;
-            let bytes = new Uint8Array(len);
-            for (let i = 0; i < len; i++) {
-                bytes[i] = binaryData.charCodeAt(i);
-            }
-            resolve(bytes.buffer);
+            resolve(base64ToBytesArray(base64Data));
         })
             .catch((error) => {
             reject(error);
@@ -862,7 +869,7 @@ function init(options = {}) {
         }
     }
     window.NL_CVERSION = version;
-    window.NL_CCOMMIT = '63b6cd9fbe309e8631148eba1c55d7a33452fa4e'; // only the build server will update this
+    window.NL_CCOMMIT = '57919080e8f792b034dba5ca677e19420d7b0201'; // only the build server will update this
     initialized = true;
 }
 
