@@ -7,7 +7,11 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ## Unreleased
 
 ### Filesystem API
-- Introduce the `filesystem.getWatchers` function to get all created watchers. 
+- Introduce the `filesystem.getWatchers` function to get all created watchers.
+- Add binary file reading support for the `filesystem.updateOpenedFile(id, action, data)` function. This function implements `readBinary` and `readAllBinary` actions and `dataBinary` output action in the `openedFile` global event.
+
+### OS API
+- Add a way to set current working directory for process creation functions: `os.execCommand(command, options)` now supports `cwd` via the options object and `os.spawnProcess(command, cwd)` accepts currently working directory via the second string parameter.
 
 ### Improvements/bugfixes
 - Fix Unicode charactor issues in the tray menu on Windows.
