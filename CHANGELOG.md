@@ -21,6 +21,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ### DevOps
 - Update external GitHub Action packages to their latest versions.
+- Fix issues of the failing test cases
 
 ## v4.13.0
 
