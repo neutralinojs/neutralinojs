@@ -67,15 +67,15 @@ describe('os.spec: os namespace tests', () => {
 
         it('sends stdOut with the stdOut action via the spawnProcess event', async () => {
             runner.run(`
-                let proc = await Neutralino.os.spawnProcess('node --version');
+                let proc = await Neutralino
+                            .os.spawnProcess('node -e "setTimeout(() => console.log(\\\\"done\\\\"), 1000);"');
                 Neutralino.events.on('spawnedProcess', async (evt) => {
                     if(evt.detail.id == proc.id && evt.detail.action == 'stdOut') {
-                        await __close(evt.detail.data);
+                        await __close(evt.detail.data.trim());
                     }
                 });
             `);
-            let output = runner.getOutput();
-            assert.ok(output.charAt(0) == 'v');
+            assert.equal(runner.getOutput(), 'done');
         });
 
         it('sends stdErr with the stdErr action via the spawnProcess event', async () => {
