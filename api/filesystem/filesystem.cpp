@@ -274,6 +274,13 @@ long createWatcher(const string &path) {
     if(fileWatcher == nullptr) {
         fileWatcher = new efsw::FileWatcher();
     }
+
+    for(const auto &[wid, info]: watchListeners) {
+        if(info.second == path) {
+            return (long)wid;
+        }
+    }
+
     __WatcherListener* listener = new __WatcherListener();
     efsw::WatchID watcherId = fileWatcher->addWatch(path, listener, true);
     watchListeners[watcherId] = make_pair(listener, path);
