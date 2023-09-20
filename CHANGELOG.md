@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v4.14.0
+
 ### Filesystem API
 - Introduce the `filesystem.getWatchers` function to get all created watchers.
 - Add binary file reading support for the `filesystem.updateOpenedFile(id, action, data)` function. This function implements `readBinary` and `readAllBinary` actions and `dataBinary` output action in the `openedFile` global event.
