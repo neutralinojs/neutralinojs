@@ -11,6 +11,7 @@ describe('os.spec: os namespace tests', () => {
                 await __close(JSON.stringify(info));
             `);
             let info = JSON.parse(runner.getOutput());
+            console.log(JSON.stringify(info));
             assert.ok(typeof info == 'object');
             assert.ok(typeof info.pid == 'number');
             assert.ok(typeof info.stdErr == 'string');
