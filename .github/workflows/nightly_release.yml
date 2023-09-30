@@ -61,7 +61,7 @@ jobs:
         path: bin/neutralino-linux_${{ matrix.arch }}
 
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2019
     steps:
     - name: Checkout 
       uses: actions/checkout@v3
@@ -75,7 +75,7 @@ jobs:
         path: bin/neutralino-win_x64.exe
 
   build-darwin:
-    runs-on: macos-latest
+    runs-on: macos-11
     steps:
     - name: Checkout
       uses: actions/checkout@v3
