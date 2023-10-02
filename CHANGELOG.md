@@ -8,6 +8,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ### DevOps
 - Use Windows 2019 server and macOS 11 (Big Sur) to compile framework release artifacts.
+- Set minimum supported macOS version via `MACOSX_DEPLOYMENT_TARGET=10.7`
 
 ## v4.14.0
 
