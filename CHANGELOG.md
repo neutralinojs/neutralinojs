@@ -6,6 +6,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### DevOps
+- Use Windows 2019 server and macOS 11 (Big Sur) to compile framework release artifacts.
+
 ## v4.14.0
 
 ### Filesystem API
