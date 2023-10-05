@@ -21,12 +21,20 @@
 
 using namespace std;
 using json = nlohmann::json;
+class errors {
+public:
+    static string makeErrorMsg(const string& errorCode, const string& errorMessage);
+    static string NE_CF_UNBLDCF(const string& errorCode, const string& errorMessage);
+};
+
+
 
 namespace settings {
 
 json options;
 json globalArgs;
 string appPath;
+
 
 vector<settings::ConfigOverride> configOverrides;
 

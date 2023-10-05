@@ -8,7 +8,7 @@
 
 #include "lib/json/json.hpp"
 #include "lib/easylogging/easylogging++.h"
-#include "lib/filedialogs/portable-file-dialogs.h"
+#include "portable-file-dialogs.h"
 #include "auth/permission.h"
 #include "auth/authbasic.h"
 #include "server/neuserver.h"
@@ -35,7 +35,7 @@ string navigationUrl = "";
 
 void __wait() {
     while(true) {
-        this_thread::sleep_for(20000ms);
+        void wait::sleep_for(20000ms);
     }
 }
 
