@@ -31,6 +31,13 @@ Get started with the neu CLI.
  neu build
 ```
 
+You can use your favorite frontend frameworks:
+
+```bash
+# Creating a new React-based app
+neu create hello-react -t codezri/neutralinojs-react
+```
+
 Start building apps: [neutralino.js.org/docs](https://neutralino.js.org/docs)
  
 ## Why Neutralinojs? 
