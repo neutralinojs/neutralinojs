@@ -27,6 +27,7 @@ namespace settings {
 json options;
 json globalArgs;
 string appPath;
+string configFile = NEU_APP_CONFIG_FILE;
 
 vector<settings::ConfigOverride> configOverrides;
 
@@ -38,12 +39,16 @@ string getAppPath() {
     return appPath;
 }
 
+string getConfigFile() {
+    return configFile;
+}
+
 json getConfig() {
     if(!options.is_null())
         return options;
     json config;
     try {
-        fs::FileReaderResult fileReaderResult = resources::getFile(NEU_APP_CONFIG_FILE);
+        fs::FileReaderResult fileReaderResult = resources::getFile(configFile);
         config = json::parse(fileReaderResult.data);
         options = config;
 
@@ -75,7 +80,7 @@ json getConfig() {
         }
     }
     catch(exception e) {
-        debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_CF_UNBLDCF, string(NEU_APP_CONFIG_FILE)));
+        debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_CF_UNBLDCF, string(configFile)));
     }
     return options;
 }
@@ -99,6 +104,7 @@ string getGlobalVars(){
     jsSnippet += "var NL_EXTENABLED=" + json(extensions::isInitialized()).dump() + ";";
     jsSnippet += "var NL_CMETHODS=" + json(custom::getMethods()).dump() + ";";
     jsSnippet += "var NL_WSAVSTLOADED=" + json(window::isSavedStateLoaded()).dump() + ";";
+    jsSnippet += "var NL_CONFIGFILE='" + settings::getConfigFile() + "';";
 
     json jGlobalVariables = settings::getOptionForCurrentMode("globalVariables");
     if(!jGlobalVariables.is_null()) {
@@ -144,6 +150,12 @@ void setGlobalArgs(const json &args) {
         // Set app path context
         if(cliArg.key == "--path") {
             appPath = cliArg.value;
+            continue;
+        }
+
+        // Set app config file name
+        if(cliArg.key == "--config-file") {
+            configFile = cliArg.value;
             continue;
         }
 

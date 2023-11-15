@@ -129,7 +129,7 @@ void __initFramework(const json &args) {
 
     if(options.is_null()) {
         pfd::message("Unable to load app configuration",
-                        "neutralino.config.json file is missing or corrupted.",
+                        settings::getConfigFile() + " file is missing or corrupted.",
                         pfd::choice::ok,
                         pfd::icon::error);
         std::exit(1);
