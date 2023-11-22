@@ -961,6 +961,7 @@ public:
   virtual ~browser() = default;
   virtual bool embed(HWND, bool, msg_cb_t) = 0;
   virtual void navigate(const std::string url) = 0;
+  virtual void extend_user_agent(const std::string customAgent) = 0;
   virtual void eval(const std::string js) = 0;
   virtual void init(const std::string js) = 0;
   virtual void resize(HWND) = 0;
@@ -1014,6 +1015,8 @@ public:
       m_webview.Navigate(uri);
     }
   }
+
+  void extend_user_agent(const std::string customAgent) {}
 
   void init(const std::string js) override {
     init_js = init_js + "(function(){" + js + "})();";
@@ -1091,6 +1094,19 @@ public:
     }
     init("window.external={invoke:s=>window.chrome.webview.postMessage(s)}");
     return true;
+  }
+
+  void extend_user_agent(const std::string customAgent) override {
+    ICoreWebView2Settings *settings = nullptr;
+    m_webview->get_Settings(&settings);
+    ICoreWebView2Settings2 *settings2 = nullptr;
+    settings->QueryInterface(IID_ICoreWebView2Settings2, reinterpret_cast<void**>(&settings2));
+    LPWSTR ua; 
+    settings2->get_UserAgent(&ua);
+    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wideCharConverter;
+    std::string newUa = wideCharConverter.to_bytes(ua) + " " + customAgent;
+    settings2->put_UserAgent(to_lpwstr(newUa));
+    settings2->Release();
   }
 
   void resize(HWND wnd) override {
@@ -1408,6 +1424,7 @@ public:
   }
 
   void navigate(const std::string url) { m_browser->navigate(url); }
+  void extend_user_agent(const std::string customAgent) { m_browser->extend_user_agent(customAgent); }
   void eval(const std::string js) { m_browser->eval(js); }
   void init(const std::string js) { m_browser->init(js); }
 
