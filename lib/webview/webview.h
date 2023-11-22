@@ -829,6 +829,21 @@ public:
                      }));
   }
 
+  void extend_user_agent(const std::string customAgent) {
+    std::string ua = std::string(
+      ((const char *(*)(id, SEL))objc_msgSend)(
+        ((id(*)(id, SEL, id))objc_msgSend)(m_webview, "valueForKey:"_sel, 
+        "userAgent"_str), "UTF8String"_sel)
+    );
+    std::string newUa = ua + " " + customAgent;
+    ((id(*)(id, SEL, id, id))objc_msgSend)(
+        m_webview,
+        "setValue:forKey:"_sel,
+        ((id(*)(id, SEL, const char *))objc_msgSend)(
+            "NSString"_cls, "stringWithUTF8String:"_sel, newUa.c_str()),
+        "customUserAgent"_str);
+  }
+
   void set_title(const std::string title) {
     ((void (*)(id, SEL, id))objc_msgSend)(
         m_window, "setTitle:"_sel,
