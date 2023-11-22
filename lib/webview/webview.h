@@ -1107,6 +1107,7 @@ public:
     std::string newUa = wideCharConverter.to_bytes(ua) + " " + customAgent;
     settings2->put_UserAgent(to_lpwstr(newUa));
     settings2->Release();
+    CoTaskMemFree(ua);
   }
 
   void resize(HWND wnd) override {
