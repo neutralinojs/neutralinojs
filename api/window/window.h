@@ -59,6 +59,7 @@ struct WindowOptions {
     string title = "Neutralinojs window";
     string url = "https://neutralino.js.org";
     string icon = "";
+    string extendUserAgentWith = "";
     int x = 0;
     int y = 0;
 };

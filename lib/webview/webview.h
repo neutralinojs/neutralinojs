@@ -562,6 +562,13 @@ public:
     gtk_window_set_title(GTK_WINDOW(m_window), title.c_str());
   }
 
+  void extend_user_agent(const std::string customAgent) {
+    WebKitSettings *settings =
+      webkit_web_view_get_settings(WEBKIT_WEB_VIEW(m_webview));
+      std::string ua = std::string(webkit_settings_get_user_agent(settings)) + " " + customAgent;
+      webkit_settings_set_user_agent(settings, ua.c_str());
+  }
+
   std::string get_title() {
     std::string title(gtk_window_get_title(GTK_WINDOW(m_window)));
     return title;
@@ -1432,7 +1439,7 @@ private:
     MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), (LPWSTR)ret.data(), (int)ret.size());
     return ret;
   }
-  
+
   std::string wstr2str(std::wstring const &str)
   {
     int len = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0, nullptr, nullptr);

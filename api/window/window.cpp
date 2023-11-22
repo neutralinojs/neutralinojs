@@ -525,6 +525,9 @@ void __createWindow() {
 
     nativeWindow = new webview::webview(windowProps.enableInspector, nullptr);
     nativeWindow->set_title(windowProps.title);
+    if(windowProps.extendUserAgentWith != "") {
+        nativeWindow->extend_user_agent(windowProps.extendUserAgentWith);
+    }
     nativeWindow->set_size(windowProps.sizeOptions.width,
                     windowProps.sizeOptions.height,
                     windowProps.sizeOptions.minWidth, windowProps.sizeOptions.minHeight,
@@ -823,6 +826,9 @@ json init(const json &input) {
 
     if(helpers::hasField(input, "icon"))
         windowProps.icon = input["icon"].get<string>();
+
+    if(helpers::hasField(input, "extendUserAgentWith"))
+        windowProps.extendUserAgentWith = input["extendUserAgentWith"].get<string>();
 
     if(helpers::hasField(input, "enableInspector"))
         windowProps.enableInspector = input["enableInspector"].get<bool>();
