@@ -46,7 +46,8 @@
             "resizable": true,
             "exitProcessOnClose": false,
             "useSavedState": true,
-            "port": 0
+            "port": 0,
+            "extendUserAgentWith": "NeutralinojsSampleApp"
         },
         "browser": {
             "globalVariables": {
