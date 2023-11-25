@@ -48,7 +48,7 @@ Ask questions on StackOverflow using tag [neutralinojs](https://stackoverflow.co
 
 ## Contributing
 
-Please check the [contribution guide](https://neutralino.js.org/docs/contributing/framework-developer-guide). We use GitHub Discussions, Slack, and Discord for quick discussions. 
+Please check the [contribution guide](https://neutralino.js.org/docs/contributing/framework-developer-guide). We use GitHub Discussions and Discord for quick discussions. 
   * [Join on Discord](https://discord.gg/cybpp4guTJ)
   * [Start a thread on Discussions](https://github.com/neutralinojs/neutralinojs/discussions)
 
