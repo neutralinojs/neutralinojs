@@ -6,7 +6,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
-### Config: custom user agent string
+### Configuration: custom user agent string
 Developers sometimes use the user agent string to indentify the client in server-side and client-side source codes. Now, Neutralinojs lets app developers extend the default user agent string with a custom string via the `window.extendUserAgentWith` configuration property and the `--window-extend-user-agent-with=<string>` command-line option, as shown in the following example:
 ```js
 "window": {
@@ -14,11 +14,17 @@ Developers sometimes use the user agent string to indentify the client in server
   "extendUserAgentWith": "MyAppClient"
 }
 ```
-
 The above configuration extends the user agent string:
 
 ```js
 console.log(navigator.userAgent)    // <Default UA> MyAppClient 
+```
+
+### Configuration: custom configuration files
+The Neutralinojs framework typically loads the application configuration content from the `neutralino.config.json` file, but sometimes app developers need to use a custom configuration filename during development (i.e., For separating production and development environments). Now, you can use the `--config-file=<filename>` internal command-line parameter to use a custom app configuration, as shown in the following example:
+
+```bash
+./myapp-linux_x64 --load-dir-res --config-file=neutralino-dev.config.json
 ```
 
 ## v4.14.1
