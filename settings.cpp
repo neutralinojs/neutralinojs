@@ -224,6 +224,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
         {"--window-exit-process-on-close", {"/modes/window/exitProcessOnClose", "bool"}},
         {"--window-use-saved-state", {"/modes/window/useSavedState", "bool"}},
         {"--window-icon", {"/modes/window/icon", "string"}},
+        {"--window-extend-user-agent-with", {"/modes/window/extendUserAgentWith", "string"}},
         // Chrome mode
         {"--chrome-width", {"/modes/chrome/width", "int"}},
         {"--chrome-height", {"/modes/chrome/height", "int"}},
