@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v4.15.0
+
 ### Configuration: custom user agent string
 Developers sometimes use the user agent string to indentify the client in server-side and client-side source codes. Now, Neutralinojs lets app developers extend the default user agent string with a custom string via the `window.extendUserAgentWith` configuration property and the `--window-extend-user-agent-with=<string>` command-line option, as shown in the following example:
 ```js
