@@ -18,7 +18,7 @@ Neutralinojs is a lightweight and portable desktop application development frame
 - [Roadmap 2023](https://github.com/neutralinojs/roadmap#roadmap-2023)
 - [Release notes](https://neutralino.js.org/docs/release-notes/framework)
 
-Get started with the neu CLI.
+Get started with the neu CLI:
 
 ```bash
  # Creating a new app
