@@ -37,6 +37,25 @@ You can use your favorite frontend frameworks:
 # Creating a new React-based app
 neu create hello-react -t codezri/neutralinojs-react
 ```
+## Communication with Parent Process using stdin and stdout
+
+Neutralinojs provides a mechanism for communication with the parent process using stdin and stdout. This feature allows your Neutralinojs application to exchange data with the parent process seamlessly. Here's how you can use stdin and stdout in Neutralinojs:
+
+### Sending Data from Neutralinojs to Parent Process
+
+In your Neutralinojs code, you can use the `Neutralino.process.stdout()` method to send data to the parent process:
+
+```javascript
+// Neutralinojs code
+Neutralino.app.init({
+  load: () => {
+    // Your initialization code here
+
+    // Send data to the parent process through stdout
+    Neutralino.process.stdout('Hello from Neutralinojs!');
+  },
+  // ... other configurations
+});
 
 Start building apps: [neutralino.js.org/docs](https://neutralino.js.org/docs)
  
