@@ -129,12 +129,14 @@ long long __winTickToUnixMS(long long windowsTicks) {
 }
 #endif
 
-bool createDirectory(const string &path) {
-    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-    return mkdir(path.c_str(), 0700) == 0;
-    #elif defined(_WIN32)
-    return CreateDirectory(helpers::str2wstr(path).c_str(), nullptr) == 1;
-    #endif
+bool createDirectory(const std::string& path) {
+    try {
+        std::filesystem::create_directories(path);
+        return true;
+    } catch (const std::exception& e) {
+        std::cerr << "Error creating directory: " << e.what() << std::endl;
+        return false;
+    }
 }
 
 bool removeFile(const string &filename) {
@@ -449,24 +451,24 @@ json createDirectory(const json &input) {
     return output;
 }
 
-json removeDirectory(const json &input) {
+json removeDirectory(const json& input) {
     json output;
-    if(!helpers::hasRequiredFields(input, {"path"})) {
+
+    if (!helpers::hasRequiredFields(input, {"path"})) {
         output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
-    string path = input["path"].get<string>();
-    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-    if(rmdir(path.c_str()) == 0) {
-    #elif defined(_WIN32)
-    if(RemoveDirectory(helpers::str2wstr(path).c_str())) {
-    #endif
+
+    std::string path = input["path"].get<std::string>();
+
+    try {
+        std::filesystem::remove_all(path);
         output["success"] = true;
         output["message"] = "Directory " + path + " was removed";
-    }
-    else{
+    } catch (const std::exception& e) {
         output["error"] = errors::makeErrorPayload(errors::NE_FS_RMDIRER, path);
     }
+
     return output;
 }
 
