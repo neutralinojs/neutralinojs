@@ -6,6 +6,13 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: Reading, writing with standard streams
+- Implement `app.readProcessInput(readAll=false)` for reading string data from the standard input stream. This function can read a single line or multiple lines at once.
+- Implement `app.writeProcessOutput` and `app.writeProcessError` for sending string data to standard output and error streams accordingly.
+
+## API: filesystem
+- Enable default recursive behavior in `filesystem.createDirectory` and `filesystem.removeDirectory` functions.
+
 ## v4.15.0
 
 ### Configuration: custom user agent string
