@@ -97,5 +97,54 @@ json broadcast(const json &input) {
     return output;
 }
 
+json readProcessInput(const json &input) {
+    json output;
+    string line, lines;
+    bool readAll = false;
+
+    if(helpers::hasField(input, "readAll")) {
+        readAll = input["readAll"].get<bool>();
+    }
+
+    while(getline(cin, line) && !line.empty()) {
+        lines += line;
+        if(!readAll) {
+            break;
+        }
+        lines += "\n";
+    }
+    output["returnValue"] = lines;
+    output["success"] = true;
+    return output;
+}
+
+json writeProcessOutput(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"data"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+
+    cout << input["data"].get<string>();
+
+    output["message"] = "Wrote data to stdout";
+    output["success"] = true;
+    return output;
+}
+
+json writeProcessError(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"data"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+
+    cerr << input["data"].get<string>();
+
+    output["message"] = "Wrote data to stderr";
+    output["success"] = true;
+    return output;
+}
+
 } // namespace controllers
 } // namespace app

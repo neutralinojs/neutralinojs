@@ -495,6 +495,15 @@ function getConfig() {
 function broadcast$1(event, data) {
     return sendMessage('app.broadcast', { event, data });
 }
+function readProcessInput(readAll) {
+    return sendMessage('app.readProcessInput', { readAll });
+}
+function writeProcessOutput(data) {
+    return sendMessage('app.writeProcessOutput', { data });
+}
+function writeProcessError(data) {
+    return sendMessage('app.writeProcessError', { data });
+}
 
 var app = /*#__PURE__*/Object.freeze({
     __proto__: null,
@@ -502,7 +511,10 @@ var app = /*#__PURE__*/Object.freeze({
     killProcess: killProcess,
     restartProcess: restartProcess,
     getConfig: getConfig,
-    broadcast: broadcast$1
+    broadcast: broadcast$1,
+    readProcessInput: readProcessInput,
+    writeProcessOutput: writeProcessOutput,
+    writeProcessError: writeProcessError
 });
 
 const draggableRegions = new WeakMap();
@@ -585,7 +597,7 @@ function setDraggableRegion(domElementOrId) {
                     const timeTillLastMove = currentMilliseconds - lastMoveTimestamp;
                     // Limit move calls to 1 per every 5ms - TODO: introduce constant instead of magic number?
                     if (timeTillLastMove < 5) {
-                        // Do not execute move more often than 1x every 5ms or performance will drop 
+                        // Do not execute move more often than 1x every 5ms or performance will drop
                         return;
                     }
                     // Store current time minus the offset
@@ -593,11 +605,11 @@ function setDraggableRegion(domElementOrId) {
                     yield move(evt.screenX - initialClientX, evt.screenY - initialClientY);
                     return;
                 }
-                // Add absolute drag distance 
+                // Add absolute drag distance
                 absDragMovementDistance = Math.sqrt(evt.movementX * evt.movementX + evt.movementY * evt.movementY);
-                // Only start pointer capturing when the user dragged more than a certain amount of distance 
+                // Only start pointer capturing when the user dragged more than a certain amount of distance
                 // This ensures that the user can also click on the dragable area, e.g. if the area is menu / navbar
-                if (absDragMovementDistance >= 10) { // TODO: introduce constant instead of magic number? 
+                if (absDragMovementDistance >= 10) { // TODO: introduce constant instead of magic number?
                     isPointerCaptured = true;
                     draggableRegion.setPointerCapture(evt.pointerId);
                 }
@@ -837,7 +849,7 @@ var custom = /*#__PURE__*/Object.freeze({
     getMethods: getMethods
 });
 
-var version = "3.12.0";
+var version = "3.13.0";
 
 let initialized = false;
 function init(options = {}) {
@@ -869,7 +881,7 @@ function init(options = {}) {
         }
     }
     window.NL_CVERSION = version;
-    window.NL_CCOMMIT = '57919080e8f792b034dba5ca677e19420d7b0201'; // only the build server will update this
+    window.NL_CCOMMIT = '080900b7af3d79c6e387d213b437bdb62870f109'; // only the build server will update this
     initialized = true;
 }
 

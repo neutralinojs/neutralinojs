@@ -42,6 +42,9 @@ map<string, router::NativeMethod> methodMap = {
     {"app.killProcess", app::controllers::killProcess},
     {"app.getConfig", app::controllers::getConfig},
     {"app.broadcast", app::controllers::broadcast},
+    {"app.readProcessInput", app::controllers::readProcessInput},
+    {"app.writeProcessOutput", app::controllers::writeProcessOutput},
+    {"app.writeProcessError", app::controllers::writeProcessError},
     // Neutralino.window
     {"window.setTitle", window::controllers::setTitle},
     {"window.getTitle", window::controllers::getTitle},
