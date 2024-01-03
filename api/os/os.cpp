@@ -43,7 +43,7 @@ extern char **environ;
 #include "settings.h"
 #include "resources.h"
 #include "api/events/events.h"
-#include "api/filesystem/filesystem.h"
+#include "api/fs/fs.h"
 #include "api/debug/debug.h"
 #include "api/os/os.h"
 #include "api/window/window.h"

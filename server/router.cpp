@@ -15,7 +15,7 @@
 #include "settings.h"
 #include "resources.h"
 #include "api/os/os.h"
-#include "api/filesystem/filesystem.h"
+#include "api/fs/fs.h"
 #include "api/computer/computer.h"
 #include "api/storage/storage.h"
 #include "api/debug/debug.h"

@@ -13,7 +13,7 @@
 #include "resources.h"
 #include "helpers.h"
 #include "auth/authbasic.h"
-#include "api/filesystem/filesystem.h"
+#include "api/fs/fs.h"
 #include "api/debug/debug.h"
 #include "api/app/app.h"
 #include "api/custom/custom.h"

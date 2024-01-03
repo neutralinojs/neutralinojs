@@ -12,7 +12,7 @@
 #include "settings.h"
 #include "resources.h"
 #include "api/debug/debug.h"
-#include "api/filesystem/filesystem.h"
+#include "api/fs/fs.h"
 
 #if defined(_WIN32)
 // ifstream and ofstream do not support UTF-8 file paths on Windows.

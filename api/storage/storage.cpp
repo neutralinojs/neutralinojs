@@ -7,7 +7,7 @@
 #include "settings.h"
 #include "helpers.h"
 #include "errors.h"
-#include "api/filesystem/filesystem.h"
+#include "api/fs/fs.h"
 
 #if defined(_WIN32)
 #include <windows.h>

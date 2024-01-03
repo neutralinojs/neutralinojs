@@ -34,7 +34,7 @@
 #include "api/app/app.h"
 #include "api/window/window.h"
 #include "api/events/events.h"
-#include "api/filesystem/filesystem.h"
+#include "api/fs/fs.h"
 #include "api/debug/debug.h"
 
 using namespace std;

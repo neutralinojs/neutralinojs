@@ -3,7 +3,7 @@
 #include "helpers.h"
 #include "settings.h"
 #include "auth/authbasic.h"
-#include "api/filesystem/filesystem.h"
+#include "api/fs/fs.h"
 #include "api/debug/debug.h"
 
 using namespace std;

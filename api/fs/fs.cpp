@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <regex>
+#include <filesystem>
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 #include <unistd.h>
@@ -34,7 +35,7 @@
 #include "settings.h"
 #include "helpers.h"
 #include "errors.h"
-#include "api/filesystem/filesystem.h"
+#include "api/fs/fs.h"
 #include "api/os/os.h"
 #include "api/events/events.h"
 
@@ -130,13 +131,7 @@ long long __winTickToUnixMS(long long windowsTicks) {
 #endif
 
 bool createDirectory(const std::string& path) {
-    try {
-        std::filesystem::create_directories(path);
-        return true;
-    } catch (const std::exception& e) {
-        std::cerr << "Error creating directory: " << e.what() << std::endl;
-        return false;
-    }
+    return filesystem::create_directories(path);
 }
 
 bool removeFile(const string &filename) {
@@ -445,7 +440,7 @@ json createDirectory(const json &input) {
         output["success"] = true;
         output["message"] = "Directory " + path + " was created";
     }
-    else{
+    else {
         output["error"] = errors::makeErrorPayload(errors::NE_FS_DIRCRER, path);
     }
     return output;
@@ -461,11 +456,11 @@ json removeDirectory(const json& input) {
 
     std::string path = input["path"].get<std::string>();
 
-    try {
-        std::filesystem::remove_all(path);
+    if(filesystem::remove_all(path)) {
         output["success"] = true;
         output["message"] = "Directory " + path + " was removed";
-    } catch (const std::exception& e) {
+    }
+    else {
         output["error"] = errors::makeErrorPayload(errors::NE_FS_RMDIRER, path);
     }
 
