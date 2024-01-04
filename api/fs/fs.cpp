@@ -150,7 +150,7 @@ string getDirectoryName(const string &filename){
 }
 
 string getCurrentDirectory() {
-    string path = filesystem::current_path();
+    string path = filesystem::current_path().string();
     #if defined(_WIN32)
     return helpers::normalizePath(path);
     #else
@@ -345,7 +345,7 @@ fs::DirReaderResult readDirectory(const string &path) {
         else if(entry.is_regular_file()) {
             type = fs::EntryTypeFile;
         }
-        dirResult.entries.push_back({ entry.path().filename(), entry.path(), type });
+        dirResult.entries.push_back({ entry.path().filename(), entry.path().string(), type });
     }
     return dirResult;
 }
