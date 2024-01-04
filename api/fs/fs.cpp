@@ -345,7 +345,7 @@ fs::DirReaderResult readDirectory(const string &path) {
         else if(entry.is_regular_file()) {
             type = fs::EntryTypeFile;
         }
-        dirResult.entries.push_back({ entry.path().filename(), entry.path().string(), type });
+        dirResult.entries.push_back({ entry.path().filename().string(), entry.path().string(), type });
     }
     return dirResult;
 }
