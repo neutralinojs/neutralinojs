@@ -615,7 +615,7 @@ json setTray(const json &input) {
             );
 
             string tempDirPath = settings::joinAppPath("/.tmp");
-            fs::createDirectory(tempDirPath);
+            filesystem::create_directories(tempDirPath);
             resources::extractFile(iconPath, tempIconPath);
             fullIconPath = filesystem::absolute(tempIconPath);
         }

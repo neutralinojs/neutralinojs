@@ -130,14 +130,6 @@ long long __winTickToUnixMS(long long windowsTicks) {
 }
 #endif
 
-bool createDirectory(const std::string& path) {
-    return filesystem::create_directories(path);
-}
-
-bool removeFile(const string &filename) {
-    return filesystem::remove(filename);
-}
-
 string getDirectoryName(const string &filename){
     #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
     return dirname((char*)filename.c_str());
@@ -345,7 +337,12 @@ fs::DirReaderResult readDirectory(const string &path) {
         else if(entry.is_regular_file()) {
             type = fs::EntryTypeFile;
         }
-        dirResult.entries.push_back({ entry.path().filename().string(), entry.path().string(), type });
+
+        auto entryPath = entry.path();
+        string entryStr = entry.path().string();
+
+        dirResult.entries.push_back({ entryPath.filename().string(),
+            helpers::normalizePath(entryStr), type });
     }
     return dirResult;
 }
@@ -395,7 +392,7 @@ json createDirectory(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
-    if(fs::createDirectory(path)) {
+    if(filesystem::create_directories(path)) {
         output["success"] = true;
         output["message"] = "Directory " + path + " was created";
     }
@@ -405,7 +402,7 @@ json createDirectory(const json &input) {
     return output;
 }
 
-json removeDirectory(const json& input) {
+json remove(const json& input) {
     json output;
 
     if (!helpers::hasRequiredFields(input, {"path"})) {
@@ -417,10 +414,10 @@ json removeDirectory(const json& input) {
 
     if(filesystem::remove_all(path)) {
         output["success"] = true;
-        output["message"] = "Directory " + path + " was removed";
+        output["message"] = path + " was removed";
     }
     else {
-        output["error"] = errors::makeErrorPayload(errors::NE_FS_RMDIRER, path);
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_REMVERR, path);
     }
 
     return output;
@@ -570,23 +567,6 @@ json getOpenedFileInfo(const json &input) {
     return output;
 }
 
-json removeFile(const json &input) {
-    json output;
-    if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
-        return output;
-    }
-    string filename = input["path"].get<string>();
-    if(fs::removeFile(filename)) {
-        output["success"] = true;
-        output["message"] = filename + " was deleted";
-    }
-    else{
-        output["error"] = errors::makeErrorPayload(errors::NE_FS_FILRMER, filename);
-    }
-    return output;
-}
-
 json readDirectory(const json &input) {
     json output;
     output["returnValue"] = json::array();
@@ -621,28 +601,6 @@ json readDirectory(const json &input) {
     return output;
 }
 
-json copyFile(const json &input) {
-    json output;
-    if(!helpers::hasRequiredFields(input, {"source", "destination"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
-        return output;
-    }
-    string source = input["source"].get<string>();
-    string destination = input["destination"].get<string>();
-
-    error_code ec;
-    filesystem::copy_file(source, destination, ec);
-
-    if(!ec) {
-        output["success"] = true;
-        output["message"] = "File copy operation was successful";
-    }
-    else{
-        output["error"] = errors::makeErrorPayload(errors::NE_FS_COPYFER, source + " -> " + destination);
-    }
-    return output;
-}
-
 json copy(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"source", "destination"})) {
@@ -660,12 +618,12 @@ json copy(const json &input) {
         output["message"] = "Copy operation was successful";
     }
     else{
-        output["error"] = errors::makeErrorPayload(errors::NE_FS_COPYDER, source + " -> " + destination);
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_COPYERR, source + " -> " + destination);
     }
     return output;
 }
 
-json moveFile(const json &input) {
+json move(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"source", "destination"})) {
         output["error"] = errors::makeMissingArgErrorPayload();
@@ -682,7 +640,7 @@ json moveFile(const json &input) {
         output["message"] = "File move operation was successful";
     }
     else{
-        output["error"] = errors::makeErrorPayload(errors::NE_FS_MOVEFER, source + " -> " + destination);
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_MOVEERR, source + " -> " + destination);
     }
     return output;
 }

@@ -1,5 +1,6 @@
 #include <string>
 #include <iostream>
+#include <filesystem>
 
 #if defined(__linux__) || defined(__FreeBSD__)
 #include <gtk/gtk.h>
@@ -180,7 +181,7 @@ void __saveWindowProps() {
     options["y"] = pos.second;
     options["maximize"] = window::isMaximized();
 
-    fs::createDirectory(settings::joinAppPath("/.tmp"));
+    filesystem::create_directories(settings::joinAppPath("/.tmp"));
     fs::FileWriterOptions writerOptions = { settings::joinAppPath(NEU_WIN_CONFIG_FILE), options.dump() };
     fs::writeFile(writerOptions);
 }

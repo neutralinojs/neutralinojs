@@ -29,13 +29,11 @@ string __getStatusCodeString(const errors::StatusCode code) {
         // filesystem
         case errors::NE_FS_FILWRER: return "NE_FS_FILWRER";
         case errors::NE_FS_DIRCRER: return "NE_FS_DIRCRER";
-        case errors::NE_FS_RMDIRER: return "NE_FS_RMDIRER";
+        case errors::NE_FS_REMVERR: return "NE_FS_REMVERR";
         case errors::NE_FS_FILRDER: return "NE_FS_FILRDER";
-        case errors::NE_FS_FILRMER: return "NE_FS_FILRMER";
         case errors::NE_FS_NOPATHE: return "NE_FS_NOPATHE";
-        case errors::NE_FS_COPYFER: return "NE_FS_COPYFER";
-        case errors::NE_FS_COPYDER: return "NE_FS_COPYDER";
-        case errors::NE_FS_MOVEFER: return "NE_FS_MOVEFER";
+        case errors::NE_FS_COPYERR: return "NE_FS_COPYERR";
+        case errors::NE_FS_MOVEERR: return "NE_FS_MOVEERR";
         case errors::NE_FS_FILOPER: return "NE_FS_FILOPER";
         case errors::NE_FS_UNLTOUP: return "NE_FS_UNLTOUP";
         case errors::NE_FS_UNLTFOP: return "NE_FS_UNLTFOP";
@@ -82,13 +80,11 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         // filesystem
         case errors::NE_FS_FILWRER: return "Unable to write file: %1";
         case errors::NE_FS_DIRCRER: return "Cannot create a directory in %1";
-        case errors::NE_FS_RMDIRER: return "Cannot remove directory: %1";
+        case errors::NE_FS_REMVERR: return "Cannot remove path: %1";
         case errors::NE_FS_FILRDER: return "Unable to open file: %1";
-        case errors::NE_FS_FILRMER: return "Cannot remove file: %1";
         case errors::NE_FS_NOPATHE: return "Unable to open path %1";
-        case errors::NE_FS_COPYFER: return "Cannot perform file copy: %1";
-        case errors::NE_FS_COPYDER: return "Cannot perform directory copy: %1";
-        case errors::NE_FS_MOVEFER: return "Cannot perform move: %1";
+        case errors::NE_FS_COPYERR: return "Cannot perform copy: %1";
+        case errors::NE_FS_MOVEERR: return "Cannot perform move: %1";
         case errors::NE_FS_FILOPER: return "Unable to open file: %1";
         case errors::NE_FS_UNLTOUP: return "Unable to update opened file id: %1";
         case errors::NE_FS_UNLTFOP: return "Unable to find opened file id: %1";

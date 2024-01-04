@@ -78,7 +78,7 @@ map<string, router::NativeMethod> methodMap = {
     {"debug.log", debug::controllers::log},
     // Neutralino.filesystem
     {"filesystem.createDirectory", fs::controllers::createDirectory},
-    {"filesystem.removeDirectory", fs::controllers::removeDirectory},
+    {"filesystem.remove", fs::controllers::remove},
     {"filesystem.readFile", fs::controllers::readFile},
     {"filesystem.readBinaryFile", fs::controllers::readBinaryFile},
     {"filesystem.writeFile", fs::controllers::writeFile},
@@ -91,11 +91,9 @@ map<string, router::NativeMethod> methodMap = {
     {"filesystem.getWatchers", fs::controllers::getWatchers},
     {"filesystem.updateOpenedFile", fs::controllers::updateOpenedFile},
     {"filesystem.getOpenedFileInfo", fs::controllers::getOpenedFileInfo},
-    {"filesystem.removeFile", fs::controllers::removeFile},
     {"filesystem.readDirectory", fs::controllers::readDirectory},
-    {"filesystem.copyFile", fs::controllers::copyFile},
     {"filesystem.copy", fs::controllers::copy},
-    {"filesystem.moveFile", fs::controllers::moveFile},
+    {"filesystem.move", fs::controllers::move},
     {"filesystem.getStats", fs::controllers::getStats},
     // Neutralino.os
     {"os.execCommand", os::controllers::execCommand},

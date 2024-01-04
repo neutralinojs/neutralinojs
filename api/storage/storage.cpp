@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <regex>
+#include <filesystem>
 
 #include "lib/json/json.hpp"
 #include "settings.h"
@@ -70,14 +71,14 @@ json setData(const json &input) {
         return errorPayload;
     string bucketPath = settings::joinAppPath(NEU_STORAGE_DIR);
 
-    fs::createDirectory(bucketPath);
+    filesystem::create_directories(bucketPath);
     #if defined(_WIN32)
     SetFileAttributesA(bucketPath.c_str(), FILE_ATTRIBUTE_HIDDEN);
     #endif
 
     string filename = bucketPath + "/" + key + NEU_STORAGE_EXT;
     if(!helpers::hasField(input, "data")) {
-        fs::removeFile(filename);
+        filesystem::remove(filename);
     }
     else {
         fs::FileWriterOptions fileWriterOptions;

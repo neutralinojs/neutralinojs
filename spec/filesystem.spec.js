@@ -14,11 +14,11 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         });
     });
 
-    describe('filesystem.removeDirectory', () => {
+    describe('filesystem.remove', () => {
         it('works without throwing errors', async () => {
             runner.run(`
                 await Neutralino.filesystem.createDirectory(NL_PATH + '/.tmp/abcd');
-                await Neutralino.filesystem.removeDirectory(NL_PATH + '/.tmp/abcd');
+                await Neutralino.filesystem.remove(NL_PATH + '/.tmp/abcd');
                 await __close('done');
             `);
             assert.equal(runner.getOutput(), 'done');
@@ -387,18 +387,6 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         });
     });
 
-
-    describe('filesystem.removeFile', () => {
-        it('works without throwing errors', async () => {
-            runner.run(`
-                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Hello');
-                await Neutralino.filesystem.removeFile(NL_PATH + '/.tmp/test.txt');
-                await __close('done');
-            `);
-            assert.equal(runner.getOutput(), 'done');
-        });
-    });
-
     describe('filesystem.readDirectory', () => {
         it('returns directory entries', async () => {
             runner.run(`
@@ -412,22 +400,22 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         });
     });
 
-    describe('filesystem.copyFile', () => {
+    describe('filesystem.copy', () => {
         it('works without throwing errors', async () => {
             runner.run(`
                 await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Hello');
-                await Neutralino.filesystem.copyFile(NL_PATH + '/.tmp/test.txt', NL_PATH + '/.tmp/test_new.txt');
+                await Neutralino.filesystem.copy(NL_PATH + '/.tmp/test.txt', NL_PATH + '/.tmp/test_new.txt');
                 await __close('done');
             `);
             assert.equal(runner.getOutput(), 'done');
         });
     });
 
-    describe('filesystem.moveFile', () => {
+    describe('filesystem.move', () => {
         it('works without throwing errors', async () => {
             runner.run(`
                 await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test_new.txt', 'Hello');
-                await Neutralino.filesystem.copyFile(NL_PATH + '/.tmp/test_new.txt', NL_PATH + '/.tmp/test.txt');
+                await Neutralino.filesystem.move(NL_PATH + '/.tmp/test_new.txt', NL_PATH + '/.tmp/test.txt');
                 await __close('done');
             `);
             assert.equal(runner.getOutput(), 'done');

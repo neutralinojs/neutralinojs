@@ -1,4 +1,5 @@
 #include <string>
+#include <filesystem>
 
 #include "helpers.h"
 #include "settings.h"
@@ -32,7 +33,7 @@ void init() {
 
 void exportAuthInfo() {
     string tempDirPath = settings::joinAppPath("/.tmp");
-    fs::createDirectory(tempDirPath);
+    filesystem::create_directories(tempDirPath);
     string tempAuthInfoPath = settings::joinAppPath("/.tmp/auth_info.json");
     fs::FileWriterOptions fileWriterOptions = {
         tempAuthInfoPath,

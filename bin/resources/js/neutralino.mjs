@@ -221,8 +221,8 @@ function uuidv4() {
 function createDirectory(path) {
     return sendMessage('filesystem.createDirectory', { path });
 }
-function removeDirectory(path) {
-    return sendMessage('filesystem.removeDirectory', { path });
+function remove(path) {
+    return sendMessage('filesystem.remove', { path });
 }
 function writeFile(path, data) {
     return sendMessage('filesystem.writeFile', { path, data });
@@ -274,20 +274,14 @@ function updateOpenedFile(id, event, data) {
 function getOpenedFileInfo(id) {
     return sendMessage('filesystem.getOpenedFileInfo', { id });
 }
-function removeFile(path) {
-    return sendMessage('filesystem.removeFile', { path });
-}
 function readDirectory(path) {
     return sendMessage('filesystem.readDirectory', { path });
-}
-function copyFile(source, destination) {
-    return sendMessage('filesystem.copyFile', { source, destination });
 }
 function copy(source, destination) {
     return sendMessage('filesystem.copy', { source, destination });
 }
-function moveFile(source, destination) {
-    return sendMessage('filesystem.moveFile', { source, destination });
+function move$1(source, destination) {
+    return sendMessage('filesystem.move', { source, destination });
 }
 function getStats(path) {
     return sendMessage('filesystem.getStats', { path });
@@ -304,7 +298,7 @@ function arrayBufferToBase64(data) {
 var filesystem = /*#__PURE__*/Object.freeze({
     __proto__: null,
     createDirectory: createDirectory,
-    removeDirectory: removeDirectory,
+    remove: remove,
     writeFile: writeFile,
     appendFile: appendFile,
     writeBinaryFile: writeBinaryFile,
@@ -317,11 +311,9 @@ var filesystem = /*#__PURE__*/Object.freeze({
     getWatchers: getWatchers,
     updateOpenedFile: updateOpenedFile,
     getOpenedFileInfo: getOpenedFileInfo,
-    removeFile: removeFile,
     readDirectory: readDirectory,
-    copyFile: copyFile,
     copy: copy,
-    moveFile: moveFile,
+    move: move$1,
     getStats: getStats
 });
 
@@ -885,7 +877,7 @@ function init(options = {}) {
         }
     }
     window.NL_CVERSION = version;
-    window.NL_CCOMMIT = 'f7a35f6f9212926acc61991813859b26038d3e0c'; // only the build server will update this
+    window.NL_CCOMMIT = '2dafa1d4d0560ac740c98bb75210e7ac10baef92'; // only the build server will update this
     initialized = true;
 }
 
