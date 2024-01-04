@@ -47,6 +47,7 @@ struct FileStats {
 
 struct DirReaderEntry {
     string name;
+    string path;
     fs::EntryType type = fs::EntryTypeOther;
 };
 

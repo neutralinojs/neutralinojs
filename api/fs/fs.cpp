@@ -345,7 +345,7 @@ fs::DirReaderResult readDirectory(const string &path) {
         else if(entry.is_regular_file()) {
             type = fs::EntryTypeFile;
         }
-        dirResult.entries.push_back({ entry.path(), type });
+        dirResult.entries.push_back({ entry.path().filename(), entry.path(), type });
     }
     return dirResult;
 }
@@ -613,7 +613,8 @@ json readDirectory(const json &input) {
 
         output["returnValue"].push_back({
             {"entry", entry.name},
-            {"type", type}
+            {"path", entry.path},
+            {"type", type},
         });
     }
     output["success"] = true;
