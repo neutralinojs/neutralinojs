@@ -15,7 +15,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 - Add `filesystem.copy`, `filesystem.move`, and `filesystem.remove` functions.
 
 ### Deprecations
-- Removed `filesystem.createDirectory`, `filesystem.removeDirectory`, `filesystem.copyFile`, and `filesystem.moveFile` functions.
+- Removed `filesystem.removeFile`, `filesystem.removeDirectory`, `filesystem.copyFile`, and `filesystem.moveFile` functions.
 
 ## v4.15.0
 
