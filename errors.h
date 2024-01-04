@@ -34,6 +34,7 @@ enum StatusCode {
     NE_FS_FILRMER,
     NE_FS_NOPATHE,
     NE_FS_COPYFER,
+    NE_FS_COPYDER,
     NE_FS_MOVEFER,
     NE_FS_FILOPER,
     NE_FS_UNLTOUP,

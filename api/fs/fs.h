@@ -61,7 +61,6 @@ fs::FileReaderResult readFile(const string &filename, const fs::FileReaderOption
 bool writeFile(const fs::FileWriterOptions &fileWriterOptions);
 string getDirectoryName(const string &filename);
 string getCurrentDirectory();
-string getFullPathFromRelative(const string &path);
 int openFile(const string &path);
 bool updateOpenedFile(const OpenedFileEvent &evt);
 long createWatcher(const string &path);
@@ -85,6 +84,7 @@ json getOpenedFileInfo(const json &input);
 json removeFile(const json &input);
 json readDirectory(const json &input);
 json copyFile(const json &input);
+json copy(const json &input);
 json moveFile(const json &input);
 json getStats(const json &input);
 json createWatcher(const json &input);

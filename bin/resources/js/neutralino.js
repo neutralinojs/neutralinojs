@@ -286,6 +286,9 @@ var Neutralino = (function (exports) {
     function copyFile(source, destination) {
         return sendMessage('filesystem.copyFile', { source, destination });
     }
+    function copy(source, destination) {
+        return sendMessage('filesystem.copy', { source, destination });
+    }
     function moveFile(source, destination) {
         return sendMessage('filesystem.moveFile', { source, destination });
     }
@@ -320,6 +323,7 @@ var Neutralino = (function (exports) {
         removeFile: removeFile,
         readDirectory: readDirectory,
         copyFile: copyFile,
+        copy: copy,
         moveFile: moveFile,
         getStats: getStats
     };
@@ -884,7 +888,7 @@ var Neutralino = (function (exports) {
             }
         }
         window.NL_CVERSION = version;
-        window.NL_CCOMMIT = '080900b7af3d79c6e387d213b437bdb62870f109'; // only the build server will update this
+        window.NL_CCOMMIT = 'f7a35f6f9212926acc61991813859b26038d3e0c'; // only the build server will update this
         initialized = true;
     }
 

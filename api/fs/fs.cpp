@@ -135,11 +135,7 @@ bool createDirectory(const std::string& path) {
 }
 
 bool removeFile(const string &filename) {
-    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-    return remove(filename.c_str()) == 0;
-    #elif defined(_WIN32)
-    return DeleteFile(helpers::str2wstr(filename).c_str()) == 1;
-    #endif
+    return filesystem::remove(filename);
 }
 
 string getDirectoryName(const string &filename){
@@ -154,19 +150,9 @@ string getDirectoryName(const string &filename){
 }
 
 string getCurrentDirectory() {
-    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-    return getcwd(nullptr, 0);
-    #elif defined(_WIN32)
-    TCHAR currentDir[MAX_PATH];
-    GetCurrentDirectory(MAX_PATH, currentDir);
-    string currentDirStr(helpers::wstr2str(currentDir));
-    return helpers::normalizePath(currentDirStr);
-    #endif
-}
-
-string getFullPathFromRelative(const string &path) {
-    #if defined(__linux__)
-    return realpath(path.c_str(), nullptr);
+    string path = filesystem::current_path();
+    #if defined(_WIN32)
+    return helpers::normalizePath(path);
     #else
     return path;
     #endif
@@ -351,43 +337,16 @@ fs::DirReaderResult readDirectory(const string &path) {
         return dirResult;
     }
 
-    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-    DIR *dirp;
-    struct dirent *directory;
-    dirp = opendir(path.c_str());
-    if(dirp) {
-        while((directory = readdir(dirp)) != nullptr) {
-            fs::EntryType type = fs::EntryTypeOther;
-            if(directory->d_type == DT_DIR) {
-                type = fs::EntryTypeDir;
-            }
-            else if(directory->d_type == DT_REG) {
-                type = fs::EntryTypeFile;
-            }
-
-            dirResult.entries.push_back({ directory->d_name, type });
+    for(const auto &entry: filesystem::directory_iterator(path)) {
+        fs::EntryType type = fs::EntryTypeOther;
+        if(entry.is_directory()) {
+            type = fs::EntryTypeDir;
         }
-        closedir(dirp);
+        else if(entry.is_regular_file()) {
+            type = fs::EntryTypeFile;
+        }
+        dirResult.entries.push_back({ entry.path(), type });
     }
-    #elif defined(_WIN32)
-    string search_path = path + "/*.*";
-    WIN32_FIND_DATAW fd;
-    HANDLE hFind = FindFirstFile(helpers::str2wstr(search_path).c_str(), &fd);
-    if(hFind != INVALID_HANDLE_VALUE) {
-        do {
-            fs::EntryType type = fs::EntryTypeOther;
-            if((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY) {
-                type = fs::EntryTypeDir;
-            }
-            else {
-                type = fs::EntryTypeFile;
-            }
-
-            dirResult.entries.push_back({ helpers::wstr2str(fd.cFileName), type });
-        } while(FindNextFile(hFind, &fd));
-        FindClose(hFind);
-    }
-    #endif
     return dirResult;
 }
 
@@ -669,19 +628,38 @@ json copyFile(const json &input) {
     }
     string source = input["source"].get<string>();
     string destination = input["destination"].get<string>();
-    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-    string command = "cp \"" + source + "\" \"" + destination + "\"";
-    os::CommandResult commandResult = os::execCommand(command);
-    if(commandResult.stdErr.empty()) {
 
-    #elif defined(_WIN32)
-    if(CopyFile(helpers::str2wstr(source).c_str(), helpers::str2wstr(destination).c_str(), false) == 1) {
-    #endif
+    error_code ec;
+    filesystem::copy_file(source, destination, ec);
+
+    if(!ec) {
         output["success"] = true;
         output["message"] = "File copy operation was successful";
     }
     else{
         output["error"] = errors::makeErrorPayload(errors::NE_FS_COPYFER, source + " -> " + destination);
+    }
+    return output;
+}
+
+json copy(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"source", "destination"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    string source = input["source"].get<string>();
+    string destination = input["destination"].get<string>();
+
+    error_code ec;
+    filesystem::copy(source, destination, filesystem::copy_options::recursive, ec);
+
+    if(!ec) {
+        output["success"] = true;
+        output["message"] = "Copy operation was successful";
+    }
+    else{
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_COPYDER, source + " -> " + destination);
     }
     return output;
 }
@@ -694,14 +672,11 @@ json moveFile(const json &input) {
     }
     string source = input["source"].get<string>();
     string destination = input["destination"].get<string>();
-    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-    string command = "mv \"" + source + "\" \"" + destination + "\"";
-    os::CommandResult commandResult = os::execCommand(command);
-    if(commandResult.stdErr.empty()) {
 
-    #elif defined(_WIN32)
-    if(MoveFile(helpers::str2wstr(source).c_str(), helpers::str2wstr(destination).c_str()) == 1) {
-    #endif
+    error_code ec;
+    filesystem::rename(source, destination, ec);
+
+    if(!ec) {
         output["success"] = true;
         output["message"] = "File move operation was successful";
     }

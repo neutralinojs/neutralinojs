@@ -11,6 +11,7 @@
 #include <map>
 #include <cstring>
 #include <vector>
+#include <filesystem>
 
 #include "resources.h"
 #include "lib/tinyprocess/process.hpp"
@@ -602,7 +603,7 @@ json setTray(const json &input) {
         #if defined(__linux__)
         string fullIconPath;
         if(resources::getMode() == resources::ResourceModeDir) {
-            fullIconPath = fs::getFullPathFromRelative(settings::joinAppPath("")) + iconPath;
+            fullIconPath = string(filesystem::absolute(settings::joinAppPath(""))) + iconPath;
         }
         else {
             // Use alternating tempIconPath since tray_update()
@@ -616,7 +617,7 @@ json setTray(const json &input) {
             string tempDirPath = settings::joinAppPath("/.tmp");
             fs::createDirectory(tempDirPath);
             resources::extractFile(iconPath, tempIconPath);
-            fullIconPath = fs::getFullPathFromRelative(tempIconPath);
+            fullIconPath = filesystem::absolute(tempIconPath);
         }
         delete[] tray.icon;
         tray.icon = helpers::cStrCopy(fullIconPath);

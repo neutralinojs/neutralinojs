@@ -94,6 +94,7 @@ map<string, router::NativeMethod> methodMap = {
     {"filesystem.removeFile", fs::controllers::removeFile},
     {"filesystem.readDirectory", fs::controllers::readDirectory},
     {"filesystem.copyFile", fs::controllers::copyFile},
+    {"filesystem.copy", fs::controllers::copy},
     {"filesystem.moveFile", fs::controllers::moveFile},
     {"filesystem.getStats", fs::controllers::getStats},
     // Neutralino.os
