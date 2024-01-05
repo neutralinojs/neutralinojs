@@ -7,9 +7,9 @@ const chalk = require('chalk');
 
 // Obtain required params to start a WS connection from stdIn.
 const processInput = JSON.parse(fs.readFileSync(process.stdin.fd, 'utf-8'));
-const NL_PORT = processInput.port;
-const NL_TOKEN = processInput.token;
-const NL_EXTID = processInput.id;
+const NL_PORT = processInput.nlPort;
+const NL_TOKEN = processInput.nlToken;
+const NL_EXTID = processInput.nlExtensionId;
 
 let client = new WS(`ws://localhost:${NL_PORT}?extensionId=${NL_EXTID}`);
 

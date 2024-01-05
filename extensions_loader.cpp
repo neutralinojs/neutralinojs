@@ -21,9 +21,9 @@ bool initialized = false;
 
 json __buildExtensionProcessInput(const string &extensionId) {
     json options = {
-        {"port", to_string(settings::getOptionForCurrentMode("port").get<int>())},
-        {"token", authbasic::getTokenInternal()},
-        {"id", extensionId}
+        {"nlPort", to_string(settings::getOptionForCurrentMode("port").get<int>())},
+        {"nlToken", authbasic::getTokenInternal()},
+        {"nlExtensionId", extensionId}
     };
     return options;
 }
