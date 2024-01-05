@@ -14,8 +14,12 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 - Enable default recursive behavior in the `filesystem.createDirectory` function.
 - Add `filesystem.copy`, `filesystem.move`, and `filesystem.remove` functions.
 
+### API: os
+- Accept stdin with the background mode of the `os.execCommand` function. 
+
 ### Deprecations
 - Removed `filesystem.removeFile`, `filesystem.removeDirectory`, `filesystem.copyFile`, and `filesystem.moveFile` functions.
+- Extensions won't receive `--nl-port`, `--nl-token`, and `--nl-extension-id` as command-line arguments. Now the framework sends these via stdin as a JSON string. 
 
 ## v4.15.0
 
