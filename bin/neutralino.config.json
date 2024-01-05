@@ -75,7 +75,7 @@
     "extensions": [
         {
             "id": "js.neutralino.sampleextension",
-            "commandLinux": "node ${NL_PATH}/extensions/sample extension/main.js --linux",
+            "commandLinux": "node ${NL_PATH}/extensions/sampleextension/main.js --linux",
             "commandDarwin": "node ${NL_PATH}/extensions/sampleextension/main.js --darwin",
             "commandWindows": "node ${NL_PATH}/extensions/sampleextension/main.js --windows"
         },

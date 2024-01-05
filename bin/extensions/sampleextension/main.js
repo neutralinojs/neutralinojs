@@ -1,12 +1,15 @@
+const fs = require('fs');
+const process = require('process');
 const argv = require('minimist')(process.argv.slice(2));
 const WS = require('websocket').w3cwebsocket;
 const { v4: uuidv4 } = require('uuid');
 const chalk = require('chalk');
 
-// Obtain required params to start a WS connection from CLI args.
-const NL_PORT = argv['nl-port'];
-const NL_TOKEN = argv['nl-token'];
-const NL_EXTID = argv['nl-extension-id'];
+// Obtain required params to start a WS connection from stdIn.
+const processInput = JSON.parse(fs.readFileSync(process.stdin.fd, 'utf-8'));
+const NL_PORT = processInput.port;
+const NL_TOKEN = processInput.token;
+const NL_EXTID = processInput.id;
 
 let client = new WS(`ws://localhost:${NL_PORT}?extensionId=${NL_EXTID}`);
 

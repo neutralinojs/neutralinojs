@@ -115,17 +115,21 @@ os::CommandResult execCommand(string command, const string &input, bool backgrou
             }, !input.empty()
         );
     else {
-        childProcess = new TinyProcessLib::Process(CONVSTR(command), CONVSTR(cwd), nullptr, nullptr);
+        childProcess = new TinyProcessLib::Process(CONVSTR(command), CONVSTR(cwd),
+                                nullptr, nullptr, !input.empty());
     }
+
     commandResult.pid = childProcess->get_id();
 
+    if(!input.empty()) {
+        childProcess->write(input);
+        childProcess->close_stdin();
+    }
+
     if(!background) {
-        if(!input.empty()) {
-            childProcess->write(input);
-            childProcess->close_stdin();
-        }
         commandResult.exitCode = childProcess->get_exit_status(); // sync wait
     }
+
     delete childProcess;
     return commandResult;
 }
