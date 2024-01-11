@@ -12,6 +12,10 @@
 
 #elif defined(__FreeBSD__)
 #define NEU_OS_NAME "FreeBSD"
+
+#else
+#define NEU_OS_NAME "Unknown"
+
 #endif
 
 #define NEU_APP_CONFIG_FILE "/neutralino.config.json"

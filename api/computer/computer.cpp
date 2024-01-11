@@ -20,6 +20,7 @@
 
 #include <infoware/system.hpp>
 #include <infoware/cpu.hpp>
+#include "api/computer/computer.h"
 #include "lib/json/json.hpp"
 
 using namespace std;
@@ -27,9 +28,8 @@ using json = nlohmann::json;
 
 namespace computer {
 
-namespace controllers {
-
-string __getArch(const iware::cpu::architecture_t &architecture) {
+string getArch() {
+    iware::cpu::architecture_t architecture = iware::cpu::architecture();
     switch(architecture) {
         case iware::cpu::architecture_t::x64:
             return "x64";
@@ -43,6 +43,8 @@ string __getArch(const iware::cpu::architecture_t &architecture) {
             return "unknown";
     }
 }
+
+namespace controllers {
 
 string __getKernelVariant(const iware::system::kernel_t &variant) {
 	switch(variant) {
@@ -77,7 +79,7 @@ json getMemoryInfo(const json &input) {
 
 json getArch(const json &input) {
     json output;
-    output["returnValue"] = __getArch(iware::cpu::architecture());
+    output["returnValue"] = computer::getArch();
     output["success"] = true;
     return output;
 }
@@ -119,7 +121,7 @@ json getCPUInfo(const json &input) {
         { "vendor", iware::cpu::vendor() },
         { "model", iware::cpu::model_name() },
         { "frequency", iware::cpu::frequency() },
-        { "architecture", __getArch(iware::cpu::architecture()) },
+        { "architecture", computer::getArch() },
         { "logicalThreads", quantities.logical },
         { "physicalCores", quantities.physical },
         { "physicalUnits", quantities.packages }

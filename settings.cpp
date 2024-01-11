@@ -18,6 +18,7 @@
 #include "api/app/app.h"
 #include "api/custom/custom.h"
 #include "api/window/window.h"
+#include "api/computer/computer.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -87,6 +88,7 @@ json getConfig() {
 
 string getGlobalVars(){
     string jsSnippet = "var NL_OS='" + string(NEU_OS_NAME) + "';";
+    jsSnippet += "var NL_ARCH='" + computer::getArch() + "';";
     jsSnippet += "var NL_VERSION='" + string(NEU_VERSION) + "';";
     jsSnippet += "var NL_COMMIT='" + string(NEU_COMMIT) + "';";
     jsSnippet += "var NL_APPID='" + options["applicationId"].get<string>() + "';";

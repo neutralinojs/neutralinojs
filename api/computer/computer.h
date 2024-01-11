@@ -10,6 +10,8 @@ using namespace std;
 
 namespace computer {
 
+string getArch();
+
 namespace controllers {
 
 json getMemoryInfo(const json &input);
