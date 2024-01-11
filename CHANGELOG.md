@@ -13,6 +13,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### API: filesystem
 - Enable default recursive behavior in the `filesystem.createDirectory` function.
 - Add `filesystem.copy`, `filesystem.move`, and `filesystem.remove` functions.
+- Add `{recursive}` options object to `filesystem.readDirectory(path, options)` activate recursive directory listing.
 
 ### API: os
 - Accept stdin with the background mode of the `os.execCommand` function. 
