@@ -16,7 +16,10 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 - Add `{recursive}` options object to `filesystem.readDirectory(path, options)` activate recursive directory listing.
 
 ### API: os
-- Accept stdin with the background mode of the `os.execCommand` function. 
+- Accept stdin with the background mode of the `os.execCommand` function.
+
+### Global variables
+- Now the `NL_ARCH` global variable returns the same value that `computer.getArch` returns.
 
 ### Deprecations
 - Removed `filesystem.removeFile`, `filesystem.removeDirectory`, `filesystem.copyFile`, and `filesystem.moveFile` functions.
