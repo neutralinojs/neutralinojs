@@ -65,7 +65,7 @@ bool updateOpenedFile(const OpenedFileEvent &evt);
 long createWatcher(const string &path);
 bool removeWatcher(long watcherId);
 fs::FileStats getStats(const string &path);
-fs::DirReaderResult readDirectory(const string &path);
+fs::DirReaderResult readDirectory(const string &path, bool recursive = false);
 
 namespace controllers {
 

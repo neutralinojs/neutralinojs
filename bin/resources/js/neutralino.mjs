@@ -274,8 +274,8 @@ function updateOpenedFile(id, event, data) {
 function getOpenedFileInfo(id) {
     return sendMessage('filesystem.getOpenedFileInfo', { id });
 }
-function readDirectory(path) {
-    return sendMessage('filesystem.readDirectory', { path });
+function readDirectory(path, options) {
+    return sendMessage('filesystem.readDirectory', Object.assign({ path }, options));
 }
 function copy(source, destination) {
     return sendMessage('filesystem.copy', { source, destination });

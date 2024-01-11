@@ -321,7 +321,7 @@ fs::FileStats getStats(const string &path) {
     return fileStats;
 }
 
-fs::DirReaderResult readDirectory(const string &path) {
+fs::DirReaderResult readDirectory(const string &path, bool recursive) {
     fs::DirReaderResult dirResult;
     fs::FileStats fileStats = fs::getStats(path);
     if(fileStats.status != errors::NE_ST_OK) {
@@ -329,20 +329,27 @@ fs::DirReaderResult readDirectory(const string &path) {
         return dirResult;
     }
 
-    for(const auto &entry: filesystem::directory_iterator(path)) {
+    for(auto entry = filesystem::recursive_directory_iterator(path);
+        entry != filesystem::recursive_directory_iterator();
+        ++entry) {
+
         fs::EntryType type = fs::EntryTypeOther;
-        if(entry.is_directory()) {
+        if(entry->is_directory()) {
             type = fs::EntryTypeDir;
         }
-        else if(entry.is_regular_file()) {
+        else if(entry->is_regular_file()) {
             type = fs::EntryTypeFile;
         }
 
-        auto entryPath = entry.path();
-        string entryStr = entry.path().string();
+        auto entryPath = entry->path();
+        string entryStr = entry->path().string();
 
         dirResult.entries.push_back({ entryPath.filename().string(),
             helpers::normalizePath(entryStr), type });
+
+        if(!recursive) {
+            entry.disable_recursion_pending();
+        }
     }
     return dirResult;
 }
@@ -575,7 +582,13 @@ json readDirectory(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
-    fs::DirReaderResult dirResult = fs::readDirectory(path);
+    bool recursive = false;
+
+    if(helpers::hasField(input, "recursive")) {
+        recursive = input["recursive"].get<bool>();
+    }
+
+    fs::DirReaderResult dirResult = fs::readDirectory(path, recursive);
     if(dirResult.status != errors::NE_ST_OK) {
         output["error"] = errors::makeErrorPayload(dirResult.status, path);
         return output;
