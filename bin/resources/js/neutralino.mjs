@@ -88,7 +88,8 @@ let offlineMessageQueue = [];
 let extensionMessageQueue = {};
 function init$1() {
     initAuth();
-    ws = new WebSocket(`ws://${window.location.hostname}:${window.NL_PORT}`);
+    const connectToken = getAuthToken().split('.')[1];
+    ws = new WebSocket(`ws://${window.location.hostname}:${window.NL_PORT}?connectToken=${connectToken}`);
     registerLibraryEvents();
     registerSocketEvents();
 }
@@ -153,10 +154,8 @@ function registerSocketEvents() {
             if ((_a = message.data) === null || _a === void 0 ? void 0 : _a.error) {
                 nativeCalls[message.id].reject(message.data.error);
                 if (message.data.error.code == 'NE_RT_INVTOKN') {
-                    // critical auth error
-                    // Perhaps, someone tried to open app from anoher client,
-                    // with 'one-time' token mode
-                    handleAuthError();
+                    // Invalid native method token
+                    handleNativeMethodTokenError();
                 }
             }
             else if ((_b = message.data) === null || _b === void 0 ? void 0 : _b.success) {
@@ -184,6 +183,9 @@ function registerSocketEvents() {
         };
         dispatch('serverOffline', error);
     }));
+    ws.addEventListener('error', (event) => __awaiter(this, void 0, void 0, function* () {
+        handleConnectError();
+    }));
 }
 function processQueue(messageQueue) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -199,11 +201,16 @@ function processQueue(messageQueue) {
         }
     });
 }
-function handleAuthError() {
+function handleNativeMethodTokenError() {
     ws.close();
     document.body.innerText = '';
-    document.write('<code>NE_RT_INVTOKN</code>: Neutralinojs application configuration' +
-        ' prevents accepting native calls from this client.');
+    document.write('<code>NE_RT_INVTOKN</code>: Neutralinojs application cannot' +
+        ' execute native methods since <code>NL_TOKEN</code> is invalid.');
+}
+function handleConnectError() {
+    document.body.innerText = '';
+    document.write('<code>NE_CL_IVCTOKN</code>: Neutralinojs application cannot' +
+        ' connect with the framework core using <code>NL_TOKEN</code>.');
 }
 function initAuth() {
     if (window.NL_TOKEN) {
@@ -877,7 +884,7 @@ function init(options = {}) {
         }
     }
     window.NL_CVERSION = version;
-    window.NL_CCOMMIT = '2dafa1d4d0560ac740c98bb75210e7ac10baef92'; // only the build server will update this
+    window.NL_CCOMMIT = 'a20aeef8bda0a66bf0bfa8aff7d2570a3d0e2a3e'; // only the build server will update this
     initialized = true;
 }
 

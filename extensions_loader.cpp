@@ -23,6 +23,7 @@ json __buildExtensionProcessInput(const string &extensionId) {
     json options = {
         {"nlPort", to_string(settings::getOptionForCurrentMode("port").get<int>())},
         {"nlToken", authbasic::getTokenInternal()},
+        {"nlConnectToken", authbasic::getConnectTokenInternal()},
         {"nlExtensionId", extensionId}
     };
     return options;

@@ -9,9 +9,10 @@ const chalk = require('chalk');
 const processInput = JSON.parse(fs.readFileSync(process.stdin.fd, 'utf-8'));
 const NL_PORT = processInput.nlPort;
 const NL_TOKEN = processInput.nlToken;
+const NL_CTOKEN = processInput.nlConnectToken;
 const NL_EXTID = processInput.nlExtensionId;
 
-let client = new WS(`ws://localhost:${NL_PORT}?extensionId=${NL_EXTID}`);
+let client = new WS(`ws://localhost:${NL_PORT}?extensionId=${NL_EXTID}&connectToken=${NL_CTOKEN}`);
 
 client.onerror = function() {
     log('Connection error!', 'ERROR');

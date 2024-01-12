@@ -12,8 +12,10 @@ enum TokenSecurity { TokenSecurityOneTime, TokenSecurityNone };
 void init();
 void exportAuthInfo();
 bool verifyToken(const string &token);
+bool verifyConnectToken(const string &connectToken);
 string getToken();
 string getTokenInternal();
+string getConnectTokenInternal();
 
 } // namespace authbasic
 

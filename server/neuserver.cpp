@@ -16,6 +16,7 @@
 #include "extensions_loader.h"
 #include "server/neuserver.h"
 #include "server/router.h"
+#include "auth/authbasic.h"
 #include "api/debug/debug.h"
 #include "api/events/events.h"
 #include "api/app/app.h"
@@ -40,6 +41,10 @@ bool __isExtensionEndpoint(const string &url) {
     return regex_match(url, regex(".*extensionId=.*"));
 }
 
+bool __hasConnectToken(const string &url) {
+    return regex_match(url, regex(".*connectToken=.*"));
+}
+
 void __applyConfigHeaders(websocketserver::connection_ptr con) {
     json jHeaders = settings::getOptionForCurrentMode("serverHeaders");
     for(const auto &it: jHeaders.items()) {
@@ -47,15 +52,23 @@ void __applyConfigHeaders(websocketserver::connection_ptr con) {
     }
 }
 
-string __getExtensionIdFromUrl(const string &url) {
-    string id = "";
+string __getParamValueFromUrl(const string &url, const string &param) {
+    string val = "";
     smatch matches;
-    if(regex_search(url, matches, regex("extensionId=([\\w.]+)"))) {
+    if(regex_search(url, matches, regex(param + "=([\\w.\\-_]+)"))) {
         if(matches.size() >= 2) {
-            id = matches[1].str();
+            val = matches[1].str();
         }
     }
-    return id;
+    return val;
+}
+
+string __getExtensionIdFromUrl(const string &url) {
+    return __getParamValueFromUrl(url, "extensionId");
+}
+
+string __getConnectTokenFromUrl(const string &url) {
+    return __getParamValueFromUrl(url, "connectToken");
 }
 
 void __exitProcessIfIdle() {
@@ -242,13 +255,27 @@ void handleDisconnect(websocketpp::connection_hdl handler) {
 bool handleValidate(websocketpp::connection_hdl handler) {
     websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
     string url = con->get_resource();
+    string host = con->get_host();
+
+    if(!(host == "localhost" || host == "127.0.0.1") && settings::getMode() != settings::AppModeCloud) {
+        return false;
+    }
+
+    if(!__hasConnectToken(url)) {
+        return false;
+    }
+
+    string connectToken = __getConnectTokenFromUrl(url);
+    if(!authbasic::verifyConnectToken(connectToken)) {
+        return false;
+    }
+
     if(__isExtensionEndpoint(url)) {
         string extensionId = __getExtensionIdFromUrl(url);
         return extensions::isLoaded(extensionId);
     }
-    else {
-        return true;
-    }
+
+    return true;
 }
 
 void broadcast(const json &message) {

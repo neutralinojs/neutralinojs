@@ -38,8 +38,11 @@ string generateToken() {
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         "abcdefghijklmnopqrstuvwxyz";
 
-    for (int i = 0; i < 48; ++i) {
+    for (int i = 0; i < 96; ++i) {
         s += alphanum[rand() % (sizeof(alphanum) - 1)];
+        if(i == 47) {
+            s += ".";
+        }
     }
 
     return s;
