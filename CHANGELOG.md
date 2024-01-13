@@ -18,6 +18,12 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### API: os
 - Accept stdin with the background mode of the `os.execCommand` function.
 
+### Core: security
+- Now, all app clients and extensions require a valid connect token (A part of the `NL_TOKEN`) to connect to the Neutralinojs framework WebSocket server to receive app events.
+- The framework now sends the access token, connect token, port, and extension identifier to extension processes via the standard input, so other processes can't read them by scanning the process list.
+- The WebSocket client connection origin is checked during the HTTP/WS handshake to make sure that only local clients connect with a specific Neutralinojs app that runs on window, browser, or Chrome mode. Any URL origin is allowed for the cloud mode.
+- The above security enhancements fix two security advisories on GitHub. 
+
 ### Global variables
 - Now the `NL_ARCH` global variable returns the same value that `computer.getArch` returns.
 
