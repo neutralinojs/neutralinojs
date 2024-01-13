@@ -38,7 +38,7 @@ jobs:
       id: build-package
       with:
         arch: ${{ matrix.arch == 'arm64' && 'aarch64' || 'armv7' }}
-        distro: ubuntu18.04
+        distro: ubuntu20.04
         install: |
           apt-get update
           apt-get install -y -f \
