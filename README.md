@@ -15,7 +15,7 @@ Neutralinojs is a lightweight and portable desktop application development frame
 
 - [Neutralinojs vs. Electron, NW.JS, Tauri, NodeGui, Flutter, .Net MAUI, Wails](https://github.com/Elanis/web-to-desktop-framework-comparison)
 - [Neutralinojs vs. Electron vs. NW.js (2018)](https://github.com/neutralinojs/evaluation)
-- [Roadmap 2023](https://github.com/neutralinojs/roadmap#roadmap-2023)
+- [Roadmap 2024](https://codezri.org/blog/neutralinojs-2024-roadmap/)
 - [Release notes](https://neutralino.js.org/docs/release-notes/framework)
 
 Get started with the neu CLI:
@@ -69,7 +69,7 @@ Image created with [contributors-img](https://contributors-img.firebaseapp.com).
 
 Organizations and individuals support Neutralinojs development. See: https://codezri.org/sponsors
 
-If you like to support our work, you can donate to Neutralinojs via [Patreon](https://www.patreon.com/shalithasuranga).
+If you like to support our work, you can donate to Neutralinojs via [Patreon](https://www.patreon.com/shalithasuranga) or [GitHub Sponsors](https://github.com/sponsors/shalithasuranga).
 
 [![Become a Patreon](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/shalithasuranga)
 
