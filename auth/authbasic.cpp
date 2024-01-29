@@ -19,8 +19,9 @@ bool tokenSent = false;
 
 json __makeAuthInfoPayload() {
     json info;
-    info["accessToken"] = token;
-    info["port"] = settings::getOptionForCurrentMode("port").get<int>();
+    info["nlToken"] = authbasic::getTokenInternal();
+    info["nlConnectToken"] = authbasic::getConnectTokenInternal();
+    info["nlPort"] = settings::getOptionForCurrentMode("port").get<int>();
     return info;
 }
 
