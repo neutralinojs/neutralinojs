@@ -884,7 +884,7 @@ function init(options = {}) {
         }
     }
     window.NL_CVERSION = version;
-    window.NL_CCOMMIT = 'a20aeef8bda0a66bf0bfa8aff7d2570a3d0e2a3e'; // only the build server will update this
+    window.NL_CCOMMIT = 'b90b3bcc076de81d05431803146eca57ec2656a0'; // only the build server will update this
     initialized = true;
 }
 
