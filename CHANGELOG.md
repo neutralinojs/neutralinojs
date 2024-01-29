@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v5.0.0
+
 ### API: Reading, writing with standard streams
 - Implement `app.readProcessInput(readAll=false)` for reading string data from the standard input stream. This function can read a single line or multiple lines at once.
 - Implement `app.writeProcessOutput` and `app.writeProcessError` for sending string data to standard output and error streams accordingly.
