@@ -1,12 +1,6 @@
 
 #import "macwindow.h"
 
-// 000   000  00000000  0000000    000   000  000  00000000  000   000  
-// 000 0 000  000       000   000  000   000  000  000       000 0 000  
-// 000000000  0000000   0000000     000 000   000  0000000   000000000  
-// 000   000  000       000   000     000     000  000       000   000  
-// 00     00  00000000  0000000        0      000  00000000  00     00  
-
 @implementation MacWebView
 
 -(void)mouseDown:(NSEvent *)event 
@@ -27,7 +21,7 @@
             }
     }];
     
-    // [self takeSnapshot];
+    [self takeSnapshot];
     
     [super mouseDown:event];
 }
@@ -46,7 +40,7 @@
     if (error) NSLog(@"%@", error);
     else
     {
-        NSString *filePath = @"~/Desktop/neu.jpg"; // todo: make path configurable somehow
+        NSString *filePath = @"~/Desktop/neu.jpg";
         
         int number = 0;
         while ([[NSFileManager defaultManager] fileExistsAtPath:[filePath stringByExpandingTildeInPath]])
@@ -65,11 +59,6 @@
 
 @end
 
-// 00     00   0000000    0000000  000   000  000  000   000  0000000     0000000   000   000  
-// 000   000  000   000  000       000 0 000  000  0000  000  000   000  000   000  000 0 000  
-// 000000000  000000000  000       000000000  000  000 0 000  000   000  000   000  000000000  
-// 000 0 000  000   000  000       000   000  000  000  0000  000   000  000   000  000   000  
-// 000   000  000   000   0000000  00     00  000  000   000  0000000     0000000   00     00  
 
 @implementation MacWindow
 
@@ -103,7 +92,7 @@
             self.titleVisibility = NSWindowTitleHidden;
             self.titlebarAppearsTransparent = YES;
             
-            self.movableByWindowBackground = YES; // not sure if this is still needed or doing anything anymore
+            self.movableByWindowBackground = YES;
         }
         
         if (hideButtons)
@@ -117,28 +106,7 @@
 	return self;
 }
 
-- (void)setWidth:(int)width height:(int)height 
-        minWidth:(int)minWidth minHeight:(int)minHeight 
-        maxWidth:(int)maxWidth maxHeight:(int)maxHeight 
-        resizable:(BOOL)resizable
-{
-    [self setStyleMask:(resizable ? 
-        [self styleMask] |  NSWindowStyleMaskResizable : 
-        [self styleMask] & ~NSWindowStyleMaskResizable)];
-
-    if (minWidth != -1 || minHeight != -1) {
-        [self setContentMinSize:CGSizeMake(minWidth, minHeight)];
-    }
-    if (maxWidth != -1 || maxHeight != -1) {
-        [self setContentMaxSize: CGSizeMake(maxWidth, maxHeight)];
-    }
-    if(width != -1 || height != -1) {
-        [self setFrame:CGRectMake(0, 0, width, height) display:YES animate:NO];
-        [self center];
-    }
-}
-
-- (BOOL)isMovableByWindowBackground // not sure if this is still needed or doing anything anymore
+- (BOOL)isMovableByWindowBackground 
 {
     return YES;
 }

@@ -25,8 +25,7 @@
 #endif
 
 #include "lib/json/json.hpp"
-#include "api/window/window.h"   // the order ist important here ...
-#include "lib/webview/webview.h" // ... to enable window config access
+#include "lib/webview/webview.h"
 #include "settings.h"
 #include "resources.h"
 #include "helpers.h"
@@ -34,6 +33,7 @@
 #include "server/neuserver.h"
 #include "auth/permission.h"
 #include "api/app/app.h"
+#include "api/window/window.h"
 #include "api/events/events.h"
 #include "api/fs/fs.h"
 #include "api/debug/debug.h"
@@ -497,7 +497,7 @@ void setBorderless() {
     #elif defined(__APPLE__)
     unsigned long windowStyleMask = ((unsigned long (*)(id, SEL))objc_msgSend)(
         (id) windowHandle, "styleMask"_sel);
-    windowStyleMask &= ~1; // NSWindowStyleMaskTitled
+    windowStyleMask &= ~NSWindowStyleMaskTitled;
     ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle,
             "setStyleMask:"_sel, windowStyleMask);
     #elif defined(_WIN32)
@@ -524,7 +524,7 @@ namespace controllers {
 void __createWindow() {
     savedState = windowProps.useSavedState && __loadSavedWindowProps();
 
-    nativeWindow = new webview::webview(windowProps);
+    nativeWindow = new webview::webview(windowProps.enableInspector, windowProps.sizeOptions.resizable);
     nativeWindow->set_title(windowProps.title);
     if(windowProps.extendUserAgentWith != "") {
         nativeWindow->extend_user_agent(windowProps.extendUserAgentWith);
