@@ -704,7 +704,10 @@ public:
     // Main window
     m_window = ((id(*)(id, SEL))objc_msgSend)("MacWindow"_cls, "alloc"_sel);
     m_window = ((id(*)(id, SEL, int, int, int))objc_msgSend)(m_window, 
-        "initWithHiddenTitlebar:hiddenButtons:resizable:"_sel, 1, 1, windowOptions.sizeOptions.resizable);
+        "initWithHiddenTitlebar:hiddenButtons:resizable:"_sel, 
+            windowOptions.borderless, // assume borderless means hiddenTitlebar and ...
+            windowOptions.borderless, //    ... borderless means hiddenButtons for now.
+            windowOptions.sizeOptions.resizable);
 
     // Main window delegate
     auto wcls = objc_allocateClassPair((Class) "NSResponder"_cls, "WindowDelegate", 0);
