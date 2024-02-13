@@ -85,7 +85,7 @@ function makeCommand(optArgs = '') {
         command += 'linux_' + process.arch
     }
     else if(process.platform == 'darwin') {
-        command += 'mac_x64'
+        command += 'mac_' + process.arch
     }
     else if(process.platform == 'win32') {
         command += 'win_x64.exe'
