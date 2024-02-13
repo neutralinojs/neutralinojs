@@ -40,7 +40,7 @@ typedef void *webview_t;
 // is embedded into the given parent window. Otherwise a new window is created.
 // Depending on the platform, a GtkWindow, NSWindow or HWND pointer can be
 // passed here.
-WEBVIEW_API webview_t webview_create(int debug, int resizable);
+WEBVIEW_API webview_t webview_create(int debug, void *window);
 
 // Destroys a webview and closes the native window.
 WEBVIEW_API void webview_destroy(webview_t w);
@@ -446,13 +446,6 @@ inline std::string json_parse(const std::string s, const std::string key,
 //
 // ====================================================================
 //
-
-// 000      000  000   000  000   000  000   000    
-// 000      000  0000  000  000   000   000 000     
-// 000      000  000 0 000  000   000    00000      
-// 000      000  000  0000  000   000   000 000     
-// 0000000  000  000   000   0000000   000   000    
-
 #include <X11/Xlib.h>
 #include <JavaScriptCore/JavaScript.h>
 #include <gtk/gtk.h>
@@ -462,11 +455,15 @@ namespace webview {
 
 class gtk_webkit_engine {
 public:
-  gtk_webkit_engine(bool debug, bool resizable) {
+  gtk_webkit_engine(bool debug, void *window)
+      : m_window(static_cast<GtkWidget *>(window)) {
 
     XInitThreads();
     gtk_init_check(0, NULL);
-    m_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    m_window = static_cast<GtkWidget *>(window);
+    if (m_window == nullptr) {
+      m_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    }
     g_signal_connect(G_OBJECT(m_window), "destroy",
                      G_CALLBACK(+[](GtkWidget *, gpointer arg) {
                        std::exit(processExitCode);
@@ -635,12 +632,6 @@ using browser_engine = gtk_webkit_engine;
 
 #elif defined(WEBVIEW_COCOA)
 
-// 00     00   0000000    0000000    
-// 000   000  000   000  000         
-// 000000000  000000000  000         
-// 000 0 000  000   000  000         
-// 000   000  000   000   0000000    
-
 //
 // ====================================================================
 //
@@ -653,6 +644,8 @@ using browser_engine = gtk_webkit_engine;
 
 #include <CoreGraphics/CoreGraphics.h>
 #include <objc/objc-runtime.h>
+
+#define NSBackingStoreBuffered 2
 
 #define NSWindowStyleMaskResizable 8
 #define NSWindowStyleMaskMiniaturizable 4
@@ -675,13 +668,16 @@ id operator"" _str(const char *s, std::size_t) {
 
 class cocoa_wkwebview_engine {
 public:
-  cocoa_wkwebview_engine(bool debug, bool resizable) {
+  cocoa_wkwebview_engine(bool debug, void *window) {
     // Application
-    id app = ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls, "sharedApplication"_sel);
-    ((void (*)(id, SEL, long))objc_msgSend)(app, "setActivationPolicy:"_sel, NSApplicationActivationPolicyRegular);
+    id app = ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls,
+                                            "sharedApplication"_sel);
+    ((void (*)(id, SEL, long))objc_msgSend)(
+        app, "setActivationPolicy:"_sel, NSApplicationActivationPolicyRegular);
 
     // Delegate
-    auto cls = objc_allocateClassPair((Class) "NSResponder"_cls, "AppDelegate", 0);
+    auto cls =
+        objc_allocateClassPair((Class) "NSResponder"_cls, "AppDelegate", 0);
     class_addProtocol(cls, objc_getProtocol("NSTouchBarProvider"));
     class_addMethod(cls, "applicationShouldTerminateAfterLastWindowClosed:"_sel,
                     (IMP)(+[](id, SEL, id) -> BOOL { return 0; }), "c@:@");
@@ -705,11 +701,20 @@ public:
                                           delegate);
 
     // Main window
-    m_window = ((id(*)(id, SEL))objc_msgSend)("MacWindow"_cls, "alloc"_sel);
-    m_window = ((id(*)(id, SEL, int, int, int))objc_msgSend)(m_window, "initWithHiddenTitlebar:hiddenButtons:resizable:"_sel, 1, 1, 1);
+    if (window == nullptr) {
+      
+      m_window = ((id(*)(id, SEL))objc_msgSend)("MacWindow"_cls, "alloc"_sel);
+      m_window =
+          ((id(*)(id, SEL, CGRect, int, unsigned long, int))objc_msgSend)(
+              m_window, "initWithContentRect:styleMask:backing:defer:"_sel,
+              CGRectMake(0, 0, 0, 0), 0, NSBackingStoreBuffered, 0);
+    } else {
+      m_window = (id)window;
+    }
 
     // Main window delegate
-    auto wcls = objc_allocateClassPair((Class) "NSResponder"_cls, "WindowDelegate", 0);
+    auto wcls =
+        objc_allocateClassPair((Class) "NSResponder"_cls, "WindowDelegate", 0);
     class_addMethod(wcls, "windowShouldClose:"_sel,
                     (IMP)(+[](id, SEL, id) -> BOOL {
                       if(windowStateChange)
@@ -730,13 +735,17 @@ public:
     objc_registerClassPair(wcls);
 
     auto wdelegate = ((id(*)(id, SEL))objc_msgSend)((id)wcls, "new"_sel);
-    objc_setAssociatedObject(delegate, "webview", (id)this, OBJC_ASSOCIATION_ASSIGN);
-    ((void (*)(id, SEL, id))objc_msgSend)(m_window, sel_registerName("setDelegate:"), wdelegate);
+    objc_setAssociatedObject(delegate, "webview", (id)this,
+                             OBJC_ASSOCIATION_ASSIGN);
+    ((void (*)(id, SEL, id))objc_msgSend)(m_window, sel_registerName("setDelegate:"),
+                                          wdelegate);
 
     // Webview
-    auto config = ((id(*)(id, SEL))objc_msgSend)("WKWebViewConfiguration"_cls, "new"_sel);
-    m_manager   = ((id(*)(id, SEL))objc_msgSend)(config, "userContentController"_sel);
-    m_webview   = ((id(*)(id, SEL))objc_msgSend)("MacWebView"_cls, "alloc"_sel);
+    auto config =
+        ((id(*)(id, SEL))objc_msgSend)("WKWebViewConfiguration"_cls, "new"_sel);
+    m_manager =
+        ((id(*)(id, SEL))objc_msgSend)(config, "userContentController"_sel);
+    m_webview = ((id(*)(id, SEL))objc_msgSend)("WKWebView"_cls, "alloc"_sel);
     
     if (debug) {
       // Equivalent Obj-C:
@@ -779,15 +788,14 @@ public:
     ((void (*)(id, SEL, CGRect, id))objc_msgSend)(
         m_webview, "initWithFrame:configuration:"_sel, CGRectMake(0, 0, 0, 0),
         config);
-                
     ((void (*)(id, SEL, id, id))objc_msgSend)(
         m_manager, "addScriptMessageHandler:name:"_sel, delegate,
         "external"_str);
-                
+        
     ((id (*)(id, SEL, id, id))objc_msgSend)((id) m_webview, "setValue:forKey:"_sel, 
         ((id(*)(id, SEL, BOOL))objc_msgSend)("NSNumber"_cls, "numberWithBool:"_sel, 0), 
         "drawsBackground"_str);
-            
+    
     init(R"script(
                       window.external = {
                         invoke: function(s) {
@@ -795,9 +803,10 @@ public:
                         },
                       };
                      )script");
-                     
-    ((void (*)(id, SEL, id))objc_msgSend)(m_window, "setContentView:"_sel, m_webview);
-    ((void (*)(id, SEL, id))objc_msgSend)(m_window, "makeKeyAndOrderFront:"_sel, nullptr);
+    ((void (*)(id, SEL, id))objc_msgSend)(m_window, "setContentView:"_sel,
+                                          m_webview);
+    ((void (*)(id, SEL, id))objc_msgSend)(m_window, "makeKeyAndOrderFront:"_sel,
+                                          nullptr);
   }
   ~cocoa_wkwebview_engine() { close(); }
   void *window() { return (void *)m_window; }
@@ -857,11 +866,11 @@ public:
   }
 
   void set_size(int width, int height, int minWidth, int minHeight,
-                int maxWidth, int maxHeight, bool resizable) 
-  {
-    auto style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
+                int maxWidth, int maxHeight, bool resizable) {
+    auto style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
+                 NSWindowStyleMaskMiniaturizable;
     if (resizable) {
-       style = style | NSWindowStyleMaskResizable;
+      style = style | NSWindowStyleMaskResizable;
     }
     ((void (*)(id, SEL, unsigned long))objc_msgSend)(
         m_window, "setStyleMask:"_sel, style);
@@ -925,12 +934,6 @@ using browser_engine = cocoa_wkwebview_engine;
 } // namespace webview
 
 #elif defined(WEBVIEW_EDGE)
-
-// 000   000  000  000   000    
-// 000 0 000  000  0000  000    
-// 000000000  000  000 0 000    
-// 000   000  000  000  0000    
-// 00     00  000  000   000    
 
 //
 // ====================================================================
@@ -1232,8 +1235,8 @@ private:
 
 class win32_edge_engine {
 public:
-  win32_edge_engine(bool debug, bool resizable) {
-
+  win32_edge_engine(bool debug, void *window) {
+    if (window == nullptr) {
       HINSTANCE hInstance = GetModuleHandle(nullptr);
       HICON icon = (HICON)LoadImage(
           hInstance, IDI_APPLICATION, IMAGE_ICON, GetSystemMetrics(SM_CXSMICON),
@@ -1325,6 +1328,9 @@ public:
                               CW_USEDEFAULT, 640, 480, nullptr, nullptr,
                               GetModuleHandle(nullptr), nullptr);
       SetWindowLongPtr(m_window, GWLP_USERDATA, (LONG_PTR)this);
+    } else {
+      m_window = *(static_cast<HWND *>(window));
+    }
 
     setDpi();
 
@@ -1490,7 +1496,8 @@ namespace webview {
 
 class webview : public browser_engine {
 public:
-  webview(bool debug = false, bool resizable = true) : browser_engine(debug, resizable) {}
+  webview(bool debug = false, void *wnd = nullptr)
+      : browser_engine(debug, wnd) {}
 
   void navigate(const std::string url) {
     if (url == "") {
@@ -1576,8 +1583,8 @@ private:
 };
 } // namespace webview
 
-WEBVIEW_API webview_t webview_create(int debug, int resizable) {
-  return new webview::webview(debug, resizable);
+WEBVIEW_API webview_t webview_create(int debug, void *wnd) {
+  return new webview::webview(debug, wnd);
 }
 
 WEBVIEW_API void webview_destroy(webview_t w) {

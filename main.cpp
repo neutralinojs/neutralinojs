@@ -7,7 +7,7 @@
 #endif
 
 #include "lib/json/json.hpp"
-// #include "lib/easylogging/easylogging++.h"
+#include "lib/easylogging/easylogging++.h"
 #include "lib/filedialogs/portable-file-dialogs.h"
 #include "auth/permission.h"
 #include "auth/authbasic.h"
@@ -26,7 +26,7 @@
 #define NEU_APP_LOG_FORMAT "%level %datetime %msg %loc %user@%host"
 #define ELPP_THREAD_SAFE
 
-// INITIALIZE_EASYLOGGINGPP
+INITIALIZE_EASYLOGGINGPP
 
 using namespace std;
 using json = nlohmann::json;
@@ -69,34 +69,34 @@ void __startApp() {
     }
 }
 
-// void __configureLogger() {
-    // bool enableLogging = true;
-    // bool enableLogFile = true;
+void __configureLogger() {
+    bool enableLogging = true;
+    bool enableLogFile = true;
 
-    // json logging = settings::getOptionForCurrentMode("logging");
-    // if(!logging["enabled"].is_null()) {
-        // enableLogging = logging["enabled"].get<bool>();
-    // }
-    // if(!logging["writeToLogFile"].is_null()) {
-        // enableLogFile = logging["writeToLogFile"].get<bool>();
-    // }
+    json logging = settings::getOptionForCurrentMode("logging");
+    if(!logging["enabled"].is_null()) {
+        enableLogging = logging["enabled"].get<bool>();
+    }
+    if(!logging["writeToLogFile"].is_null()) {
+        enableLogFile = logging["writeToLogFile"].get<bool>();
+    }
 
-    // el::Configurations defaultConf;
-    // defaultConf.setToDefault();
-    // defaultConf.setGlobally(
-            // el::ConfigurationType::Format, NEU_APP_LOG_FORMAT);
+    el::Configurations defaultConf;
+    defaultConf.setToDefault();
+    defaultConf.setGlobally(
+            el::ConfigurationType::Format, NEU_APP_LOG_FORMAT);
 
-    // if(enableLogFile) {
-        // defaultConf.setGlobally(
-                // el::ConfigurationType::Filename, settings::joinAppPath(NEU_APP_LOG_FILE));
-    // }
-    // defaultConf.setGlobally(
-            // el::ConfigurationType::ToFile, enableLogFile ? "true" : "false");
+    if(enableLogFile) {
+        defaultConf.setGlobally(
+                el::ConfigurationType::Filename, settings::joinAppPath(NEU_APP_LOG_FILE));
+    }
+    defaultConf.setGlobally(
+            el::ConfigurationType::ToFile, enableLogFile ? "true" : "false");
 
-    // defaultConf.setGlobally(
-            // el::ConfigurationType::Enabled, enableLogging ? "true" : "false");
-    // el::Loggers::reconfigureLogger("default", defaultConf);
-// }
+    defaultConf.setGlobally(
+            el::ConfigurationType::Enabled, enableLogging ? "true" : "false");
+    el::Loggers::reconfigureLogger("default", defaultConf);
+}
 
 void __startServerAsync() {
     navigationUrl = settings::getOptionForCurrentMode("url").get<string>();
@@ -189,7 +189,7 @@ int main(int argc, char ** argv)
     }
     __initFramework(args);
     __startServerAsync();
-    // __configureLogger();
+    __configureLogger();
     __initExtra();
     __startApp();
     return 0;

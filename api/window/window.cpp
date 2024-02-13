@@ -524,7 +524,7 @@ namespace controllers {
 void __createWindow() {
     savedState = windowProps.useSavedState && __loadSavedWindowProps();
 
-    nativeWindow = new webview::webview(windowProps.enableInspector, windowProps.sizeOptions.resizable);
+    nativeWindow = new webview::webview(windowProps.enableInspector, nullptr);
     nativeWindow->set_title(windowProps.title);
     if(windowProps.extendUserAgentWith != "") {
         nativeWindow->extend_user_agent(windowProps.extendUserAgentWith);
