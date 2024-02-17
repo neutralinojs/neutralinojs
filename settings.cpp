@@ -223,6 +223,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
         {"--window-resizable", {"/modes/window/resizable", "bool"}},
         {"--window-maximizable", {"/modes/window/maximizable", "bool"}},
         {"--window-center", {"/modes/window/center", "bool"}},
+        {"--window-transparent", {"/modes/window/transparent", "bool"}},
         {"--window-exit-process-on-close", {"/modes/window/exitProcessOnClose", "bool"}},
         {"--window-use-saved-state", {"/modes/window/useSavedState", "bool"}},
         {"--window-icon", {"/modes/window/icon", "string"}},
