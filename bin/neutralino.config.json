@@ -44,6 +44,7 @@
             "maximize": false,
             "hidden": false,
             "resizable": true,
+            "transparent": false,
             "exitProcessOnClose": false,
             "useSavedState": true,
             "port": 0,

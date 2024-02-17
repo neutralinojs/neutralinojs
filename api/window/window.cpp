@@ -524,7 +524,7 @@ namespace controllers {
 void __createWindow() {
     savedState = windowProps.useSavedState && __loadSavedWindowProps();
 
-    nativeWindow = new webview::webview(windowProps.enableInspector, nullptr);
+    nativeWindow = new webview::webview(windowProps.enableInspector, nullptr, windowProps.transparent);
     nativeWindow->set_title(windowProps.title);
     if(windowProps.extendUserAgentWith != "") {
         nativeWindow->extend_user_agent(windowProps.extendUserAgentWith);
@@ -845,6 +845,9 @@ json init(const json &input) {
 
     if(helpers::hasField(input, "center"))
         windowProps.center = input["center"].get<bool>();
+
+    if(helpers::hasField(input, "transparent"))
+        windowProps.transparent = input["transparent"].get<bool>();
 
     if(helpers::hasField(input, "exitProcessOnClose"))
         windowProps.exitProcessOnClose = input["exitProcessOnClose"].get<bool>();

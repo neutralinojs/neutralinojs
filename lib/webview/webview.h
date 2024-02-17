@@ -449,13 +449,18 @@ inline std::string json_parse(const std::string s, const std::string key,
 #include <X11/Xlib.h>
 #include <JavaScriptCore/JavaScript.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkscreen.h>
+#include <cairo/cairo.h>
 #include <webkit2/webkit2.h>
+
 
 namespace webview {
 
+static bool gtkSupportsAlpha = true;
+
 class gtk_webkit_engine {
 public:
-  gtk_webkit_engine(bool debug, void *window)
+  gtk_webkit_engine(bool debug, void *window, bool transparent)
       : m_window(static_cast<GtkWidget *>(window)) {
 
     XInitThreads();
@@ -464,6 +469,37 @@ public:
     if (m_window == nullptr) {
       m_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     }
+
+    if(transparent) {
+      GdkScreen *screen = gtk_widget_get_screen(m_window);
+      GdkVisual *visual = gdk_screen_get_rgba_visual(screen);
+
+      if(!visual) {
+      visual = gdk_screen_get_system_visual(screen);
+      gtkSupportsAlpha = false;
+      }
+
+      gtk_widget_set_app_paintable(m_window, true);
+      gtk_widget_set_visual(m_window, visual);
+
+      g_signal_connect(G_OBJECT(m_window), "draw",
+          G_CALLBACK(+[](GtkWidget *widget, cairo_t *cr, gpointer userdata) {
+
+          if(gtkSupportsAlpha) {
+          cairo_set_source_rgba(cr, 0, 0, 0, 0);
+          }
+          else {
+          cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
+          }
+
+          cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+          cairo_paint(cr);
+
+          return false;
+      }),
+      nullptr);
+    }
+
     g_signal_connect(G_OBJECT(m_window), "destroy",
                      G_CALLBACK(+[](GtkWidget *, gpointer arg) {
                        std::exit(processExitCode);
@@ -538,6 +574,11 @@ public:
       webkit_settings_set_enable_developer_extras(settings, true);
       WebKitWebInspector *inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(m_webview));
       webkit_web_inspector_show(WEBKIT_WEB_INSPECTOR(inspector));
+    }
+
+    if(transparent) {
+      GdkRGBA color { 0, 0, 0, 0};
+      webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(m_webview), &color);
     }
 
     gtk_widget_show_all(m_window);
@@ -668,7 +709,7 @@ id operator"" _str(const char *s, std::size_t) {
 
 class cocoa_wkwebview_engine {
 public:
-  cocoa_wkwebview_engine(bool debug, void *window) {
+  cocoa_wkwebview_engine(bool debug, void *window, bool transparent) {
     // Application
     id app = ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls,
                                             "sharedApplication"_sel);
@@ -702,7 +743,7 @@ public:
 
     // Main window
     if (window == nullptr) {
-      
+
       m_window = ((id(*)(id, SEL))objc_msgSend)("MacWindow"_cls, "alloc"_sel);
       m_window =
           ((id(*)(id, SEL, CGRect, int, unsigned long, int))objc_msgSend)(
@@ -746,7 +787,7 @@ public:
     m_manager =
         ((id(*)(id, SEL))objc_msgSend)(config, "userContentController"_sel);
     m_webview = ((id(*)(id, SEL))objc_msgSend)("WKWebView"_cls, "alloc"_sel);
-    
+
     if (debug) {
       // Equivalent Obj-C:
       // [[config preferences] setValue:@YES forKey:@"developerExtrasEnabled"];
@@ -791,11 +832,11 @@ public:
     ((void (*)(id, SEL, id, id))objc_msgSend)(
         m_manager, "addScriptMessageHandler:name:"_sel, delegate,
         "external"_str);
-        
-    ((id (*)(id, SEL, id, id))objc_msgSend)((id) m_webview, "setValue:forKey:"_sel, 
-        ((id(*)(id, SEL, BOOL))objc_msgSend)("NSNumber"_cls, "numberWithBool:"_sel, 0), 
+
+    ((id (*)(id, SEL, id, id))objc_msgSend)((id) m_webview, "setValue:forKey:"_sel,
+        ((id(*)(id, SEL, BOOL))objc_msgSend)("NSNumber"_cls, "numberWithBool:"_sel, 0),
         "drawsBackground"_str);
-    
+
     init(R"script(
                       window.external = {
                         invoke: function(s) {
@@ -837,7 +878,7 @@ public:
   void extend_user_agent(const std::string customAgent) {
     std::string ua = std::string(
       ((const char *(*)(id, SEL))objc_msgSend)(
-        ((id(*)(id, SEL, id))objc_msgSend)(m_webview, "valueForKey:"_sel, 
+        ((id(*)(id, SEL, id))objc_msgSend)(m_webview, "valueForKey:"_sel,
         "userAgent"_str), "UTF8String"_sel)
     );
     std::string newUa = ua + " " + customAgent;
@@ -1121,7 +1162,7 @@ public:
     m_webview->get_Settings(&settings);
     ICoreWebView2Settings2 *settings2 = nullptr;
     settings->QueryInterface(IID_ICoreWebView2Settings2, reinterpret_cast<void**>(&settings2));
-    LPWSTR ua; 
+    LPWSTR ua;
     settings2->get_UserAgent(&ua);
     std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wideCharConverter;
     std::string newUa = wideCharConverter.to_bytes(ua) + " " + customAgent;
@@ -1235,7 +1276,7 @@ private:
 
 class win32_edge_engine {
 public:
-  win32_edge_engine(bool debug, void *window) {
+  win32_edge_engine(bool debug, void *window, bool transparent) {
     if (window == nullptr) {
       HINSTANCE hInstance = GetModuleHandle(nullptr);
       HICON icon = (HICON)LoadImage(
@@ -1496,8 +1537,8 @@ namespace webview {
 
 class webview : public browser_engine {
 public:
-  webview(bool debug = false, void *wnd = nullptr)
-      : browser_engine(debug, wnd) {}
+  webview(bool debug = false, void *wnd = nullptr, bool transparent = false)
+      : browser_engine(debug, wnd, transparent) {}
 
   void navigate(const std::string url) {
     if (url == "") {
@@ -1583,8 +1624,8 @@ private:
 };
 } // namespace webview
 
-WEBVIEW_API webview_t webview_create(int debug, void *wnd) {
-  return new webview::webview(debug, wnd);
+WEBVIEW_API webview_t webview_create(int debug, void *wnd, bool transparent) {
+  return new webview::webview(debug, wnd, transparent);
 }
 
 WEBVIEW_API void webview_destroy(webview_t w) {

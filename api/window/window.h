@@ -54,6 +54,7 @@ struct WindowOptions {
     bool hidden = false;
     bool center = false;
     bool maximizable = true;
+    bool transparent = false;
     bool exitProcessOnClose = true;
     bool useSavedState = true;
     string title = "Neutralinojs window";
