@@ -35,4 +35,5 @@ describe('clipboard.spec: clipboard namespace tests', () => {
             assert.equal(runner.getOutput(), 'Test value');
         });
     });
+    
 });
