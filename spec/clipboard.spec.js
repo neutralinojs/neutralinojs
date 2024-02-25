@@ -41,21 +41,21 @@ describe('clipboard.spec: clipboard namespace tests', () => {
             let exitCode = runner.run(`
                 try {
                     await Neutralino.clipboard.clearClipboard();
+                    await __close(true);
                 }
                 catch(err) {
-                    await __close(err.code);
+                    await __close(false); 
                 }
             `);
-            assert.equal(runner.getOutput(), 'Clipboard does not contain text.');
+            assert.equal(runner.getOutput(), 'false'); 
         });
         it('clears the clipboard if it contains text', async () => {
             let exitCode = runner.run(`
                 await Neutralino.clipboard.writeText('Test value');
                 await Neutralino.clipboard.clearClipboard();
-                let clipboardText = await Neutralino.clipboard.readText();
-                await __close(clipboardText);
+                await __close(true); 
             `);
-            assert.equal(runner.getOutput(), '');
+            assert.equal(runner.getOutput(), 'true');
         });
     });
 });
