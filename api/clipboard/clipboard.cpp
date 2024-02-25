@@ -36,5 +36,17 @@ json writeText(const json &input) {
     return output;
 }
 
+json clearClipboard(const json &input) {
+    json output;
+    if (!clip::has(clip::text_format())) {
+        output["error"] = "Clipboard does not contain text.";
+        output["success"] = false;
+        return output;
+    }
+    clip::clear();
+    output["success"] = true;
+    return output;
+}
+
 } // namespace controllers
 } // namespace clipboard
