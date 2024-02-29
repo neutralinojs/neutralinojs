@@ -215,11 +215,6 @@ bool isSavedStateLoaded() {
   return savedState;
 }
 
-void executeJavaScript(const string &js) {
-    if(nativeWindow)
-        nativeWindow->eval(js);
-}
-
 bool isMaximized() {
     json output;
     #if defined(__linux__) || defined(__FreeBSD__)
