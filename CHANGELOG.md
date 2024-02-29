@@ -7,7 +7,6 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ## Unreleased
 
 ### Configuration: window transparency
-
 Neutralinojs offers the inbuilt borderless mode and draggable region API to create custom window frames using HTML and CSS. Earlier, Neutralinojs used a default opaque color (usually white) for the window and webview layer, so app developers couldn't make custom CSS-styled window frames transparent or implement custom window frame shapes (i.e., rounded edges). Now, it offers the `window.transparent` boolean flag to activate window transparency. 
 
 If the transparency mode is on, the Neutralinojs window and webview use an alpha color layer and become transparent, so developers can use the `rgba` CSS color function on `body` background to handle the transparency level of the app. 
@@ -15,6 +14,9 @@ If the transparency mode is on, the Neutralinojs window and webview use an alpha
 The transparency mode can be activated using the `--window-transparent=<bool>` internal command-line option too.
 
 *Note: This feature is not implemented for the Windows operating system yet.* 
+
+### API: clipboard
+- Expose the `clipboard.clear()` function to clear system clipboard.
 
 ## v5.0.0
 
