@@ -36,15 +36,11 @@ json writeText(const json &input) {
     return output;
 }
 
-json clearClipboard() {
+json clear(const json &input) {
     json output;
-    if (!clip::has(clip::text_format())) {
-        output["error"] = "Clipboard does not contain text.";
-        output["success"] = false;
-        return output;
-    }
     clip::clear();
     output["success"] = true;
+    output["message"] = "Clipboard cleared"
     return output;
 }
 
