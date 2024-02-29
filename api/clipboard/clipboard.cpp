@@ -36,5 +36,13 @@ json writeText(const json &input) {
     return output;
 }
 
+json clear(const json &input) {
+    json output;
+    clip::clear();
+    output["success"] = true;
+    output["message"] = "Clipboard cleared"
+    return output;
+}
+
 } // namespace controllers
 } // namespace clipboard
