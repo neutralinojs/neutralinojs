@@ -839,11 +839,15 @@ var Neutralino = (function (exports) {
     function writeText(data) {
         return sendMessage('clipboard.writeText', { data });
     }
+    function clear() {
+        return sendMessage('clipboard.clear');
+    }
 
     var clipboard = {
         __proto__: null,
         readText: readText,
-        writeText: writeText
+        writeText: writeText,
+        clear: clear
     };
 
     function getMethods() {
@@ -855,7 +859,7 @@ var Neutralino = (function (exports) {
         getMethods: getMethods
     };
 
-    var version = "3.13.0";
+    var version = "5.0.1";
 
     let initialized = false;
     function init(options = {}) {
@@ -887,9 +891,33 @@ var Neutralino = (function (exports) {
             }
         }
         window.NL_CVERSION = version;
-        window.NL_CCOMMIT = 'b90b3bcc076de81d05431803146eca57ec2656a0'; // only the build server will update this
+        window.NL_CCOMMIT = 'e42ffe829a711b290b4cf70c8409bf69609638a9'; // only the build server will update this
         initialized = true;
     }
+
+    exports.Mode = void 0;
+    (function (Mode) {
+        Mode[Mode["window"] = 0] = "window";
+        Mode[Mode["browser"] = 1] = "browser";
+        Mode[Mode["cloud"] = 2] = "cloud";
+        Mode[Mode["chrome"] = 3] = "chrome";
+    })(exports.Mode || (exports.Mode = {}));
+    exports.OperatingSystem = void 0;
+    (function (OperatingSystem) {
+        OperatingSystem[OperatingSystem["Linux"] = 0] = "Linux";
+        OperatingSystem[OperatingSystem["Windows"] = 1] = "Windows";
+        OperatingSystem[OperatingSystem["Darwin"] = 2] = "Darwin";
+        OperatingSystem[OperatingSystem["FreeBSD"] = 3] = "FreeBSD";
+        OperatingSystem[OperatingSystem["Unknown"] = 4] = "Unknown";
+    })(exports.OperatingSystem || (exports.OperatingSystem = {}));
+    exports.Architecture = void 0;
+    (function (Architecture) {
+        Architecture[Architecture["x64"] = 0] = "x64";
+        Architecture[Architecture["arm"] = 1] = "arm";
+        Architecture[Architecture["itanium"] = 2] = "itanium";
+        Architecture[Architecture["ia32"] = 3] = "ia32";
+        Architecture[Architecture["unknown"] = 4] = "unknown";
+    })(exports.Architecture || (exports.Architecture = {}));
 
     exports.app = app;
     exports.clipboard = clipboard;
