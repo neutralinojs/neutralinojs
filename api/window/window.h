@@ -73,7 +73,6 @@ void onClose();
 
 NEU_W_HANDLE getWindowHandle();
 bool isSavedStateLoaded();
-void executeJavaScript(const string &js);
 bool isMaximized();
 void maximize();
 void minimize();
