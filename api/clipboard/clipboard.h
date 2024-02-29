@@ -14,6 +14,7 @@ namespace controllers {
 
 json readText(const json &input);
 json writeText(const json &input);
+json clear(const json &input);
 
 } // namespace controllers
 

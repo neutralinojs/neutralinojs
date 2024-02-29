@@ -40,7 +40,7 @@ json clear(const json &input) {
     json output;
     clip::clear();
     output["success"] = true;
-    output["message"] = "Clipboard cleared"
+    output["message"] = "Clipboard cleared";
     return output;
 }
 
