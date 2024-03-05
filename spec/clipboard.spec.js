@@ -36,4 +36,16 @@ describe('clipboard.spec: clipboard namespace tests', () => {
         });
     });
 
+    describe('clipboard.clear', () => {
+        it('clears the clipboard', async () => {
+            let exitCode = runner.run(`
+                await Neutralino.clipboard.writeText('Test value');
+                await Neutralino.clipboard.clear();
+                let clipboardText = await Neutralino.clipboard.readText();
+                await __close(clipboardText);
+            `);
+            assert.equal(runner.getOutput(), '');
+        });
+    });
+
 });
