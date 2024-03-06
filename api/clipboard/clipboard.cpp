@@ -44,5 +44,25 @@ json clear(const json &input) {
     return output;
 }
 
+json readImage(const json &input) {
+    json output;
+    std::vector<uint8_t> pixelData;
+    const auto& dataArray = input["data"];
+    if (dataArray.is_array()) {
+        for (const auto &value : dataArray) {
+            if (value.is_number_integer()) {
+                pixelData.push_back(value.get<uint8_t>());
+            }
+        }
+    } 
+    clip::image_spec spec;
+    spec.width = 3;
+    spec.height = 2;
+    clip::image img(pixelData.data(), spec);
+    clip::set_image(img);
+    output["success"] = true;
+    return output;
+}
+
 } // namespace controllers
 } // namespace clipboard
