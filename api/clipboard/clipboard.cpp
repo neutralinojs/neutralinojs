@@ -44,7 +44,7 @@ json clear(const json &input) {
     return output;
 }
 
-json readImage(const json &input) {
+json writeImage(const json &input) {
     json output;
     std::vector<uint8_t> pixelData;
     const auto& dataArray = input["data"];

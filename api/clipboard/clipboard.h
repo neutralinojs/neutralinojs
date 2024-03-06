@@ -15,7 +15,7 @@ namespace controllers {
 json readText(const json &input);
 json writeText(const json &input);
 json clear(const json &input);
-json readImage(const json &input);
+json writeImage(const json &input);
 } // namespace controllers
 
 } // namespace clipboard
