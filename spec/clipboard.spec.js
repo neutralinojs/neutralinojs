@@ -40,26 +40,26 @@ describe('clipboard.spec: clipboard namespace tests', () => {
                 catch(err) {
                     await __close(err.code);
                 }
-        `);
+            `);
             assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
             let exitCode2 = runner.run(`
-            try {
-                await Neutralino.clipboard.writeText(undefined);
-            }
-            catch(err) {
-                await __close(err.code);
-            }
-        `);
-        assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
-        let exitCode3 = runner.run(`
-        try {
-            await Neutralino.clipboard.writeText({ key: 'value' });
-        }
-        catch(err) {
-            await __close(err.code);
-        }
-    `);
-    assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+                try {
+                    await Neutralino.clipboard.writeText(undefined);
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+            let exitCode3 = runner.run(`
+                try {
+                    await Neutralino.clipboard.writeText({ key: 'value' });
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
         });
         
         it('successfully writes special characters to the clipboard', async () => {
@@ -104,9 +104,12 @@ describe('clipboard.spec: clipboard namespace tests', () => {
                 await Neutralino.clipboard.writeText('Test value');
                 let clipboardText1 = await Neutralino.clipboard.readText();
                 let clipboardText2 = await Neutralino.clipboard.readText();
-                await __close(clipboardText1 === clipboardText2 ? 'ok' : 'not ok');
+                let result = {clipboardText1, clipboardText2};
+                await __close(JSON.stringify(result));
             `);
-            assert.equal(runner.getOutput(), 'ok');
+            let result = await runner.getOutput();
+            let resultJson = JSON.parse(result);
+            assert.equal(resultJson.clipboardText1, resultJson.clipboardText2);
         });
         it('returns text with leading and trailing whitespaces intact', async () => {
             let exitCode = runner.run(`
