@@ -33,6 +33,33 @@ describe('clipboard.spec: clipboard namespace tests', () => {
                 }
             `);
             assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+            let exitCode1 = runner.run(`
+                try {
+                    await Neutralino.clipboard.writeText(null);
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+        `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+            let exitCode2 = runner.run(`
+            try {
+                await Neutralino.clipboard.writeText(undefined);
+            }
+            catch(err) {
+                await __close(err.code);
+            }
+        `);
+        assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+        let exitCode3 = runner.run(`
+        try {
+            await Neutralino.clipboard.writeText({ key: 'value' });
+        }
+        catch(err) {
+            await __close(err.code);
+        }
+    `);
+    assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
         });
         
         it('successfully writes special characters to the clipboard', async () => {
@@ -51,39 +78,7 @@ describe('clipboard.spec: clipboard namespace tests', () => {
             `);
             assert.equal(runner.getOutput(), 'ok');
         });
-        it('throws an error if the parameter is null', async () => {
-            let exitCode = runner.run(`
-                try {
-                    await Neutralino.clipboard.writeText(null);
-                }
-                catch(err) {
-                    await __close(err.code);
-                }
-            `);
-            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
-        });
-        it('throws an error if the parameter is undefined', async () => {
-            let exitCode = runner.run(`
-                try {
-                    await Neutralino.clipboard.writeText(undefined);
-                }
-                catch(err) {
-                    await __close(err.code);
-                }
-            `);
-            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
-        });
-        it('throws an error if the parameter is an object', async () => {
-            let exitCode = runner.run(`
-                try {
-                    await Neutralino.clipboard.writeText({ key: 'value' });
-                }
-                catch(err) {
-                    await __close(err.code);
-                }
-            `);
-            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
-        });
+     
     });
 });
 
