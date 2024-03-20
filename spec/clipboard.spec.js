@@ -64,7 +64,7 @@ describe('clipboard.spec: clipboard namespace tests', () => {
         
         it('successfully writes special characters to the clipboard', async () => {
             let exitCode = runner.run(`
-                await Neutralino.clipboard.writeText('Special characters: @#$%^&*');
+                await Neutralino.clipboard.writeText('Special characters: @#$%^&*☁☀☊☄');
                 await __close('ok');
             `);
             assert.equal(runner.getOutput(), 'ok');
@@ -118,11 +118,11 @@ describe('clipboard.spec: clipboard namespace tests', () => {
         });
         it('returns text with special characters intact', async () => {
             let exitCode = runner.run(`
-                await Neutralino.clipboard.writeText('@#$%^&*');
+                await Neutralino.clipboard.writeText('@#$%^&*☁☀☊☄');
                 let clipboardText = await Neutralino.clipboard.readText();
                 await __close(clipboardText);
             `);
-            assert.equal(runner.getOutput(), '@#$%^&*');
+            assert.equal(runner.getOutput(), '@#$%^&*☁☀☊☄');
         });
     });
 
@@ -138,7 +138,7 @@ describe('clipboard.spec: clipboard namespace tests', () => {
         });
         it('clears the clipboard even when it contains special characters', async () => {
             let exitCode = runner.run(`
-                await Neutralino.clipboard.writeText('@#$%^&*');
+                await Neutralino.clipboard.writeText('@#$%^&*☁☀☊☄');
                 await Neutralino.clipboard.clear();
                 let clipboardText = await Neutralino.clipboard.readText();
                 await __close(clipboardText);
