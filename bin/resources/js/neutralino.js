@@ -10,6 +10,10 @@ var Neutralino = (function (exports) {
             step((generator = generator.apply(thisArg, _arguments || [])).next());
         });
     }
+    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+        var e = new Error(message);
+        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    };
 
     function dispatch$1(extensionId, event, data) {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
@@ -47,8 +51,8 @@ var Neutralino = (function (exports) {
 
     var extensions = {
         __proto__: null,
-        dispatch: dispatch$1,
         broadcast: broadcast$2,
+        dispatch: dispatch$1,
         getStats: getStats$1
     };
 
@@ -83,6 +87,14 @@ var Neutralino = (function (exports) {
             bytes[i] = binaryData.charCodeAt(i);
         }
         return bytes.buffer;
+    }
+    function arrayBufferToBase64(data) {
+        let bytes = new Uint8Array(data);
+        let asciiStr = '';
+        for (let byte of bytes) {
+            asciiStr += String.fromCharCode(byte);
+        }
+        return window.btoa(asciiStr);
     }
 
     let ws;
@@ -296,53 +308,29 @@ var Neutralino = (function (exports) {
     function getStats(path) {
         return sendMessage('filesystem.getStats', { path });
     }
-    function arrayBufferToBase64(data) {
-        let bytes = new Uint8Array(data);
-        let asciiStr = '';
-        for (let byte of bytes) {
-            asciiStr += String.fromCharCode(byte);
-        }
-        return window.btoa(asciiStr);
-    }
 
     var filesystem = {
         __proto__: null,
-        createDirectory: createDirectory,
-        remove: remove,
-        writeFile: writeFile,
-        appendFile: appendFile,
-        writeBinaryFile: writeBinaryFile,
         appendBinaryFile: appendBinaryFile,
-        readFile: readFile,
-        readBinaryFile: readBinaryFile,
-        openFile: openFile,
-        createWatcher: createWatcher,
-        removeWatcher: removeWatcher,
-        getWatchers: getWatchers,
-        updateOpenedFile: updateOpenedFile,
-        getOpenedFileInfo: getOpenedFileInfo,
-        readDirectory: readDirectory,
+        appendFile: appendFile,
         copy: copy,
+        createDirectory: createDirectory,
+        createWatcher: createWatcher,
+        getOpenedFileInfo: getOpenedFileInfo,
+        getStats: getStats,
+        getWatchers: getWatchers,
         move: move$1,
-        getStats: getStats
+        openFile: openFile,
+        readBinaryFile: readBinaryFile,
+        readDirectory: readDirectory,
+        readFile: readFile,
+        remove: remove,
+        removeWatcher: removeWatcher,
+        updateOpenedFile: updateOpenedFile,
+        writeBinaryFile: writeBinaryFile,
+        writeFile: writeFile
     };
 
-    var Icon;
-    (function (Icon) {
-        Icon["WARNING"] = "WARNING";
-        Icon["ERROR"] = "ERROR";
-        Icon["INFO"] = "INFO";
-        Icon["QUESTION"] = "QUESTION";
-    })(Icon || (Icon = {}));
-    var MessageBoxChoice;
-    (function (MessageBoxChoice) {
-        MessageBoxChoice["OK"] = "OK";
-        MessageBoxChoice["OK_CANCEL"] = "OK_CANCEL";
-        MessageBoxChoice["YES_NO"] = "YES_NO";
-        MessageBoxChoice["YES_NO_CANCEL"] = "YES_NO_CANCEL";
-        MessageBoxChoice["RETRY_CANCEL"] = "RETRY_CANCEL";
-        MessageBoxChoice["ABORT_RETRY_IGNORE"] = "ABORT_RETRY_IGNORE";
-    })(MessageBoxChoice || (MessageBoxChoice = {}));
     function execCommand(command, options) {
         return sendMessage('os.execCommand', Object.assign({ command }, options));
     }
@@ -388,22 +376,20 @@ var Neutralino = (function (exports) {
 
     var os = {
         __proto__: null,
-        get Icon () { return Icon; },
-        get MessageBoxChoice () { return MessageBoxChoice; },
         execCommand: execCommand,
-        spawnProcess: spawnProcess,
-        updateSpawnedProcess: updateSpawnedProcess,
-        getSpawnedProcesses: getSpawnedProcesses,
         getEnv: getEnv,
         getEnvs: getEnvs,
-        showOpenDialog: showOpenDialog,
-        showFolderDialog: showFolderDialog,
-        showSaveDialog: showSaveDialog,
-        showNotification: showNotification,
-        showMessageBox: showMessageBox,
-        setTray: setTray,
+        getPath: getPath,
+        getSpawnedProcesses: getSpawnedProcesses,
         open: open,
-        getPath: getPath
+        setTray: setTray,
+        showFolderDialog: showFolderDialog,
+        showMessageBox: showMessageBox,
+        showNotification: showNotification,
+        showOpenDialog: showOpenDialog,
+        showSaveDialog: showSaveDialog,
+        spawnProcess: spawnProcess,
+        updateSpawnedProcess: updateSpawnedProcess
     };
 
     function getMemoryInfo() {
@@ -430,13 +416,13 @@ var Neutralino = (function (exports) {
 
     var computer = {
         __proto__: null,
-        getMemoryInfo: getMemoryInfo,
         getArch: getArch,
-        getKernelInfo: getKernelInfo,
-        getOSInfo: getOSInfo,
         getCPUInfo: getCPUInfo,
         getDisplays: getDisplays,
-        getMousePosition: getMousePosition
+        getKernelInfo: getKernelInfo,
+        getMemoryInfo: getMemoryInfo,
+        getMousePosition: getMousePosition,
+        getOSInfo: getOSInfo
     };
 
     function setData(key, data) {
@@ -451,24 +437,17 @@ var Neutralino = (function (exports) {
 
     var storage = {
         __proto__: null,
-        setData: setData,
         getData: getData,
-        getKeys: getKeys
+        getKeys: getKeys,
+        setData: setData
     };
 
-    var LoggerType;
-    (function (LoggerType) {
-        LoggerType["WARNING"] = "WARNING";
-        LoggerType["ERROR"] = "ERROR";
-        LoggerType["INFO"] = "INFO";
-    })(LoggerType || (LoggerType = {}));
     function log(message, type) {
         return sendMessage('debug.log', { message, type });
     }
 
     var debug = {
         __proto__: null,
-        get LoggerType () { return LoggerType; },
         log: log
     };
 
@@ -513,14 +492,14 @@ var Neutralino = (function (exports) {
 
     var app = {
         __proto__: null,
-        exit: exit,
-        killProcess: killProcess,
-        restartProcess: restartProcess,
-        getConfig: getConfig,
         broadcast: broadcast$1,
+        exit: exit,
+        getConfig: getConfig,
+        killProcess: killProcess,
         readProcessInput: readProcessInput,
-        writeProcessOutput: writeProcessOutput,
-        writeProcessError: writeProcessError
+        restartProcess: restartProcess,
+        writeProcessError: writeProcessError,
+        writeProcessOutput: writeProcessOutput
     };
 
     const draggableRegions = new WeakMap();
@@ -727,29 +706,29 @@ var Neutralino = (function (exports) {
 
     var window$1 = {
         __proto__: null,
-        setTitle: setTitle,
-        getTitle: getTitle,
-        maximize: maximize,
-        unmaximize: unmaximize,
-        isMaximized: isMaximized,
-        minimize: minimize,
-        setFullScreen: setFullScreen,
-        exitFullScreen: exitFullScreen,
-        isFullScreen: isFullScreen,
-        show: show,
-        hide: hide,
-        isVisible: isVisible,
-        focus: focus,
-        setIcon: setIcon,
-        move: move,
         center: center,
-        setDraggableRegion: setDraggableRegion,
-        unsetDraggableRegion: unsetDraggableRegion,
-        setSize: setSize,
-        getSize: getSize,
+        create: create,
+        exitFullScreen: exitFullScreen,
+        focus: focus,
         getPosition: getPosition,
+        getSize: getSize,
+        getTitle: getTitle,
+        hide: hide,
+        isFullScreen: isFullScreen,
+        isMaximized: isMaximized,
+        isVisible: isVisible,
+        maximize: maximize,
+        minimize: minimize,
+        move: move,
         setAlwaysOnTop: setAlwaysOnTop,
-        create: create
+        setDraggableRegion: setDraggableRegion,
+        setFullScreen: setFullScreen,
+        setIcon: setIcon,
+        setSize: setSize,
+        setTitle: setTitle,
+        show: show,
+        unmaximize: unmaximize,
+        unsetDraggableRegion: unsetDraggableRegion
     };
 
     function broadcast(event, data) {
@@ -759,9 +738,9 @@ var Neutralino = (function (exports) {
     var events = {
         __proto__: null,
         broadcast: broadcast,
-        on: on,
+        dispatch: dispatch,
         off: off,
-        dispatch: dispatch
+        on: on
     };
 
     let manifest = null;
@@ -833,11 +812,32 @@ var Neutralino = (function (exports) {
         install: install
     };
 
-    function readText(key, data) {
-        return sendMessage('clipboard.readText', { key, data });
+    function readText() {
+        return sendMessage('clipboard.readText');
+    }
+    function readImage() {
+        return new Promise((resolve, reject) => {
+            sendMessage('clipboard.readImage')
+                .then((image) => {
+                if (image) {
+                    image.data = base64ToBytesArray(image.data);
+                }
+                resolve(image);
+            })
+                .catch((error) => {
+                reject(error);
+            });
+        });
     }
     function writeText(data) {
         return sendMessage('clipboard.writeText', { data });
+    }
+    function writeImage(image) {
+        const props = Object.assign({}, image);
+        if (image === null || image === void 0 ? void 0 : image.data) {
+            props.data = arrayBufferToBase64(image.data);
+        }
+        return sendMessage('clipboard.writeImage', props);
     }
     function clear() {
         return sendMessage('clipboard.clear');
@@ -845,9 +845,11 @@ var Neutralino = (function (exports) {
 
     var clipboard = {
         __proto__: null,
+        clear: clear,
+        readImage: readImage,
         readText: readText,
-        writeText: writeText,
-        clear: clear
+        writeImage: writeImage,
+        writeText: writeText
     };
 
     function getMethods() {
@@ -891,33 +893,9 @@ var Neutralino = (function (exports) {
             }
         }
         window.NL_CVERSION = version;
-        window.NL_CCOMMIT = 'e42ffe829a711b290b4cf70c8409bf69609638a9'; // only the build server will update this
+        window.NL_CCOMMIT = '425c526c318342e0e5d0f17caceef2a53049eda4'; // only the build server will update this
         initialized = true;
     }
-
-    exports.Mode = void 0;
-    (function (Mode) {
-        Mode[Mode["window"] = 0] = "window";
-        Mode[Mode["browser"] = 1] = "browser";
-        Mode[Mode["cloud"] = 2] = "cloud";
-        Mode[Mode["chrome"] = 3] = "chrome";
-    })(exports.Mode || (exports.Mode = {}));
-    exports.OperatingSystem = void 0;
-    (function (OperatingSystem) {
-        OperatingSystem[OperatingSystem["Linux"] = 0] = "Linux";
-        OperatingSystem[OperatingSystem["Windows"] = 1] = "Windows";
-        OperatingSystem[OperatingSystem["Darwin"] = 2] = "Darwin";
-        OperatingSystem[OperatingSystem["FreeBSD"] = 3] = "FreeBSD";
-        OperatingSystem[OperatingSystem["Unknown"] = 4] = "Unknown";
-    })(exports.OperatingSystem || (exports.OperatingSystem = {}));
-    exports.Architecture = void 0;
-    (function (Architecture) {
-        Architecture[Architecture["x64"] = 0] = "x64";
-        Architecture[Architecture["arm"] = 1] = "arm";
-        Architecture[Architecture["itanium"] = 2] = "itanium";
-        Architecture[Architecture["ia32"] = 3] = "ia32";
-        Architecture[Architecture["unknown"] = 4] = "unknown";
-    })(exports.Architecture || (exports.Architecture = {}));
 
     exports.app = app;
     exports.clipboard = clipboard;
@@ -936,5 +914,6 @@ var Neutralino = (function (exports) {
     return exports;
 
 })({});
+//# sourceMappingURL=neutralino.js.map
 
 //# sourceMappingURL=neutralino.js.map

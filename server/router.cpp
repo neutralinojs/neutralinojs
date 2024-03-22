@@ -122,7 +122,9 @@ map<string, router::NativeMethod> methodMap = {
     {"extensions.getStats", extensions::controllers::getStats},
     // Neutralino.clipboard
     {"clipboard.readText", clipboard::controllers::readText},
+    {"clipboard.readImage", clipboard::controllers::readImage},
     {"clipboard.writeText", clipboard::controllers::writeText},
+    {"clipboard.writeImage", clipboard::controllers::writeImage},
     {"clipboard.clear", clipboard::controllers::clear},
     // Neutralino.custom
     {"custom.getMethods", custom::controllers::getMethods},

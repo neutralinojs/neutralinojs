@@ -56,6 +56,8 @@ size_t lock::get_data_length(format f) const {
   return p->get_data_length(f);
 }
 
+#if CLIP_ENABLE_IMAGE
+
 bool lock::set_image(const image& img) {
   return p->set_image(img);
 }
@@ -68,9 +70,13 @@ bool lock::get_image_spec(image_spec& spec) const {
   return p->get_image_spec(spec);
 }
 
+#endif // CLIP_ENABLE_IMAGE
+
 format empty_format() { return 0; }
 format text_format()  { return 1; }
+#if CLIP_ENABLE_IMAGE
 format image_format() { return 2; }
+#endif
 
 bool has(format f) {
   lock l;
@@ -120,6 +126,8 @@ bool get_text(std::string& value) {
   }
 }
 
+#if CLIP_ENABLE_IMAGE
+
 bool set_image(const image& img) {
   lock l;
   if (l.locked()) {
@@ -153,6 +161,8 @@ bool get_image_spec(image_spec& spec) {
 
   return l.get_image_spec(spec);
 }
+
+#endif // CLIP_ENABLE_IMAGE
 
 void set_error_handler(error_handler handler) {
   g_error_handler = handler;
