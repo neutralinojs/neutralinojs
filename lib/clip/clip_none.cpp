@@ -41,6 +41,11 @@ bool lock::impl::set_data(format f, const char* buf, size_t len) {
   if (buf && len > 0)
     std::copy(buf, buf+len, dst.begin());
 
+  if (f == text_format() &&
+      len > 0 && dst.back() != 0) {
+    dst.push_back(0);
+  }
+
   return true;
 }
 

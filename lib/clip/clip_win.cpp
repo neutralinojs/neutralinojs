@@ -16,7 +16,9 @@
 
 #include <windows.h>
 
+#if CLIP_ENABLE_IMAGE
 #include "clip_win_wic.h"
+#endif // CLIP_ENABLE_IMAGE
 
 #ifndef LCS_WINDOWS_COLOR_SPACE
 #define LCS_WINDOWS_COLOR_SPACE 'Win '
@@ -71,6 +73,8 @@ public:
 private:
   HGLOBAL m_handle;
 };
+
+#if CLIP_ENABLE_IMAGE
 
 struct BitmapInfo {
   BITMAPV5HEADER* b5 = nullptr;
@@ -141,6 +145,7 @@ struct BitmapInfo {
           alpha_mask = 0xff000000;
           break;
         case 24:
+        case 8: // We return 8bpp images as 24bpp
           red_mask   = 0xff0000;
           green_mask = 0xff00;
           blue_mask  = 0xff;
@@ -204,6 +209,8 @@ struct BitmapInfo {
 
 };
 
+#endif // CLIP_ENABLE_IMAGE
+
 }
 
 lock::impl::impl(void* hwnd) : m_locked(false) {
@@ -238,9 +245,11 @@ bool lock::impl::is_convertible(format f) const {
        IsClipboardFormatAvailable(CF_UNICODETEXT) ||
        IsClipboardFormatAvailable(CF_OEMTEXT));
   }
+#if CLIP_ENABLE_IMAGE
   else if (f == image_format()) {
     return (IsClipboardFormatAvailable(CF_DIB) ? true: false);
   }
+#endif // CLIP_ENABLE_IMAGE
   else if (IsClipboardFormatAvailable(f))
     return true;
   else
@@ -404,6 +413,8 @@ size_t lock::impl::get_data_length(format f) const {
 
   return len;
 }
+
+#if CLIP_ENABLE_IMAGE
 
 bool lock::impl::set_image(const image& image) {
   const image_spec& spec = image.spec();
@@ -630,6 +641,8 @@ bool lock::impl::get_image_spec(image_spec& spec) const {
   bi.fill_spec(spec);
   return true;
 }
+
+#endif // CLIP_ENABLE_IMAGE
 
 format register_format(const std::string& name) {
   int reqsize = 1+MultiByteToWideChar(CP_UTF8, 0,
