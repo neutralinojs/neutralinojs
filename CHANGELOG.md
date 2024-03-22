@@ -18,6 +18,7 @@ The transparency mode can be activated using the `--window-transparent=<bool>` i
 ### API: clipboard
 - Implement `clipboard.readImage()` and `clipboard.writeImage(image)` functions to work with clipboard image data.
 - Expose the `clipboard.clear()` function to clear system clipboard.
+- Expose the `clipboard.getFormat()` function to check the system clipboard data format. This function returns `text`, `image`, and `unknown` enum values based on existing data on the clipboard.
 
 ## v5.0.0
 
