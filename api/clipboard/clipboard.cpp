@@ -1,5 +1,4 @@
 #include <string>
-#include <iostream>
 
 #include "lib/json/json.hpp"
 #include "lib/clip/clip.h"
