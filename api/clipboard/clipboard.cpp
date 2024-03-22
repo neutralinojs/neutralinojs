@@ -13,6 +13,20 @@ using json = nlohmann::json;
 namespace clipboard {
 namespace controllers {
 
+json getFormat(const json &input) {
+    json output;
+    string format = "unknown";
+    if(clip::has(clip::text_format())) {
+        format = "text";
+    }
+    else if(clip::has(clip::image_format())) {
+        format = "image";
+    }
+    output["returnValue"] = format;
+    output["success"] = true;
+    return output;
+}
+
 json readText(const json &input) {
     json output;
     string clipText = "";

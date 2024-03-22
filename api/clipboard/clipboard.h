@@ -12,6 +12,7 @@ namespace clipboard {
 
 namespace controllers {
 
+json getFormat(const json &input);
 json readText(const json &input);
 json readImage(const json &input);
 json writeText(const json &input);

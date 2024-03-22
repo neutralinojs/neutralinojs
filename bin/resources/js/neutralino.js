@@ -812,6 +812,9 @@ var Neutralino = (function (exports) {
         install: install
     };
 
+    function getFormat() {
+        return sendMessage('clipboard.getFormat');
+    }
     function readText() {
         return sendMessage('clipboard.readText');
     }
@@ -846,6 +849,7 @@ var Neutralino = (function (exports) {
     var clipboard = {
         __proto__: null,
         clear: clear,
+        getFormat: getFormat,
         readImage: readImage,
         readText: readText,
         writeImage: writeImage,

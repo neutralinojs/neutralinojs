@@ -809,6 +809,9 @@ var updater = /*#__PURE__*/Object.freeze({
     install: install
 });
 
+function getFormat() {
+    return sendMessage('clipboard.getFormat');
+}
 function readText() {
     return sendMessage('clipboard.readText');
 }
@@ -843,6 +846,7 @@ function clear() {
 var clipboard = /*#__PURE__*/Object.freeze({
     __proto__: null,
     clear: clear,
+    getFormat: getFormat,
     readImage: readImage,
     readText: readText,
     writeImage: writeImage,
