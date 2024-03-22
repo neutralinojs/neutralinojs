@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v5.1.0
+
 ### Configuration: window transparency
 Neutralinojs offers the inbuilt borderless mode and draggable region API to create custom window frames using HTML and CSS. Earlier, Neutralinojs used a default opaque color (usually white) for the window and webview layer, so app developers couldn't make custom CSS-styled window frames transparent or implement custom window frame shapes (i.e., rounded edges). Now, it offers the `window.transparent` boolean flag to activate window transparency. 
 
