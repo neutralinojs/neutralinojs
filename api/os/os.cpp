@@ -12,6 +12,8 @@
 #include <cstring>
 #include <vector>
 #include <filesystem>
+#include <codecvt>
+#include <locale>
 
 #include "resources.h"
 #include "lib/tinyprocess/process.hpp"
@@ -30,6 +32,7 @@ extern char **environ;
 #include <tchar.h>
 #include <gdiplus.h>
 #include <shlwapi.h>
+#include "lib/wintoast/wintoastlib.h"
 
 #define CONVSTR(S) helpers::str2wstr(S)
 
@@ -58,6 +61,45 @@ using namespace Gdiplus;
 #endif
 
 namespace os {
+
+#if defined(_WIN32)
+
+    using namespace WinToastLib;
+
+    class CustomHandler : public IWinToastHandler {
+    public:
+        void toastActivated() const override {
+            std::wcout << L"The user clicked in this toast" << std::endl;
+    }
+
+        void toastActivated(int actionIndex) const override {
+            std::wcout << L"The user clicked on action #" << actionIndex << std::endl;
+            exit(16 + actionIndex);
+        }
+
+        void toastDismissed(WinToastDismissalReason state) const override {
+            switch (state) {
+            case UserCanceled:
+                std::wcout << L"The user dismissed this toast" << std::endl;
+                break;
+            case TimedOut:
+                std::wcout << L"The toast has timed out" << std::endl;
+                break;
+            case ApplicationHidden:
+                std::wcout << L"The application hid the toast using ToastNotifier.hide()" << std::endl;
+                break;
+            default:
+                std::wcout << L"Toast not activated" << std::endl;
+                break;
+            }
+        }
+
+        void toastFailed() const override {
+            std::wcout << L"Error showing current toast" << std::endl;
+        }
+    };
+#endif
+
 
 struct tray_menu menus[NEU_MAX_TRAY_MENU_ITEMS];
 struct tray tray;
@@ -464,6 +506,42 @@ json showSaveDialog(const json &input) {
     return output;
 }
 
+#if defined(_WIN32)
+std::wstring stringToWstring(const std::string& str) {
+    std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+    return converter.from_bytes(str);
+}
+
+void runToast(std::string title, std::string content);
+
+void runToast(std::string title, std::string content) {
+    std::wstring appName = L"NeutralinoJS";
+    std::wstring appUserModelID = L"Notification";
+    std::wstring text = stringToWstring(title);
+    std::wstring attribute = stringToWstring(content);
+    WinToastTemplate::AudioOption audioOption = WinToastTemplate::AudioOption::Default;
+
+    WinToast::instance()->setAppName(appName);
+    WinToast::instance()->setAppUserModelId(appUserModelID);
+
+    if (!WinToast::instance()->initialize()) {
+        std::wcerr << L"Error, your system in not compatible!" << std::endl;
+    }
+
+    WinToastTemplate templ(WinToastTemplate::ImageAndText02);
+    templ.setTextField(text, WinToastTemplate::FirstLine);
+    templ.setAudioOption(audioOption);
+    templ.setAttributionText(attribute);
+
+    if (WinToast::instance()->showToast(templ, new CustomHandler()) < 0) {
+        std::wcerr << L"Error in showing the toast" << std::endl;
+    }
+    else {
+        Sleep(10000);
+    }
+}
+#endif
+
 json showNotification(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"title", "content"})) {
@@ -474,9 +552,33 @@ json showNotification(const json &input) {
     string content = input["content"].get<string>();
     string icon = "INFO";
 
-    if(helpers::hasField(input, "icon")) {
+    if (helpers::hasField(input, "icon")) {
         icon = input["icon"].get<string>();
     }
+
+    std::string full_title;
+
+    if (icon == "WARNING") {
+        full_title = "⚠️" + title;
+    }
+    else if (icon == "ERROR") {
+        full_title = "⛔" + title;
+    }
+    else if (icon == "QUESTION") {
+        full_title = "❓" + title;
+    }
+    else {
+        full_title = "ℹ" + title;
+    }
+
+
+    #ifdef _WIN32
+        std::thread toastThread([full_title, content]() {
+            runToast(full_title, content);
+        });
+    toastThread.detach();
+
+    #elif __unix__
 
     map<string, pfd::icon> iconMap = {
         {"INFO", pfd::icon::info},
@@ -491,6 +593,7 @@ json showNotification(const json &input) {
     else {
         output["error"] = errors::makeErrorPayload(errors::NE_OS_INVNOTA, icon);
     }
+    #endif
     output["success"] = true;
     return output;
 }
