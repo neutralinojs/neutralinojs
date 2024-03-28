@@ -624,7 +624,9 @@ json copy(const json &input) {
     string destination = input["destination"].get<string>();
 
     error_code ec;
-    filesystem::copy(source, destination, filesystem::copy_options::recursive, ec);
+    const auto copyOptions = filesystem::copy_options::recursive
+                           | filesystem::copy_options::overwrite_existing;
+    filesystem::copy(source, destination, copyOptions, ec);
 
     if(!ec) {
         output["success"] = true;
