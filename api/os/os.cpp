@@ -424,6 +424,8 @@ json showFolderDialog(const json &input) {
 
     if(helpers::hasField(input, "defaultPath")) {
         defaultPath = input["defaultPath"].get<string>();
+        // Normalize the path to use double backslashes
+        defaultPath = helpers::normalizePath(defaultPath, '\\');
     }
 
     string selectedEntry = pfd::select_folder(title, defaultPath, pfd::opt::none).result();
@@ -432,6 +434,7 @@ json showFolderDialog(const json &input) {
     output["success"] = true;
     return output;
 }
+
 
 json showSaveDialog(const json &input) {
     json output;
