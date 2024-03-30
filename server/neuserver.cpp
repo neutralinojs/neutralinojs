@@ -208,15 +208,29 @@ void handleHTTP(websocketpp::connection_hdl handler) {
             resource = documentRoot + resource;
         }
     }
-    router::Response routerResponse = router::serve(resource);
-    con->set_status(routerResponse.status);
-    con->set_body(routerResponse.data);
-    con->replace_header("Content-Type", routerResponse.contentType);
+    
+    // Check if the requested resource is not found and if it's not an API request
+    if (!filesystem::exists(resource) && !regex_match(resource, regex("^/api/.*"))) {
+        // Serve the index.html for SPA routing
+        string indexPath = documentRoot + "/index.html"; // Adjust the path as needed
+        ifstream file(indexPath);
+        stringstream buffer;
+        buffer << file.rdbuf();
+        con->set_body(buffer.str());
+        con->set_status(200);
+        con->replace_header("Content-Type", "text/html");
+    } else {
+        router::Response routerResponse = router::serve(resource);
+        con->set_status(routerResponse.status);
+        con->set_body(routerResponse.data);
+        con->replace_header("Content-Type", routerResponse.contentType);
+    }
 
     if(applyConfigHeaders) {
         __applyConfigHeaders(con);
     }
 }
+
 
 void handleConnect(websocketpp::connection_hdl handler) {
     websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
