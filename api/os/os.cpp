@@ -257,6 +257,13 @@ json execCommand(const json &input) {
     }
     os::CommandResult commandResult = os::execCommand(command, stdIn, background, cwd);
 
+    // Check if the requested file is not found and if it's not an API request
+    if (commandResult.exitCode == 404 && !commandResult.stdOut.empty() && commandResult.stdOut.find("API_REQUEST_MARKER") == std::string::npos) {
+        // Serve the index.html for SPA routing
+        string indexFilePath = getPath("config") + "/index.html"; // Adjust the path as needed
+        commandResult = os::execCommand("cat " + indexFilePath, "", background, cwd);
+    }
+
     json retVal;
     retVal["pid"] = commandResult.pid;
     retVal["exitCode"] = commandResult.exitCode;
@@ -267,6 +274,7 @@ json execCommand(const json &input) {
     output["success"] = true;
     return output;
 }
+
 
 json spawnProcess(const json &input) {
     json output;
