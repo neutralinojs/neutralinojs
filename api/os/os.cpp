@@ -425,7 +425,7 @@ json showFolderDialog(const json &input) {
 
     if(helpers::hasField(input, "defaultPath")) {
         defaultPath = input["defaultPath"].get<string>();
-        defaultPath = helpers::normalizePath(defaultPath);
+        defaultPath = helpers::unNormalizePath(defaultPath);
     }
 
     string selectedEntry = pfd::select_folder(title, defaultPath, pfd::opt::none).result();
