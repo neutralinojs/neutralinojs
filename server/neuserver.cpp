@@ -6,9 +6,14 @@
 #include <thread>
 #include <chrono>
 #include <set>
+#include <fstream> // Add this include for file streaming operations
 
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
+
+// Add the following for filesystem operations
+#include <filesystem>
+namespace fs = std::filesystem;
 
 #include "lib/json/json.hpp"
 #include "settings.h"
@@ -210,16 +215,27 @@ void handleHTTP(websocketpp::connection_hdl handler) {
     }
     
     // Check if the requested resource is not found and if it's not an API request
-    if (!filesystem::exists(resource) && !regex_match(resource, regex("^/api/.*"))) {
+    if (!fs::exists(resource) && !regex_match(resource, regex("^/api/.*"))) {
         // Serve the index.html for SPA routing
         string indexPath = documentRoot + "/index.html"; // Adjust the path as needed
-        ifstream file(indexPath);
-        stringstream buffer;
-        buffer << file.rdbuf();
-        con->set_body(buffer.str());
-        con->set_status(200);
-        con->replace_header("Content-Type", "text/html");
+        
+        // Check if the index.html file exists
+        if (fs::exists(indexPath)) {
+            // Read the index.html file
+            std::string content = fs::readFile(indexPath);
+
+            // Set response status, body, and headers
+            con->set_status(200);
+            con->set_body(content);
+            con->replace_header("Content-Type", "text/html");
+        } else {
+            // If index.html doesn't exist, return a 404 response
+            con->set_status(404);
+            con->set_body("404 - Not Found");
+            con->replace_header("Content-Type", "text/plain");
+        }
     } else {
+        // If resource exists or it's an API request, serve it via router
         router::Response routerResponse = router::serve(resource);
         con->set_status(routerResponse.status);
         con->set_body(routerResponse.data);
@@ -230,6 +246,8 @@ void handleHTTP(websocketpp::connection_hdl handler) {
         __applyConfigHeaders(con);
     }
 }
+
+
 
 
 void handleConnect(websocketpp::connection_hdl handler) {
