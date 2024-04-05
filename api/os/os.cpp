@@ -268,6 +268,7 @@ json execCommand(const json &input) {
     return output;
 }
 
+
 json spawnProcess(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"command"})) {
@@ -424,6 +425,7 @@ json showFolderDialog(const json &input) {
 
     if(helpers::hasField(input, "defaultPath")) {
         defaultPath = input["defaultPath"].get<string>();
+        defaultPath = helpers::unNormalizePath(defaultPath);
     }
 
     string selectedEntry = pfd::select_folder(title, defaultPath, pfd::opt::none).result();
@@ -432,6 +434,7 @@ json showFolderDialog(const json &input) {
     output["success"] = true;
     return output;
 }
+
 
 json showSaveDialog(const json &input) {
     json output;

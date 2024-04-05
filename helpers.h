@@ -19,6 +19,7 @@ bool hasRequiredFields(const json &input, const vector<string> &keys);
 bool hasField(const json &input, const string &key);
 vector<string> getModes();
 string normalizePath(string &path);
+string unNormalizePath(string &path);
 
 #if defined(_WIN32)
 wstring str2wstr(const string &str);

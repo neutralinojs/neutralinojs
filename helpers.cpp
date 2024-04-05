@@ -115,6 +115,13 @@ string normalizePath(string &path) {
     return path;
 }
 
+string unNormalizePath(string &path) {
+    #if defined(_WIN32)
+    replace(path.begin(), path.end(), '/', '\\');
+    #endif
+    return path;
+}
+
 #if defined(_WIN32)
 wstring str2wstr(const string &str) {
     int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0);
