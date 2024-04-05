@@ -110,12 +110,14 @@ vector<string> getModes() {
 
 string normalizePath(string &path) {
     #if defined(_WIN32)
-    if(path.find('\\') != string::npos) {
-        replace(path.begin(), path.end(), '\\', '/');
-    {
-    else {
-        replace(path.begin(), path.end(), '/', '\\');
-    }
+    replace(path.begin(), path.end(), '\\', '/');
+    #endif
+    return path;
+}
+
+string unNormalizePath(string &path) {
+    #if defined(_WIN32)
+    replace(path.begin(), path.end(), '/', '\\');
     #endif
     return path;
 }
