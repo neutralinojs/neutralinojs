@@ -20,6 +20,7 @@
 #define _WINSOCKAPI_
 #include <windows.h>
 #include <gdiplus.h>
+#include <winuser.h>
 #pragma comment(lib, "Gdiplus.lib")
 #pragma comment(lib, "WebView2LoaderStatic.lib")
 #endif
@@ -270,16 +271,33 @@ bool isVisible() {
 void show() {
     if(window::isVisible())
         return;
+    
     #if defined(__linux__) || defined(__FreeBSD__)
     gtk_widget_show(windowHandle);
     #elif defined(__APPLE__)
     ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle,
                 "setIsVisible:"_sel, true);
     #elif defined(_WIN32)
-    ShowWindow(windowHandle, SW_SHOW);
-    SetForegroundWindow(windowHandle);
+    if (IsIconic(windowHandle)) {
+        ShowWindow(windowHandle, SW_RESTORE);
+    } else {
+        ShowWindow(windowHandle, SW_SHOW);
+    }
+
+    SetWindowPos(windowHandle, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+
+    if (!SetForegroundWindow(windowHandle)) {
+        FLASHWINFO fi;
+        fi.cbSize = sizeof(FLASHWINFO);
+        fi.hwnd = windowHandle;
+        fi.dwFlags = FLASHW_TRAY | FLASHW_TIMERNOFG;
+        fi.uCount = 0; // Flash indefinitely until the window comes to the foreground
+        fi.dwTimeout = 0;
+        FlashWindowEx(&fi);
+    }
+
     if (__isFakeHidden())
-		__undoFakeHidden();
+        __undoFakeHidden();
     #endif
 }
 

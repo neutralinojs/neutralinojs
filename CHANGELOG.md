@@ -6,6 +6,12 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: window
+- Improve the behaviour of the `window.show()` function on Windows. Now, this function flashes the window if it's already in foreground and activates the window properly if it's minimized.
+
+### Improvements/bugfixes
+- Fix path issues with the `defaultPath` option in system file dialogs on Windows. 
+
 ## v5.1.0
 
 ### Configuration: window transparency
