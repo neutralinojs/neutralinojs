@@ -17,7 +17,7 @@ var Neutralino = (function (exports) {
 
     function dispatch$1(extensionId, event, data) {
         return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
-            let stats = yield getStats$1();
+            const stats = yield getStats$1();
             if (!stats.loaded.includes(extensionId)) {
                 reject({
                     code: 'NE_EX_EXTNOTL',
@@ -26,7 +26,7 @@ var Neutralino = (function (exports) {
             }
             else if (stats.connected.includes(extensionId)) {
                 try {
-                    let result = yield sendMessage('extensions.dispatch', { extensionId, event, data });
+                    const result = yield sendMessage('extensions.dispatch', { extensionId, event, data });
                     resolve(result);
                 }
                 catch (err) {
@@ -71,7 +71,7 @@ var Neutralino = (function (exports) {
         });
     }
     function dispatch(event, data) {
-        let customEvent = new CustomEvent(event, { detail: data });
+        const customEvent = new CustomEvent(event, { detail: data });
         window.dispatchEvent(customEvent);
         return Promise.resolve({
             success: true,
@@ -80,9 +80,9 @@ var Neutralino = (function (exports) {
     }
 
     function base64ToBytesArray(data) {
-        let binaryData = window.atob(data);
-        let len = binaryData.length;
-        let bytes = new Uint8Array(len);
+        const binaryData = window.atob(data);
+        const len = binaryData.length;
+        const bytes = new Uint8Array(len);
         for (let i = 0; i < len; i++) {
             bytes[i] = binaryData.charCodeAt(i);
         }
@@ -98,9 +98,9 @@ var Neutralino = (function (exports) {
     }
 
     let ws;
-    let nativeCalls = {};
-    let offlineMessageQueue = [];
-    let extensionMessageQueue = {};
+    const nativeCalls = {};
+    const offlineMessageQueue = [];
+    const extensionMessageQueue = {};
     function init$1() {
         initAuth();
         const connectToken = getAuthToken().split('.')[1];
@@ -142,8 +142,8 @@ var Neutralino = (function (exports) {
             if (!window.NL_EXTENABLED) {
                 return;
             }
-            let stats = yield getStats$1();
-            for (let extension of stats.connected) {
+            const stats = yield getStats$1();
+            for (const extension of stats.connected) {
                 dispatch('extensionReady', extension);
             }
         }));
@@ -192,7 +192,7 @@ var Neutralino = (function (exports) {
             dispatch('ready');
         }));
         ws.addEventListener('close', (event) => __awaiter(this, void 0, void 0, function* () {
-            let error = {
+            const error = {
                 code: 'NE_CL_NSEROFF',
                 message: 'Neutralino server is offline. Try restarting the application'
             };
@@ -205,9 +205,9 @@ var Neutralino = (function (exports) {
     function processQueue(messageQueue) {
         return __awaiter(this, void 0, void 0, function* () {
             while (messageQueue.length > 0) {
-                let message = messageQueue.shift();
+                const message = messageQueue.shift();
                 try {
-                    let response = yield sendMessage(message.method, message.data);
+                    const response = yield sendMessage(message.method, message.data);
                     message.resolve(response);
                 }
                 catch (err) {
@@ -299,8 +299,8 @@ var Neutralino = (function (exports) {
     function readDirectory(path, options) {
         return sendMessage('filesystem.readDirectory', Object.assign({ path }, options));
     }
-    function copy(source, destination) {
-        return sendMessage('filesystem.copy', { source, destination });
+    function copy(source, destination, options) {
+        return sendMessage('filesystem.copy', Object.assign({ source, destination }, options));
     }
     function move$1(source, destination) {
         return sendMessage('filesystem.move', { source, destination });
@@ -760,7 +760,7 @@ var Neutralino = (function (exports) {
                 });
             }
             try {
-                let response = yield fetch(url);
+                const response = yield fetch(url);
                 manifest = JSON.parse(yield response.text());
                 if (isValidManifest(manifest)) {
                     resolve(manifest);
@@ -789,8 +789,8 @@ var Neutralino = (function (exports) {
                 });
             }
             try {
-                let response = yield fetch(manifest.resourcesURL);
-                let resourcesBuffer = yield response.arrayBuffer();
+                const response = yield fetch(manifest.resourcesURL);
+                const resourcesBuffer = yield response.arrayBuffer();
                 yield writeBinaryFile(window.NL_PATH + "/resources.neu", resourcesBuffer);
                 resolve({
                     success: true,
@@ -865,7 +865,7 @@ var Neutralino = (function (exports) {
         getMethods: getMethods
     };
 
-    var version = "5.0.1";
+    var version = "5.1.0";
 
     let initialized = false;
     function init(options = {}) {
@@ -881,10 +881,10 @@ var Neutralino = (function (exports) {
             }));
         }
         if (options.exportCustomMethods && window.NL_CMETHODS && window.NL_CMETHODS.length > 0) {
-            for (let method of window.NL_CMETHODS) {
+            for (const method of window.NL_CMETHODS) {
                 Neutralino.custom[method] = (...args) => {
                     let data = {};
-                    for (let [argi, argv] of args.entries()) {
+                    for (const [argi, argv] of args.entries()) {
                         if (typeof argv == 'object' && !Array.isArray(argv) && argv != null) {
                             data = Object.assign(Object.assign({}, data), argv);
                         }
