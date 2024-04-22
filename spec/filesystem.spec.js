@@ -409,6 +409,15 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             `);
             assert.equal(runner.getOutput(), 'done');
         });
+        it('works when the destination file already exists', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Hello');
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test_new.txt', 'Hello');
+                await Neutralino.filesystem.copy(NL_PATH + '/.tmp/test.txt', NL_PATH + '/.tmp/test_new.txt');
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
     });
 
     describe('filesystem.move', () => {
