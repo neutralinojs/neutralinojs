@@ -881,7 +881,7 @@ public:
           });
       RegisterClassEx(&wc);
       m_window = CreateWindow(L"Neutralinojs_webview", L"", WS_OVERLAPPEDWINDOW, 99999999,
-                              CW_USEDEFAULT, 640, 480, nullptr, nullptr,
+                              CW_USEDEFAULT, 8000, 8000, nullptr, nullptr,
                               GetModuleHandle(nullptr), nullptr);
       SetWindowLongPtr(m_window, GWLP_USERDATA, (LONG_PTR)this);
     } else {
@@ -889,6 +889,15 @@ public:
     }
 
     setDpi();
+
+    if (transparent) {
+      // remove other window styles and keep only the border
+      SetWindowLongPtr(m_window, GWL_STYLE, WS_THICKFRAME);
+      SetWindowLongPtr(m_window, GWL_EXSTYLE, GetWindowLongPtr(m_window, GWL_EXSTYLE) | WS_EX_LAYERED);
+
+      // transparent white, use of environment variable prevents flashing on show
+      SetEnvironmentVariable(L"WEBVIEW2_DEFAULT_BACKGROUND_COLOR", L"00FFFFFF");
+    }
 
     // stop the taskbar icon from showing by removing WS_EX_APPWINDOW.
     SetWindowLong(m_window, GWL_EXSTYLE, GetWindowLong(m_window, GWL_EXSTYLE) & ~WS_EX_APPWINDOW);
