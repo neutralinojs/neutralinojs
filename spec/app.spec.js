@@ -1,5 +1,4 @@
 const assert = require('assert');
-const os = require('os')
 const runner = require('./runner');
 
 describe('app.spec: app namespace tests', () => {
@@ -47,14 +46,6 @@ describe('app.spec: app namespace tests', () => {
     });
 
     describe('app.getConfig', () => {
-        it('returns the config as a JSON object', async () => {
-            runner.run(`
-                let config = await Neutralino.app.getConfig();
-                await __close(JSON.stringify(config));
-            `);
-            assert.ok(typeof JSON.parse(runner.getOutput()) == 'object');
-        });
-
         it('JSON object contains the right fields', async () => {
             runner.run(`
                 let config = await Neutralino.app.getConfig();
