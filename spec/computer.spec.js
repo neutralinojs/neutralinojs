@@ -126,16 +126,6 @@ describe('computer.spec: computer namespace tests', () => {
 
 
     describe('computer.getMousePosition', () => {
-        it('returns the current mouse cursor position', async () => {
-            runner.run(`
-                let pos = await Neutralino.computer.getMousePosition();
-                await __close(JSON.stringify(pos));
-            `);
-            let pos = JSON.parse(runner.getOutput());
-            assert.ok(typeof pos == 'object');
-            assert.ok(typeof pos.x == 'number');
-            assert.ok(typeof pos.y == 'number');
-        });
         it('returns the current mouse cursor position and it is within screen bounds', async () => {
             runner.run(`
                 let pos = await Neutralino.computer.getMousePosition();
