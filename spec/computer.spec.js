@@ -26,12 +26,12 @@ describe('computer.spec: computer namespace tests', () => {
                 await __close(JSON.stringify(memoryInfo));
             `);
             let memoryInfo = JSON.parse(runner.getOutput());
-            assert.ok(memoryInfo.physical.total >= memoryInfo.physical.available, "Physical memory available should not be greater than total");
-            assert.ok(memoryInfo.virtual.total >= memoryInfo.virtual.available, "Virtual memory available should not be greater than total");
-            assert.ok(memoryInfo.physical.total >= 0, "Physical total memory should not be negative");
-            assert.ok(memoryInfo.physical.available >= 0, "Physical available memory should not be negative");
-            assert.ok(memoryInfo.virtual.total >= 0, "Virtual total memory should not be negative");
-            assert.ok(memoryInfo.virtual.available >= 0, "Virtual available memory should not be negative");
+            assert.ok(memoryInfo.physical.total >= memoryInfo.physical.available, 'Physical memory available should not be greater than total');
+            assert.ok(memoryInfo.virtual.total >= memoryInfo.virtual.available, 'Virtual memory available should not be greater than total');
+            assert.ok(memoryInfo.physical.total >= 0, 'Physical total memory should not be negative');
+            assert.ok(memoryInfo.physical.available >= 0, 'Physical available memory should not be negative');
+            assert.ok(memoryInfo.virtual.total >= 0, 'Virtual total memory should not be negative');
+            assert.ok(memoryInfo.virtual.available >= 0, 'Virtual available memory should not be negative');
         });
     });
 
