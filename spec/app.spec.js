@@ -149,16 +149,16 @@ describe('app.spec: app namespace tests', () => {
                 function listener1() {
                     listener1Triggered = true;
                 }
-            
+                
                 function listener2() {
                     listener2Triggered = true;
+                    __close(JSON.stringify({ listener1Triggered, listener2Triggered }));
                 }
             
                 await Neutralino.events.on('multiListenerEvent', listener1);
                 await Neutralino.events.on('multiListenerEvent', listener2);
             
                 await Neutralino.app.broadcast('multiListenerEvent');
-                await __close(JSON.stringify({ listener1Triggered, listener2Triggered }));
             `);
 
             const output = JSON.parse(runner.getOutput());
@@ -176,14 +176,13 @@ describe('app.spec: app namespace tests', () => {
             
                 function safeListener() {
                     safeListenerCalled = true;
+                    __close(JSON.stringify({safeListenerCalled}))
                 }
             
                 await Neutralino.events.on('errorEvent', errorListener);
                 await Neutralino.events.on('errorEvent', safeListener);
             
                 await Neutralino.app.broadcast('errorEvent');
-            
-                await __close(JSON.stringify({safeListenerCalled}))
             `);
             const output = JSON.parse(runner.getOutput())
             assert.strictEqual(output.safeListenerCalled, true, 'Safe listener should be called');
