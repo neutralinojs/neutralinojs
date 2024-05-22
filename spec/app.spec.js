@@ -176,7 +176,7 @@ describe('app.spec: app namespace tests', () => {
             
                 function safeListener() {
                     safeListenerCalled = true;
-                    __close(JSON.stringify({safeListenerCalled}))
+                    __close(JSON.stringify({safeListenerCalled}));
                 }
             
                 await Neutralino.events.on('errorEvent', errorListener);
@@ -198,13 +198,13 @@ describe('app.spec: app namespace tests', () => {
             
                 function listener2() {
                     order.push(2);
+                    __close(JSON.stringify({order}));
                 }
             
                 await Neutralino.events.on('orderEvent', listener1);
                 await Neutralino.events.on('orderEvent', listener2);
             
                 await Neutralino.app.broadcast('orderEvent');
-                await __close(JSON.stringify({order}))
             `);
             const output = JSON.parse(runner.getOutput());
             assert.strictEqual(output.order.length, 2);
