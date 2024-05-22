@@ -19,6 +19,20 @@ describe('computer.spec: computer namespace tests', () => {
             assert.ok(typeof memoryInfo.virtual.total == 'number');
             assert.ok(typeof memoryInfo.virtual.available == 'number');
         });
+
+        it('returns consistent and valid memory info', async () => {
+            runner.run(`
+                let memoryInfo = await Neutralino.computer.getMemoryInfo();
+                await __close(JSON.stringify(memoryInfo));
+            `);
+            let memoryInfo = JSON.parse(runner.getOutput());
+            assert.ok(memoryInfo.physical.total >= memoryInfo.physical.available, 'Physical memory available should not be greater than total');
+            assert.ok(memoryInfo.virtual.total >= memoryInfo.virtual.available, 'Virtual memory available should not be greater than total');
+            assert.ok(memoryInfo.physical.total >= 0, 'Physical total memory should not be negative');
+            assert.ok(memoryInfo.physical.available >= 0, 'Physical available memory should not be negative');
+            assert.ok(memoryInfo.virtual.total >= 0, 'Virtual total memory should not be negative');
+            assert.ok(memoryInfo.virtual.available >= 0, 'Virtual available memory should not be negative');
+        });
     });
 
     describe('computer.getArch', () => {
@@ -29,6 +43,16 @@ describe('computer.spec: computer namespace tests', () => {
             `);
             let arch = runner.getOutput();
             assert.ok(typeof arch == 'string');
+        });
+
+        it('returns a supported architecture', async () => {
+            const supportedArchitectures = ['x64', 'arm', 'itanium', 'ia32', 'unknown'];
+            runner.run(`
+                let arch = await Neutralino.computer.getArch();
+                await __close(arch);
+            `);  
+            let arch = runner.getOutput();
+            assert.ok(supportedArchitectures.includes(arch), `Returned architecture '${arch}' is not supported by Neutralinojs`);
         });
     });
 
@@ -102,15 +126,20 @@ describe('computer.spec: computer namespace tests', () => {
 
 
     describe('computer.getMousePosition', () => {
-        it('returns the current mouse cursor position', async () => {
+        it('returns the current mouse cursor position and it is within screen bounds', async () => {
             runner.run(`
                 let pos = await Neutralino.computer.getMousePosition();
-                await __close(JSON.stringify(pos));
+                let screenInfo = await Neutralino.computer.getDisplays();
+                await __close(JSON.stringify({ position: pos, screen: screenInfo }));
             `);
-            let pos = JSON.parse(runner.getOutput());
-            assert.ok(typeof pos == 'object');
-            assert.ok(typeof pos.x == 'number');
-            assert.ok(typeof pos.y == 'number');
+    
+            let result = JSON.parse(runner.getOutput());
+            let pos = result.position;
+            let screenWidth = result.screen[0].resolution.width;
+            let screenHeight = result.screen[0].resolution.height;
+    
+            assert.ok(pos.x >= 0 && pos.x <= screenWidth, `Mouse x position ${pos.x} is outside the screen width ${screenWidth}`);
+            assert.ok(pos.y >= 0 && pos.y <= screenHeight, `Mouse y position ${pos.y} is outside the screen height ${screenHeight}`);
         });
     });
 });
