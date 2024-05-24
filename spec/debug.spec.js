@@ -40,7 +40,7 @@ describe('debug.spec: debug namespace tests', () => {
             assert.ok(runner.getOutput().includes('Hello! This is a warning message'));
         });
 
-        it('logs a warning message', async () => {
+        it('logs a debug message', async () => {
             runner.run(`
                 await Neutralino.debug.log('Hello! This is a debug message', 'DEBUG');
                 let logFileContent = await Neutralino.filesystem.readFile(NL_PATH + '/neutralinojs.log');
