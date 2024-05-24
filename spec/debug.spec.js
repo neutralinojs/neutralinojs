@@ -66,5 +66,15 @@ describe('debug.spec: debug namespace tests', () => {
             `);
             assert.ok(runner.getOutput().includes(''));
         });
+
+        it('logs a large message', async () => {
+            const largeLogMessage = 'Neutralino'.repeat(10000); 
+            runner.run(`
+                await Neutralino.debug.log('${largeLogMessage}');
+                let logFileContent = await Neutralino.filesystem.readFile(NL_PATH + '/neutralinojs.log');
+                await __close(logFileContent);
+            `);
+            assert.ok(runner.getOutput().includes(largeLogMessage));
+        });
     });
 });
