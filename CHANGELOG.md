@@ -14,7 +14,7 @@ Now, developers can load the Neutralinojs framework without creating a `neutrali
 ./framework-bin --url=https://neutralino.js.org/docs
 
 # Launches a local static web app
-./framework-bin --url="/resources/" --window-title="My app" --enable-server
+./framework-bin --url="/resources/" --window-title="My web app" --enable-server
 ```
 
 ### API: window
