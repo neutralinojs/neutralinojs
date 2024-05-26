@@ -45,41 +45,42 @@ string getConfigFile() {
 }
 
 void init() {
+    options = json::object();
     json config;
     try {
         fs::FileReaderResult fileReaderResult = resources::getFile(configFile);
         config = json::parse(fileReaderResult.data);
         options = config;
-
-        // Apply config overrides
-        json patches;
-        for(const auto &cfgOverride: configOverrides) {
-            json patch;
-
-            patch["op"] = options[json::json_pointer(cfgOverride.key)].is_null()
-                                ? "add" : "replace";
-            patch["path"] = cfgOverride.key;
-
-            // String to actual types
-            if(cfgOverride.convertTo == "int") {
-                patch["value"] = stoi(cfgOverride.value);
-            }
-            else if(cfgOverride.convertTo == "bool") {
-                patch["value"] = cfgOverride.value == "true";
-            }
-            else {
-                patch["value"] = cfgOverride.value;
-            }
-
-            patches.push_back(patch);
-        }
-
-        if(!patches.is_null()) {
-            options = options.patch(patches);
-        }
     }
     catch(exception e) {
         debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_CF_UNBLDCF, string(configFile)));
+    }
+
+    // Apply config overrides
+    json patches;
+    for(const auto &cfgOverride: configOverrides) {
+        json patch;
+
+        patch["op"] = options[json::json_pointer(cfgOverride.key)].is_null()
+                            ? "add" : "replace";
+        patch["path"] = cfgOverride.key;
+
+        // String to actual types
+        if(cfgOverride.convertTo == "int") {
+            patch["value"] = stoi(cfgOverride.value);
+        }
+        else if(cfgOverride.convertTo == "bool") {
+            patch["value"] = cfgOverride.value == "true";
+        }
+        else {
+            patch["value"] = cfgOverride.value;
+        }
+
+        patches.push_back(patch);
+    }
+
+    if(!patches.is_null()) {
+        options = options.patch(patches);
     }
 }
 

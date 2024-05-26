@@ -57,7 +57,7 @@ struct WindowOptions {
     bool transparent = false;
     bool exitProcessOnClose = true;
     bool useSavedState = true;
-    string title = "Neutralinojs window";
+    string title = "Neutralinojs";
     string url = "https://neutralino.js.org";
     string icon = "";
     string extendUserAgentWith = "";
