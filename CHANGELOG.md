@@ -6,6 +6,17 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### Core: Configless framework initialization
+Now, developers can load the Neutralinojs framework without creating a `neutralino.config.json` file. Now, there is no mandatory configuration properties since Neutralinojs set reasonable defaults. Developers can launch the framework using the following methods without a configuration file:
+
+```bash
+# Loading a remote URL
+./framework-bin --url=https://neutralino.js.org/docs
+
+# Launches a local static web app
+./framework-bin --url="/resources/" --window-title="My app" --enable-server
+```
+
 ### API: window
 - Improve the behaviour of the `window.show()` function on Windows. Now, this function flashes the window if it's already in foreground and activates the window properly if it's minimized.
 
