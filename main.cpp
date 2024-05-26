@@ -54,7 +54,7 @@ void __startApp() {
             break;
         case settings::AppModeCloud:
             if(neuserver::isInitialized()) {
-                debug::log(debug::LogTypeInfo, options["applicationId"].get<string>() +
+                debug::log(debug::LogTypeInfo, settings::getAppId() +
                         " is available at " + navigationUrl);
             }
             __wait();
@@ -99,7 +99,7 @@ void __configureLogger() {
 }
 
 void __startServerAsync() {
-    navigationUrl = settings::getOptionForCurrentMode("url").get<string>();
+    navigationUrl = settings::getNavigationUrl();
     json jEnableServer = settings::getOptionForCurrentMode("enableServer");
 
     if(!jEnableServer.is_null() && jEnableServer.get<bool>()) {
@@ -125,25 +125,7 @@ void __startServerAsync() {
 void __initFramework(const json &args) {
     settings::setGlobalArgs(args);
     resources::init();
-    json options = settings::getConfig();
-
-    if(options.is_null()) {
-        pfd::message("Unable to load app configuration",
-                        settings::getConfigFile() + " file is missing or corrupted.",
-                        pfd::choice::ok,
-                        pfd::icon::error);
-        std::exit(1);
-    }
-
-    if(options["applicationId"].is_null() || options["defaultMode"].is_null()
-        || settings::getOptionForCurrentMode("url").is_null()) {
-        pfd::message("Missing mandatory configuration",
-                        "Neutralinojs app config should contain applicationId, defaultMode, and url.",
-                        pfd::choice::ok,
-                        pfd::icon::error);
-        std::exit(1);
-    }
-
+    settings::init();
     authbasic::init();
     permission::init();
 }

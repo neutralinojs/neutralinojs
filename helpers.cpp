@@ -108,6 +108,21 @@ vector<string> getModes() {
     return {"window", "browser", "cloud", "chrome"};
 }
 
+string appModeToStr(settings::AppMode mode) {
+    switch(mode) {
+        case settings::AppModeWindow:
+            return "window";
+        case settings::AppModeBrowser:
+            return "browser";
+        case settings::AppModeCloud:
+            return "cloud";
+        case settings::AppModeChrome:
+            return "chrome";
+        default:
+            return "invalid";
+    }
+}
+
 string normalizePath(string &path) {
     #if defined(_WIN32)
     replace(path.begin(), path.end(), '\\', '/');

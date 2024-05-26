@@ -44,9 +44,7 @@ string getConfigFile() {
     return configFile;
 }
 
-json getConfig() {
-    if(!options.is_null())
-        return options;
+void init() {
     json config;
     try {
         fs::FileReaderResult fileReaderResult = resources::getFile(configFile);
@@ -83,7 +81,20 @@ json getConfig() {
     catch(exception e) {
         debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_CF_UNBLDCF, string(configFile)));
     }
+}
+
+json getConfig() {
     return options;
+}
+
+string getAppId() {
+    return !options["applicationId"].is_null() ?
+        options["applicationId"].get<string>() : "js.neutralino.framework";
+}
+
+string getNavigationUrl() {
+    return !settings::getOptionForCurrentMode("url").is_null() ?
+        settings::getOptionForCurrentMode("url").get<string>() : "https://neutralino.js.org";
 }
 
 string getGlobalVars(){
@@ -91,12 +102,12 @@ string getGlobalVars(){
     jsSnippet += "var NL_ARCH='" + computer::getArch() + "';";
     jsSnippet += "var NL_VERSION='" + string(NEU_VERSION) + "';";
     jsSnippet += "var NL_COMMIT='" + string(NEU_COMMIT) + "';";
-    jsSnippet += "var NL_APPID='" + options["applicationId"].get<string>() + "';";
+    jsSnippet += "var NL_APPID='" + settings::getAppId() + "';";
     if(!options["version"].is_null()) {
         jsSnippet += "var NL_APPVERSION='" + options["version"].get<string>() + "';";
     }
     jsSnippet += "var NL_PORT=" + to_string(settings::getOptionForCurrentMode("port").get<int>()) + ";";
-    jsSnippet += "var NL_MODE='" + options["defaultMode"].get<string>() + "';";
+    jsSnippet += "var NL_MODE='" + helpers::appModeToStr(settings::getMode()) + "';";
     jsSnippet += "var NL_TOKEN='" + authbasic::getToken() + "';";
     jsSnippet += "var NL_CWD='" + fs::getCurrentDirectory() + "';";
     jsSnippet += "var NL_ARGS=" + globalArgs.dump() + ";";
@@ -176,7 +187,8 @@ void setGlobalArgs(const json &args) {
 }
 
 settings::AppMode getMode() {
-    string mode = options["defaultMode"].get<string>();
+    string mode = !options["defaultMode"].is_null() ?
+                    options["defaultMode"].get<string>() : "window";
     if(mode == "window") return settings::AppModeWindow;
     if(mode == "browser") return settings::AppModeBrowser;
     if(mode == "cloud") return settings::AppModeCloud;
@@ -283,7 +295,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
 
 // Priority: mode -> root -> null
 json getOptionForCurrentMode(const string &key) {
-    string mode = options["defaultMode"].get<string>();
+    string mode = helpers::appModeToStr(settings::getMode());
     json value = options["modes"][mode][key];
     if(value.is_null()) {
         value = options[key];

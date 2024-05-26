@@ -6,6 +6,8 @@
 
 #include "lib/json/json.hpp"
 
+#include "settings.h"
+
 using namespace std;
 using json = nlohmann::json;
 
@@ -18,6 +20,7 @@ char* cStrCopy(const string &str);
 bool hasRequiredFields(const json &input, const vector<string> &keys);
 bool hasField(const json &input, const string &key);
 vector<string> getModes();
+string appModeToStr(settings::AppMode mode);
 string normalizePath(string &path);
 string unNormalizePath(string &path);
 
