@@ -15,11 +15,13 @@ describe('debug.spec: debug namespace tests', () => {
 
         it('logs an info message', async () => {
             runner.run(`
-                await Neutralino.debug.log('Hello! This is a info message', 'INFO');
+                await Neutralino.debug.log('Hello! This is an info message', 'INFO');
                 let logFileContent = await Neutralino.filesystem.readFile(NL_PATH + '/neutralinojs.log');
                 await __close(logFileContent);
             `);
-            assert.ok(runner.getOutput().includes('Hello! This is a info message'));
+            let logFileContent = runner.getOutput();
+            assert.ok(logFileContent.includes('Hello! This is an info message'), 'The log file should contain the log message');
+            assert.ok(logFileContent.includes('INFO'), 'The log message should be INFO level');
         });
 
         it('logs an error message', async () => {
@@ -28,7 +30,9 @@ describe('debug.spec: debug namespace tests', () => {
                 let logFileContent = await Neutralino.filesystem.readFile(NL_PATH + '/neutralinojs.log');
                 await __close(logFileContent);
             `);
-            assert.ok(runner.getOutput().includes('Hello! This is an error message'));
+            let logFileContent = runner.getOutput();
+            assert.ok(logFileContent.includes('Hello! This is an error message', 'The log file should contain the log message'));
+            assert.ok(logFileContent.includes('ERROR'), 'The log message should be ERROR level');
         });
 
         it('logs a warning message', async () => {
@@ -37,7 +41,9 @@ describe('debug.spec: debug namespace tests', () => {
                 let logFileContent = await Neutralino.filesystem.readFile(NL_PATH + '/neutralinojs.log');
                 await __close(logFileContent);
             `);
-            assert.ok(runner.getOutput().includes('Hello! This is a warning message'));
+            let logFileContent = runner.getOutput();
+            assert.ok(logFileContent.includes('Hello! This is a warning message', 'The log file should contain the log message'));
+            assert.ok(logFileContent.includes('WARNING'), 'The log message should be WARNING level');
         });
 
         it('logs a debug message', async () => {
@@ -46,7 +52,9 @@ describe('debug.spec: debug namespace tests', () => {
                 let logFileContent = await Neutralino.filesystem.readFile(NL_PATH + '/neutralinojs.log');
                 await __close(logFileContent);
             `);
-            assert.ok(runner.getOutput().includes('Hello! This is a debug message'));
+            let logFileContent = runner.getOutput();
+            assert.ok(logFileContent.includes('Hello! This is a debug message', 'The log file should contain the log message'));
+            assert.ok(logFileContent.includes('DEBUG'), 'The log message should be DEBUG level');
         });
 
         it('logs a message with special characters', async () => {
