@@ -44,15 +44,21 @@ string getConfigFile() {
     return configFile;
 }
 
-void init() {
+bool init() {
     options = json::object();
     json config;
-    try {
-        fs::FileReaderResult fileReaderResult = resources::getFile(configFile);
-        config = json::parse(fileReaderResult.data);
-        options = config;
+    fs::FileReaderResult fileReaderResult = resources::getFile(configFile);
+    if(fileReaderResult.status == errors::NE_ST_OK) {
+        try {
+            config = json::parse(fileReaderResult.data);
+            options = config;
+        }
+        catch(exception e) {
+            debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_CF_UNBPRCF, string(configFile)));
+            return false;
+        }
     }
-    catch(exception e) {
+    else {
         debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_CF_UNBLDCF, string(configFile)));
     }
 
@@ -82,6 +88,8 @@ void init() {
     if(!patches.is_null()) {
         options = options.patch(patches);
     }
+
+    return true;
 }
 
 json getConfig() {

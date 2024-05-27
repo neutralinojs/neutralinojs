@@ -55,6 +55,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_SR_UNBPARS: return "NE_SR_UNBPARS";
         // config
         case errors::NE_CF_UNBLDCF: return "NE_CF_UNBLDCF";
+        case errors::NE_CF_UNBPRCF: return "NE_CF_UNBPRCF";
         case errors::NE_CF_UNSUPMD: return "NE_CF_UNSUPMD";
     }
     return "NE_ST_NOTOK";
@@ -105,8 +106,9 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_SR_UNBSEND: return "Unable to send native message";
         case errors::NE_SR_UNBPARS: return "Unable to parse native call payload";
         // config
-        case errors::NE_CF_UNBLDCF: return "Unable to load the config file: %1";
-        case errors::NE_CF_UNSUPMD: return "Unsupported mode: %1. The default mode is selected.";
+        case errors::NE_CF_UNBLDCF: return "Unable to load the %1 configuration file. Framework defaults will be loaded.";
+        case errors::NE_CF_UNBPRCF: return "Unable to parse the config file: %1";
+        case errors::NE_CF_UNSUPMD: return "Unsupported mode: %1. The default mode (window) is selected.";
     }
     return "";
 }

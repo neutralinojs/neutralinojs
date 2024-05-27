@@ -42,7 +42,7 @@ struct ConfigOverride {
 
 enum AppMode { AppModeWindow, AppModeBrowser, AppModeCloud, AppModeChrome };
 
-void init();
+bool init();
 json getConfig();
 string getAppId();
 string getNavigationUrl();

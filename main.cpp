@@ -125,7 +125,14 @@ void __startServerAsync() {
 void __initFramework(const json &args) {
     settings::setGlobalArgs(args);
     resources::init();
-    settings::init();
+    bool settingsStatus = settings::init();
+    if(!settingsStatus) {
+        pfd::message("Unable to load configuration",
+            "The application configuration file cannot be loaded due to a JSON parsing error.",
+            pfd::choice::ok,
+            pfd::icon::error);
+        std::exit(1);
+    }
     authbasic::init();
     permission::init();
 }
