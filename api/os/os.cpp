@@ -268,9 +268,6 @@ json execCommand(const json &input) {
     return output;
 }
 
-
-
-
 json spawnProcess(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"command"})) {
