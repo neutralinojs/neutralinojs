@@ -6,7 +6,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
-### Core: Configless framework initialization
+### Configuration: Configless framework initialization
 Now, developers can load the Neutralinojs framework without creating a `neutralino.config.json` file. Now, there is no mandatory configuration properties since Neutralinojs set reasonable defaults. Developers can launch the framework using the following methods without a configuration file:
 
 ```bash
@@ -16,6 +16,8 @@ Now, developers can load the Neutralinojs framework without creating a `neutrali
 # Launches a local static web app
 ./framework-bin --url="/resources/" --window-title="My web app" --enable-server
 ```
+### Configuration
+- New internal CLI parameters added: `--enable-native-api` and `--document-root=<string>`
 
 ### Core: Static server
 Earlier, Neutralinojs app developers had to use hash routing with their frontend-library-based apps since the internal static server didn't offer an inbuilt URL rewrite logic for SPAs (Single Page Apps). Now, they can use the `singlePageServe: true` option in the app configuration file to activate SPA routing. If this setting is on, the static server will serve the main `index.html` file when it receives directory requests that possibly send HTTP `404` status.
