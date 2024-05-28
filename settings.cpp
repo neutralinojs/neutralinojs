@@ -219,6 +219,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
         // Top level
         {"--mode", {"/defaultMode", "string"}},
         {"--url", {"/url", "string"}},
+        {"--document-root", {"/documentRoot", "string"}},
         {"--port", {"/port", "int"}},
         {"--logging-enabled", {"/logging/enabled", "bool"}},
         {"--logging-write-to-log-file", {"/logging/writeToLogFile", "bool"}},
@@ -261,6 +262,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
     set<string> cliMappingAliases = {
         "/port",
         "/url",
+        "/documentRoot",
         "/logging/enabled",
         "/logging/writeToLogFile",
         "/enableServer",
