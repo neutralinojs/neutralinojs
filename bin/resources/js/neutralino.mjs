@@ -686,7 +686,7 @@ function create(url, options) {
         for (let key in options) {
             if (key == "processArgs")
                 continue;
-            let cliKey = key.replace(/[A-Z]|^[a-z]/g, (token) => ("-" + token.toLowerCase()));
+            let cliKey = '-' + key.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
             command += ` --window${cliKey}=${normalize(options[key])}`;
         }
         if (options && options.processArgs)
@@ -862,7 +862,7 @@ var custom = /*#__PURE__*/Object.freeze({
     getMethods: getMethods
 });
 
-var version = "5.1.0";
+var version = "5.1.1";
 
 let initialized = false;
 function init(options = {}) {

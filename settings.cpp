@@ -223,6 +223,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
         {"--logging-enabled", {"/logging/enabled", "bool"}},
         {"--logging-write-to-log-file", {"/logging/writeToLogFile", "bool"}},
         {"--enable-server", {"/enableServer", "bool"}},
+        {"--enable-native-api", {"/enableNativeAPI", "bool"}},
         {"--enable-extensions", {"/enableExtensions", "bool"}},
         {"--export-auth-info", {"/exportAuthInfo", "bool"}},
         // Window mode
@@ -263,6 +264,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
         "/logging/enabled",
         "/logging/writeToLogFile",
         "/enableServer",
+        "/enableNativeAPI",
         "/enableExtensions",
         "/exportAuthInfo"
     };
