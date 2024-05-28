@@ -17,6 +17,11 @@ Now, developers can load the Neutralinojs framework without creating a `neutrali
 ./framework-bin --url="/resources/" --window-title="My web app" --enable-server
 ```
 
+### Core: Static server
+Earlier, Neutralinojs app developers had to use hash routing with their frontend-library-based apps since the internal static server didn't offer an inbuilt URL rewrite logic for SPAs (Single Page Apps). Now, they can use the `singlePageServe: true` option in the app configuration file to activate SPA routing. If this setting is on, the static server will serve the main `index.html` file when it receives directory requests that possibly send HTTP `404` status.
+
+For example, the `/invoices` path serves the main `index.html` file if there is no directory named `invoices` which holds an `index.html` file. 
+
 ### API: window
 - Improve the behaviour of the `window.show()` function on Windows. Now, this function flashes the window if it's already in foreground and activates the window properly if it's minimized.
 
