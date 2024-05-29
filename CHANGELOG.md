@@ -19,7 +19,7 @@ Now, developers can load the Neutralinojs framework without creating a `neutrali
 ### Configuration
 - New internal CLI parameters added: `--enable-native-api` and `--document-root=<string>`
 
-### Core: Static server
+### Core: Static server SPA (Single Page App) serving
 Earlier, Neutralinojs app developers had to use hash routing with their frontend-library-based apps since the internal static server didn't offer an inbuilt URL rewrite logic for SPAs (Single Page Apps). Now, they can use the `singlePageServe: true` option in the app configuration file to activate SPA routing. If this setting is on, the static server will serve the main `index.html` file when it receives directory requests that possibly send HTTP `404` status.
 
 For example, the `/invoices` path serves the main `index.html` file if there is no directory named `invoices` which holds an `index.html` file. 
