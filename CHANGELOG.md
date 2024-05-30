@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v5.2.0
+
 ### Configuration: Configless framework initialization
 Now, developers can load the Neutralinojs framework without creating a `neutralino.config.json` file. Now, there is no mandatory configuration properties since Neutralinojs set reasonable defaults. Developers can launch the framework using the following methods without a configuration file:
 
