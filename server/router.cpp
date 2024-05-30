@@ -263,24 +263,29 @@ router::Response getAsset(string path, const string &prependData) {
 
     fs::FileReaderResult fileReaderResult = resources::getFile(path);
     if(fileReaderResult.status != errors::NE_ST_OK) {
-        debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_RS_UNBLDRE, path));
         json jSpaServing = settings::getOptionForCurrentMode("singlePageServe");
         if(!jSpaServing.is_null() && jSpaServing.get<bool>() && regex_match(path, regex(".*index.html$"))) {
             json jDocumentRoot = settings::getOptionForCurrentMode("documentRoot");
+            string newPath;
             if(!jDocumentRoot.is_null()) {
-                path = jDocumentRoot.get<string>() + "index.html";
+                newPath = jDocumentRoot.get<string>() + "index.html";
             }
             else {
-                path = settings::getNavigationUrl();
+                newPath = settings::getNavigationUrl();
             }
-            return getAsset(path, prependData);
+            if(newPath != path) return getAsset(newPath, prependData);
         }
     }
     response.data = fileReaderResult.data;
-    response.status = fileReaderResult.status != errors::NE_ST_OK ? websocketpp::http::status_code::not_found
-                                : websocketpp::http::status_code::ok;
-    if(fileReaderResult.status == errors::NE_ST_OK && prependData != "")
+    response.status = websocketpp::http::status_code::ok;
+
+    if(fileReaderResult.status != errors::NE_ST_OK) {
+        response.status = websocketpp::http::status_code::not_found;
+        debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_RS_UNBLDRE, path));
+    }
+    else if(prependData != "") {
         response.data = prependData + response.data;
+    }
 
     // If MIME-type is not defined in neuserver, application/octet-stream will be used by default.
     if(mimeTypes.find(extension) != mimeTypes.end()) {
