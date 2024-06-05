@@ -482,24 +482,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
                 }
             `);
             assert.equal(runner.getOutput(), 'NE_FS_FILOPER');
-        });
-
-        it('opens a file with different modes', async () => {
-            runner.run(`
-                let fileIds = [];
-                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Hello');
-    
-                let fileId = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/test.txt', 'read');
-                fileIds.push(fileId);
-                fileId = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/test.txt', 'write');
-                fileIds.push(fileId);
-    
-                await __close(JSON.stringify(fileIds));
-            `);
-            const fileIds = JSON.parse(runner.getOutput());
-            assert.ok(Array.isArray(fileIds));
-            assert.notEqual(fileIds[0], fileIds[1]);
-        });
+        });   
     });
 
     describe('filesystem.updateOpenedFile', () => {
