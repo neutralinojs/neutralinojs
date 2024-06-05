@@ -11,7 +11,7 @@ fs.readdirSync(testDir).filter((file) => file.includes(specModule + '.spec.js'))
       mocha.addFile(path.join(testDir, file));
 
 });
-mocha.timeout(22000);
+mocha.timeout(20000);
 mocha.run((failures) => {
     process.exitCode = failures ? 1 : 0;
 });
