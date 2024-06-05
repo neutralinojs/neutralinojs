@@ -666,6 +666,18 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             assert.equal(info.id, 0);
         });
 
+        it('returns updated eof properly', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Hello');
+                let fileId = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/test.txt');
+                await Neutralino.filesystem.updateOpenedFile(fileId, 'readAll');
+                let info = await Neutralino.filesystem.getOpenedFileInfo(fileId);
+                await __close(JSON.stringify(info));
+            `);
+            let info = JSON.parse(runner.getOutput());
+            assert.equal(info.eof, true);
+        });
+
         it('returns returns updated pos properly', async () => {
             runner.run(`
                 await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Hello');
@@ -678,6 +690,18 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             assert.equal(info.pos, 3);
         });
 
+        it('returns returns updated lastRead properly', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Hello');
+                let fileId = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/test.txt');
+                await Neutralino.filesystem.updateOpenedFile(fileId, 'read', 2);
+                let info = await Neutralino.filesystem.getOpenedFileInfo(fileId);
+                await __close(JSON.stringify(info));
+            `);
+            let info = JSON.parse(runner.getOutput());
+            assert.equal(info.lastRead, 2);
+        });
+        
         it('returns updated pos after reading bytes', async () => {
             runner.run(`
                 await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Hello');
