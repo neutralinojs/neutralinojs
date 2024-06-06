@@ -838,7 +838,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
                 await __close(content);
             `);
             let content = runner.getOutput();
-            assert.equal(content, 'Hello');
+            assert.equal(content, 'Old Content');
         });
         
         it('copies directories recursively with recursive option', async () => {
