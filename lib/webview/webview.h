@@ -580,6 +580,7 @@ public:
   virtual void navigate(const std::string url) = 0;
   virtual void extend_user_agent(const std::string customAgent) = 0;
   virtual void resize(HWND) = 0;
+  virtual void setEnableContextMenu(bool) = 0;
 };
 
 //
@@ -615,6 +616,10 @@ public:
   void navigate(const std::string url) override {
     Uri uri(winrt::to_hstring(url));
     m_webview.Navigate(uri);
+  }
+
+  void setEnableContextMenu(bool enable) {
+    
   }
 
   void extend_user_agent(const std::string customAgent) {}
@@ -669,8 +674,9 @@ public:
             }
             else {
                 m_settings->put_AreDevToolsEnabled(FALSE);
-                m_settings->put_IsStatusBarEnabled(FALSE);
+                m_settings->put_IsStatusBarEnabled(FALSE);                
             }
+            
             flag.clear();
         }
     ));
@@ -700,6 +706,7 @@ public:
     CoTaskMemFree(ua);
   }
 
+
   void resize(HWND wnd) override {
     if (m_controller == nullptr) {
       return;
@@ -707,6 +714,12 @@ public:
     RECT bounds;
     GetClientRect(wnd, &bounds);
     m_controller->put_Bounds(bounds);
+  }
+
+  void setEnableContextMenu(bool enable) {
+    ICoreWebView2Settings *settings = nullptr;
+    m_webview->get_Settings(&settings);
+    settings->put_AreDefaultContextMenusEnabled(enable);
   }
 
   void navigate(const std::string url) override {
@@ -959,6 +972,10 @@ public:
     SetWindowText(m_window, str2wstr(title).c_str());
   }
 
+  void setEnableContextMenu(bool enable) {
+    m_browser->setEnableContextMenu(enable);
+  }
+
   std::string get_title() {
     int len = GetWindowTextLength(hwnd);
     std::wstring title;
@@ -1055,6 +1072,10 @@ public:
 
   void setEventHandler(eventHandler_t handler) {
     windowStateChange = handler;
+  }
+
+  void setEnableContextMenu(bool enable) {
+    browser_engine::setEnableContextMenu(enable);
   }
 
 };

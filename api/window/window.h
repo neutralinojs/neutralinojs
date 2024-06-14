@@ -57,6 +57,7 @@ struct WindowOptions {
     bool transparent = false;
     bool exitProcessOnClose = true;
     bool useSavedState = true;
+    bool enableContextMenu = true;
     string title = "Neutralinojs";
     string url = "https://neutralino.js.org";
     string icon = "";
