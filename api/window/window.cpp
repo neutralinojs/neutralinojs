@@ -805,6 +805,18 @@ json setAlwaysOnTop(const json &input) {
     return output;
 }
 
+json enableContextMenu(const json &input) {
+    
+    json output;
+    bool enable = false;
+    if(helpers::hasField(input, "enable")) {
+        enable = input["enable"].get<bool>();
+    }
+    nativeWindow->setEnableContextMenu(enable);    
+    output["success"] = true;
+    return output; 
+}
+
 json getPosition(const json &input) {
     json output;
     json posRes;

@@ -580,7 +580,7 @@ public:
   virtual void navigate(const std::string url) = 0;
   virtual void extend_user_agent(const std::string customAgent) = 0;
   virtual void resize(HWND) = 0;
-  virtual void setEnableContextMenu(bool) = 0;
+  virtual void enableContextMenu(bool) = 0;
 };
 
 //
@@ -618,9 +618,7 @@ public:
     m_webview.Navigate(uri);
   }
 
-  void setEnableContextMenu(bool enable) {
-    
-  }
+  void enableContextMenu(bool enable) {}
 
   void extend_user_agent(const std::string customAgent) {}
 
@@ -716,9 +714,10 @@ public:
     m_controller->put_Bounds(bounds);
   }
 
-  void setEnableContextMenu(bool enable) {
+  void enableContextMenu(bool enable) override {
     ICoreWebView2Settings *settings = nullptr;
-    m_webview->get_Settings(&settings);
+    HRESULT hr = m_webview->get_Settings(&settings);
+    // Segmentation fault because of settings is nullptr!
     settings->put_AreDefaultContextMenusEnabled(enable);
   }
 
@@ -973,7 +972,7 @@ public:
   }
 
   void setEnableContextMenu(bool enable) {
-    m_browser->setEnableContextMenu(enable);
+    m_browser->enableContextMenu(enable);
   }
 
   std::string get_title() {
