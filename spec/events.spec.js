@@ -16,16 +16,13 @@ describe('events.spec: events namespace tests', () => {
 
         it('triggers the event handler when an event is dispatched', async () => {
             runner.run(`
-                let isEventTriggered = false;
                 function onTestEvent() {
-                    isEventTriggered = true;
-                    __close(JSON.stringify(isEventTriggered));
+                    __close('done');
                 }
                 await Neutralino.events.on('testEvent', onTestEvent);
                 await Neutralino.events.dispatch('testEvent');
             `);
-            const output = JSON.parse(runner.getOutput())
-            assert.strictEqual(output, true);
+            assert.strictEqual(runner.getOutput(), 'done');
         });
 
         it('handles multiple events', async () => {    
