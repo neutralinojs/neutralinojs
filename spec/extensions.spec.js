@@ -32,7 +32,6 @@ describe('extensions.spec: extensions namespace tests', () => {
                 });
             `, args: '--enable-extensions'});
             let o = runner.getOutput();
-            console.log('output',o);
             let stats = JSON.parse(o);
             assert.ok(typeof stats == 'object');
             assert.ok(Array.isArray(stats.loaded));
@@ -49,7 +48,6 @@ describe('extensions.spec: extensions namespace tests', () => {
                 await __close(JSON.stringify(stats));
             `, {args: '--enable-extensions=false'});  
             let o = runner.getOutput();
-            console.log('output', o);
             let stats = JSON.parse(o);
             assert.ok(typeof stats == 'object');
             assert.ok(Array.isArray(stats.loaded));
