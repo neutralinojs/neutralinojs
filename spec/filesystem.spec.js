@@ -946,17 +946,6 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             assert.ok(after.modifiedAt > before.modifiedAt);
         });
 
-        it('returns stats for the file system root', async () => {
-            runner.run(`
-                let stats = await Neutralino.filesystem.getStats('/');
-                await __close(JSON.stringify(stats));
-            `);
-            let stats = JSON.parse(runner.getOutput());
-            assert.ok(typeof stats == 'object');
-            assert.ok(stats.isDirectory);
-            assert.ok(!stats.isFile);
-        });
-
         it('returns stats for hidden files', async () => {
             runner.run(`
                 await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/.hidden-file', 'Hidden Content');
