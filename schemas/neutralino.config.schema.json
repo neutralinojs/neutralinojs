@@ -212,6 +212,10 @@
                       "type": "boolean",
                       "description": "Activates the top-most mode."
                     },
+                    "singleInstance": {
+                      "type": "boolean",
+                      "description": "Activates single-instance mode."
+                    },
                     "enableInspector": {
                       "type": "boolean",
                       "description": "Automatically opens the developer tools window."

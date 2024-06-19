@@ -4,6 +4,8 @@
 #if defined(_WIN32)
 #include <winsock2.h>
 #include <websocketpp/error.hpp>
+#include <WinBase.h>
+#define PIPE_NAME TEXT("\\\\.\\pipe\\neutralino")
 #endif
 
 #include "lib/json/json.hpp"
@@ -33,13 +35,93 @@ using json = nlohmann::json;
 
 string navigationUrl = "";
 
+bool __checkSingleInstance() {
+    #if defined(_WIN32)
+    CreateMutexA(NULL, TRUE, "neutralino_mutex_lock");
+    if (GetLastError() == ERROR_ALREADY_EXISTS) {
+        return false;
+    }
+    return true;
+    #endif
+    //TODO check other os
+    return true;
+}
+
+void __checkForSingleInstanceSignal() {
+    return;
+    debug::log(debug::LogTypeInfo, "__checkForSingleInstanceSignal");
+    #if defined(_WIN32)
+    debug::log(debug::LogTypeInfo, "_WIN32");
+    HANDLE hPipe;
+    char buffer[2048];
+    DWORD dwRead;
+
+
+debug::log(debug::LogTypeInfo, "CreateNamedPipe");
+    hPipe = CreateNamedPipe(PIPE_NAME,
+                            PIPE_ACCESS_DUPLEX,
+                            PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, 
+                            1,
+                            1024 * 16,
+                            1024 * 16,
+                            NMPWAIT_USE_DEFAULT_WAIT,
+                            NULL);
+    while (hPipe != INVALID_HANDLE_VALUE)
+    {
+        if (ConnectNamedPipe(hPipe, NULL) != FALSE)
+        {
+            while (ReadFile(hPipe, buffer, sizeof(buffer), &dwRead, NULL) != FALSE)
+            {
+                std::string bufferString(buffer, dwRead);
+                json bufferJson = bufferString;
+
+                std::ofstream o("pretty.json");
+                o << std::setw(4) << bufferJson << std::endl;
+            }
+        }
+
+        DisconnectNamedPipe(hPipe);
+    }
+    #endif
+    //TODO other os
+}
+
+void __sendArgsToFirstInstance(json args) {
+    #if defined(_WIN32)
+    HANDLE hPipe;
+    DWORD dwWritten;
+
+debug::log(debug::LogTypeInfo, "CreateFile");
+    hPipe = CreateFile(PIPE_NAME, 
+                       GENERIC_READ | GENERIC_WRITE, 
+                       0,
+                       NULL,
+                       OPEN_EXISTING,
+                       0,
+                       NULL);
+    if (hPipe != INVALID_HANDLE_VALUE)
+    {
+        std::string buffer = args.dump();
+        WriteFile(hPipe,
+                  buffer.c_str(),
+                  buffer.size(),
+                  &dwWritten,
+                  NULL);
+
+        CloseHandle(hPipe);
+    }
+    #endif
+    //TODO
+}
+
 void __wait() {
     while(true) {
         this_thread::sleep_for(20000ms);
     }
 }
 
-void __startApp() {
+void __startApp(json args) {
+    debug::log(debug::LogTypeInfo, "__startApp");
     json options = settings::getConfig();
     switch(settings::getMode()) {
         case settings::AppModeBrowser:
@@ -47,8 +129,30 @@ void __startApp() {
             __wait();
             break;
         case settings::AppModeWindow: {
+            debug::log(debug::LogTypeInfo, "AppModeWindow");
             json windowOptions = options["modes"]["window"];
+            if(helpers::hasField(windowOptions, "singleInstance")) {
+                debug::log(debug::LogTypeInfo, "hasField");
+                bool singleInstance = windowOptions["singleInstance"].get<bool>();
+
+                if(singleInstance) {
+                    if(__checkSingleInstance()) {
+                        debug::log(debug::LogTypeInfo, "thread");
+                        thread t = thread(__checkForSingleInstanceSignal);
+                        debug::log(debug::LogTypeInfo, "after thread"); //Somehow this is a last log
+                    }
+                    else {
+                        debug::log(debug::LogTypeInfo, "singleInstance");
+                        __sendArgsToFirstInstance(args);
+                        return;
+                    }
+                    debug::log(debug::LogTypeInfo, "end singleInstance");
+                }
+                debug::log(debug::LogTypeInfo, "end helper has field");
+            }
+            debug::log(debug::LogTypeInfo, "navigationUrl");
             windowOptions["url"] = navigationUrl;
+            debug::log(debug::LogTypeInfo, "init");
             window::controllers::init(windowOptions);
             }
             break;
@@ -165,13 +269,14 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
                       HINSTANCE hPrevInstance,
                       LPTSTR    lpCmdLine,
                       int       nCmdShow)
+                      {
 #elif defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 #define ARG_C argc
 #define ARG_V argv
 #define CONVSTR(S) S
 int main(int argc, char ** argv)
+{
 #endif
-                                 {
     json args;
     for (int i = 0; i < ARG_C; i++) {
         args.push_back(CONVSTR(ARG_V[i]));
@@ -180,6 +285,6 @@ int main(int argc, char ** argv)
     __startServerAsync();
     __configureLogger();
     __initExtra();
-    __startApp();
+    __startApp(args);
     return 0;
 }

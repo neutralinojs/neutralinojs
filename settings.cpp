@@ -240,6 +240,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
         {"--window-y", {"/modes/window/y", "int"}},
         {"--window-full-screen", {"/modes/window/fullScreen", "bool"}},
         {"--window-always-on-top", {"/modes/window/alwaysOnTop", "bool"}},
+        {"--window-single-instance", {"/modes/window/singleInstance", "bool"}},
         {"--window-enable-inspector", {"/modes/window/enableInspector", "bool"}},
         {"--window-borderless", {"/modes/window/borderless", "bool"}},
         {"--window-maximize", {"/modes/window/maximize", "bool"}},

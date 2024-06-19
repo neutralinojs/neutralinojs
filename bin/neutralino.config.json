@@ -39,6 +39,7 @@
             "minHeight": 200,
             "fullScreen": false,
             "alwaysOnTop": false,
+            "singleInstance": true,
             "icon": "/resources/icons/appIcon.png",
             "enableInspector": true,
             "borderless": false,

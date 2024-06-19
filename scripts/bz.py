@@ -91,7 +91,7 @@ def configure_vs_tools():
         .getoutput('"%s" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath' % vsw_path) \
         .strip().split('\r\n')
 
-    vs_path = vs_paths[-1]
+    vs_path = 'C:\\Program Files\\Microsoft Visual Studio\\2022\\Preview'
     vs_devcmd_file = '%s\\Common7\\Tools\\vsdevcmd.bat' % vs_path
 
     if not os.path.exists(vs_devcmd_file):
