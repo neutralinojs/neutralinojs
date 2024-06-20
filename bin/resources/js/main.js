@@ -30,4 +30,8 @@ Neutralino.events.on("eventFromExtension", (evt) => {
     console.log(`INFO: Test extension said: ${evt.detail}`);
 });
 
+Neutralino.events.on("otherInstance", evt => {
+    console.log(`INFO: Arguments from other instance: ${evt.detail}`);
+});
+
 showInfo();

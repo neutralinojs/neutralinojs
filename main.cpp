@@ -23,6 +23,7 @@
 #include "api/window/window.h"
 #include "api/os/os.h"
 #include "api/debug/debug.h"
+#include "api/events/events.h"
 
 #define NEU_APP_LOG_FILE "/neutralinojs.log"
 #define NEU_APP_LOG_FORMAT "%level %datetime %msg %loc %user@%host"
@@ -48,16 +49,11 @@ bool __checkSingleInstance() {
 }
 
 void __checkForSingleInstanceSignal() {
-    return;
-    debug::log(debug::LogTypeInfo, "__checkForSingleInstanceSignal");
     #if defined(_WIN32)
-    debug::log(debug::LogTypeInfo, "_WIN32");
     HANDLE hPipe;
     char buffer[2048];
     DWORD dwRead;
 
-
-debug::log(debug::LogTypeInfo, "CreateNamedPipe");
     hPipe = CreateNamedPipe(PIPE_NAME,
                             PIPE_ACCESS_DUPLEX,
                             PIPE_TYPE_BYTE | PIPE_READMODE_BYTE | PIPE_WAIT, 
@@ -75,8 +71,7 @@ debug::log(debug::LogTypeInfo, "CreateNamedPipe");
                 std::string bufferString(buffer, dwRead);
                 json bufferJson = bufferString;
 
-                std::ofstream o("pretty.json");
-                o << std::setw(4) << bufferJson << std::endl;
+                events::dispatch("otherInstance", bufferJson);
             }
         }
 
@@ -91,7 +86,6 @@ void __sendArgsToFirstInstance(json args) {
     HANDLE hPipe;
     DWORD dwWritten;
 
-debug::log(debug::LogTypeInfo, "CreateFile");
     hPipe = CreateFile(PIPE_NAME, 
                        GENERIC_READ | GENERIC_WRITE, 
                        0,
@@ -121,7 +115,6 @@ void __wait() {
 }
 
 void __startApp(json args) {
-    debug::log(debug::LogTypeInfo, "__startApp");
     json options = settings::getConfig();
     switch(settings::getMode()) {
         case settings::AppModeBrowser:
@@ -129,30 +122,22 @@ void __startApp(json args) {
             __wait();
             break;
         case settings::AppModeWindow: {
-            debug::log(debug::LogTypeInfo, "AppModeWindow");
             json windowOptions = options["modes"]["window"];
             if(helpers::hasField(windowOptions, "singleInstance")) {
-                debug::log(debug::LogTypeInfo, "hasField");
                 bool singleInstance = windowOptions["singleInstance"].get<bool>();
 
                 if(singleInstance) {
                     if(__checkSingleInstance()) {
-                        debug::log(debug::LogTypeInfo, "thread");
                         thread t = thread(__checkForSingleInstanceSignal);
-                        debug::log(debug::LogTypeInfo, "after thread"); //Somehow this is a last log
+                        t.detach();
                     }
                     else {
-                        debug::log(debug::LogTypeInfo, "singleInstance");
                         __sendArgsToFirstInstance(args);
                         return;
                     }
-                    debug::log(debug::LogTypeInfo, "end singleInstance");
                 }
-                debug::log(debug::LogTypeInfo, "end helper has field");
             }
-            debug::log(debug::LogTypeInfo, "navigationUrl");
             windowOptions["url"] = navigationUrl;
-            debug::log(debug::LogTypeInfo, "init");
             window::controllers::init(windowOptions);
             }
             break;
