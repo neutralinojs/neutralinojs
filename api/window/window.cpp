@@ -504,16 +504,6 @@ void setAlwaysOnTop(bool onTop) {
     #endif
 }
 
-void setSingleInstance(bool singleInstance) {
-    #if defined(__linux__) || defined(__FreeBSD__)
-    //TODO
-    #elif defined(__APPLE__)
-    //TODO
-    #elif defined(_WIN32)
-    //TODO
-    #endif
-}
-
 void setBorderless() {
     #if defined(__linux__) || defined(__FreeBSD__)
     gtk_window_set_decorated(GTK_WINDOW(windowHandle), false);
@@ -597,9 +587,6 @@ void __createWindow() {
 
     if(windowProps.alwaysOnTop)
         window::setAlwaysOnTop(true);
-
-    if(windowProps.singleInstance)
-        window::setSingleInstance(true);
 
     if(windowProps.borderless)
         window::setBorderless();
@@ -817,17 +804,6 @@ json setAlwaysOnTop(const json &input) {
     return output;
 }
 
-json setSingleInstance(const json &input) {
-    json output;
-    bool singleInstance = true;
-    if(helpers::hasField(input, "singleInstance")) {
-        singleInstance = input["singleInstance"].get<bool>();
-    }
-    window::setSingleInstance(singleInstance);
-    output["success"] = true;
-    return output;
-}
-
 json getPosition(const json &input) {
     json output;
     json posRes;
@@ -855,9 +831,6 @@ json init(const json &input) {
 
     if(helpers::hasField(input, "alwaysOnTop"))
         windowProps.alwaysOnTop = input["alwaysOnTop"].get<bool>();
-
-    if(helpers::hasField(input, "singleInstance"))
-        windowProps.singleInstance = input["singleInstance"].get<bool>();
 
     if(helpers::hasField(input, "title"))
         windowProps.title = input["title"].get<string>();

@@ -662,9 +662,6 @@ function getPosition() {
 function setAlwaysOnTop(onTop) {
     return sendMessage('window.setAlwaysOnTop', { onTop });
 }
-function setSingleInstance(singleInstance) {
-    return sendMessage('window.setSingleInstance', { singleInstance });
-}
 function create(url, options) {
     return new Promise((resolve, reject) => {
         options = Object.assign(Object.assign({}, options), { useSavedState: false });
@@ -721,7 +718,6 @@ var window$1 = /*#__PURE__*/Object.freeze({
     minimize: minimize,
     move: move,
     setAlwaysOnTop: setAlwaysOnTop,
-    setSingleInstance: setSingleInstance,
     setDraggableRegion: setDraggableRegion,
     setFullScreen: setFullScreen,
     setIcon: setIcon,

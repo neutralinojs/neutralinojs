@@ -287,16 +287,6 @@ describe('window.spec: window namespace tests', () => {
         });
     });
 
-    describe('window.setSingleInstance', () => {
-        it('works without throwing errors', async () => {
-            runner.run(`
-                await Neutralino.window.setSingleInstance();
-                await __close('done');
-            `);
-            assert.equal(runner.getOutput(), 'done');
-        });
-    });
-
     describe('window.getSize', () => {
         it('returns size information', async () => {
             let exitCode = runner.run(`

@@ -91,7 +91,6 @@ window::SizeOptions getSize();
 pair<int, int> getPosition();
 void center(bool useConfigSizes);
 void setAlwaysOnTop(bool onTop);
-void setSingleInstance(bool singleInstance);
 void setBorderless();
 
 void _close(int exitCode);
@@ -119,7 +118,6 @@ json setSize(const json &input);
 json getSize(const json &input);
 json getPosition(const json &input);
 json setAlwaysOnTop(const json &input);
-json setSingleInstance(const json &input);
 
 } // namespace controllers
 
