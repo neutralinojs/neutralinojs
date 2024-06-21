@@ -6,6 +6,11 @@
 #include <websocketpp/error.hpp>
 #include <WinBase.h>
 #define PIPE_NAME TEXT("\\\\.\\pipe\\neutralino")
+#elif defined(__linux__) || defined(__FreeBSD__)
+#include <errno.h>
+#include <signal.h>
+#include <sys/socket.h>
+#include <sys/un.h>
 #endif
 
 #include "lib/json/json.hpp"
@@ -36,6 +41,86 @@ using json = nlohmann::json;
 
 string navigationUrl = "";
 
+#if defined(__linux__) || defined(__FreeBSD__)
+#define SOCKET_NAME "/tmp/neutralino"
+static int socket_fd = -1;
+static bool isdaemon = false;
+static bool run = true;
+static int singleton_status = -1;
+
+static void cleanup(void) {
+    if (socket_fd >= 0) {
+        if (isdaemon) {
+            if (unlink(SOCKET_NAME) < 0)
+                debug::log(debug::LogTypeError, "Could not remove FIFO.");
+        } else
+            close(socket_fd);
+    }
+}
+
+static void handler(int sig) {
+    run = false;
+}
+
+/* returns
+ *   -1 on errors
+ *    0 on successful server bindings
+ *   1 on successful client connects
+ */
+int singleton_connect(const char *name) {
+    int len, tmpd;
+    struct sockaddr_un addr = {0};
+
+    if ((tmpd = socket(AF_UNIX, SOCK_DGRAM, 0)) < 0) {
+        debug::log(debug::LogTypeError, "Could not create socket: ");
+        debug::log(debug::LogTypeError, strerror(errno));
+        return -1;
+    }
+
+    /* fill in socket address structure */
+    addr.sun_family = AF_UNIX;
+    strcpy(addr.sun_path, name);
+    len = offsetof(struct sockaddr_un, sun_path) + strlen(name);
+
+    int ret;
+    unsigned int retries = 1;
+    do {
+        /* bind the name to the descriptor */
+        ret = bind(tmpd, (struct sockaddr *)&addr, len);
+        /* if this succeeds there was no daemon before */
+        if (ret == 0) {
+            socket_fd = tmpd;
+            isdaemon = true;
+            return 0;
+        } else {
+            if (errno == EADDRINUSE) {
+                ret = connect(tmpd, (struct sockaddr *) &addr, sizeof(struct sockaddr_un));
+                if (ret != 0) {
+                    if (errno == ECONNREFUSED) {
+                        debug::log(debug::LogTypeError, "Could not connect to socket - assuming daemon died.");
+                        unlink(name);
+                        continue;
+                    }
+                    debug::log(debug::LogTypeError, "Could not connect to socket: ");
+                    debug::log(debug::LogTypeError, strerror(errno));
+                    continue;
+                }
+                debug::log(debug::LogTypeError, "Daemon is already running");
+                socket_fd = tmpd;
+                return 1;
+            }
+            debug::log(debug::LogTypeError, "Could not bind to socket: ");
+            debug::log(debug::LogTypeError, strerror(errno));
+            continue;
+        }
+    } while (retries-- > 0);
+
+    debug::log(debug::LogTypeError, "Could neither connect to an existing daemon nor become one.");
+    close(tmpd);
+    return -1;
+}
+#endif
+
 bool __checkSingleInstance() {
     #if defined(_WIN32)
     CreateMutexA(NULL, TRUE, "neutralino_mutex_lock");
@@ -43,6 +128,9 @@ bool __checkSingleInstance() {
         return false;
     }
     return true;
+    #elif defined(__linux__) || defined(__FreeBSD__)
+    singleton_status = singleton_connect(SOCKET_NAME);
+    return singleton_status == 0;
     #endif
     //TODO check other os
     return true;
@@ -77,6 +165,24 @@ void __checkForSingleInstanceSignal() {
 
         DisconnectNamedPipe(hPipe);
     }
+    #elif defined(__linux__) || defined(__FreeBSD__)
+    while(true)
+    {
+        std::vector<uint8_t> dataBuff;
+        dataBuff.resize(2048, 0x00);
+        size_t dbSize = recv(socket_fd, &(dataBuff[0]), dataBuff.size(), 0);
+
+        if(dbSize < 0)
+        {
+            debug::log(debug::LogTypeError, "No data received");
+            break;
+        }
+
+        string bufferString(dataBuff.begin(), dataBuff.end());
+        json bufferJson = bufferString;
+        events::dispatch("otherInstance", bufferJson);
+    }
+    cleanup();
     #endif
     //TODO other os
 }
@@ -104,6 +210,18 @@ void __sendArgsToFirstInstance(json args) {
 
         CloseHandle(hPipe);
     }
+    #elif defined(__linux__) || defined(__FreeBSD__)
+    std::string buffer = args.dump();
+    size_t buffSize = send(socket_fd, buffer.c_str(), buffer.size(), MSG_CONFIRM);
+
+    if(buffSize != buffer.size())
+    {
+        debug::log(debug::LogTypeError, "Cannot send data.");
+        cleanup();
+        return;
+    }
+
+    cleanup();
     #endif
     //TODO
 }
