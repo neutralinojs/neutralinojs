@@ -43,23 +43,19 @@ string navigationUrl = "";
 
 #if defined(__linux__) || defined(__FreeBSD__)
 #define SOCKET_NAME "/tmp/neutralino"
-static int socket_fd = -1;
-static bool isdaemon = false;
+static int socketFD = -1;
+static bool isDaemon = false;
 static bool run = true;
-static int singleton_status = -1;
+static int singleInstanceStatus = -1;
 
-static void cleanup(void) {
-    if (socket_fd >= 0) {
-        if (isdaemon) {
+static void __socketClose(void) {
+    if (socketFD >= 0) {
+        if (isDaemon) {
             if (unlink(SOCKET_NAME) < 0)
                 debug::log(debug::LogTypeError, "Could not remove FIFO.");
         } else
-            close(socket_fd);
+            close(socketFD);
     }
-}
-
-static void handler(int sig) {
-    run = false;
 }
 
 /* returns
@@ -67,7 +63,7 @@ static void handler(int sig) {
  *    0 on successful server bindings
  *   1 on successful client connects
  */
-int singleton_connect(const char *name) {
+int __singleInstanceConnect(const char *name) {
     int len, tmpd;
     struct sockaddr_un addr = {0};
 
@@ -77,7 +73,6 @@ int singleton_connect(const char *name) {
         return -1;
     }
 
-    /* fill in socket address structure */
     addr.sun_family = AF_UNIX;
     strcpy(addr.sun_path, name);
     len = offsetof(struct sockaddr_un, sun_path) + strlen(name);
@@ -85,12 +80,10 @@ int singleton_connect(const char *name) {
     int ret;
     unsigned int retries = 1;
     do {
-        /* bind the name to the descriptor */
         ret = bind(tmpd, (struct sockaddr *)&addr, len);
-        /* if this succeeds there was no daemon before */
         if (ret == 0) {
-            socket_fd = tmpd;
-            isdaemon = true;
+            socketFD = tmpd;
+            isDaemon = true;
             return 0;
         } else {
             if (errno == EADDRINUSE) {
@@ -106,7 +99,7 @@ int singleton_connect(const char *name) {
                     continue;
                 }
                 debug::log(debug::LogTypeError, "Daemon is already running");
-                socket_fd = tmpd;
+                socketFD = tmpd;
                 return 1;
             }
             debug::log(debug::LogTypeError, "Could not bind to socket: ");
@@ -129,10 +122,10 @@ bool __checkSingleInstance() {
     }
     return true;
     #elif defined(__linux__) || defined(__FreeBSD__)
-    singleton_status = singleton_connect(SOCKET_NAME);
-    return singleton_status == 0;
+    singleInstanceStatus = __singleInstanceConnect(SOCKET_NAME);
+    return singleInstanceStatus == 0;
     #endif
-    //TODO check other os
+    //TODO macOS
     return true;
 }
 
@@ -170,7 +163,7 @@ void __checkForSingleInstanceSignal() {
     {
         std::vector<uint8_t> dataBuff;
         dataBuff.resize(2048, 0x00);
-        size_t dbSize = recv(socket_fd, &(dataBuff[0]), dataBuff.size(), 0);
+        size_t dbSize = recv(socketFD, &(dataBuff[0]), dataBuff.size(), 0);
 
         if(dbSize < 0)
         {
@@ -182,9 +175,9 @@ void __checkForSingleInstanceSignal() {
         json bufferJson = bufferString;
         events::dispatch("otherInstance", bufferJson);
     }
-    cleanup();
+    __socketClose();
     #endif
-    //TODO other os
+    //TODO macOS
 }
 
 void __sendArgsToFirstInstance(json args) {
@@ -217,13 +210,13 @@ void __sendArgsToFirstInstance(json args) {
     if(buffSize != buffer.size())
     {
         debug::log(debug::LogTypeError, "Cannot send data.");
-        cleanup();
+        __socketClose();
         return;
     }
 
-    cleanup();
+    __socketClose();
     #endif
-    //TODO
+    //TODO macOS
 }
 
 void __wait() {
