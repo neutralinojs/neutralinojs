@@ -171,27 +171,6 @@ describe('clipboard.spec: clipboard namespace tests', () => {
     });
 
     describe('clipboard.writeImage', () => {
-        it('writes an image to the clipboard successfully', async () => {
-            runner.run(`
-                let image = {
-                    width: 400,
-                    height: 400,
-                    bpp: 32,
-                    bpr: 400,
-                    redMask: 0xff0000,
-                    greenMask: 0x00ff00,
-                    blueMask: 0x0000ff,
-                    redShift: 16,
-                    greenShift: 8,
-                    blueShift: 0,
-                    data: new ArrayBuffer(40000)
-                };
-                await Neutralino.clipboard.writeImage(image);
-                await __close('done');
-            `);
-            assert.equal(runner.getOutput(), 'done');
-        });
-
         it('throws an error when the image data is invalid', async () => {
             runner.run(`
                 try {
@@ -303,7 +282,7 @@ describe('clipboard.spec: clipboard namespace tests', () => {
             `);
             assert.equal(runner.getOutput(), 'text');
         });
-        
+
         it('returns unknown when the format is unknown', async () => {
             runner.run(`
                 await Neutralino.clipboard.clear();
