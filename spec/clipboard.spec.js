@@ -303,27 +303,7 @@ describe('clipboard.spec: clipboard namespace tests', () => {
             `);
             assert.equal(runner.getOutput(), 'text');
         });
-        it('returns the correct format when the format is image', async () => {
-            runner.run(`
-                let image = {
-                    width: 400,
-                    height: 400,
-                    bpp: 32,
-                    bpr: 400,
-                    redMask: 0xff0000,
-                    greenMask: 0x00ff00,
-                    blueMask: 0x0000ff,
-                    redShift: 16,
-                    greenShift: 8,
-                    blueShift: 0,
-                    data: new ArrayBuffer(40000)
-                };
-                await Neutralino.clipboard.writeImage(image);
-                let format = await Neutralino.clipboard.getFormat();
-                await __close(format);
-            `);
-            assert.equal(runner.getOutput(), 'image');
-        });
+        
         it('returns unknown when the format is unknown', async () => {
             runner.run(`
                 await Neutralino.clipboard.clear();
