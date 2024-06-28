@@ -1,0 +1,23 @@
+{
+  "name": "neutralinojs",
+  "version": "1.0.0",
+  "description": "<div align=\"center\">   <picture>     <source media=\"(prefers-color-scheme: light)\" srcset=\"media/nllogo-light-theme.png\" width=\"300\"/>     <source media=\"(prefers-color-scheme: dark)\" srcset=\"media/nllogo-dark-theme.png\" width=\"300\"/>     <img alt=\"Neutralinojs logo\" src=\"media/nllogo-light-theme.png\" width=\"300\"/>   </picture>  </div>",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Manancode/neutralinojs.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Manancode/neutralinojs/issues"
+  },
+  "homepage": "https://github.com/Manancode/neutralinojs#readme"
+}
