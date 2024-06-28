@@ -5,7 +5,7 @@ describe('app.spec: app namespace tests', () => {
 
     describe('app.exit', () => {
         it('works without parameters', async () => {
-            let exitCode = runner.run(`
+            let exitCode = runner.runInBackground(`
                 setTimeout(() => {
                     Neutralino.app.exit();
                 }, 2000);
@@ -14,7 +14,7 @@ describe('app.spec: app namespace tests', () => {
         });
 
         it('works with parameters', async () => {
-            let exitCode = runner.run(`
+            let exitCode = runner.runInBackground(`
                 setTimeout(() => {
                     Neutralino.app.exit(1);
                 }, 2000);
@@ -23,14 +23,14 @@ describe('app.spec: app namespace tests', () => {
         });
 
         it('throws an error for invalid exit codes', async () => {
-            runner.run(`
+           let output = await runner.runInBackground(`
                 try {
                     await Neutralino.app.exit('invalid');
                 } catch(err) {
                     await __close(err.code);
                 }
             `);
-            assert.strictEqual(runner.getOutput(), 'NE_RT_NATRTER');
+            assert.strictEqual(output, 'NE_RT_NATRTER');
         });
     });
 
@@ -47,11 +47,11 @@ describe('app.spec: app namespace tests', () => {
 
     describe('app.getConfig', () => {
         it('JSON object contains the right fields', async () => {
-            runner.run(`
+           let output = await runner.runInBackground(`
                 let config = await Neutralino.app.getConfig();
                 await __close(JSON.stringify(config));
             `);
-            const config = JSON.parse(runner.getOutput());
+            const config = JSON.parse(output);
             assert.ok(typeof config === 'object', 'Expected config to be an object');
             assert.ok(typeof config.applicationId === 'string', 'Expected applicationId to be a string');
             assert.ok(typeof config.cli === 'object', 'Expected cli to be an object');
