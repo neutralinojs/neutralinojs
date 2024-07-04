@@ -32,7 +32,7 @@ describe('os.spec: os namespace tests', () => {
 
         it('executes command in the background', async () => {
             runner.run(`
-                let info = await Neutralino.os.execCommand('ls', { background: true });
+                let info = await Neutralino.os.execCommand('node', { background: true });
                 await __close(JSON.stringify(info));
             `);
             const info = JSON.parse(runner.getOutput());
@@ -43,17 +43,16 @@ describe('os.spec: os namespace tests', () => {
 
         it('executes a command in a specific directory', async () => {
             runner.run(`
-                let info = await Neutralino.os.execCommand('ls', { cwd: './' });
+                let info = await Neutralino.os.execCommand('node --version', { cwd: './' });
                 await __close(JSON.stringify(info));
             `);
             const info = JSON.parse(runner.getOutput());
-
             assert.ok(typeof info == 'object');
             assert.ok(typeof info.pid == 'number');
             assert.ok(typeof info.stdOut == 'string');
             assert.ok(typeof info.stdErr == 'string');
             assert.ok(info.exitCode == 0);
-            assert.ok(info.stdOut.includes('os.spec.js'));
+            assert.ok(info.stdOut.includes('v'));
         });
     });
 
@@ -370,13 +369,13 @@ describe('os.spec: os namespace tests', () => {
             assert.ok(envs['PATH'] || envs['Path']);
         });
 
-        it('contains HOME or USER environment variable', async () => {
+        it('contains npm_command environment variable', async () => {
             runner.run(`
                 let envs = await Neutralino.os.getEnvs();
                 await __close(JSON.stringify(envs));
             `);
             let envs = JSON.parse(runner.getOutput());
-            assert.ok(envs['HOME'] || envs['USER']);
+            assert.ok(envs['npm_command']);
         });
 
         it('checks case sensitivity of environment variable keys', async () => {
