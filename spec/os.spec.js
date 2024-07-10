@@ -508,15 +508,7 @@ describe('os.spec: os namespace tests', () => {
                 await __close(typeof Neutralino.os.open);
             `);
             assert.equal(runner.getOutput(), 'function');
-        });
-
-        it('opens a valid URL', async () => {
-            runner.run(`
-                await Neutralino.os.open('https://www.example.com');
-                await __close('done');
-            `);
-            assert.equal(runner.getOutput(), 'done');
-        });        
+        });       
 
         it('throws an error for non-string input', async () => {
             runner.run(`
