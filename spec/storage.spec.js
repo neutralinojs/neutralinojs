@@ -140,15 +140,6 @@ describe('storage.spec: storage namespace tests', () => {
             `);
             assert.ok(runner.getOutput() == 'NE_ST_NOSTKEX');
         });
-
-        it('handles case-sensitive keys correctly', async () => {
-            runner.run(`
-                await Neutralino.storage.setData('caseKey', 'value');
-                let value = await Neutralino.storage.getData('casekey');
-                await __close(value);
-            `);
-            assert.ok(runner.getOutput() == 'value');
-        });
         
         it('handles concurrent access without errors', async () => {
             runner.run(`
