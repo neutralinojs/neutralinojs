@@ -84,7 +84,6 @@ jobs:
     - name: Run Spec
       working-directory: ./spec
       run: |
-        ..\bin\neutralino-win_x64 --load-dir-res
         npm ci
         npm run test
 
