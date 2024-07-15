@@ -3,6 +3,24 @@ const runner = require('./runner');
 
 describe('app.spec: app namespace tests', () => {
 
+    it('works without parameters', async () => {
+        let exitCode = runner.run(`
+            setTimeout(() => {
+                Neutralino.app.exit();
+            }, 2000);
+        `);
+        assert.ok(typeof exitCode != undefined);
+    });
+
+    it('works with parameters', async () => {
+        let exitCode = runner.run(`
+            setTimeout(() => {
+                Neutralino.app.exit(1);
+            }, 2000);
+        `);
+        assert.ok(typeof exitCode != undefined);
+    });
+
     describe('app.exit', () => {
         it('throws an error for invalid exit codes', async () => {
             runner.run(`
