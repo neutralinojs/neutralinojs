@@ -2,8 +2,9 @@ const assert = require('assert');
 const runner = require('./runner');
 
 describe('app.spec: app namespace tests', () => {
-        describe('app.exit', () => {
-                it('works without parameters', async () => {
+    describe('app.exit', () => {
+            
+        it('works without parameters', async () => {
             let exitCode = runner.run(`
                 setTimeout(() => {
                     Neutralino.app.exit();
