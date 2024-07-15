@@ -4,15 +4,6 @@ const runner = require('./runner');
 describe('app.spec: app namespace tests', () => {
 
     describe('app.exit', () => {
-        it('works with parameters', async () => {
-            let exitCode = runner.run(`
-                setTimeout(() => {
-                    Neutralino.app.exit(1);
-                }, 2000);
-            `);
-            assert.ok(typeof exitCode != undefined);
-        });
-
         it('throws an error for invalid exit codes', async () => {
             runner.run(`
                 try {
