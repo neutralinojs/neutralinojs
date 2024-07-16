@@ -212,6 +212,8 @@ string getPath(const string &name) {
         path = sago::getSaveGamesFolder1();
     else if(name == "saveGames2")
         path = sago::getSaveGamesFolder2();
+    else if(name == "temp")
+        path = filesystem::temp_directory_path();
     return helpers::normalizePath(path);
 }
 
