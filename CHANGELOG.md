@@ -6,6 +6,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: os
+- Add the `temp` key for the supported directory list of the `os.getPath(pathKey)` function.
+
 ## v5.2.0
 
 ### Configuration: Configless framework initialization
