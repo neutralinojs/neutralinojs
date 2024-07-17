@@ -254,6 +254,8 @@ string getPath(const string &name) {
         path = sago::getSaveGamesFolder1();
     else if(name == "saveGames2")
         path = sago::getSaveGamesFolder2();
+    else if(name == "temp")
+        path = filesystem::temp_directory_path();
     return helpers::normalizePath(path);
 }
 
@@ -309,6 +311,7 @@ json execCommand(const json &input) {
     output["success"] = true;
     return output;
 }
+
 
 json spawnProcess(const json &input) {
     json output;
@@ -466,6 +469,7 @@ json showFolderDialog(const json &input) {
 
     if(helpers::hasField(input, "defaultPath")) {
         defaultPath = input["defaultPath"].get<string>();
+        defaultPath = helpers::unNormalizePath(defaultPath);
     }
 
     string selectedEntry = pfd::select_folder(title, defaultPath, pfd::opt::none).result();
@@ -474,6 +478,7 @@ json showFolderDialog(const json &input) {
     output["success"] = true;
     return output;
 }
+
 
 json showSaveDialog(const json &input) {
     json output;
@@ -497,6 +502,7 @@ json showSaveDialog(const json &input) {
 
     if(helpers::hasField(input, "defaultPath")) {
         defaultPath = input["defaultPath"].get<string>();
+        defaultPath = helpers::unNormalizePath(defaultPath);
     }
 
     string selectedEntry = pfd::save_file(title, defaultPath, filters, option).result();

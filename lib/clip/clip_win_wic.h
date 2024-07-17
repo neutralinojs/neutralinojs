@@ -1,5 +1,5 @@
 // Clip Library
-// Copyright (c) 2020 David Capello
+// Copyright (c) 2020-2022 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -32,7 +32,7 @@ struct coinit {
 template<class T>
 class comptr {
 public:
-  comptr() : m_ptr(nullptr) { }
+  comptr() { }
   explicit comptr(T* ptr) : m_ptr(ptr) { }
   comptr(const comptr&) = delete;
   comptr& operator=(const comptr&) = delete;
@@ -50,8 +50,26 @@ public:
     }
   }
 private:
-  T* m_ptr;
+  T* m_ptr = nullptr;
 };
+
+#ifdef CLIP_SUPPORT_WINXP
+class hmodule {
+public:
+  hmodule(LPCWSTR name) : m_ptr(LoadLibraryW(name)) { }
+  hmodule(const hmodule&) = delete;
+  hmodule& operator=(const hmodule&) = delete;
+  ~hmodule() {
+    if (m_ptr)
+      FreeLibrary(m_ptr);
+  }
+
+  operator HMODULE() { return m_ptr; }
+  bool operator!() const { return !m_ptr; }
+private:
+  HMODULE m_ptr = nullptr;
+};
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // Encode the image as PNG format
@@ -167,7 +185,24 @@ bool read_png(const uint8_t* buf,
               image_spec* output_spec) {
   coinit com;
 
+#ifdef CLIP_SUPPORT_WINXP
+  // Pull SHCreateMemStream from shlwapi.dll by ordinal 12
+  // for Windows XP support
+  // From: https://learn.microsoft.com/en-us/windows/win32/api/shlwapi/nf-shlwapi-shcreatememstream#remarks
+
+  typedef IStream* (WINAPI* SHCreateMemStreamPtr)(const BYTE* pInit, UINT cbInit);
+  hmodule shlwapiDll(L"shlwapi.dll");
+  if (!shlwapiDll)
+    return false;
+
+  auto SHCreateMemStream =
+    reinterpret_cast<SHCreateMemStreamPtr>(GetProcAddress(shlwapiDll, (LPCSTR)12));
+  if (!SHCreateMemStream)
+    return false;
+#endif
+
   comptr<IStream> stream(SHCreateMemStream(buf, len));
+
   if (!stream)
     return false;
 
@@ -182,6 +217,11 @@ bool read_png(const uint8_t* buf,
     if (FAILED(hr))
       return false;
   }
+
+  // Can decoder be nullptr if hr is S_OK/successful? We've received
+  // some crash reports that might indicate this.
+  if (!decoder)
+    return false;
 
   hr = decoder->Initialize(stream.get(), WICDecodeMetadataCacheOnDemand);
   if (FAILED(hr))

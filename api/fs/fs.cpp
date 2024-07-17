@@ -624,7 +624,21 @@ json copy(const json &input) {
     string destination = input["destination"].get<string>();
 
     error_code ec;
-    filesystem::copy(source, destination, filesystem::copy_options::recursive, ec);
+    auto copyOptions = filesystem::copy_options::none;
+
+    if(!helpers::hasField(input, "recursive") || input["recursive"].get<bool>()) {
+        copyOptions |= filesystem::copy_options::recursive;
+    }
+
+    if(!helpers::hasField(input, "overwrite") || input["overwrite"].get<bool>()) {
+        copyOptions |= filesystem::copy_options::overwrite_existing;
+    }
+
+    if(helpers::hasField(input, "skip") && input["skip"].get<bool>()) {
+        copyOptions |= filesystem::copy_options::skip_existing;
+    }
+
+    filesystem::copy(source, destination, copyOptions, ec);
 
     if(!ec) {
         output["success"] = true;

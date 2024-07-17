@@ -13,6 +13,7 @@
     "serverHeaders": {
         "Test-Header-Option": "Test Value"
     },
+    "singlePageServe": false,
     "logging": {
         "enabled": true,
         "writeToLogFile": true

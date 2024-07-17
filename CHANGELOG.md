@@ -6,6 +6,37 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: os
+- Add the `temp` key for the supported directory list of the `os.getPath(pathKey)` function.
+
+## v5.2.0
+
+### Configuration: Configless framework initialization
+Now, developers can load the Neutralinojs framework without creating a `neutralino.config.json` file. Now, there is no mandatory configuration properties since Neutralinojs set reasonable defaults. Developers can launch the framework using the following methods without a configuration file:
+
+```bash
+# Loading a remote URL
+./framework-bin --url=https://neutralino.js.org/docs
+
+# Launches a local static web app
+./framework-bin --url="/resources/" --window-title="My web app" --enable-server
+```
+### Configuration
+- New internal CLI arguments added: `--single-page-serve`, `--enable-native-api` and `--document-root=<string>`
+
+### Core: Static server SPA (Single Page App) serving
+Earlier, Neutralinojs app developers had to use hash routing with their frontend-library-based apps since the internal static server didn't offer an inbuilt URL rewrite logic for SPAs (Single Page Apps). Now, they can use the `singlePageServe: true` option in the app configuration file to activate SPA routing. If this setting is on, the static server will serve the main `index.html` file when it receives directory requests that possibly send HTTP `404` status.
+
+For example, the `/invoices` path serves the main `index.html` file if there is no directory named `invoices` which holds an `index.html` file. 
+
+### API: window
+- Improve the behaviour of the `window.show()` function on Windows. Now, this function flashes the window if it's already in foreground and activates the window properly if it's minimized.
+
+### Improvements/bugfixes
+- Fix path issues with the `defaultPath` option in system file dialogs on Windows. 
+
+## v5.1.0
+
 ### Configuration: window transparency
 Neutralinojs offers the inbuilt borderless mode and draggable region API to create custom window frames using HTML and CSS. Earlier, Neutralinojs used a default opaque color (usually white) for the window and webview layer, so app developers couldn't make custom CSS-styled window frames transparent or implement custom window frame shapes (i.e., rounded edges). Now, it offers the `window.transparent` boolean flag to activate window transparency. 
 
@@ -16,7 +47,9 @@ The transparency mode can be activated using the `--window-transparent=<bool>` i
 *Note: This feature is not implemented for the Windows operating system yet.* 
 
 ### API: clipboard
+- Implement `clipboard.readImage()` and `clipboard.writeImage(image)` functions to work with clipboard image data.
 - Expose the `clipboard.clear()` function to clear system clipboard.
+- Expose the `clipboard.getFormat()` function to check the system clipboard data format. This function returns `text`, `image`, and `unknown` enum values based on existing data on the clipboard.
 
 ## v5.0.0
 

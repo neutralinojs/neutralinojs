@@ -7,10 +7,14 @@ function __awaiter(thisArg, _arguments, P, generator) {
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 }
+typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+    var e = new Error(message);
+    return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+};
 
 function dispatch$1(extensionId, event, data) {
     return new Promise((resolve, reject) => __awaiter(this, void 0, void 0, function* () {
-        let stats = yield getStats$1();
+        const stats = yield getStats$1();
         if (!stats.loaded.includes(extensionId)) {
             reject({
                 code: 'NE_EX_EXTNOTL',
@@ -19,7 +23,7 @@ function dispatch$1(extensionId, event, data) {
         }
         else if (stats.connected.includes(extensionId)) {
             try {
-                let result = yield sendMessage('extensions.dispatch', { extensionId, event, data });
+                const result = yield sendMessage('extensions.dispatch', { extensionId, event, data });
                 resolve(result);
             }
             catch (err) {
@@ -44,8 +48,8 @@ function getStats$1() {
 
 var extensions = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    dispatch: dispatch$1,
     broadcast: broadcast$2,
+    dispatch: dispatch$1,
     getStats: getStats$1
 });
 
@@ -64,7 +68,7 @@ function off(event, handler) {
     });
 }
 function dispatch(event, data) {
-    let customEvent = new CustomEvent(event, { detail: data });
+    const customEvent = new CustomEvent(event, { detail: data });
     window.dispatchEvent(customEvent);
     return Promise.resolve({
         success: true,
@@ -73,19 +77,27 @@ function dispatch(event, data) {
 }
 
 function base64ToBytesArray(data) {
-    let binaryData = window.atob(data);
-    let len = binaryData.length;
-    let bytes = new Uint8Array(len);
+    const binaryData = window.atob(data);
+    const len = binaryData.length;
+    const bytes = new Uint8Array(len);
     for (let i = 0; i < len; i++) {
         bytes[i] = binaryData.charCodeAt(i);
     }
     return bytes.buffer;
 }
+function arrayBufferToBase64(data) {
+    let bytes = new Uint8Array(data);
+    let asciiStr = '';
+    for (let byte of bytes) {
+        asciiStr += String.fromCharCode(byte);
+    }
+    return window.btoa(asciiStr);
+}
 
 let ws;
-let nativeCalls = {};
-let offlineMessageQueue = [];
-let extensionMessageQueue = {};
+const nativeCalls = {};
+const offlineMessageQueue = [];
+const extensionMessageQueue = {};
 function init$1() {
     initAuth();
     const connectToken = getAuthToken().split('.')[1];
@@ -127,8 +139,8 @@ function registerLibraryEvents() {
         if (!window.NL_EXTENABLED) {
             return;
         }
-        let stats = yield getStats$1();
-        for (let extension of stats.connected) {
+        const stats = yield getStats$1();
+        for (const extension of stats.connected) {
             dispatch('extensionReady', extension);
         }
     }));
@@ -177,7 +189,7 @@ function registerSocketEvents() {
         dispatch('ready');
     }));
     ws.addEventListener('close', (event) => __awaiter(this, void 0, void 0, function* () {
-        let error = {
+        const error = {
             code: 'NE_CL_NSEROFF',
             message: 'Neutralino server is offline. Try restarting the application'
         };
@@ -190,9 +202,9 @@ function registerSocketEvents() {
 function processQueue(messageQueue) {
     return __awaiter(this, void 0, void 0, function* () {
         while (messageQueue.length > 0) {
-            let message = messageQueue.shift();
+            const message = messageQueue.shift();
             try {
-                let response = yield sendMessage(message.method, message.data);
+                const response = yield sendMessage(message.method, message.data);
                 message.resolve(response);
             }
             catch (err) {
@@ -284,8 +296,8 @@ function getOpenedFileInfo(id) {
 function readDirectory(path, options) {
     return sendMessage('filesystem.readDirectory', Object.assign({ path }, options));
 }
-function copy(source, destination) {
-    return sendMessage('filesystem.copy', { source, destination });
+function copy(source, destination, options) {
+    return sendMessage('filesystem.copy', Object.assign({ source, destination }, options));
 }
 function move$1(source, destination) {
     return sendMessage('filesystem.move', { source, destination });
@@ -293,53 +305,29 @@ function move$1(source, destination) {
 function getStats(path) {
     return sendMessage('filesystem.getStats', { path });
 }
-function arrayBufferToBase64(data) {
-    let bytes = new Uint8Array(data);
-    let asciiStr = '';
-    for (let byte of bytes) {
-        asciiStr += String.fromCharCode(byte);
-    }
-    return window.btoa(asciiStr);
-}
 
 var filesystem = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    createDirectory: createDirectory,
-    remove: remove,
-    writeFile: writeFile,
-    appendFile: appendFile,
-    writeBinaryFile: writeBinaryFile,
     appendBinaryFile: appendBinaryFile,
-    readFile: readFile,
-    readBinaryFile: readBinaryFile,
-    openFile: openFile,
-    createWatcher: createWatcher,
-    removeWatcher: removeWatcher,
-    getWatchers: getWatchers,
-    updateOpenedFile: updateOpenedFile,
-    getOpenedFileInfo: getOpenedFileInfo,
-    readDirectory: readDirectory,
+    appendFile: appendFile,
     copy: copy,
+    createDirectory: createDirectory,
+    createWatcher: createWatcher,
+    getOpenedFileInfo: getOpenedFileInfo,
+    getStats: getStats,
+    getWatchers: getWatchers,
     move: move$1,
-    getStats: getStats
+    openFile: openFile,
+    readBinaryFile: readBinaryFile,
+    readDirectory: readDirectory,
+    readFile: readFile,
+    remove: remove,
+    removeWatcher: removeWatcher,
+    updateOpenedFile: updateOpenedFile,
+    writeBinaryFile: writeBinaryFile,
+    writeFile: writeFile
 });
 
-var Icon;
-(function (Icon) {
-    Icon["WARNING"] = "WARNING";
-    Icon["ERROR"] = "ERROR";
-    Icon["INFO"] = "INFO";
-    Icon["QUESTION"] = "QUESTION";
-})(Icon || (Icon = {}));
-var MessageBoxChoice;
-(function (MessageBoxChoice) {
-    MessageBoxChoice["OK"] = "OK";
-    MessageBoxChoice["OK_CANCEL"] = "OK_CANCEL";
-    MessageBoxChoice["YES_NO"] = "YES_NO";
-    MessageBoxChoice["YES_NO_CANCEL"] = "YES_NO_CANCEL";
-    MessageBoxChoice["RETRY_CANCEL"] = "RETRY_CANCEL";
-    MessageBoxChoice["ABORT_RETRY_IGNORE"] = "ABORT_RETRY_IGNORE";
-})(MessageBoxChoice || (MessageBoxChoice = {}));
 function execCommand(command, options) {
     return sendMessage('os.execCommand', Object.assign({ command }, options));
 }
@@ -385,22 +373,20 @@ function getPath(name) {
 
 var os = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    get Icon () { return Icon; },
-    get MessageBoxChoice () { return MessageBoxChoice; },
     execCommand: execCommand,
-    spawnProcess: spawnProcess,
-    updateSpawnedProcess: updateSpawnedProcess,
-    getSpawnedProcesses: getSpawnedProcesses,
     getEnv: getEnv,
     getEnvs: getEnvs,
-    showOpenDialog: showOpenDialog,
-    showFolderDialog: showFolderDialog,
-    showSaveDialog: showSaveDialog,
-    showNotification: showNotification,
-    showMessageBox: showMessageBox,
-    setTray: setTray,
+    getPath: getPath,
+    getSpawnedProcesses: getSpawnedProcesses,
     open: open,
-    getPath: getPath
+    setTray: setTray,
+    showFolderDialog: showFolderDialog,
+    showMessageBox: showMessageBox,
+    showNotification: showNotification,
+    showOpenDialog: showOpenDialog,
+    showSaveDialog: showSaveDialog,
+    spawnProcess: spawnProcess,
+    updateSpawnedProcess: updateSpawnedProcess
 });
 
 function getMemoryInfo() {
@@ -427,13 +413,13 @@ function getMousePosition() {
 
 var computer = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    getMemoryInfo: getMemoryInfo,
     getArch: getArch,
-    getKernelInfo: getKernelInfo,
-    getOSInfo: getOSInfo,
     getCPUInfo: getCPUInfo,
     getDisplays: getDisplays,
-    getMousePosition: getMousePosition
+    getKernelInfo: getKernelInfo,
+    getMemoryInfo: getMemoryInfo,
+    getMousePosition: getMousePosition,
+    getOSInfo: getOSInfo
 });
 
 function setData(key, data) {
@@ -448,24 +434,17 @@ function getKeys() {
 
 var storage = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    setData: setData,
     getData: getData,
-    getKeys: getKeys
+    getKeys: getKeys,
+    setData: setData
 });
 
-var LoggerType;
-(function (LoggerType) {
-    LoggerType["WARNING"] = "WARNING";
-    LoggerType["ERROR"] = "ERROR";
-    LoggerType["INFO"] = "INFO";
-})(LoggerType || (LoggerType = {}));
 function log(message, type) {
     return sendMessage('debug.log', { message, type });
 }
 
 var debug = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    get LoggerType () { return LoggerType; },
     log: log
 });
 
@@ -510,14 +489,14 @@ function writeProcessError(data) {
 
 var app = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    exit: exit,
-    killProcess: killProcess,
-    restartProcess: restartProcess,
-    getConfig: getConfig,
     broadcast: broadcast$1,
+    exit: exit,
+    getConfig: getConfig,
+    killProcess: killProcess,
     readProcessInput: readProcessInput,
-    writeProcessOutput: writeProcessOutput,
-    writeProcessError: writeProcessError
+    restartProcess: restartProcess,
+    writeProcessError: writeProcessError,
+    writeProcessOutput: writeProcessOutput
 });
 
 const draggableRegions = new WeakMap();
@@ -707,7 +686,7 @@ function create(url, options) {
         for (let key in options) {
             if (key == "processArgs")
                 continue;
-            let cliKey = key.replace(/[A-Z]|^[a-z]/g, (token) => ("-" + token.toLowerCase()));
+            let cliKey = '-' + key.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
             command += ` --window${cliKey}=${normalize(options[key])}`;
         }
         if (options && options.processArgs)
@@ -724,29 +703,29 @@ function create(url, options) {
 
 var window$1 = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    setTitle: setTitle,
-    getTitle: getTitle,
-    maximize: maximize,
-    unmaximize: unmaximize,
-    isMaximized: isMaximized,
-    minimize: minimize,
-    setFullScreen: setFullScreen,
-    exitFullScreen: exitFullScreen,
-    isFullScreen: isFullScreen,
-    show: show,
-    hide: hide,
-    isVisible: isVisible,
-    focus: focus,
-    setIcon: setIcon,
-    move: move,
     center: center,
-    setDraggableRegion: setDraggableRegion,
-    unsetDraggableRegion: unsetDraggableRegion,
-    setSize: setSize,
-    getSize: getSize,
+    create: create,
+    exitFullScreen: exitFullScreen,
+    focus: focus,
     getPosition: getPosition,
+    getSize: getSize,
+    getTitle: getTitle,
+    hide: hide,
+    isFullScreen: isFullScreen,
+    isMaximized: isMaximized,
+    isVisible: isVisible,
+    maximize: maximize,
+    minimize: minimize,
+    move: move,
     setAlwaysOnTop: setAlwaysOnTop,
-    create: create
+    setDraggableRegion: setDraggableRegion,
+    setFullScreen: setFullScreen,
+    setIcon: setIcon,
+    setSize: setSize,
+    setTitle: setTitle,
+    show: show,
+    unmaximize: unmaximize,
+    unsetDraggableRegion: unsetDraggableRegion
 });
 
 function broadcast(event, data) {
@@ -756,9 +735,9 @@ function broadcast(event, data) {
 var events = /*#__PURE__*/Object.freeze({
     __proto__: null,
     broadcast: broadcast,
-    on: on,
+    dispatch: dispatch,
     off: off,
-    dispatch: dispatch
+    on: on
 });
 
 let manifest = null;
@@ -778,7 +757,7 @@ function checkForUpdates(url) {
             });
         }
         try {
-            let response = yield fetch(url);
+            const response = yield fetch(url);
             manifest = JSON.parse(yield response.text());
             if (isValidManifest(manifest)) {
                 resolve(manifest);
@@ -807,8 +786,8 @@ function install() {
             });
         }
         try {
-            let response = yield fetch(manifest.resourcesURL);
-            let resourcesBuffer = yield response.arrayBuffer();
+            const response = yield fetch(manifest.resourcesURL);
+            const resourcesBuffer = yield response.arrayBuffer();
             yield writeBinaryFile(window.NL_PATH + "/resources.neu", resourcesBuffer);
             resolve({
                 success: true,
@@ -830,11 +809,35 @@ var updater = /*#__PURE__*/Object.freeze({
     install: install
 });
 
-function readText(key, data) {
-    return sendMessage('clipboard.readText', { key, data });
+function getFormat() {
+    return sendMessage('clipboard.getFormat');
+}
+function readText() {
+    return sendMessage('clipboard.readText');
+}
+function readImage() {
+    return new Promise((resolve, reject) => {
+        sendMessage('clipboard.readImage')
+            .then((image) => {
+            if (image) {
+                image.data = base64ToBytesArray(image.data);
+            }
+            resolve(image);
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
 }
 function writeText(data) {
     return sendMessage('clipboard.writeText', { data });
+}
+function writeImage(image) {
+    const props = Object.assign({}, image);
+    if (image === null || image === void 0 ? void 0 : image.data) {
+        props.data = arrayBufferToBase64(image.data);
+    }
+    return sendMessage('clipboard.writeImage', props);
 }
 function clear() {
     return sendMessage('clipboard.clear');
@@ -842,9 +845,12 @@ function clear() {
 
 var clipboard = /*#__PURE__*/Object.freeze({
     __proto__: null,
+    clear: clear,
+    getFormat: getFormat,
+    readImage: readImage,
     readText: readText,
-    writeText: writeText,
-    clear: clear
+    writeImage: writeImage,
+    writeText: writeText
 });
 
 function getMethods() {
@@ -856,7 +862,7 @@ var custom = /*#__PURE__*/Object.freeze({
     getMethods: getMethods
 });
 
-var version = "5.0.1";
+var version = "5.1.1";
 
 let initialized = false;
 function init(options = {}) {
@@ -872,10 +878,10 @@ function init(options = {}) {
         }));
     }
     if (options.exportCustomMethods && window.NL_CMETHODS && window.NL_CMETHODS.length > 0) {
-        for (let method of window.NL_CMETHODS) {
+        for (const method of window.NL_CMETHODS) {
             Neutralino.custom[method] = (...args) => {
                 let data = {};
-                for (let [argi, argv] of args.entries()) {
+                for (const [argi, argv] of args.entries()) {
                     if (typeof argv == 'object' && !Array.isArray(argv) && argv != null) {
                         data = Object.assign(Object.assign({}, data), argv);
                     }
@@ -888,33 +894,9 @@ function init(options = {}) {
         }
     }
     window.NL_CVERSION = version;
-    window.NL_CCOMMIT = 'e42ffe829a711b290b4cf70c8409bf69609638a9'; // only the build server will update this
+    window.NL_CCOMMIT = '425c526c318342e0e5d0f17caceef2a53049eda4'; // only the build server will update this
     initialized = true;
 }
 
-var Mode;
-(function (Mode) {
-    Mode[Mode["window"] = 0] = "window";
-    Mode[Mode["browser"] = 1] = "browser";
-    Mode[Mode["cloud"] = 2] = "cloud";
-    Mode[Mode["chrome"] = 3] = "chrome";
-})(Mode || (Mode = {}));
-var OperatingSystem;
-(function (OperatingSystem) {
-    OperatingSystem[OperatingSystem["Linux"] = 0] = "Linux";
-    OperatingSystem[OperatingSystem["Windows"] = 1] = "Windows";
-    OperatingSystem[OperatingSystem["Darwin"] = 2] = "Darwin";
-    OperatingSystem[OperatingSystem["FreeBSD"] = 3] = "FreeBSD";
-    OperatingSystem[OperatingSystem["Unknown"] = 4] = "Unknown";
-})(OperatingSystem || (OperatingSystem = {}));
-var Architecture;
-(function (Architecture) {
-    Architecture[Architecture["x64"] = 0] = "x64";
-    Architecture[Architecture["arm"] = 1] = "arm";
-    Architecture[Architecture["itanium"] = 2] = "itanium";
-    Architecture[Architecture["ia32"] = 3] = "ia32";
-    Architecture[Architecture["unknown"] = 4] = "unknown";
-})(Architecture || (Architecture = {}));
-
-export { Architecture, Mode, OperatingSystem, app, clipboard, computer, custom, debug, events, extensions, filesystem, init, os, storage, updater, window$1 as window };
+export { app, clipboard, computer, custom, debug, events, extensions, filesystem, init, os, storage, updater, window$1 as window };
 //# sourceMappingURL=neutralino.mjs.map

@@ -121,8 +121,11 @@ map<string, router::NativeMethod> methodMap = {
     {"extensions.broadcast", extensions::controllers::broadcast},
     {"extensions.getStats", extensions::controllers::getStats},
     // Neutralino.clipboard
+    {"clipboard.getFormat", clipboard::controllers::getFormat},
     {"clipboard.readText", clipboard::controllers::readText},
+    {"clipboard.readImage", clipboard::controllers::readImage},
     {"clipboard.writeText", clipboard::controllers::writeText},
+    {"clipboard.writeImage", clipboard::controllers::writeImage},
     {"clipboard.clear", clipboard::controllers::clear},
     // Neutralino.custom
     {"custom.getMethods", custom::controllers::getMethods},
@@ -197,11 +200,13 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
 router::Response getAsset(string path, const string &prependData) {
     router::Response response;
     vector<string> split = helpers::split(path, '.');
+
     if(split.size() < 2) {
         if(path.back() != '/')
             path += "/";
         return getAsset(path + "index.html", prependData);
     }
+
     string extension = split[split.size() - 1];
     map<string, string> mimeTypes = {
         // Plain text files
@@ -258,13 +263,29 @@ router::Response getAsset(string path, const string &prependData) {
 
     fs::FileReaderResult fileReaderResult = resources::getFile(path);
     if(fileReaderResult.status != errors::NE_ST_OK) {
-        debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_RS_UNBLDRE, path));
+        json jSpaServing = settings::getOptionForCurrentMode("singlePageServe");
+        if(!jSpaServing.is_null() && jSpaServing.get<bool>() && regex_match(path, regex(".*index.html$"))) {
+            json jDocumentRoot = settings::getOptionForCurrentMode("documentRoot");
+            string newPath;
+            if(!jDocumentRoot.is_null()) {
+                newPath = jDocumentRoot.get<string>() + "index.html";
+            }
+            else {
+                newPath = settings::getNavigationUrl();
+            }
+            if(newPath != path) return getAsset(newPath, prependData);
+        }
     }
     response.data = fileReaderResult.data;
-    response.status = fileReaderResult.status != errors::NE_ST_OK ? websocketpp::http::status_code::not_found
-                                : websocketpp::http::status_code::ok;
-    if(fileReaderResult.status == errors::NE_ST_OK && prependData != "")
+    response.status = websocketpp::http::status_code::ok;
+
+    if(fileReaderResult.status != errors::NE_ST_OK) {
+        response.status = websocketpp::http::status_code::not_found;
+        debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_RS_UNBLDRE, path));
+    }
+    else if(prependData != "") {
         response.data = prependData + response.data;
+    }
 
     // If MIME-type is not defined in neuserver, application/octet-stream will be used by default.
     if(mimeTypes.find(extension) != mimeTypes.end()) {

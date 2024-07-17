@@ -55,6 +55,7 @@ enum StatusCode {
     NE_SR_UNBPARS,
     // config
     NE_CF_UNBLDCF,
+    NE_CF_UNBPRCF,
     NE_CF_UNSUPMD
 };
 

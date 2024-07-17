@@ -44,46 +44,66 @@ string getConfigFile() {
     return configFile;
 }
 
-json getConfig() {
-    if(!options.is_null())
-        return options;
+bool init() {
+    options = json::object();
     json config;
-    try {
-        fs::FileReaderResult fileReaderResult = resources::getFile(configFile);
-        config = json::parse(fileReaderResult.data);
-        options = config;
-
-        // Apply config overrides
-        json patches;
-        for(const auto &cfgOverride: configOverrides) {
-            json patch;
-
-            patch["op"] = options[json::json_pointer(cfgOverride.key)].is_null()
-                                ? "add" : "replace";
-            patch["path"] = cfgOverride.key;
-
-            // String to actual types
-            if(cfgOverride.convertTo == "int") {
-                patch["value"] = stoi(cfgOverride.value);
-            }
-            else if(cfgOverride.convertTo == "bool") {
-                patch["value"] = cfgOverride.value == "true";
-            }
-            else {
-                patch["value"] = cfgOverride.value;
-            }
-
-            patches.push_back(patch);
+    fs::FileReaderResult fileReaderResult = resources::getFile(configFile);
+    if(fileReaderResult.status == errors::NE_ST_OK) {
+        try {
+            config = json::parse(fileReaderResult.data);
+            options = config;
         }
-
-        if(!patches.is_null()) {
-            options = options.patch(patches);
+        catch(exception e) {
+            debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_CF_UNBPRCF, string(configFile)));
+            return false;
         }
     }
-    catch(exception e) {
+    else {
         debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_CF_UNBLDCF, string(configFile)));
     }
+
+    // Apply config overrides
+    json patches;
+    for(const auto &cfgOverride: configOverrides) {
+        json patch;
+
+        patch["op"] = options[json::json_pointer(cfgOverride.key)].is_null()
+                            ? "add" : "replace";
+        patch["path"] = cfgOverride.key;
+
+        // String to actual types
+        if(cfgOverride.convertTo == "int") {
+            patch["value"] = stoi(cfgOverride.value);
+        }
+        else if(cfgOverride.convertTo == "bool") {
+            patch["value"] = cfgOverride.value == "true";
+        }
+        else {
+            patch["value"] = cfgOverride.value;
+        }
+
+        patches.push_back(patch);
+    }
+
+    if(!patches.is_null()) {
+        options = options.patch(patches);
+    }
+
+    return true;
+}
+
+json getConfig() {
     return options;
+}
+
+string getAppId() {
+    return !options["applicationId"].is_null() ?
+        options["applicationId"].get<string>() : "js.neutralino.framework";
+}
+
+string getNavigationUrl() {
+    return !settings::getOptionForCurrentMode("url").is_null() ?
+        settings::getOptionForCurrentMode("url").get<string>() : "https://neutralino.js.org";
 }
 
 string getGlobalVars(){
@@ -91,12 +111,12 @@ string getGlobalVars(){
     jsSnippet += "var NL_ARCH='" + computer::getArch() + "';";
     jsSnippet += "var NL_VERSION='" + string(NEU_VERSION) + "';";
     jsSnippet += "var NL_COMMIT='" + string(NEU_COMMIT) + "';";
-    jsSnippet += "var NL_APPID='" + options["applicationId"].get<string>() + "';";
+    jsSnippet += "var NL_APPID='" + settings::getAppId() + "';";
     if(!options["version"].is_null()) {
         jsSnippet += "var NL_APPVERSION='" + options["version"].get<string>() + "';";
     }
     jsSnippet += "var NL_PORT=" + to_string(settings::getOptionForCurrentMode("port").get<int>()) + ";";
-    jsSnippet += "var NL_MODE='" + options["defaultMode"].get<string>() + "';";
+    jsSnippet += "var NL_MODE='" + helpers::appModeToStr(settings::getMode()) + "';";
     jsSnippet += "var NL_TOKEN='" + authbasic::getToken() + "';";
     jsSnippet += "var NL_CWD='" + fs::getCurrentDirectory() + "';";
     jsSnippet += "var NL_ARGS=" + globalArgs.dump() + ";";
@@ -176,7 +196,8 @@ void setGlobalArgs(const json &args) {
 }
 
 settings::AppMode getMode() {
-    string mode = options["defaultMode"].get<string>();
+    string mode = !options["defaultMode"].is_null() ?
+                    options["defaultMode"].get<string>() : "window";
     if(mode == "window") return settings::AppModeWindow;
     if(mode == "browser") return settings::AppModeBrowser;
     if(mode == "cloud") return settings::AppModeCloud;
@@ -198,10 +219,13 @@ void applyConfigOverride(const settings::CliArg &arg) {
         // Top level
         {"--mode", {"/defaultMode", "string"}},
         {"--url", {"/url", "string"}},
+        {"--document-root", {"/documentRoot", "string"}},
         {"--port", {"/port", "int"}},
         {"--logging-enabled", {"/logging/enabled", "bool"}},
         {"--logging-write-to-log-file", {"/logging/writeToLogFile", "bool"}},
         {"--enable-server", {"/enableServer", "bool"}},
+        {"--enable-native-api", {"/enableNativeAPI", "bool"}},
+        {"--single-page-serve", {"/singlePageServe", "bool"}},
         {"--enable-extensions", {"/enableExtensions", "bool"}},
         {"--export-auth-info", {"/exportAuthInfo", "bool"}},
         // Window mode
@@ -239,9 +263,12 @@ void applyConfigOverride(const settings::CliArg &arg) {
     set<string> cliMappingAliases = {
         "/port",
         "/url",
+        "/documentRoot",
         "/logging/enabled",
         "/logging/writeToLogFile",
         "/enableServer",
+        "/enableNativeAPI",
+        "/singlePageServe",
         "/enableExtensions",
         "/exportAuthInfo"
     };
@@ -283,7 +310,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
 
 // Priority: mode -> root -> null
 json getOptionForCurrentMode(const string &key) {
-    string mode = options["defaultMode"].get<string>();
+    string mode = helpers::appModeToStr(settings::getMode());
     json value = options["modes"][mode][key];
     if(value.is_null()) {
         value = options[key];

@@ -1,5 +1,5 @@
 // Clip Library
-// Copyright (C) 2020 David Capello
+// Copyright (C) 2020-2024 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -10,6 +10,8 @@
 
 namespace clip {
 namespace details {
+
+#if CLIP_ENABLE_IMAGE
 
 inline void divide_rgb_by_alpha(image& img,
                                 bool hasAlphaGreaterThanZero = false) {
@@ -69,6 +71,8 @@ inline void divide_rgb_by_alpha(image& img,
     }
   }
 }
+
+#endif // CLIP_ENABLE_IMAGE
 
 } // namespace details
 } // namespace clip

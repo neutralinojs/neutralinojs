@@ -1,5 +1,5 @@
 // Clip Library
-// Copyright (c) 2015-2020 David Capello
+// Copyright (c) 2015-2023 David Capello
 //
 // This file is released under the terms of the MIT license.
 // Read LICENSE.txt for more information.
@@ -24,6 +24,8 @@ namespace {
   std::map<std::string, format> g_name_to_format;
   std::map<format, std::string> g_format_to_name;
 
+#if CLIP_ENABLE_IMAGE
+
   bool get_image_from_clipboard(image* output_img,
                                 image_spec* output_spec)
   {
@@ -40,7 +42,7 @@ namespace {
 
     NSBitmapImageRep* bitmap = [NSBitmapImageRep imageRepWithData:data];
 
-    if ((bitmap.bitmapFormat & NSFloatingPointSamplesBitmapFormat) ||
+    if ((bitmap.bitmapFormat & NSBitmapFormatFloatingPointSamples) ||
         (bitmap.planar)) {
       error_handler e = get_error_handler();
       if (e)
@@ -56,12 +58,15 @@ namespace {
 
     // We need three samples for Red/Green/Blue
     if (bitmap.samplesPerPixel >= 3) {
-      int bits_per_sample = bitmap.bitsPerPixel / bitmap.samplesPerPixel;
+      // Here we are guessing the bits per sample (generally 8, not
+      // sure how many bits per sample macOS uses for 16bpp
+      // NSBitmapFormat or if this format is even used).
+      int bits_per_sample = (bitmap.bitsPerPixel == 16 ? 5: 8);
       int bits_shift = 0;
 
       // With alpha
       if (bitmap.alpha) {
-        if (bitmap.bitmapFormat & NSAlphaFirstBitmapFormat) {
+        if (bitmap.bitmapFormat & NSBitmapFormatAlphaFirst) {
           spec.alpha_shift = 0;
           bits_shift += bits_per_sample;
         }
@@ -81,16 +86,16 @@ namespace {
 
       // With alpha
       if (bitmap.alpha) {
-        if (bitmap.bitmapFormat & NS16BitBigEndianBitmapFormat ||
-            bitmap.bitmapFormat & NS32BitBigEndianBitmapFormat) {
+        if (bitmap.bitmapFormat & NSBitmapFormatSixteenBitBigEndian ||
+            bitmap.bitmapFormat & NSBitmapFormatThirtyTwoBitBigEndian) {
           std::swap(spec.red_shift, spec.alpha_shift);
           std::swap(spec.green_shift, spec.blue_shift);
         }
       }
       // Without alpha
       else {
-        if (bitmap.bitmapFormat & NS16BitBigEndianBitmapFormat ||
-            bitmap.bitmapFormat & NS32BitBigEndianBitmapFormat) {
+        if (bitmap.bitmapFormat & NSBitmapFormatSixteenBitBigEndian ||
+            bitmap.bitmapFormat & NSBitmapFormatThirtyTwoBitBigEndian) {
           std::swap(spec.red_shift, spec.blue_shift);
         }
       }
@@ -118,7 +123,7 @@ namespace {
       // Convert premultiplied data to unpremultiplied if needed.
       if (bitmap.alpha &&
           bitmap.samplesPerPixel >= 3 &&
-          !(bitmap.bitmapFormat & NSAlphaNonpremultipliedBitmapFormat)) {
+          !(bitmap.bitmapFormat & NSBitmapFormatAlphaNonpremultiplied)) {
         details::divide_rgb_by_alpha(
           img,
           true); // hasAlphaGreaterThanZero=true because we have valid alpha information
@@ -130,6 +135,8 @@ namespace {
     return true;
   }
 
+#endif // CLIP_ENABLE_IMAGE
+
 }
 
 lock::impl::impl(void*) : m_locked(true) {
@@ -139,188 +146,204 @@ lock::impl::~impl() {
 }
 
 bool lock::impl::clear() {
-  NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
-  [pasteboard clearContents];
-  return true;
+  @autoreleasepool {
+    NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
+    [pasteboard clearContents];
+    return true;
+  }
 }
 
 bool lock::impl::is_convertible(format f) const {
-  NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
-  NSString* result = nil;
+  @autoreleasepool {
+    NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
+    NSString* result = nil;
 
-  if (f == text_format()) {
-    result = [pasteboard availableTypeFromArray:[NSArray arrayWithObject:NSPasteboardTypeString]];
-  }
-  else if (f == image_format()) {
-    result = [pasteboard availableTypeFromArray:
-      [NSArray arrayWithObjects:NSPasteboardTypeTIFF,NSPasteboardTypePNG,nil]];
-  }
-  else {
-    auto it = g_format_to_name.find(f);
-    if (it != g_format_to_name.end()) {
-      const std::string& name = it->second;
-      NSString* string = [[NSString alloc] initWithBytesNoCopy:(void*)name.c_str()
-                                                        length:name.size()
-                                                      encoding:NSUTF8StringEncoding
-                                                  freeWhenDone:NO];
-      result = [pasteboard availableTypeFromArray:[NSArray arrayWithObject:string]];
+    if (f == text_format()) {
+      result = [pasteboard availableTypeFromArray:[NSArray arrayWithObject:NSPasteboardTypeString]];
     }
-  }
+#if CLIP_ENABLE_IMAGE
+    else if (f == image_format()) {
+      result = [pasteboard availableTypeFromArray:
+                        [NSArray arrayWithObjects:NSPasteboardTypeTIFF,NSPasteboardTypePNG,nil]];
+    }
+#endif // CLIP_ENABLE_IMAGE
+    else {
+      auto it = g_format_to_name.find(f);
+      if (it != g_format_to_name.end()) {
+        const std::string& name = it->second;
+        NSString* string = [[NSString alloc] initWithBytesNoCopy:(void*)name.c_str()
+                                                          length:name.size()
+                                                        encoding:NSUTF8StringEncoding
+                                                    freeWhenDone:NO];
+        result = [pasteboard availableTypeFromArray:[NSArray arrayWithObject:string]];
+      }
+    }
 
-  return (result ? true: false);
+    return (result ? true: false);
+  }
 }
 
 bool lock::impl::set_data(format f, const char* buf, size_t len) {
-  NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
+  @autoreleasepool {
+    NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
 
-  if (f == text_format()) {
-    NSString* string = [[NSString alloc] initWithBytesNoCopy:(void*)buf
-                                                      length:len
-                                                    encoding:NSUTF8StringEncoding
-                                                freeWhenDone:NO];
-    [pasteboard setString:string forType:NSPasteboardTypeString];
-    return true;
-  }
-  else {
-    auto it = g_format_to_name.find(f);
-    if (it != g_format_to_name.end()) {
-      const std::string& formatName = it->second;
-      NSString* typeString = [[NSString alloc]
-                               initWithBytesNoCopy:(void*)formatName.c_str()
-                                            length:formatName.size()
-                                          encoding:NSUTF8StringEncoding
-                                      freeWhenDone:NO];
-      NSData* data = [NSData dataWithBytesNoCopy:(void*)buf
-                                          length:len
-                                      freeWhenDone:NO];
-
-      if ([pasteboard setData:data forType:typeString])
-        return true;
+    if (f == text_format()) {
+      NSString* string = [[NSString alloc] initWithBytesNoCopy:(void*)buf
+                                                        length:len
+                                                      encoding:NSUTF8StringEncoding
+                                                  freeWhenDone:NO];
+      [pasteboard setString:string forType:NSPasteboardTypeString];
+      return true;
     }
+    else {
+      auto it = g_format_to_name.find(f);
+      if (it != g_format_to_name.end()) {
+        const std::string& formatName = it->second;
+        NSString* typeString = [[NSString alloc]
+                                 initWithBytesNoCopy:(void*)formatName.c_str()
+                                              length:formatName.size()
+                                            encoding:NSUTF8StringEncoding
+                                        freeWhenDone:NO];
+        NSData* data = [NSData dataWithBytesNoCopy:(void*)buf
+                                            length:len
+                                      freeWhenDone:NO];
+
+        if ([pasteboard setData:data forType:typeString])
+          return true;
+      }
+    }
+    return false;
   }
-  return false;
 }
 
 bool lock::impl::get_data(format f, char* buf, size_t len) const {
-  assert(buf);
-  if (!buf || !is_convertible(f))
-    return false;
-
-  NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
-
-  if (f == text_format()) {
-    NSString* string = [pasteboard stringForType:NSPasteboardTypeString];
-    int reqsize = [string lengthOfBytesUsingEncoding:NSUTF8StringEncoding]+1;
-
-    assert(reqsize <= len);
-    if (reqsize > len) {
-      // Buffer is too small
+  @autoreleasepool {
+    assert(buf);
+    if (!buf || !is_convertible(f))
       return false;
+
+    NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
+
+    if (f == text_format()) {
+      NSString* string = [pasteboard stringForType:NSPasteboardTypeString];
+      int reqsize = [string lengthOfBytesUsingEncoding:NSUTF8StringEncoding]+1;
+
+      assert(reqsize <= len);
+      if (reqsize > len) {
+        // Buffer is too small
+        return false;
+      }
+
+      if (reqsize == 0)
+        return true;
+
+      memcpy(buf, [string UTF8String], reqsize);
+      return true;
     }
 
-    if (reqsize == 0)
-      return true;
+    auto it = g_format_to_name.find(f);
+    if (it == g_format_to_name.end())
+      return false;
 
-    memcpy(buf, [string UTF8String], reqsize);
+    const std::string& formatName = it->second;
+    NSString* typeString =
+      [[NSString alloc] initWithBytesNoCopy:(void*)formatName.c_str()
+                                     length:formatName.size()
+                                   encoding:NSUTF8StringEncoding
+                               freeWhenDone:NO];
+
+    NSData* data = [pasteboard dataForType:typeString];
+    if (!data)
+      return false;
+
+    [data getBytes:buf length:len];
     return true;
   }
-
-  auto it = g_format_to_name.find(f);
-  if (it == g_format_to_name.end())
-    return false;
-
-  const std::string& formatName = it->second;
-  NSString* typeString =
-    [[NSString alloc] initWithBytesNoCopy:(void*)formatName.c_str()
-                                   length:formatName.size()
-                                 encoding:NSUTF8StringEncoding
-                             freeWhenDone:NO];
-
-  NSData* data = [pasteboard dataForType:typeString];
-  if (!data)
-    return false;
-
-  [data getBytes:buf length:len];
-  return true;
 }
 
 size_t lock::impl::get_data_length(format f) const {
-  NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
+  @autoreleasepool {
+    NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
 
-  if (f == text_format()) {
-    NSString* string = [pasteboard stringForType:NSPasteboardTypeString];
-    return [string lengthOfBytesUsingEncoding:NSUTF8StringEncoding]+1;
+    if (f == text_format()) {
+      NSString* string = [pasteboard stringForType:NSPasteboardTypeString];
+      return [string lengthOfBytesUsingEncoding:NSUTF8StringEncoding]+1;
+    }
+
+    auto it = g_format_to_name.find(f);
+    if (it == g_format_to_name.end())
+      return 0;
+
+    const std::string& formatName = it->second;
+    NSString* typeString =
+      [[NSString alloc] initWithBytesNoCopy:(void*)formatName.c_str()
+                                     length:formatName.size()
+                                   encoding:NSUTF8StringEncoding
+                               freeWhenDone:NO];
+
+    NSData* data = [pasteboard dataForType:typeString];
+    if (!data)
+      return 0;
+
+    return data.length;
   }
-
-  auto it = g_format_to_name.find(f);
-  if (it == g_format_to_name.end())
-    return 0;
-
-  const std::string& formatName = it->second;
-  NSString* typeString =
-    [[NSString alloc] initWithBytesNoCopy:(void*)formatName.c_str()
-                                   length:formatName.size()
-                                 encoding:NSUTF8StringEncoding
-                             freeWhenDone:NO];
-
-  NSData* data = [pasteboard dataForType:typeString];
-  if (!data)
-    return 0;
-
-  return data.length;
 }
 
+#if CLIP_ENABLE_IMAGE
+
 bool lock::impl::set_image(const image& image) {
-  NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
-  const image_spec& spec = image.spec();
+  @autoreleasepool {
+    NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
+    const image_spec& spec = image.spec();
 
-  NSBitmapFormat bitmapFormat = 0;
-  int samples_per_pixel = 0;
-  if (spec.alpha_mask) {
-    samples_per_pixel = 4;
-    if (spec.alpha_shift == 0)
-      bitmapFormat |= NSAlphaFirstBitmapFormat;
-    bitmapFormat |= NSAlphaNonpremultipliedBitmapFormat;
-  }
-  else if (spec.red_mask || spec.green_mask || spec.blue_mask) {
-    samples_per_pixel = 3;
-  }
-  else {
-    samples_per_pixel = 1;
-  }
+    NSBitmapFormat bitmapFormat = 0;
+    int samples_per_pixel = 0;
+    if (spec.alpha_mask) {
+      samples_per_pixel = 4;
+      if (spec.alpha_shift == 0)
+        bitmapFormat |= NSBitmapFormatAlphaFirst;
+      bitmapFormat |= NSBitmapFormatAlphaNonpremultiplied;
+    }
+    else if (spec.red_mask || spec.green_mask || spec.blue_mask) {
+      samples_per_pixel = 3;
+    }
+    else {
+      samples_per_pixel = 1;
+    }
 
-  if (spec.bits_per_pixel == 32)
-    bitmapFormat |= NS32BitLittleEndianBitmapFormat;
-  else if (spec.bits_per_pixel == 16)
-    bitmapFormat |= NS16BitLittleEndianBitmapFormat;
+    if (spec.bits_per_pixel == 32)
+      bitmapFormat |= NSBitmapFormatThirtyTwoBitLittleEndian;
+    else if (spec.bits_per_pixel == 16)
+      bitmapFormat |= NSBitmapFormatSixteenBitLittleEndian;
 
-  std::vector<unsigned char*> planes(1);
-  planes[0] = (unsigned char*)image.data();
+    std::vector<unsigned char*> planes(1);
+    planes[0] = (unsigned char*)image.data();
 
-  NSBitmapImageRep* bitmap =
-    [[NSBitmapImageRep alloc]
-      initWithBitmapDataPlanes:&planes[0]
-                    pixelsWide:spec.width
-                    pixelsHigh:spec.height
-                 bitsPerSample:spec.bits_per_pixel / samples_per_pixel
-               samplesPerPixel:samples_per_pixel
-                      hasAlpha:(spec.alpha_mask ? YES: NO)
-                      isPlanar:NO
-                colorSpaceName:NSDeviceRGBColorSpace
-                  bitmapFormat:bitmapFormat
-                   bytesPerRow:spec.bytes_per_row
-                  bitsPerPixel:spec.bits_per_pixel];
-  if (!bitmap)
+    NSBitmapImageRep* bitmap =
+      [[NSBitmapImageRep alloc]
+        initWithBitmapDataPlanes:&planes[0]
+                      pixelsWide:spec.width
+                      pixelsHigh:spec.height
+                   bitsPerSample:spec.bits_per_pixel / samples_per_pixel
+                 samplesPerPixel:samples_per_pixel
+                        hasAlpha:(spec.alpha_mask ? YES: NO)
+                        isPlanar:NO
+                  colorSpaceName:NSDeviceRGBColorSpace
+                    bitmapFormat:bitmapFormat
+                     bytesPerRow:spec.bytes_per_row
+                    bitsPerPixel:spec.bits_per_pixel];
+    if (!bitmap)
+      return false;
+
+    NSData* data = bitmap.TIFFRepresentation;
+    if (!data)
+      return false;
+
+    if ([pasteboard setData:data forType:NSPasteboardTypeTIFF])
+      return true;
+
     return false;
-
-  NSData* data = bitmap.TIFFRepresentation;
-  if (!data)
-    return false;
-
-  if ([pasteboard setData:data forType:NSPasteboardTypeTIFF])
-    return true;
-
-  return false;
+  }
 }
 
 bool lock::impl::get_image(image& img) const {
@@ -330,6 +353,8 @@ bool lock::impl::get_image(image& img) const {
 bool lock::impl::get_image_spec(image_spec& spec) const {
   return get_image_from_clipboard(nullptr, &spec);
 }
+
+#endif // CLIP_ENABLE_IMAGE
 
 format register_format(const std::string& name) {
   // Check if the format is already registered
