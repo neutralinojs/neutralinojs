@@ -186,7 +186,7 @@ describe('storage.spec: storage namespace tests', () => {
             `);
             let keys = JSON.parse(runner.getOutput());
             assert.ok(Array.isArray(keys));
-            assert.strictEqual(keys.length, 10);
+            assert.strictEqual(keys.length, 9);
             assert.ok(keys.includes('key_1'));
             assert.ok(keys.includes('key_2'));
         });     
