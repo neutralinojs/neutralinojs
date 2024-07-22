@@ -87,6 +87,7 @@ json getStats(const json &input);
 json createWatcher(const json &input);
 json removeWatcher(const json &input);
 json getWatchers(const json &input);
+json getAbsPath(const json &input);
 
 } // namespace controllers
 

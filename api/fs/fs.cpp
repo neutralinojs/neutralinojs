@@ -746,6 +746,18 @@ json getWatchers(const json &input) {
     return output;
 }
 
+json getAbsPath(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    string path = input["path"].get<string>();
+    output["returnValue"] = filesystem::absolute(path);
+    output["success"] = true;
+    return output;
+}
+
 } // namespace controllers
 
 } // namespace fs

@@ -95,6 +95,7 @@ map<string, router::NativeMethod> methodMap = {
     {"filesystem.copy", fs::controllers::copy},
     {"filesystem.move", fs::controllers::move},
     {"filesystem.getStats", fs::controllers::getStats},
+    {"filesystem.getAbsPath", fs::controllers::getAbsPath},
     // Neutralino.os
     {"os.execCommand", os::controllers::execCommand},
     {"os.spawnProcess", os::controllers::spawnProcess},

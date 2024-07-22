@@ -305,6 +305,9 @@ function move$1(source, destination) {
 function getStats(path) {
     return sendMessage('filesystem.getStats', { path });
 }
+function getAbsPath(path) {
+    return sendMessage('filesystem.getAbsPath', { path });
+}
 
 var filesystem = /*#__PURE__*/Object.freeze({
     __proto__: null,
@@ -313,6 +316,7 @@ var filesystem = /*#__PURE__*/Object.freeze({
     copy: copy,
     createDirectory: createDirectory,
     createWatcher: createWatcher,
+    getAbsPath: getAbsPath,
     getOpenedFileInfo: getOpenedFileInfo,
     getStats: getStats,
     getWatchers: getWatchers,
@@ -862,7 +866,7 @@ var custom = /*#__PURE__*/Object.freeze({
     getMethods: getMethods
 });
 
-var version = "5.1.1";
+var version = "5.2.0";
 
 let initialized = false;
 function init(options = {}) {
