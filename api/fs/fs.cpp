@@ -13,7 +13,7 @@
 #include <libgen.h>
 
 #define CONVSTR(S) S.c_str()
-#define CONVWSTR(S) helpers::wstr2str(S.string())
+#define CONVWSTR(S) S.string()
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
 #include <windows.h>
