@@ -13,6 +13,7 @@
 #include <libgen.h>
 
 #define CONVSTR(S) S.c_str()
+#define CONVWSTR(S) helpers::wstr2str(S.string())
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
 #include <windows.h>
@@ -27,6 +28,7 @@
 // However there is a non-standard extension which allows the use of wide strings.
 // So, before we pass the path string to the constructor, we have to convert it to a UTF-16 std::wstring.
 #define CONVSTR(S) helpers::str2wstr(S)
+#define CONVWSTR(S) helpers::wstr2str(S.wstring())
 #endif
 
 #include <efsw/efsw.hpp>
@@ -142,7 +144,7 @@ string getDirectoryName(const string &filename){
 }
 
 string getCurrentDirectory() {
-    string path = filesystem::current_path().string();
+    string path = CONVWSTR(filesystem::current_path());
     #if defined(_WIN32)
     return helpers::normalizePath(path);
     #else
@@ -329,7 +331,7 @@ fs::DirReaderResult readDirectory(const string &path, bool recursive) {
         return dirResult;
     }
 
-    for(auto entry = filesystem::recursive_directory_iterator(path);
+    for(auto entry = filesystem::recursive_directory_iterator(CONVSTR(path));
         entry != filesystem::recursive_directory_iterator();
         ++entry) {
 
@@ -342,9 +344,9 @@ fs::DirReaderResult readDirectory(const string &path, bool recursive) {
         }
 
         auto entryPath = entry->path();
-        string entryStr = entry->path().string();
+        string entryStr = CONVWSTR(entry->path());
 
-        dirResult.entries.push_back({ entryPath.filename().string(),
+        dirResult.entries.push_back({ CONVWSTR(entryPath.filename()),
             helpers::normalizePath(entryStr), type });
 
         if(!recursive) {
@@ -399,7 +401,7 @@ json createDirectory(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
-    if(filesystem::create_directories(path)) {
+    if(filesystem::create_directories(CONVSTR(path))) {
         output["success"] = true;
         output["message"] = "Directory " + path + " was created";
     }
@@ -419,7 +421,7 @@ json remove(const json& input) {
 
     std::string path = input["path"].get<std::string>();
 
-    if(filesystem::remove_all(path)) {
+    if(filesystem::remove_all(CONVSTR(path))) {
         output["success"] = true;
         output["message"] = path + " was removed";
     }
@@ -638,7 +640,7 @@ json copy(const json &input) {
         copyOptions |= filesystem::copy_options::skip_existing;
     }
 
-    filesystem::copy(source, destination, copyOptions, ec);
+    filesystem::copy(CONVSTR(source), CONVSTR(destination), copyOptions, ec);
 
     if(!ec) {
         output["success"] = true;
@@ -660,7 +662,7 @@ json move(const json &input) {
     string destination = input["destination"].get<string>();
 
     error_code ec;
-    filesystem::rename(source, destination, ec);
+    filesystem::rename(CONVSTR(source), CONVSTR(destination), ec);
 
     if(!ec) {
         output["success"] = true;
@@ -753,7 +755,8 @@ json getAbsPath(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
-    output["returnValue"] = helpers::normalizePath(filesystem::absolute(path).string());
+    string absPath = CONVWSTR(filesystem::absolute(path));
+    output["returnValue"] = helpers::normalizePath(absPath);
     output["success"] = true;
     return output;
 }
