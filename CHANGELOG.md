@@ -6,8 +6,14 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### Configuration: window transparency on Windows
+Window transparency support was added on the Windows version of the Neutralinojs framework. This can be activated with `modes.window.transparent` configuration property or `--window-transparent` command-line option. Unlike other platforms, Windows native window becomes borderless (window controls will be hidden) with the activation of the transparent mode. 
+
 ### API: os
 - Add the `temp` key for the supported directory list of the `os.getPath(pathKey)` function.
+
+### API: filesystem
+- Add the `filesystem.getAbsPath(path)` function to let developers get a full path string from a relative path string.
 
 ## v5.2.0
 
