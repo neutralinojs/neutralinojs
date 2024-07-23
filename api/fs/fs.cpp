@@ -753,7 +753,7 @@ json getAbsPath(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
-    output["returnValue"] = helpers::normalizePath(filesystem::absolute(path));
+    output["returnValue"] = helpers::normalizePath(filesystem::absolute(path).string());
     output["success"] = true;
     return output;
 }
