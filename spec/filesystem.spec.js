@@ -758,7 +758,6 @@ describe('filesystem.spec: filesystem namespace tests', () => {
                  let entries = await Neutralino.filesystem.readDirectory(NL_PATH + '/.tmp');
                  await __close(JSON.stringify(entries));
              `);
-             console.log(runner.getOutput())
              const entries = JSON.parse(runner.getOutput());
              assert.ok(entries.find((entry) => entry.type == 'DIRECTORY' && entry.entry == 'ɦ'));
         });
