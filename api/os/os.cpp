@@ -218,9 +218,15 @@ string getPath(const string &name) {
 }
 
 string getEnv(const string &key) {
+    #if defined(_WIN32)
+    wchar_t value[_MAX_ENV];
+    return GetEnvironmentVariable(CONVSTR(key).c_str(), value, _MAX_ENV) > 0 ? 
+            helpers::wstr2str(value) : "";
+    #else
     char *value;
     value = getenv(key.c_str());
     return value == nullptr ? "" : string(value);
+    #endif
 }
 
 namespace controllers {
