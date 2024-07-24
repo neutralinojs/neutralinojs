@@ -22,16 +22,12 @@
 #include <unistd.h>
 extern char **environ;
 
-#define CONVSTR(S) S
-
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
 #include <windows.h>
 #include <tchar.h>
 #include <gdiplus.h>
 #include <shlwapi.h>
-
-#define CONVSTR(S) helpers::str2wstr(S)
 
 #pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "Gdiplus.lib")

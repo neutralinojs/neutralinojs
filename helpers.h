@@ -4,6 +4,14 @@
 #include <vector>
 #include <string>
 
+#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+#define CONVSTR(S) S
+#define FS_CONVWSTR(S) S.string()
+#elif defined(_WIN32)
+#define CONVSTR(S) helpers::str2wstr(S)
+#define FS_CONVWSTR(S) helpers::wstr2str(S.wstring())
+#endif
+
 #include "lib/json/json.hpp"
 
 #include "settings.h"

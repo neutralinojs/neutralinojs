@@ -12,8 +12,6 @@
 #include <sys/stat.h>
 #include <libgen.h>
 
-#define CONVSTR(S) S.c_str()
-#define CONVWSTR(S) S.string()
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
 #include <windows.h>
@@ -23,12 +21,6 @@
 
 #define NEU_WINDOWS_TICK 10000000
 #define NEU_SEC_TO_UNIX_EPOCH 11644473600LL
-
-// ifstream and ofstream do not support UTF-8 file paths on Windows.
-// However there is a non-standard extension which allows the use of wide strings.
-// So, before we pass the path string to the constructor, we have to convert it to a UTF-16 std::wstring.
-#define CONVSTR(S) helpers::str2wstr(S)
-#define CONVWSTR(S) helpers::wstr2str(S.wstring())
 #endif
 
 #include <efsw/efsw.hpp>
@@ -144,7 +136,7 @@ string getDirectoryName(const string &filename){
 }
 
 string getCurrentDirectory() {
-    string path = CONVWSTR(filesystem::current_path());
+    string path = FS_CONVWSTR(filesystem::current_path());
     #if defined(_WIN32)
     return helpers::normalizePath(path);
     #else
@@ -344,9 +336,9 @@ fs::DirReaderResult readDirectory(const string &path, bool recursive) {
         }
 
         auto entryPath = entry->path();
-        string entryStr = CONVWSTR(entry->path());
+        string entryStr = FS_CONVWSTR(entry->path());
 
-        dirResult.entries.push_back({ CONVWSTR(entryPath.filename()),
+        dirResult.entries.push_back({ FS_CONVWSTR(entryPath.filename()),
             helpers::normalizePath(entryStr), type });
 
         if(!recursive) {
@@ -755,7 +747,7 @@ json getAbsPath(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
-    string absPath = CONVWSTR(filesystem::absolute(path));
+    string absPath = FS_CONVWSTR(filesystem::absolute(path));
     output["returnValue"] = helpers::normalizePath(absPath);
     output["success"] = true;
     return output;

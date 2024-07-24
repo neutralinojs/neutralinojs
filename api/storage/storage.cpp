@@ -71,7 +71,7 @@ json setData(const json &input) {
         return errorPayload;
     string bucketPath = settings::joinAppPath(NEU_STORAGE_DIR);
 
-    filesystem::create_directories(bucketPath);
+    filesystem::create_directories(CONVSTR(bucketPath));
     #if defined(_WIN32)
     SetFileAttributesA(bucketPath.c_str(), FILE_ATTRIBUTE_HIDDEN);
     #endif
