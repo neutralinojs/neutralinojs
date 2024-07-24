@@ -14,15 +14,6 @@
 #include "api/debug/debug.h"
 #include "api/fs/fs.h"
 
-#if defined(_WIN32)
-// ifstream and ofstream do not support UTF-8 file paths on Windows.
-// However there is a non-standard extension which allows the use of wide strings.
-// So, before we pass the path string to the constructor, we have to convert it to a UTF-16 std::wstring.
-#define CONVSTR(S) helpers::str2wstr(S)
-#else
-#define CONVSTR(S) S
-#endif
-
 #define NEU_APP_RES_FILE "/resources.neu"
 
 using namespace std;
