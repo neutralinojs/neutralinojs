@@ -158,6 +158,15 @@ void __initExtra() {
 }
 
 #if defined(_WIN32)
+void __attachConsole() {
+    FILE* fp;
+    if(AttachConsole(ATTACH_PARENT_PROCESS)) { 
+        freopen_s(&fp, "CONIN$", "r", stdin);
+        freopen_s(&fp, "CONOUT$", "w", stdout);
+        freopen_s(&fp, "CONOUT$", "w", stderr);
+    }
+}
+
 #define ARG_C __argc
 #define ARG_V __wargv
 #define CONVSTR(S) helpers::wcstr2str(S)
@@ -176,6 +185,9 @@ int main(int argc, char ** argv)
     for (int i = 0; i < ARG_C; i++) {
         args.push_back(CONVSTR(ARG_V[i]));
     }
+    #if defined(_WIN32)
+    __attachConsole();
+    #endif
     __initFramework(args);
     __startServerAsync();
     __configureLogger();

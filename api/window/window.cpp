@@ -528,6 +528,9 @@ void _close(int exitCode) {
             __saveWindowProps();
         }
         nativeWindow->terminate(exitCode);
+        #if defined(_WIN32)
+        FreeConsole();
+        #endif
         delete nativeWindow;
     }
 }
