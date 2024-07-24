@@ -15,6 +15,10 @@ Window transparency support was added on the Windows version of the Neutralinojs
 ### API: filesystem
 - Add the `filesystem.getAbsPath(path)` function to let developers get a full path string from a relative path string.
 
+### Improvements/bugfixes
+- Fix Unicode issues in the Windows version with filesystem, storage, and general modules.
+- Fix standard output/error data display issues on Windows
+
 ## v5.2.0
 
 ### Configuration: Configless framework initialization
