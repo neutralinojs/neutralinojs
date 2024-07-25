@@ -13,7 +13,9 @@ Window transparency support was added on the Windows version of the Neutralinojs
 - Add the `temp` key for the supported directory list of the `os.getPath(pathKey)` function.
 
 ### API: filesystem
-- Add the `filesystem.getAbsPath(path)` function to let developers get a full path string from a relative path string.
+- Add the `filesystem.getAbsolutePath(path)` function to let developers get a full path string from a relative path string.
+- Add the `filesystem.getRelativePath(path, ?base)` function to get a relative path from a path and a base path.
+- Add the `filesystem.getPathParts(path)` to parse and get path segments like filename, extension, root path, etc. 
 
 ### Improvements/bugfixes
 - Fix Unicode issues in the Windows version with filesystem, storage, and general modules.
