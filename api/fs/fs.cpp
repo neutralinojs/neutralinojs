@@ -740,7 +740,7 @@ json getWatchers(const json &input) {
     return output;
 }
 
-json getAbsPath(const json &input) {
+json getAbsolutePath(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
         output["error"] = errors::makeMissingArgErrorPayload();
@@ -749,6 +749,47 @@ json getAbsPath(const json &input) {
     string path = input["path"].get<string>();
     string absPath = FS_CONVWSTR(filesystem::absolute(path));
     output["returnValue"] = helpers::normalizePath(absPath);
+    output["success"] = true;
+    return output;
+}
+
+json getRelativePath(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    string path = input["path"].get<string>();
+    string base = filesystem::current_path().string();
+
+    if(helpers::hasField(input, "base")) {
+        base = input["base"].get<string>();
+    }
+    
+    string relPath = FS_CONVWSTR(filesystem::relative(CONVSTR(path), CONVSTR(base)));
+    output["returnValue"] = helpers::normalizePath(relPath);
+    output["success"] = true;
+    return output;
+}
+
+json getPathParts(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    auto path = filesystem::path(input["path"].get<string>());
+    json pathParts = {
+        {"rootName", FS_CONVWSTRN(path.root_name())},
+        {"rootDirectory", FS_CONVWSTRN(path.root_directory())},
+        {"rootPath", FS_CONVWSTRN(path.root_path())},
+        {"relativePath", FS_CONVWSTRN(path.relative_path())},
+        {"parentPath", FS_CONVWSTRN(path.parent_path())},
+        {"filename", FS_CONVWSTRN(path.filename())},
+        {"stem", FS_CONVWSTRN(path.stem())},
+        {"extension", FS_CONVWSTRN(path.extension())}
+    };
+    output["returnValue"] = pathParts;
     output["success"] = true;
     return output;
 }
