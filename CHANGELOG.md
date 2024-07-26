@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v5.3.0
+
 ### Configuration: window transparency on Windows
 Window transparency support was added on the Windows version of the Neutralinojs framework. This can be activated with `modes.window.transparent` configuration property or `--window-transparent` command-line option. Unlike in other platforms, Windows native window becomes borderless (window controls will be hidden) with the activation of the transparent mode. 
 
