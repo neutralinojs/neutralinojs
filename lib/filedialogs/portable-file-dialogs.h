@@ -1224,7 +1224,7 @@ inline std::string internal::file_dialog::string_result()
     auto ret = m_async->result();
     // Strip potential trailing newline (zenity). Also strip trailing slash
     // added by osascript for consistency with other backends.
-    while (!ret.empty() && (ret.back() == '\n' || ret.back() == '/'))
+    while (!ret.empty() && (ret.back() == '\n' || (ret.size() > 1 && ret.back() == '/')))
         ret.pop_back();
     return ret;
 #endif

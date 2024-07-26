@@ -785,9 +785,9 @@ json getPathParts(const json &input) {
         {"rootPath", FS_CONVWSTRN(path.root_path())},
         {"relativePath", FS_CONVWSTRN(path.relative_path())},
         {"parentPath", FS_CONVWSTRN(path.parent_path())},
-        {"filename", FS_CONVWSTRN(path.filename())},
-        {"stem", FS_CONVWSTRN(path.stem())},
-        {"extension", FS_CONVWSTRN(path.extension())}
+        {"filename", path.filename()},
+        {"stem", path.stem()},
+        {"extension", path.extension()}
     };
     output["returnValue"] = pathParts;
     output["success"] = true;
