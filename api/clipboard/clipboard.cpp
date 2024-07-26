@@ -64,6 +64,8 @@ json readImage(const json &input) {
             { "redShift", spec.red_shift },
             { "greenShift", spec.green_shift },
             { "blueShift", spec.blue_shift },
+            { "alphaMask", spec.alpha_mask },
+            { "alphaShift", spec.alpha_shift },
             { "data", base64::to_base64(clipData) }
         };
     }
@@ -75,9 +77,9 @@ json readImage(const json &input) {
 
 json writeImage(const json &input) {
     json output;
-    if(!helpers::hasRequiredFields(input,
-            {"width", "height", "bpp", "bpr", "redMask", "greenMask", "blueMask",
-            "redShift", "greenShift", "blueShift", "data"})) {
+    if (!helpers::hasRequiredFields(input,
+        { "width", "height", "bpp", "bpr", "redMask", "greenMask", "blueMask",
+        "redShift", "greenShift", "blueShift", "data", "alphaShift", "alphaMask"})) {
         output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
@@ -92,7 +94,8 @@ json writeImage(const json &input) {
     spec.red_shift = input["redShift"].get<unsigned long>();
     spec.green_shift = input["greenShift"].get<unsigned long>();
     spec.blue_shift = input["blueShift"].get<unsigned long>();
-    spec.width = input["width"].get<unsigned long>();
+    spec.alpha_mask = input["alphaMask"].get<unsigned long>();
+    spec.alpha_shift = input["alphaShift"].get<unsigned long>();
 
     string clipData = base64::from_base64(input["data"].get<string>());
     clip::image image(clipData.data(), spec);
