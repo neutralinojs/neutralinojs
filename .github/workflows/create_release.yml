@@ -152,7 +152,7 @@ jobs:
         tag: v${{github.event.inputs.version}}
         
     - name: Create Branch
-      uses: peterjgrainger/action-create-branch@v2.4.0
+      uses: peterjgrainger/action-create-branch@v3.0.0
       with: 
         branch: v${{github.event.inputs.version}}
       env:
