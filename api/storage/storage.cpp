@@ -78,7 +78,7 @@ json setData(const json &input) {
 
     string filename = bucketPath + "/" + key + NEU_STORAGE_EXT;
     if(!helpers::hasField(input, "data")) {
-        filesystem::remove(filename);
+        filesystem::remove(CONVSTR(filename));
     }
     else {
         fs::FileWriterOptions fileWriterOptions;
