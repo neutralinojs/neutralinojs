@@ -57,6 +57,7 @@ struct WindowOptions {
     bool transparent = false;
     bool exitProcessOnClose = true;
     bool useSavedState = true;
+    bool enableContextMenu = true;
     string title = "Neutralinojs";
     string url = "https://neutralino.js.org";
     string icon = "";
@@ -117,6 +118,7 @@ json setSize(const json &input);
 json getSize(const json &input);
 json getPosition(const json &input);
 json setAlwaysOnTop(const json &input);
+json enableContextMenu(const json &input);
 
 } // namespace controllers
 

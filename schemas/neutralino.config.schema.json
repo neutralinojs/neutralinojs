@@ -17,7 +17,7 @@
           "type": "boolean",
           "description": "Enables or disables the native API. If you want to use any native API functions, you can set this option to 'true'.",
           "default": false
-        },
+        },        
         "tokenSecurity": {
           "type": "string",
           "description": "Neutralinojs uses a client-server communication pattern with a local WebSocket to handle native calls. This local server is protected with an auto-generated token. This option defines the security implementation for the token. \\n\\n Accepts the following values: \\n\\n - one-time (Recommended): Server sends the access token only once, and the client persists it in the sessionStorage. If another client (Eg: browser) tries to access the app, 'NE_RT_INVTOKN' error message will be shown instead of the application. Using this option is recommended since it reduces security issues. \\n\\n - none: Server sends the access token always, so any new client can see the application. \\n\\n ::: Danger: If you are using native APIs that can access your computer's internals such as 'os', 'filesystem', modules, never use 'none' option since any new client can use those APIs. :::",
@@ -98,7 +98,7 @@
         "globalVariables": {
           "type": "object",
           "description": "A key-value-based JavaScript object of custom global variables. \\n\\n You can make custom global variables too via 'neutralino.config.json', as shown below. \\n\\n \"globalVariables\": { \\n   \"TEST\": \"Test Value\" \\n } \\n\\n The above custom global variable's value can be accessed with 'NL_TEST'. You can set any data type for custom global variables. Look at the following examples. \\n\\n \"globalVariables\": { \\n   \"TEST_1\": 1, \\n   \"TEST_2\": null, \\n   \"TEST_3\": 3.5, \\n   \"TEST_4\": [3, 5, 4, 5], \\n   \"TEST_5\": { \\n     \"key\": \"value\", \\n     \"anotherKey\": 100 \\n   } \\n } \\n\\n Avoid overriding predefined global variables. \\n\\n Learn more about this option here: \\n https://github.com/neutralinojs/neutralinojs.github.io/blob/main/docs/api/global-variables.md#custom-global-variables"
-        },
+        },        
         "logging": {
           "type": "object",
           "additionalProperties": false,
@@ -236,6 +236,11 @@
                     "exitProcessOnClose": {
                       "type": "boolean",
                       "description": "If this setting is 'true', the app process will exit when the user clicks on the close button. Otherwise, the framework will dispatch the 'windowClose' event."
+                    },
+                    "enableContextMenu": {
+                      "type": "boolean",
+                      "default": true,
+                      "description": "Enables of disables the default right mouse click context menu. When no value is defined, the context is enabled by default"
                     }
                   }
                 }
