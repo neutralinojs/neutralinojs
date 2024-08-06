@@ -955,7 +955,11 @@ public:
     });
 
     // wait for dispatch() to complete
-    WaitForSingleObject(evtWindowClosed, 10000);
+    /* TODO: Check why this method doesn't trigger a signal on Windows
+    *        when "exitProcessOnClose" is true. (Previous value: 10000)
+    *        This wait causes a delay when closing the program.
+    */
+    WaitForSingleObject(evtWindowClosed, 300);
     CloseHandle(evtWindowClosed);
 
   }
