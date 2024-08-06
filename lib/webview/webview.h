@@ -882,7 +882,7 @@ public:
       RegisterClassEx(&wc);
       int width = transparent ? 8000 : 640;
       int height = transparent ? 8000 : 480;
-      m_window = CreateWindowEx(focusable ? WS_EX_LEFT : WS_EX_NOACTIVATE | WS_EX_TOPMOST, L"Neutralinojs_webview", L"", WS_OVERLAPPEDWINDOW, 99999999,
+      m_window = CreateWindowEx(focusable ? WS_EX_LEFT : WS_EX_NOACTIVATE, L"Neutralinojs_webview", L"", WS_OVERLAPPEDWINDOW, 99999999,
                               CW_USEDEFAULT, width, height, nullptr, nullptr,
                               GetModuleHandle(nullptr), nullptr);
       SetWindowLongPtr(m_window, GWLP_USERDATA, (LONG_PTR)this);
