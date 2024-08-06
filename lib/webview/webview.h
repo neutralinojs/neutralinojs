@@ -791,7 +791,7 @@ private:
 
 class win32_edge_engine {
 public:
-  win32_edge_engine(bool debug, void *window, bool transparent) {
+  win32_edge_engine(bool debug, void *window, bool transparent, bool focusable = true) {
     if (window == nullptr) {
       HINSTANCE hInstance = GetModuleHandle(nullptr);
       HICON icon = (HICON)LoadImage(
@@ -882,7 +882,7 @@ public:
       RegisterClassEx(&wc);
       int width = transparent ? 8000 : 640;
       int height = transparent ? 8000 : 480;
-      m_window = CreateWindow(L"Neutralinojs_webview", L"", WS_OVERLAPPEDWINDOW, 99999999,
+      m_window = CreateWindowEx(focusable ? WS_EX_LEFT : WS_EX_NOACTIVATE | WS_EX_TOPMOST, L"Neutralinojs_webview", L"", WS_OVERLAPPEDWINDOW, 99999999,
                               CW_USEDEFAULT, width, height, nullptr, nullptr,
                               GetModuleHandle(nullptr), nullptr);
       SetWindowLongPtr(m_window, GWLP_USERDATA, (LONG_PTR)this);
@@ -1054,8 +1054,8 @@ namespace webview {
 
 class webview : public browser_engine {
 public:
-  webview(bool debug = false, void *wnd = nullptr, bool transparent = false)
-      : browser_engine(debug, wnd, transparent) {}
+  webview(bool debug = false, void *wnd = nullptr, bool transparent = false, bool focusable = true)
+      : browser_engine(debug, wnd, transparent, focusable) {}
 
   void navigate(const std::string url) {
     browser_engine::navigate(url);

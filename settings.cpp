@@ -252,6 +252,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
         {"--window-use-saved-state", {"/modes/window/useSavedState", "bool"}},
         {"--window-icon", {"/modes/window/icon", "string"}},
         {"--window-extend-user-agent-with", {"/modes/window/extendUserAgentWith", "string"}},
+        {"--window-focusable", {"/modes/window/focusable", "bool"}},
         // Chrome mode
         {"--chrome-width", {"/modes/chrome/width", "int"}},
         {"--chrome-height", {"/modes/chrome/height", "int"}},

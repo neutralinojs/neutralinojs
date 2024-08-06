@@ -63,6 +63,7 @@ struct WindowOptions {
     string extendUserAgentWith = "";
     int x = 0;
     int y = 0;
+    bool focusable = false;
 };
 
 namespace handlers {
