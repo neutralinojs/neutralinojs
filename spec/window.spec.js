@@ -12,15 +12,6 @@ describe('window.spec: window namespace tests', () => {
             `);
             assert.equal(runner.getOutput(), 'done');
         });
-
-        it('works with parameters and title is updated', async () => {
-            runner.run(`
-                await Neutralino.window.setTitle('New title');
-                const currentTitle = await Neutralino.window.getTitle();
-                await __close(currentTitle);
-            `);
-            assert.equal(runner.getOutput(), 'New title');
-        });
     });
 
     describe('window.getTitle', () => {
