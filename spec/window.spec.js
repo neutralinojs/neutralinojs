@@ -91,7 +91,7 @@ describe('window.spec: window namespace tests', () => {
     });
 
     describe('window.setFullScreen', () => {
-        it('works without throwing errors and verifies it', async () => {
+        it('works without throwing errors', async () => {
             runner.run(`
                 await Neutralino.window.setFullScreen();
                 await __close('done');
