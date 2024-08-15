@@ -37,7 +37,7 @@ describe('window.spec: window namespace tests', () => {
         it('works without throwing errors', async () => {
             runner.run(`
                 await Neutralino.window.maximize();
-                await __close('done));
+                await __close('done');
             `);
             assert.equal(runner.getOutput(), 'done');
         });
@@ -46,7 +46,7 @@ describe('window.spec: window namespace tests', () => {
             runner.run(`
                 await Neutralino.window.maximize();
                 await Neutralino.window.maximize();
-                await __close(JSON.stringify('done'));
+                await __close('done');
             `);
             assert.equal(runner.getOutput(), 'done')
         })
