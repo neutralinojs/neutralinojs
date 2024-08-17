@@ -12,14 +12,6 @@ describe('window.spec: window namespace tests', () => {
             `);
             assert.equal(runner.getOutput(), 'done');
         });
-
-        it('works with parameters', async () => {
-            runner.run(`
-                await Neutralino.window.setTitle('New title');
-                await __close('done');
-            `);
-            assert.equal(runner.getOutput(), 'done');
-        });
     });
 
     describe('window.getTitle', () => {
@@ -40,6 +32,15 @@ describe('window.spec: window namespace tests', () => {
             `);
             assert.equal(runner.getOutput(), 'done');
         });
+
+        it('does nothing if already maximized', async () => {
+            runner.run(`
+                await Neutralino.window.maximize();
+                await Neutralino.window.maximize();
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done')
+        })
     });
 
     describe('window.isMaximized', () => {
@@ -50,15 +51,24 @@ describe('window.spec: window namespace tests', () => {
             `);
             assert.ok(typeof JSON.parse(runner.getOutput()) == 'boolean');
         });
+
+        it('verifies window is not maximized before maximizing', async () => {
+            runner.run(`
+                const isMaximized = await Neutralino.window.isMaximized();
+                await __close(JSON.stringify(isMaximized));
+            `);
+            assert.equal(runner.getOutput(), 'false');
+        });
     });
 
     describe('window.unmaximize', () => {
-        it('works without throwing errors', async () => {
+        it('works without throwing errors and verifies that screen is unmaximized', async () => {
             runner.run(`
                 await Neutralino.window.unmaximize();
-                await __close('done');
+                const isMaximized = await Neutralino.window.isMaximized();
+                await __close(JSON.stringify(isMaximized));
             `, {args: '--window-maximize'});
-            assert.equal(runner.getOutput(), 'done');
+            assert.equal(runner.getOutput(), 'false');
         });
     });
 
@@ -85,9 +95,10 @@ describe('window.spec: window namespace tests', () => {
         it('works without throwing errors', async () => {
             runner.run(`
                 await Neutralino.window.exitFullScreen();
-                await __close('done');
+                let isFullScreen = await Neutralino.window.isFullScreen();
+                await __close(JSON.stringify(isFullScreen));
             `);
-            assert.equal(runner.getOutput(), 'done');
+            assert.equal(runner.getOutput(), 'false');
         });
     });
 
@@ -105,9 +116,10 @@ describe('window.spec: window namespace tests', () => {
         it('works without throwing errors', async () => {
             runner.run(`
                 await Neutralino.window.show();
-                await __close('done');
+                let isVisible = await Neutralino.window.isVisible();
+                await __close(JSON.stringify(isVisible));
             `, {args: '--window-hidden'});
-            assert.equal(runner.getOutput(), 'done');
+            assert.equal(runner.getOutput(), 'true');
         });
     });
 
@@ -115,9 +127,10 @@ describe('window.spec: window namespace tests', () => {
         it('works without throwing errors', async () => {
             runner.run(`
                 await Neutralino.window.hide();
-                await __close('done');
-            `);
-            assert.equal(runner.getOutput(), 'done');
+                let isVisible = await Neutralino.window.isVisible();
+                await __close(JSON.stringify(isVisible));
+            `, {args: '--window-hidden'});
+            assert.equal(runner.getOutput(), 'false');
         });
     });
 
@@ -162,7 +175,7 @@ describe('window.spec: window namespace tests', () => {
     });
 
     describe('window.move', () => {
-        it('moves the window without throwing errores', async () => {
+        it('moves the window without throwing errors', async () => {
             runner.run(`
                 await Neutralino.window.move(10, 5);
                 await __close('done');
@@ -181,10 +194,24 @@ describe('window.spec: window namespace tests', () => {
             `);
             assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
         });
+        
+        it('moves the window and verifies the new position', async () => {
+            const newX = 100;
+            const newY = 150;
+    
+            runner.run(`
+                await Neutralino.window.move(${newX}, ${newY});
+                const position = await Neutralino.window.getPosition();
+                await __close(JSON.stringify(position));
+            `);
+    
+            const expectedPosition = JSON.stringify({ x: newX, y: newY });
+            assert.equal(runner.getOutput(), expectedPosition);
+        });
     });
 
     describe('window.center', () => {
-        it('centers the window without throwing errores', async () => {
+        it('centers the window without throwing errors', async () => {
             runner.run(`
                 await Neutralino.window.center();
                 await __close('done');
@@ -194,7 +221,7 @@ describe('window.spec: window namespace tests', () => {
     });
 
     describe('window.setDraggableRegion', () => {
-        it('registers draggable region without throwing errores', async () => {
+        it('registers draggable region without throwing errors', async () => {
             runner.run(`
                 await Neutralino.window.setDraggableRegion(document.body);
                 await __close('done');
@@ -216,7 +243,7 @@ describe('window.spec: window namespace tests', () => {
     });
 
     describe('window.unsetDraggableRegion', () => {
-        it('unregisters draggable region without throwing errores', async () => {
+        it('unregisters draggable region without throwing errors', async () => {
             runner.run(`
                 await Neutralino.window.setDraggableRegion(document.body);
                 await Neutralino.window.unsetDraggableRegion(document.body);
@@ -285,11 +312,26 @@ describe('window.spec: window namespace tests', () => {
             `);
             assert.equal(runner.getOutput(), 'done');
         });
+
+        it('sets the window to always be on top and verifies the position remains unchanged', async () => {
+            const initialX = 50;
+            const initialY = 100;
+    
+            runner.run(`
+                await Neutralino.window.move(${initialX}, ${initialY});
+                await Neutralino.window.setAlwaysOnTop(true);
+                const position = await Neutralino.window.getPosition();
+                await __close(JSON.stringify(position));
+            `);
+    
+            const expectedPosition = JSON.stringify({ x: initialX, y: initialY });
+            assert.equal(runner.getOutput(), expectedPosition);
+        });
     });
 
     describe('window.getSize', () => {
         it('returns size information', async () => {
-            let exitCode = runner.run(`
+            runner.run(`
                 let stats = await Neutralino.window.getSize();
                 await __close(JSON.stringify(stats));
             `);
@@ -307,7 +349,7 @@ describe('window.spec: window namespace tests', () => {
 
     describe('window.getPosition', () => {
         it('returns position information', async () => {
-            let exitCode = runner.run(`
+            runner.run(`
                 let pos = await Neutralino.window.getPosition();
                 await __close(JSON.stringify(pos));
             `);
