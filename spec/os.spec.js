@@ -335,12 +335,12 @@ describe('os.spec: os namespace tests', () => {
         });
     
         it('retrieves value with special characters', async () => {
-            process.env.SPECIAL_VAR = '@#$%^&*';
+            process.env.SPECIAL_VAR = '@#$%^&*☊☄';
             runner.run(`
                 let value = await Neutralino.os.getEnv('SPECIAL_VAR');
                 await __close(value);
             `);
-            assert.equal(runner.getOutput(), '@#$%^&*');
+            assert.equal(runner.getOutput(), '@#$%^&*☊☄');
         });
     });
 
@@ -535,7 +535,6 @@ describe('os.spec: os namespace tests', () => {
             runner.run(`
                 let documentsPath;
                 documentsPath = await Neutralino.os.getPath('documents');
-                console.log('Documents path:', documentsPath);
                 await __close(documentsPath);
             `);
             let output = runner.getOutput().trim();

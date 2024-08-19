@@ -1094,4 +1094,193 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             assert.ok(typeof watchers[0].path == 'string');
         });
     });
+    
+    describe('filesystem.getRelativePath', () => {
+        it('returns an error if the path field is missing', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.getRelativePath();
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+        });
+
+        it('calculates relative path with a custom base path', async () => {
+            runner.run(`
+                let base = NL_PATH + '/.tmp';
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Dummy content');
+                let response = await Neutralino.filesystem.getRelativePath(NL_PATH + '/.tmp/test.txt', base);
+                await __close(JSON.stringify(response));
+            `);
+            const output = JSON.parse(runner.getOutput());
+            assert.equal(output, 'test.txt');
+        });
+    
+        it('handles paths that are equal to the base path', async () => {
+            runner.run(`
+                let base = NL_PATH + '/folder';
+                await Neutralino.filesystem.writeFile(NL_PATH + '/folder', 'Dummy content');
+                let response = await Neutralino.filesystem.getRelativePath(NL_PATH + '/folder', NL_PATH + '/folder');
+                await __close(JSON.stringify(response));
+            `);
+            const output = JSON.parse(runner.getOutput());
+            assert.equal(output, '.');
+        });
+    });
+
+    describe('filesystem.getPathParts', () => {
+        it('returns path parts for a valid file path with no extension', async () => {
+            runner.run(`
+                let path = NL_PATH + '/folder/file';
+                let response = await Neutralino.filesystem.getPathParts(path);
+                await __close(JSON.stringify(response));
+            `);
+            const output = JSON.parse(runner.getOutput());
+            assert.deepEqual(output, {
+                extension: '',
+                filename: 'file',
+                parentPath: '../bin/folder',
+                relativePath: '../bin/folder/file',
+                rootDirectory: '',
+                rootName: '',
+                rootPath: '',
+                stem: 'file'
+              });
+        });
+    
+        it('returns path parts for a file path with a single dot extension', async () => {
+            runner.run(`
+                let path = NL_PATH + '/folder/.hiddenfile';
+                let response = await Neutralino.filesystem.getPathParts(path);
+                await __close(JSON.stringify(response));
+            `);
+            const output = JSON.parse(runner.getOutput());
+            assert.deepEqual(output, {
+                extension: '',
+                filename: '.hiddenfile',
+                parentPath: '../bin/folder',
+                relativePath: '../bin/folder/.hiddenfile',
+                rootDirectory: '',
+                rootName: '',
+                rootPath: '',
+                stem: '.hiddenfile'
+              });
+        });
+    
+        it('returns path parts for a path with special characters', async () => {
+            runner.run(`
+                let path = NL_PATH + '/folder/special@file#name.txt';
+                let response = await Neutralino.filesystem.getPathParts(path);
+                await __close(JSON.stringify(response));
+            `);
+            const output = JSON.parse(runner.getOutput());
+            assert.deepEqual(output, {
+                extension: '.txt',
+                filename: 'special@file#name.txt',
+                parentPath: '../bin/folder',
+                relativePath: '../bin/folder/special@file#name.txt',
+                rootDirectory: '',
+                rootName: '',
+                rootPath: '',
+                stem: 'special@file#name'
+              });
+        });
+    
+        it('returns path parts for a root path', async () => {
+            runner.run(`
+                let path = NL_PATH;
+                let response = await Neutralino.filesystem.getPathParts(path);
+                await __close(JSON.stringify(response));
+            `);
+            const output = JSON.parse(runner.getOutput());
+            assert.deepEqual(output, {
+                extension: '',
+                filename: 'bin',
+                parentPath: '..',
+                relativePath: '../bin',
+                rootDirectory: '',
+                rootName: '',
+                rootPath: '',
+                stem: 'bin'
+              });
+        });
+    
+        it('returns path parts for a path with a root directory', async () => {
+            runner.run(`
+                let path = NL_PATH + '/root/directory/file.txt';
+                let response = await Neutralino.filesystem.getPathParts(path);
+                await __close(JSON.stringify(response));
+            `);
+            const output = JSON.parse(runner.getOutput());
+            assert.deepEqual(output, {
+                extension: '.txt',
+                filename: 'file.txt',
+                parentPath: '../bin/root/directory',
+                relativePath: '../bin/root/directory/file.txt',
+                rootDirectory: '',
+                rootName: '',
+                rootPath: '',
+                stem: 'file'
+              });
+        });
+    
+        it('returns path parts for a path with multiple nested directories', async () => {
+            runner.run(`
+                let path = NL_PATH + '/nested/dir/structure/file.ext';
+                let response = await Neutralino.filesystem.getPathParts(path);
+                await __close(JSON.stringify(response));
+            `);
+            const output = JSON.parse(runner.getOutput());
+            assert.deepEqual(output, {
+                extension: '.ext',
+                filename: 'file.ext',
+                parentPath: '../bin/nested/dir/structure',
+                relativePath: '../bin/nested/dir/structure/file.ext',
+                rootDirectory: '',
+                rootName: '',
+                rootPath: '',
+                stem: 'file'
+              });
+        });
+    
+        it('returns path parts for a path with a filename that starts with a dot', async () => {
+            runner.run(`
+                let path = NL_PATH + '/folder/.config/file.txt';
+                let response = await Neutralino.filesystem.getPathParts(path);
+                await __close(JSON.stringify(response));
+            `);
+            const output = JSON.parse(runner.getOutput());
+            assert.deepEqual(output, {
+                extension: '.txt',
+                filename: 'file.txt',
+                parentPath: '../bin/folder/.config',
+                relativePath: '../bin/folder/.config/file.txt',
+                rootDirectory: '',
+                rootName: '',
+                rootPath: '',
+                stem: 'file'
+              });
+        });
+    
+        it('returns path parts for a path with absolute path separators', async () => {
+            runner.run(`
+                let path = '/absolute/path/to/file.txt';
+                let response = await Neutralino.filesystem.getPathParts(path);
+                await __close(JSON.stringify(response));
+            `);
+            const output = JSON.parse(runner.getOutput());
+            assert.deepEqual(output, {
+                extension: '.txt',
+                filename: 'file.txt',
+                parentPath: '/absolute/path/to',
+                relativePath: 'absolute/path/to/file.txt',
+                rootDirectory: '/',
+                rootName: '',
+                rootPath: '/',
+                stem: 'file'
+              });
+        });
+    });
 });
