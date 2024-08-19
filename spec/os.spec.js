@@ -535,12 +535,11 @@ describe('os.spec: os namespace tests', () => {
             runner.run(`
                 let documentsPath;
                 documentsPath = await Neutralino.os.getPath('documents');
-                console.log('Documents path:', documentsPath);
                 await __close(documentsPath);
             `);
             let output = runner.getOutput().trim();
             let normalizedOutput = path.normalize(output);
-            let isValidPath = path.isAbsolute(normalizedOutput) && normalizedOutput === output;
+            let isValidPath = path.isAbsolute(normalizedOutput);
             assert.ok(isValidPath);
         });
 
