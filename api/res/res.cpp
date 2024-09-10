@@ -46,5 +46,26 @@ json getFiles(const json &input) {
     return output;
 }
 
+json extractFile(const json &input) {
+    json output;
+    if(!resources::isBundleMode()) {
+        output["error"] = errors::makeErrorPayload(errors::NE_RS_APIRQRF);
+        return output;
+    }
+    if(!helpers::hasRequiredFields(input, {"path", "destination"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    string path = input["path"].get<string>();
+    string destination = input["destination"].get<string>();
+    if(resources::extractFile(path, destination)) {
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_RS_TREEGER);
+    }
+    return output;
+}
+
 } // namespace controllers
 } // namespace res

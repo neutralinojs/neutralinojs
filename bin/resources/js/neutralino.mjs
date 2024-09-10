@@ -879,9 +879,13 @@ var clipboard = /*#__PURE__*/Object.freeze({
 function getFiles() {
     return sendMessage('resources.getFiles');
 }
+function extractFile(path, destination) {
+    return sendMessage('resources.extractFile', { path, destination });
+}
 
 var resources = /*#__PURE__*/Object.freeze({
     __proto__: null,
+    extractFile: extractFile,
     getFiles: getFiles
 });
 

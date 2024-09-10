@@ -133,6 +133,7 @@ map<string, router::NativeMethod> methodMap = {
     {"clipboard.clear", clipboard::controllers::clear},
     // Neutralino.resources
     {"resources.getFiles", res::controllers::getFiles},
+    {"resources.extractFile", res::controllers::extractFile},
     // Neutralino.custom
     {"custom.getMethods", custom::controllers::getMethods},
     // {"custom.add", custom::controllers::add} // Sample custom method

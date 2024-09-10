@@ -882,9 +882,13 @@ var Neutralino = (function (exports) {
     function getFiles() {
         return sendMessage('resources.getFiles');
     }
+    function extractFile(path, destination) {
+        return sendMessage('resources.extractFile', { path, destination });
+    }
 
     var resources = {
         __proto__: null,
+        extractFile: extractFile,
         getFiles: getFiles
     };
 

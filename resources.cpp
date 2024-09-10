@@ -105,12 +105,15 @@ bool __makeFileTree() {
     return fileTree != nullptr;
 }
 
-void extractFile(const string &filename, const string &outputFilename) {
+bool extractFile(const string &filename, const string &outputFilename) {
     fs::FileReaderResult fileReaderResult = resources::getFile(filename);
+    if(fileReaderResult.status != errors::NE_ST_OK) {
+      return false;
+    }
     fs::FileWriterOptions fileWriterOptions;
     fileWriterOptions.filename = outputFilename;
     fileWriterOptions.data = fileReaderResult.data;
-    fs::writeFile(fileWriterOptions);
+    return fs::writeFile(fileWriterOptions);
 }
 
 fs::FileReaderResult getFile(const string &filename) {

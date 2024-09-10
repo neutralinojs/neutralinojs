@@ -15,6 +15,7 @@ namespace res {
 namespace controllers {
 
 json getFiles(const json &input);
+json extractFile(const json &input);
 
 } // namespace controllers
 
