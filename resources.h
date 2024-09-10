@@ -18,7 +18,10 @@ void extractFile(const string &filename, const string &outputFilename);
 void init();
 void setMode(const resources::ResourceMode mode);
 resources::ResourceMode getMode();
+bool isDirMode();
+bool isBundleMode();
 string getModeString();
+json getFileTree();
 
 } // namespace resources
 

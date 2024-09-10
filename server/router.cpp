@@ -24,6 +24,7 @@
 #include "api/events/events.h"
 #include "api/extensions/extensions.h"
 #include "api/clipboard/clipboard.h"
+#include "api/res/res.h"
 #include "api/custom/custom.h"
 
 #if defined(__APPLE__)
@@ -130,6 +131,8 @@ map<string, router::NativeMethod> methodMap = {
     {"clipboard.writeText", clipboard::controllers::writeText},
     {"clipboard.writeImage", clipboard::controllers::writeImage},
     {"clipboard.clear", clipboard::controllers::clear},
+    // Neutralino.resources
+    {"resources.getFiles", res::controllers::getFiles},
     // Neutralino.custom
     {"custom.getMethods", custom::controllers::getMethods},
     // {"custom.add", custom::controllers::add} // Sample custom method

@@ -563,15 +563,16 @@ var Neutralino = (function (exports) {
     function center() {
         return sendMessage('window.center');
     }
-    function setDraggableRegion(domElementOrId) {
+    function setDraggableRegion(domElementOrId, options = {}) {
         return new Promise((resolve, reject) => {
             const draggableRegion = domElementOrId instanceof Element ?
                 domElementOrId : document.getElementById(domElementOrId);
             let initialClientX = 0;
             let initialClientY = 0;
             let absDragMovementDistance = 0;
-            let isPointerCaptured = false;
+            let shouldReposition = false;
             let lastMoveTimestamp = performance.now();
+            let isPointerCaptured = options.alwaysCapture;
             if (!draggableRegion) {
                 return reject({
                     code: 'NE_WD_DOMNOTF',
@@ -586,10 +587,24 @@ var Neutralino = (function (exports) {
             }
             draggableRegion.addEventListener('pointerdown', startPointerCapturing);
             draggableRegion.addEventListener('pointerup', endPointerCapturing);
+            draggableRegion.addEventListener('pointercancel', endPointerCapturing);
             draggableRegions.set(draggableRegion, { pointerdown: startPointerCapturing, pointerup: endPointerCapturing });
             function onPointerMove(evt) {
                 return __awaiter(this, void 0, void 0, function* () {
-                    if (isPointerCaptured) {
+                    var _a;
+                    // Get absolute drag distance from the starting point
+                    const dx = evt.clientX - initialClientX, dy = evt.clientY - initialClientY;
+                    absDragMovementDistance = Math.sqrt(dx * dx + dy * dy);
+                    // Only start pointer capturing when the user dragged more than a certain amount of distance
+                    // This ensures that the user can also click on the dragable area, e.g. if the area is menu / navbar
+                    if (absDragMovementDistance >= ((_a = options.dragMinDistance) !== null && _a !== void 0 ? _a : 10)) {
+                        shouldReposition = true;
+                        if (!isPointerCaptured) {
+                            draggableRegion.setPointerCapture(evt.pointerId);
+                            isPointerCaptured = true;
+                        }
+                    }
+                    if (shouldReposition) {
                         const currentMilliseconds = performance.now();
                         const timeTillLastMove = currentMilliseconds - lastMoveTimestamp;
                         // Limit move calls to 1 per every 5ms - TODO: introduce constant instead of magic number?
@@ -602,14 +617,6 @@ var Neutralino = (function (exports) {
                         yield move(evt.screenX - initialClientX, evt.screenY - initialClientY);
                         return;
                     }
-                    // Add absolute drag distance
-                    absDragMovementDistance = Math.sqrt(evt.movementX * evt.movementX + evt.movementY * evt.movementY);
-                    // Only start pointer capturing when the user dragged more than a certain amount of distance
-                    // This ensures that the user can also click on the dragable area, e.g. if the area is menu / navbar
-                    if (absDragMovementDistance >= 10) { // TODO: introduce constant instead of magic number?
-                        isPointerCaptured = true;
-                        draggableRegion.setPointerCapture(evt.pointerId);
-                    }
                 });
             }
             function startPointerCapturing(evt) {
@@ -618,6 +625,9 @@ var Neutralino = (function (exports) {
                 initialClientX = evt.clientX;
                 initialClientY = evt.clientY;
                 draggableRegion.addEventListener('pointermove', onPointerMove);
+                if (options.alwaysCapture) {
+                    draggableRegion.setPointerCapture(evt.pointerId);
+                }
             }
             function endPointerCapturing(evt) {
                 draggableRegion.removeEventListener('pointermove', onPointerMove);
@@ -648,6 +658,7 @@ var Neutralino = (function (exports) {
             const { pointerdown, pointerup } = draggableRegions.get(draggableRegion);
             draggableRegion.removeEventListener('pointerdown', pointerdown);
             draggableRegion.removeEventListener('pointerup', pointerup);
+            draggableRegion.removeEventListener('pointercancel', pointerup);
             draggableRegions.delete(draggableRegion);
             resolve({
                 success: true,
@@ -868,6 +879,15 @@ var Neutralino = (function (exports) {
         writeText: writeText
     };
 
+    function getFiles() {
+        return sendMessage('resources.getFiles');
+    }
+
+    var resources = {
+        __proto__: null,
+        getFiles: getFiles
+    };
+
     function getMethods() {
         return sendMessage('custom.getMethods');
     }
@@ -877,7 +897,7 @@ var Neutralino = (function (exports) {
         getMethods: getMethods
     };
 
-    var version = "5.2.0";
+    var version = "5.3.0";
 
     let initialized = false;
     function init(options = {}) {
@@ -923,6 +943,7 @@ var Neutralino = (function (exports) {
     exports.filesystem = filesystem;
     exports.init = init;
     exports.os = os;
+    exports.resources = resources;
     exports.storage = storage;
     exports.updater = updater;
     exports.window = window$1;

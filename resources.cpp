@@ -114,14 +114,14 @@ void extractFile(const string &filename, const string &outputFilename) {
 }
 
 fs::FileReaderResult getFile(const string &filename) {
-    if(resources::getMode() == resources::ResourceModeBundle) {
+    if(resources::isBundleMode()) {
         return __getFileFromBundle(filename);
     }
     return fs::readFile(settings::joinAppPath(filename));
 }
 
 void init() {
-    if(resources::getMode() == resources::ResourceModeDir) {
+    if(resources::isDirMode()) {
         return;
     }
     bool resourceLoaderStatus = __makeFileTree();
@@ -138,8 +138,20 @@ resources::ResourceMode getMode() {
     return mode;
 }
 
+bool isDirMode() {
+   return resources::getMode() == resources::ResourceModeDir;
+}
+
+bool isBundleMode() {
+   return resources::getMode() == resources::ResourceModeBundle;
+}
+
+json getFileTree() {
+   return fileTree;
+}
+
 string getModeString() {
-    return mode == resources::ResourceModeDir ? "directory" : "bundle";
+    return resources::isDirMode() ? "directory" : "bundle";
 }
 
 } // namespace resources

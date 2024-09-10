@@ -614,7 +614,7 @@ json setTray(const json &input) {
         string iconPath = input["icon"].get<string>();
         #if defined(__linux__)
         string fullIconPath;
-        if(resources::getMode() == resources::ResourceModeDir) {
+        if(resources::isDirMode()) {
             fullIconPath = string(filesystem::absolute(settings::joinAppPath(""))) + iconPath;
         }
         else {
