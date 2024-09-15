@@ -10,6 +10,8 @@
 
 #include "api/res/res.h"
 
+#include "lib/base64/base64.hpp"
+
 using namespace std;
 using json = nlohmann::json;
 
@@ -81,6 +83,25 @@ json readFile(const json &input) {
     }
     else {
         output["returnValue"] = fileReaderResult.data;
+        output["success"] = true;
+    }
+    return output;
+}
+
+json readBinaryFile(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    string path = input["path"].get<string>();
+    fs::FileReaderResult fileReaderResult;
+    fileReaderResult = resources::getFile(path);
+    if(fileReaderResult.status != errors::NE_ST_OK) {
+        output["error"] = errors::makeErrorPayload(fileReaderResult.status, path);
+    }
+    else {
+        output["returnValue"] = base64::to_base64(fileReaderResult.data);
         output["success"] = true;
     }
     return output;

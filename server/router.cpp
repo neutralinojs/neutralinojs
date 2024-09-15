@@ -135,6 +135,7 @@ map<string, router::NativeMethod> methodMap = {
     {"resources.getFiles", res::controllers::getFiles},
     {"resources.extractFile", res::controllers::extractFile},
     {"resources.readFile", res::controllers::readFile},
+    {"resources.readBinaryFile", res::controllers::readBinaryFile},
     // Neutralino.custom
     {"custom.getMethods", custom::controllers::getMethods},
     // {"custom.add", custom::controllers::add} // Sample custom method

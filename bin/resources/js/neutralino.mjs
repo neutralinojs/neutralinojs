@@ -264,7 +264,7 @@ function appendBinaryFile(path, data) {
 function readFile$1(path, options) {
     return sendMessage('filesystem.readFile', Object.assign({ path }, options));
 }
-function readBinaryFile(path, options) {
+function readBinaryFile$1(path, options) {
     return new Promise((resolve, reject) => {
         sendMessage('filesystem.readBinaryFile', Object.assign({ path }, options))
             .then((base64Data) => {
@@ -330,7 +330,7 @@ var filesystem = /*#__PURE__*/Object.freeze({
     getWatchers: getWatchers,
     move: move$1,
     openFile: openFile,
-    readBinaryFile: readBinaryFile,
+    readBinaryFile: readBinaryFile$1,
     readDirectory: readDirectory,
     readFile: readFile$1,
     remove: remove,
@@ -885,11 +885,23 @@ function extractFile(path, destination) {
 function readFile(path) {
     return sendMessage('resources.readFile', { path });
 }
+function readBinaryFile(path) {
+    return new Promise((resolve, reject) => {
+        sendMessage('resources.readBinaryFile', { path })
+            .then((base64Data) => {
+            resolve(base64ToBytesArray(base64Data));
+        })
+            .catch((error) => {
+            reject(error);
+        });
+    });
+}
 
 var resources = /*#__PURE__*/Object.freeze({
     __proto__: null,
     extractFile: extractFile,
     getFiles: getFiles,
+    readBinaryFile: readBinaryFile,
     readFile: readFile
 });
 

@@ -17,6 +17,7 @@ namespace controllers {
 json getFiles(const json &input);
 json extractFile(const json &input);
 json readFile(const json &input);
+json readBinaryFile(const json &input);
 
 } // namespace controllers
 
