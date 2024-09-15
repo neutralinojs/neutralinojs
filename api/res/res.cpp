@@ -71,6 +71,10 @@ json extractFile(const json &input) {
 
 json readFile(const json &input) {
     json output;
+    if(!resources::isBundleMode()) {
+        output["error"] = errors::makeErrorPayload(errors::NE_RS_APIRQRF);
+        return output;
+    }
     if(!helpers::hasRequiredFields(input, {"path"})) {
         output["error"] = errors::makeMissingArgErrorPayload();
         return output;
@@ -90,6 +94,10 @@ json readFile(const json &input) {
 
 json readBinaryFile(const json &input) {
     json output;
+    if(!resources::isBundleMode()) {
+        output["error"] = errors::makeErrorPayload(errors::NE_RS_APIRQRF);
+        return output;
+    }
     if(!helpers::hasRequiredFields(input, {"path"})) {
         output["error"] = errors::makeMissingArgErrorPayload();
         return output;
