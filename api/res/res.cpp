@@ -62,7 +62,26 @@ json extractFile(const json &input) {
         output["success"] = true;
     }
     else {
-        output["error"] = errors::makeErrorPayload(errors::NE_RS_TREEGER);
+        output["error"] = errors::makeErrorPayload(errors::NE_RS_FILNOTF);
+    }
+    return output;
+}
+
+json readFile(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    string path = input["path"].get<string>();
+    fs::FileReaderResult fileReaderResult;
+    fileReaderResult = resources::getFile(path);
+    if(fileReaderResult.status != errors::NE_ST_OK) {
+        output["error"] = errors::makeErrorPayload(fileReaderResult.status, path);
+    }
+    else {
+        output["returnValue"] = fileReaderResult.data;
+        output["success"] = true;
     }
     return output;
 }

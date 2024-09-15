@@ -71,7 +71,7 @@ fs::FileReaderResult __getFileFromBundle(const string &filename) {
         asarArchive.close();
    }
    else {
-        fileReaderResult.status = errors::NE_RS_TREEGER;
+        fileReaderResult.status = errors::NE_RS_FILNOTF;
    }
    return fileReaderResult;
 }

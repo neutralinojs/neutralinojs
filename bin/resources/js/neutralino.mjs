@@ -261,7 +261,7 @@ function appendBinaryFile(path, data) {
         data: arrayBufferToBase64(data)
     });
 }
-function readFile(path, options) {
+function readFile$1(path, options) {
     return sendMessage('filesystem.readFile', Object.assign({ path }, options));
 }
 function readBinaryFile(path, options) {
@@ -332,7 +332,7 @@ var filesystem = /*#__PURE__*/Object.freeze({
     openFile: openFile,
     readBinaryFile: readBinaryFile,
     readDirectory: readDirectory,
-    readFile: readFile,
+    readFile: readFile$1,
     remove: remove,
     removeWatcher: removeWatcher,
     updateOpenedFile: updateOpenedFile,
@@ -882,11 +882,15 @@ function getFiles() {
 function extractFile(path, destination) {
     return sendMessage('resources.extractFile', { path, destination });
 }
+function readFile(path) {
+    return sendMessage('resources.readFile', { path });
+}
 
 var resources = /*#__PURE__*/Object.freeze({
     __proto__: null,
     extractFile: extractFile,
-    getFiles: getFiles
+    getFiles: getFiles,
+    readFile: readFile
 });
 
 function getMethods() {

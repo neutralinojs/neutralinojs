@@ -264,7 +264,7 @@ var Neutralino = (function (exports) {
             data: arrayBufferToBase64(data)
         });
     }
-    function readFile(path, options) {
+    function readFile$1(path, options) {
         return sendMessage('filesystem.readFile', Object.assign({ path }, options));
     }
     function readBinaryFile(path, options) {
@@ -335,7 +335,7 @@ var Neutralino = (function (exports) {
         openFile: openFile,
         readBinaryFile: readBinaryFile,
         readDirectory: readDirectory,
-        readFile: readFile,
+        readFile: readFile$1,
         remove: remove,
         removeWatcher: removeWatcher,
         updateOpenedFile: updateOpenedFile,
@@ -885,11 +885,15 @@ var Neutralino = (function (exports) {
     function extractFile(path, destination) {
         return sendMessage('resources.extractFile', { path, destination });
     }
+    function readFile(path) {
+        return sendMessage('resources.readFile', { path });
+    }
 
     var resources = {
         __proto__: null,
         extractFile: extractFile,
-        getFiles: getFiles
+        getFiles: getFiles,
+        readFile: readFile
     };
 
     function getMethods() {
