@@ -9,6 +9,11 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### API: resources
 - Exports `getFiles()`, `extractFile(path, dest)`, `readFile(path)`, and `readBinaryFile(path)` functions via the `resources` module for reading the files embedded in the `resources.neu` resources bundle. These functions works only if the framework loaded resources from the resource bundle -- they will throw `NE_RS_APIRQRF` if the framework loaded resources from the resources directory.
 
+### Improvements/bugfixes
+
+- Fix issues with the `clipboard.writeImage()` function on Windows.
+- Fix the unwanted delay with the `window.exitProcessOnClose` configuration option on Windows.
+
 ## v5.3.0
 
 ### Configuration: window transparency on Windows
