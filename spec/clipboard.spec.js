@@ -222,6 +222,8 @@ describe('clipboard.spec: clipboard namespace tests', () => {
                     redShift: 16,
                     greenShift: 8,
                     blueShift: 0,
+                    alphaMask: 0,
+                    alphaShift: 0,
                     data: new ArrayBuffer(40000)
                 };
                 await Neutralino.clipboard.writeImage(imageData);
