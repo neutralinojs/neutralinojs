@@ -278,12 +278,7 @@ void show() {
     ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle,
                 "setIsVisible:"_sel, true);
     #elif defined(_WIN32)
-    if (IsIconic(windowHandle)) {
-        ShowWindow(windowHandle, SW_RESTORE);
-    } else {
-        ShowWindow(windowHandle, SW_SHOW);
-    }
-
+    ShowWindow(windowHandle, SW_SHOW);
     SetWindowPos(windowHandle, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
 
     if (!SetForegroundWindow(windowHandle)) {
