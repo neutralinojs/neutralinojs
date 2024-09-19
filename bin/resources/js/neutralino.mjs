@@ -530,6 +530,9 @@ function isMaximized() {
 function minimize() {
     return sendMessage('window.minimize');
 }
+function unminimize() {
+    return sendMessage('window.unminimize');
+}
 function setFullScreen() {
     return sendMessage('window.setFullScreen');
 }
@@ -748,6 +751,7 @@ var window$1 = /*#__PURE__*/Object.freeze({
     setTitle: setTitle,
     show: show,
     unmaximize: unmaximize,
+    unminimize: unminimize,
     unsetDraggableRegion: unsetDraggableRegion
 });
 

@@ -53,6 +53,7 @@ map<string, router::NativeMethod> methodMap = {
     {"window.isMaximized", window::controllers::isMaximized},
     {"window.unmaximize", window::controllers::unmaximize},
     {"window.minimize", window::controllers::minimize},
+    {"window.unminimize", window::controllers::unminimize},
     {"window.isVisible", window::controllers::isVisible},
     {"window.show", window::controllers::show},
     {"window.hide", window::controllers::hide},

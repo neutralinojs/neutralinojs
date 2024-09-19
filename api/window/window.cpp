@@ -682,6 +682,20 @@ json minimize(const json &input) {
     return output;
 }
 
+json unminimize(const json &input) {
+    json output;
+    #if defined(__linux__) || defined(__FreeBSD__)
+    gtk_window_present(GTK_WINDOW(windowHandle));
+    #elif defined(_WIN32)
+    ShowWindow(windowHandle, SW_RESTORE);
+    #elif defined(__APPLE__)
+    ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
+        "deminiaturize:"_sel, NULL);
+    #endif
+    output["success"] = true;
+    return output;
+}
+
 json show(const json &input) {
     json output;
     #if defined(__linux__) || defined(__FreeBSD__)
