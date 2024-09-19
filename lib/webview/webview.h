@@ -34,6 +34,9 @@
 #define WEBVIEW_WINDOW_FOCUS 1
 #define WEBVIEW_WINDOW_BLUR 2
 #define WEBVIEW_WINDOW_FULLSCREEN 3 // GTK only
+#define WEBVIEW_WINDOW_UNFULLSCREEN 4 // GTK only
+#define WEBVIEW_WINDOW_MINIMIZED 5 // GTK only
+#define WEBVIEW_WINDOW_UNMINIMIZED 6 // GTK only
 #define WEBVIEW_WINDOW_UNDEFINED 100 // GTK only
 
 #ifndef WEBVIEW_HEADER
@@ -151,13 +154,17 @@ public:
         G_CALLBACK(+[](GtkWidget *widget, GdkEventWindowState *event, gpointer user_data) {
             if(!windowStateChange) return;
 
-            if(event->changed_mask & GDK_WINDOW_STATE_FULLSCREEN)
-                windowStateChange(WEBVIEW_WINDOW_FULLSCREEN);
+            if(event->changed_mask & GDK_WINDOW_STATE_FULLSCREEN) {
+                windowStateChange(event->new_window_state & GDK_WINDOW_STATE_FULLSCREEN ? 
+                  WEBVIEW_WINDOW_FULLSCREEN : WEBVIEW_WINDOW_UNFULLSCREEN);
+            }
+            else if(event->changed_mask & GDK_WINDOW_STATE_ICONIFIED) {
+                windowStateChange(event->new_window_state & GDK_WINDOW_STATE_ICONIFIED ? 
+                  WEBVIEW_WINDOW_MINIMIZED : WEBVIEW_WINDOW_UNMINIMIZED);
+            }
             else if(event->changed_mask & GDK_WINDOW_STATE_FOCUSED) {
-                if(event->new_window_state & GDK_WINDOW_STATE_FOCUSED)
-                  windowStateChange(WEBVIEW_WINDOW_FOCUS);
-                else
-                  windowStateChange(WEBVIEW_WINDOW_BLUR);
+                windowStateChange(event->new_window_state & GDK_WINDOW_STATE_FOCUSED ? 
+                  WEBVIEW_WINDOW_FOCUS : WEBVIEW_WINDOW_BLUR);
             }
             else
                 windowStateChange(WEBVIEW_WINDOW_UNDEFINED);

@@ -50,6 +50,7 @@ namespace window {
 webview::webview *nativeWindow;
 #if defined(__linux__) || defined(__FreeBSD__)
 bool isGtkWindowFullScreen = false;
+bool isGtkWindowMinimized = false;
 
 #elif defined(_WIN32)
 bool isWinWindowFullScreen = false;
@@ -65,9 +66,6 @@ NEU_W_HANDLE windowHandle;
 namespace handlers {
 
 void windowStateChange(int state) {
-    #if defined(__linux__) || defined(__FreeBSD__)
-        isGtkWindowFullScreen = state == WEBVIEW_WINDOW_FULLSCREEN;
-    #endif
     switch(state) {
         case WEBVIEW_WINDOW_CLOSE:
             if(windowProps.exitProcessOnClose ||
@@ -83,6 +81,27 @@ void windowStateChange(int state) {
             break;
         case WEBVIEW_WINDOW_BLUR:
             events::dispatch("windowBlur", nullptr);
+            break;
+        case WEBVIEW_WINDOW_FULLSCREEN:
+            #if defined(__linux__) || defined(__FreeBSD__)
+                isGtkWindowFullScreen = true;
+            #endif
+            break;
+        case WEBVIEW_WINDOW_UNFULLSCREEN:
+            #if defined(__linux__) || defined(__FreeBSD__)
+                isGtkWindowFullScreen = false;
+            #endif
+            break;
+        case WEBVIEW_WINDOW_MINIMIZED:
+            #if defined(__linux__) || defined(__FreeBSD__)
+                isGtkWindowMinimized = true;
+            #endif
+            break;
+        case WEBVIEW_WINDOW_UNMINIMIZED:
+            #if defined(__linux__) || defined(__FreeBSD__)
+                isGtkWindowMinimized = false;
+            #endif
+            break;
     }
 }
 
@@ -687,6 +706,22 @@ json unminimize(const json &input) {
     ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
         "deminiaturize:"_sel, NULL);
     #endif
+    output["success"] = true;
+    return output;
+}
+
+json isMinimized(const json &input) {
+    json output;
+    bool minimized = false;
+    #if defined(__linux__) || defined(__FreeBSD__)
+    minimized = isGtkWindowMinimized;
+    #elif defined(_WIN32)
+    minimized = IsIconic(windowHandle) == 1;
+    #elif defined(__APPLE__)
+    minimized = ((bool (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
+        "isMiniaturized"_sel, NULL);
+    #endif
+    output["returnValue"] = minimized;
     output["success"] = true;
     return output;
 }

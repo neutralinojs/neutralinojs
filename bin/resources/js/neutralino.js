@@ -536,6 +536,9 @@ var Neutralino = (function (exports) {
     function unminimize() {
         return sendMessage('window.unminimize');
     }
+    function isMinimized() {
+        return sendMessage('window.isMinimized');
+    }
     function setFullScreen() {
         return sendMessage('window.setFullScreen');
     }
@@ -742,6 +745,7 @@ var Neutralino = (function (exports) {
         hide: hide,
         isFullScreen: isFullScreen,
         isMaximized: isMaximized,
+        isMinimized: isMinimized,
         isVisible: isVisible,
         maximize: maximize,
         minimize: minimize,

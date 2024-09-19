@@ -104,6 +104,7 @@ json unmaximize(const json &input);
 json isMaximized(const json &input);
 json minimize(const json &input);
 json unminimize(const json &input);
+json isMinimized(const json &input);
 json isVisible(const json &input);
 json show(const json &input);
 json hide(const json &input);

@@ -533,6 +533,9 @@ function minimize() {
 function unminimize() {
     return sendMessage('window.unminimize');
 }
+function isMinimized() {
+    return sendMessage('window.isMinimized');
+}
 function setFullScreen() {
     return sendMessage('window.setFullScreen');
 }
@@ -739,6 +742,7 @@ var window$1 = /*#__PURE__*/Object.freeze({
     hide: hide,
     isFullScreen: isFullScreen,
     isMaximized: isMaximized,
+    isMinimized: isMinimized,
     isVisible: isVisible,
     maximize: maximize,
     minimize: minimize,
