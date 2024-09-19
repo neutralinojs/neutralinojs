@@ -578,34 +578,32 @@ json setTray(const json &input) {
     GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
     #endif
     json output;
-    int menuCount = 1;
 
     if(helpers::hasField(input, "menuItems")) {
-        menuCount += input["menuItems"].size();
-    }
+        int menuCount = input["menuItems"].size();
+        menus[menuCount - 1] = { nullptr, nullptr, 0, 0, nullptr, nullptr };
 
-    menus[menuCount - 1] = { nullptr, nullptr, 0, 0, nullptr, nullptr };
+        int i = 0;
+        for (const auto &menuItem: input["menuItems"]) {
+            char *id = nullptr;
+            char *text = helpers::cStrCopy(menuItem["text"].get<string>());
+            int disabled = 0;
+            int checked = 0;
+            if(helpers::hasField(menuItem, "id")) {
+                id = helpers::cStrCopy(menuItem["id"].get<string>());
+            }
+            if(helpers::hasField(menuItem, "isDisabled")) {
+                disabled = menuItem["isDisabled"].get<bool>() ? 1 : 0;
+            }
+            if(helpers::hasField(menuItem, "isChecked")) {
+                checked = menuItem["isChecked"].get<bool>() ? 1 : 0;
+            }
 
-    int i = 0;
-    for (const auto &menuItem: input["menuItems"]) {
-        char *id = nullptr;
-        char *text = helpers::cStrCopy(menuItem["text"].get<string>());
-        int disabled = 0;
-        int checked = 0;
-        if(helpers::hasField(menuItem, "id")) {
-            id = helpers::cStrCopy(menuItem["id"].get<string>());
+            delete[] menus[i].id;
+            delete[] menus[i].text;
+            menus[i] = { id, text, disabled, checked, __handleTrayMenuItem, nullptr };
+            i++;
         }
-        if(helpers::hasField(menuItem, "isDisabled")) {
-            disabled = menuItem["isDisabled"].get<bool>() ? 1 : 0;
-        }
-        if(helpers::hasField(menuItem, "isChecked")) {
-            checked = menuItem["isChecked"].get<bool>() ? 1 : 0;
-        }
-
-        delete[] menus[i].id;
-        delete[] menus[i].text;
-        menus[i] = { id, text, disabled, checked, __handleTrayMenuItem, nullptr };
-        i++;
     }
 
     tray.menu = menus;
