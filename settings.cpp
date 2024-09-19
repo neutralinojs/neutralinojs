@@ -139,7 +139,7 @@ string getGlobalVars(){
 
 settings::CliArg _parseArg(const string &argStr) {
     settings::CliArg arg;
-    vector<string> argParts = helpers::split(argStr, '=');
+    vector<string> argParts = helpers::splitTwo(argStr, '=');
     if(argParts.size() == 2 && argParts[1].length() > 0) {
         arg.key = argParts[0];
         arg.value = argParts[1];

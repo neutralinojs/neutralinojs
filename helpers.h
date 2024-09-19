@@ -23,7 +23,8 @@ using json = nlohmann::json;
 
 namespace helpers {
 
-vector<string> split(const string &s, char delim);
+vector<string> split(const string &s, char delim, unsigned int stopAfter = -1);
+vector<string> splitTwo(const string &s, char delim);
 string generateToken();
 void urldecode(char *dst, const char *src);
 char* cStrCopy(const string &str);

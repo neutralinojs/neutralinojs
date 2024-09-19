@@ -27,7 +27,7 @@ json __makeAuthInfoPayload() {
 
 void init() {
     token = helpers::generateToken();
-    connectToken = helpers::split(token, '.')[1];
+    connectToken = helpers::splitTwo(token, '.')[1];
     json jTokenSecurity = settings::getOptionForCurrentMode("tokenSecurity");
     if(!jTokenSecurity.is_null()) {
         tokenSecurity = jTokenSecurity.get<string>() == "one-time"

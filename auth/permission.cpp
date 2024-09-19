@@ -27,7 +27,7 @@ bool __isWildcardMatch(const string &methodMatch) {
 }
 
 string __getModuleFromMethod(const string &nativeMethod) {
-    vector<string> methodParts = helpers::split(nativeMethod, '.');
+    vector<string> methodParts = helpers::splitTwo(nativeMethod, '.');
     return methodParts[0];
 }
 

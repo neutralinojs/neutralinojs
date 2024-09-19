@@ -18,14 +18,21 @@ using json = nlohmann::json;
 
 namespace helpers {
 
-vector<string> split(const string &s, char delim) {
+vector<string> split(const string &s, char delim, unsigned int stopAfter) {
     stringstream ss(s);
     string item;
     vector<string> tokens;
     while (getline(ss, item, delim)) {
         tokens.push_back(item);
+        if(stopAfter !=-1 && tokens.size() == stopAfter - 1) {
+            delim = '\n';
+        }
     }
     return tokens;
+}
+
+vector<string> splitTwo(const string &s, char delim) {
+    return split(s, delim, 2);
 }
 
 string generateToken() {
