@@ -140,10 +140,10 @@ pair<int, int> spawnProcess(string command, const string &cwd) {
 
     TinyProcessLib::Process *childProcess;
     lock_guard<mutex> guard(spawnedProcessesLock);
-    int virtualPid = nextVirtualPid.fetch_add(1);
 
-    if (virtualPid == INT_MIN) {
-        virtualPid = nextVirtualPid.exchange(0);
+    int virtualPid = nextVirtualPid.fetch_add(1);
+    if (virtualPid == INT_MAX) {
+        nextVirtualPid.store(0);
     }
 
     childProcess = new TinyProcessLib::Process(
