@@ -12,6 +12,8 @@
 #include <cstring>
 #include <vector>
 #include <filesystem>
+#include <atomic>
+#include <climits>
 
 #include "resources.h"
 #include "lib/tinyprocess/process.hpp"
@@ -63,6 +65,7 @@ bool useOtherTempTrayIcon = true;
 #endif
 map<int, TinyProcessLib::Process*> spawnedProcesses;
 mutex spawnedProcessesLock;
+atomic<int> nextVirtualPid(0);
 
 void __dispatchSpawnedProcessEvt(int virtualPid, const string &action, const json &data) {
     json evt;
@@ -137,7 +140,11 @@ pair<int, int> spawnProcess(string command, const string &cwd) {
 
     TinyProcessLib::Process *childProcess;
     lock_guard<mutex> guard(spawnedProcessesLock);
-    int virtualPid = spawnedProcesses.size();
+    int virtualPid = nextVirtualPid.fetch_add(1);
+
+    if (virtualPid == INT_MIN) {
+        virtualPid = nextVirtualPid.exchange(0);
+    }
 
     childProcess = new TinyProcessLib::Process(
         CONVSTR(command), CONVSTR(cwd),
