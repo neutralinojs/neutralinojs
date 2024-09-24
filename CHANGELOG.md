@@ -17,6 +17,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 - Fix issues with the `clipboard.writeImage()` function on Windows.
 - Fix the unwanted delay with the `window.exitProcessOnClose` configuration option on Windows.
 - Fix a bug with the `window.isFullScreen()` function on GNU/Linux-based platforms.
+- Fix duplicate virtual PIDs issue with the `os.spawnProcess()` function.
 
 ## v5.3.0
 
