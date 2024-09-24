@@ -57,7 +57,7 @@ jobs:
           ./scripts/bz.py
       
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4.4.0
       with:
         name: linux_${{ matrix.arch }}_binary
         path: bin/neutralino-linux_${{ matrix.arch }}
@@ -71,7 +71,7 @@ jobs:
       run: python ./scripts/bz.py
       shell: cmd
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4.4.0
       with:
         name: win_binary
         path: bin/neutralino-win_x64.exe
@@ -87,7 +87,7 @@ jobs:
         ./scripts/bz.py --target_arch arm64
         lipo bin/neutralino-mac_x64 bin/neutralino-mac_arm64 -create -output bin/neutralino-mac_universal
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4.4.0
       with:
         name: darwin_binary
         path: |
