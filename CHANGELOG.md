@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v5.4.0
+
 ### API: resources
 - Implement `getFiles()`, `extractFile(path, dest)`, `readFile(path)`, and `readBinaryFile(path)` functions via the `resources` module for reading the files embedded in the `resources.neu` resources bundle. These functions works only if the framework loaded resources from the resource bundle -- they will throw `NE_RS_APIRQRF` if the framework loaded resources from the resources directory.
 
