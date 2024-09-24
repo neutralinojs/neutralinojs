@@ -2,8 +2,7 @@
 
 ## Reporting a vulnerability
 
-If you found a vulnerability in Neutralinojs components, please report as a Github [issue](https://github.com/neutralinojs/neutralinojs/issues).
-After that, we'll add the `security` label to those issues and apply patches with a future release.
+If you found a vulnerability in one of Neutralinojs components, please [create a security advisory](https://github.com/neutralinojs/neutralinojs/security/advisories/new) via GitHub. We'll review them and implement necessary patches with upcoming releases.
 
 ## How to download security patches
 
