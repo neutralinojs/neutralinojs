@@ -565,6 +565,7 @@ void __createWindow() {
                     windowProps.sizeOptions.maxWidth, windowProps.sizeOptions.maxHeight,
                     windowProps.sizeOptions.resizable);
     nativeWindow->setEventHandler(&window::handlers::windowStateChange);
+    nativeWindow->setEnableContextMenu(windowProps.enableContextMenu);
 
     #if defined(__linux__) || defined(__FreeBSD__)
     windowHandle = (GtkWidget*) nativeWindow->window();
@@ -851,6 +852,18 @@ json setAlwaysOnTop(const json &input) {
     return output;
 }
 
+json enableContextMenu(const json &input) {
+    
+    json output;
+    bool enable = false;
+    if(helpers::hasField(input, "enable")) {
+        enable = input["enable"].get<bool>();
+    }
+    nativeWindow->setEnableContextMenu(enable);    
+    output["success"] = true;
+    return output; 
+}
+
 json getPosition(const json &input) {
     json output;
     json posRes;
@@ -895,7 +908,7 @@ json init(const json &input) {
         windowProps.enableInspector = input["enableInspector"].get<bool>();
 
     if(helpers::hasField(input, "borderless"))
-        windowProps.borderless = input["borderless"].get<bool>();
+        windowProps.borderless = input["borderless"].get<bool>();    
 
     if(helpers::hasField(input, "maximize"))
         windowProps.maximize = input["maximize"].get<bool>();
@@ -910,10 +923,13 @@ json init(const json &input) {
         windowProps.transparent = input["transparent"].get<bool>();
 
     if(helpers::hasField(input, "exitProcessOnClose"))
-        windowProps.exitProcessOnClose = input["exitProcessOnClose"].get<bool>();
+        windowProps.exitProcessOnClose = input["exitProcessOnClose"].get<bool>();        
 
     if(helpers::hasField(input, "useSavedState"))
         windowProps.useSavedState = input["useSavedState"].get<bool>();
+
+    if(helpers::hasField(input, "enableContextMenu"))
+        windowProps.enableContextMenu = input["enableContextMenu"].get<bool>();
 
     __createWindow();
     output["success"] = true;
