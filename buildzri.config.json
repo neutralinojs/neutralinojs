@@ -49,14 +49,15 @@
     },
     "options": {
         "linux": [
-            "$(pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0 glib-2.0 xcb x11 xrandr)",
-            "-pthread",
-            "-lpng",
-            "-lstdc++fs",
-            "-ldl",
-            "-no-pie",
-            "-Os"
-        ],
+    "$(pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.1 glib-2.0 xcb x11 xrandr)",
+    "-pthread",
+    "-lpng",
+    "-lstdc++fs",
+    "-ldl",
+    "-no-pie",
+    "-Os"
+],
+
         "darwin": [
             "-Wno-deprecated-declarations",
             "-framework WebKit",
