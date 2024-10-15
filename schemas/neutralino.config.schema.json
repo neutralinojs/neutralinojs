@@ -1,411 +1,389 @@
 {
   "title": "Neutralinojs config",
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "definitions": {
-    "neutralino-properties": {
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "port": {
+      "type": "integer",
+      "description": "The port of your application. If the value is 0, Neutralinojs will use a random available port."
+    },
+    "enableServer": {
+      "type": "boolean",
+      "description": "Enables or disables the background server (Disables static file serving feature and native API messaging). If you load a remote URL to the webview, you can set this option to 'false'. Make sure to set this option to 'true' if you load resources from local sources.",
+      "default": false
+    },
+    "enableNativeAPI": {
+      "type": "boolean",
+      "description": "Enables or disables the native API. If you want to use any native API functions, you can set this option to 'true'.",
+      "default": false
+    },
+    "tokenSecurity": {
+      "type": "string",
+      "description": "Neutralinojs uses a client-server communication pattern with a local WebSocket to handle native calls. This local server is protected with an auto-generated token. This option defines the security implementation for the token. \n\n Accepts the following values: \n\n - one-time (Recommended): Server sends the access token only once, and the client persists it in the sessionStorage. If another client (Eg: browser) tries to access the app, 'NE_RT_INVTOKN' error message will be shown instead of the application. Using this option is recommended since it reduces security issues. \n\n - none: Server sends the access token always, so any new client can see the application. \n\n ::: Danger: If you are using native APIs that can access your computer's internals such as 'os', 'filesystem', modules, never use 'none' option since any new client can use those APIs. :::",
+      "enum": ["one-time", "none"],
+      "default": "one-time",
+      "x-intellij-enum-metadata": {
+        "one-time": "(Recommended): Server sends the access token only once, and the client persists it in the 'sessionStorage'.",
+        "none": "Server sends the access token always, so any new client can see the application."
+      }
+    },
+    "url": {
+      "type": "string",
+      "description": "The entry URL of the application. Neutralinojs will initially load this URL. This property accepts both relative and absolute URLs. See following examples. \n\n \"url\": \"/\" \n\n The above config loads 'http://localhost:<port>/' URL initially (internally '/index.html' is loaded). You can use remote urls too. \n\n \"url\": \"http://example.com\""
+    },
+    "documentRoot": {
+      "type": "string",
+      "description": "Sets the document root for the static server. For example, if you need to use 'resources' directory as the document root, you can use setup 'documentRoot' as follows. \n\n { \n   \"documentRoot\": \"/resource/\", \n   \"url\": \"/\" \n } \n\n Make sure to configure 'url' properly with the document root. The following configuration is wrong, it instructs the static server to fetch resources from './resources/resources'. \n\n { \n   \"documentRoot\": \"/resources/\", \n   \"url\": \"/resources/\" \n } \n\n However, you can use a sub-directory in URL, as shown below. \n\n { \n   \"documentRoot\": \"/\", \n   \"url\": \"/resources/\" \n }"
+    },
+    "exportAuthInfo": {
+      "type": "boolean",
+      "description": "Exports authentication details to the '${NL_PATH}/.tmp/auth_info.json' file with the following JSON structure. \n\n { \n   \"port\": \"<port>\", \n   \"accessToken\": \"<access_token>\" \n } \n\n You can use the above authentication details to connect with Neutralinojs from external processes by using WebSocket as an IPC mechanism."
+    },
+    "enableExtensions": {
+      "type": "boolean",
+      "description": "Enables/disables extensions.",
+      "default": false
+    },
+    "extensions": {
+      "type": "array",
+      "description": "An array of extension definitions. Enable extensions by adding the following setting to your app config. \n\n \"enableExtensions\": true \n\n Learn more about this option here: \n https://github.com/neutralinojs/neutralinojs.github.io/blob/main/docs/how-to/extensions-overview.md#defining-the-extensions",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "A unique key to identify the extension.",
+            "pattern": "^[a-zA-Z0-9]+(\\.[a-zA-Z0-9]+)*$"
+          },
+          "command": {
+            "type": "string",
+            "description": "A cross-platform command to start the extension. Eg: 'node ${NL_PATH}/extensions/binary/main.js' will work on every platform."
+          },
+          "commandLinux": {
+            "type": "string",
+            "description": "Extension startup command for Linux."
+          },
+          "commandDarwin": {
+            "type": "string",
+            "description": "Extension startup command for MacOS."
+          },
+          "commandWindows": {
+            "type": "string",
+            "description": "Extension startup command for Windows."
+          }
+        },
+        "required": ["id"]
+      }
+    },
+    "nativeBlockList": {
+      "type": "array",
+      "description": "An array of native methods needs to be blocked from the frontend of the application. The wildcard character '*' is allowed inside entries. \n\n { \n   \"nativeBlockList\": [\"os.execCommand\"], \n   \"nativeBlockList\": [\"app.*\"] \n }",
+      "items": {
+        "type": "string"
+      }
+    },
+    "nativeAllowList": {
+      "type": "array",
+      "description": "An array of native methods needs to be allowed from the frontend of the application. The wildcard character '*' is allowed inside entries. \n\n { \n   \"nativeAllowList\": [\"os.getEnv\"], \n   \"nativeAllowList\": [\"storage.*\"] \n }",
+      "items": {
+        "type": "string"
+      }
+    },
+    "globalVariables": {
+      "type": "object",
+      "description": "A key-value-based JavaScript object of custom global variables. \n\n You can make custom global variables too via 'neutralino.config.json', as shown below. \n\n \"globalVariables\": { \n   \"TEST\": \"Test Value\" \n } \n\n The above custom global variable's value can be accessed with 'NL_TEST'. You can set any data type for custom global variables. Look at the following examples. \n\n \"globalVariables\": { \n   \"TEST_1\": 1, \n   \"TEST_2\": null, \n   \"TEST_3\": 3.5, \n   \"TEST_4\": [3, 5, 4, 5], \n   \"TEST_5\": { \n     \"key\": \"value\", \n     \"anotherKey\": 100 \n   } \n } \n\n Avoid overriding predefined global variables. \n\n Learn more about this option here: \n https://github.com/neutralinojs/neutralinojs.github.io/blob/main/docs/api/global-variables.md#custom-global-variables"
+    },
+    "logging": {
+      "type": "object",
       "properties": {
-        "port": {
-          "type": "integer",
-          "description": "The port of your application. If the value is 0, Neutralinojs will use a random available port."
-        },
-        "enableServer": {
+        "enabled": {
           "type": "boolean",
-          "description": "Enables or disables the background server (Disables static file serving feature and native API messaging). If you load a remote URL to the webview, you can set this option to 'false'. Make sure to set this option to 'true' if you load resources from local sources.",
-          "default": false
+          "description": "Enables or disables the logging feature."
         },
-        "enableNativeAPI": {
+        "writeToLogFile": {
           "type": "boolean",
-          "description": "Enables or disables the native API. If you want to use any native API functions, you can set this option to 'true'.",
-          "default": false
+          "description": "Enables or disables log file. If this setting is 'false', the framework won't write log to 'neutralinojs.log', and it will write logs to standard streams."
         },
-        "tokenSecurity": {
-          "type": "string",
-          "description": "Neutralinojs uses a client-server communication pattern with a local WebSocket to handle native calls. This local server is protected with an auto-generated token. This option defines the security implementation for the token. \\n\\n Accepts the following values: \\n\\n - one-time (Recommended): Server sends the access token only once, and the client persists it in the sessionStorage. If another client (Eg: browser) tries to access the app, 'NE_RT_INVTOKN' error message will be shown instead of the application. Using this option is recommended since it reduces security issues. \\n\\n - none: Server sends the access token always, so any new client can see the application. \\n\\n ::: Danger: If you are using native APIs that can access your computer's internals such as 'os', 'filesystem', modules, never use 'none' option since any new client can use those APIs. :::",
-          "enum": [
-            "one-time",
-            "none"
-          ],
-          "default": "one-time",
-          "x-intellij-enum-metadata": {
-            "one-time": "(Recommended): Server sends the access token only once, and the client persists it in the 'sessionStorage'.",
-            "none": "Server sends the access token always, so any new client can see the application."
-          }
-        },
-        "url": {
-          "type": "string",
-          "description": "The entry URL of the application. Neutralinojs will initially load this URL. This property accepts both relative and absolute URLs. See following examples. \\n\\n \"url\": \"/\" \\n\\n The above config loads 'http://localhost:<port>/' URL initially (internally '/index.html' is loaded). You can use remote urls too. \\n\\n \"url\": \"http://example.com\""
-        },
-        "documentRoot": {
-          "type": "string",
-          "description": "Sets the document root for the static server. For example, if you need to use 'resources' directory as the document root, you can use setup 'documentRoot' as follows. \\n\\n { \\n   \"documentRoot\": \"/resource/\", \\n   \"url\": \"/\" \\n } \\n\\n Make sure to configure 'url' properly with the document root. The following configuration is wrong, it instructs the static server to fetch resources from './resources/resources'. \\n\\n { \\n   \"documentRoot\": \"/resources/\", \\n   \"url\": \"/resources/\" \\n } \\n\\n However, you can use a sub-directory in URL, as shown below. \\n\\n { \\n   \"documentRoot\": \"/\", \\n   \"url\": \"/resources/\" \\n }"
-        },
-        "exportAuthInfo": {
-          "type": "boolean",
-          "description": "Exports authentication details to the '${NL_PATH}/.tmp/auth_info.json' file with the following JSON structure. \\n\\n { \\n   \"port\": \"<port>\", \\n   \"accessToken\": \"<access_token>\" \\n } \\n\\n You can use the above authentication details to connect with Neutralinojs from external processes by using WebSocket as an IPC mechanism."
-        },
-        "enableExtensions": {
-          "type": "boolean",
-          "description": "Enables/disables extensions.",
-          "default": false
-        },
-        "extensions": {
-          "type": "array",
-          "description": "An array of extension definitions. Enable extensions by adding the following setting to your app config. \\n\\n \"enableExtensions\": true \\n\\n Learn more about this option here: \\n https://github.com/neutralinojs/neutralinojs.github.io/blob/main/docs/how-to/extensions-overview.md#defining-the-extensions",
-          "items": {
-            "type": "object",
-            "properties": {
-              "id": {
-                "type": "string",
-                "description": "A unique key to identify the extension.",
-                "pattern": "^[a-zA-Z0-9]+(\\.[a-zA-Z0-9]+)*$"
-              },
-              "command": {
-                "type": "string",
-                "description": "A cross-platform command to start the extension. Eg: 'node ${NL_PATH}/extensions/binary/main.js' will work on every platform."
-              },
-              "commandLinux": {
-                "type": "string",
-                "description": "Extension startup command for Linux."
-              },
-              "commandDarwin": {
-                "type": "string",
-                "description": "Extension startup command for MacOS."
-              },
-              "commandWindows": {
-                "type": "string",
-                "description": "Extension startup command for Windows."
-              }
-            },
-            "required": [
-              "id"
-            ]
-          }
-        },
-        "nativeBlockList": {
-          "type": "array",
-          "description": "An array of native methods needs to be blocked from the frontend of the application. The wildcard character '*' is allowed inside entries. \\n\\n { \\n   \"nativeBlockList\": [\"os.execCommand\"], \\n   \"nativeBlockList\": [\"app.*\"] \\n }",
-          "items": {
-            "type": "string"
-          }
-        },
-        "nativeAllowList": {
-          "type": "array",
-          "description": "An array of native methods needs to be allowed from the frontend of the application. The wildcard character '*' is allowed inside entries. \\n\\n { \\n   \"nativeAllowList\": [\"os.getEnv\"], \\n   \"nativeAllowList\": [\"storage.*\"] \\n }",
-          "items": {
-            "type": "string"
-          }
-        },
-        "globalVariables": {
+        "serverHeaders": {
           "type": "object",
-          "description": "A key-value-based JavaScript object of custom global variables. \\n\\n You can make custom global variables too via 'neutralino.config.json', as shown below. \\n\\n \"globalVariables\": { \\n   \"TEST\": \"Test Value\" \\n } \\n\\n The above custom global variable's value can be accessed with 'NL_TEST'. You can set any data type for custom global variables. Look at the following examples. \\n\\n \"globalVariables\": { \\n   \"TEST_1\": 1, \\n   \"TEST_2\": null, \\n   \"TEST_3\": 3.5, \\n   \"TEST_4\": [3, 5, 4, 5], \\n   \"TEST_5\": { \\n     \"key\": \"value\", \\n     \"anotherKey\": 100 \\n   } \\n } \\n\\n Avoid overriding predefined global variables. \\n\\n Learn more about this option here: \\n https://github.com/neutralinojs/neutralinojs.github.io/blob/main/docs/api/global-variables.md#custom-global-variables"
-        },
-        "logging": {
+          "description": "Custom headers for the static server and Websocket handshake process. For example, the following configuration sends a custom header with every outgoing HTTP response. \n\n { \n   \"serverHeaders\": { \n     \"Test-Header-Option\": \"Value\" \n   } \n }"
+        }
+      }
+    },
+    "applicationId": {
+      "type": "string",
+      "description": "Unique string to identify your application. \n Eg: js.neutralino.sample",
+      "pattern": "^[a-zA-Z0-9]+(\\.[a-zA-Z0-9]+)*$"
+    },
+    "version": {
+      "type": "string",
+      "description": "Application version. \n Eg: 2.4.22"
+    },
+    "defaultMode": {
+      "type": "string",
+      "description": "Mode of the application. \n Accepted values are 'window', 'browser', 'cloud' and 'chrome'.",
+      "x-intellij-enum-metadata": {
+        "window": "Runs the application on a native window.",
+        "browser": "Runs the application in the user's default browser.",
+        "cloud": "Runs the application as a background server.",
+        "chrome": "Runs the application as a Chrome application."
+      },
+      "enum": ["window", "browser", "cloud", "chrome"]
+    },
+    "modes": {
+      "type": "object",
+      "description": "You can override the configuration values from different modes. For example, you can use a specific URL in root-level and another URL in window-mode-level, as shown below. \n\n { \n   \"url\": \"/\", \n   \"modes\": { \n     \"window\": { \n       \"url\": \"/#window-mode\" \n     } \n   } \n }",
+      "properties": {
+        "window": {
           "type": "object",
-          "additionalProperties": false,
+          "description": "Configuration values for window mode.",
           "properties": {
-            "enabled": {
-              "type": "boolean",
-              "description": "Enables or disables the logging feature."
+            "title": {
+              "type": "string",
+              "description": "Title of the native window."
             },
-            "writeToLogFile": {
-              "type": "boolean",
-              "description": "Enables or disables log file. If this setting is 'false', the framework won't write log to 'neutralinojs.log', and it will write logs to standard streams."
+            "width": {
+              "type": "integer",
+              "description": "Width of the native window."
             },
-            "serverHeaders": {
-              "type": "object",
-              "description": "Custom headers for the static server and Websocket handshake process. For example, the following configuration sends a custom header with every outgoing HTTP response. \\n\\n { \\n   \"serverHeaders\": { \\n     \"Test-Header-Option\": \"Value\" \\n   } \\n }"
+            "height": {
+              "type": "integer",
+              "description": "Height of the native window."
+            },
+            "minWidth": {
+              "type": "integer",
+              "description": "Minimum width of the native window."
+            },
+            "minHeight": {
+              "type": "integer",
+              "description": "Minimum height of the native window."
+            },
+            "maxWidth": {
+              "type": "integer",
+              "description": "Maximum width of the native window."
+            },
+            "maxHeight": {
+              "type": "integer",
+              "description": "Maximum height of the native window."
+            },
+            "fullScreen": {
+              "type": "boolean",
+              "description": "Activates the full-screen mode."
+            },
+            "icon": {
+              "type": "string",
+              "description": "Application icon's file name. You can directly point to an image file in the resources directory. We recommend you to choose a transparent PNG file."
+            },
+            "alwaysOnTop": {
+              "type": "boolean",
+              "description": "Activates the top-most mode."
+            },
+            "enableInspector": {
+              "type": "boolean",
+              "description": "Automatically opens the developer tools window."
+            },
+            "borderless": {
+              "type": "boolean",
+              "description": "Activates the borderless mode."
+            },
+            "maximize": {
+              "type": "boolean",
+              "description": "Launches the application maximized."
+            },
+            "resizable": {
+              "type": "boolean",
+              "description": "Makes the window resizable or not.",
+              "default": true
+            },
+            "hidden": {
+              "type": "boolean",
+              "description": "Make the window invisible. This setting can be used to develop background services."
+            },
+            "exitProcessOnClose": {
+              "type": "boolean",
+              "description": "If this setting is 'true', the app process will exit when the user clicks on the close button. Otherwise, the framework will dispatch the 'windowClose' event."
             }
           }
+        },
+        "browser": {
+          "type": "object"
+        },
+        "cloud": {
+          "type": "object"
+        },
+        "chrome": {
+          "type": "object",
+          "description": "Configuration values for chrome mode.",
+          "allOf": [
+            {
+              "type": "object",
+              "properties": {
+                "width": {
+                  "type": "integer",
+                  "description": "Width of the chrome window."
+                },
+                "height": {
+                  "type": "integer",
+                  "description": "Height of the chrome window."
+                },
+                "args": {
+                  "type": "string",
+                  "description": "Additional command-line arguments for the Chrome process. \n\n Neutralinojs app will run as a Chrome application. The framework uses the following Chrome command-line arguments to make the web application look more like a native app. \n\n --disable-background-networking \n --disable-background-timer-throttling \n --disable-backgrounding-occluded-windows \n --disable-breakpad \n --disable-client-side-phishing-detection \n --disable-default-apps \n --disable-dev-shm-usage \n --disable-infobars \n --disable-extensions \n --disable-features=site-per-process \n --disable-hang-monitor \n --disable-ipc-flooding-protection \n --disable-popup-blocking \n --disable-prompt-on-repost \n --disable-renderer-backgrounding \n --disable-sync \n --disable-translate \n --disable-windows10-custom-titlebar \n --metrics-recording-only \n --no-first-run \n --no-default-browser-check \n --safebrowsing-disable-auto-update \n --password-store=basic \n --use-mock-keychain \n --user-data-dir=${NL_PATH}/.tmp/chromedata \n\n Neutralinojs chrome mode works on a computer that has a pre-installed version of Google Chrome, Chromium, or Microsoft Edge browser. If no installation was detected, Neutralinojs displays an error message by asking the user to install a Chromium-based browser. \n\n You can provide additional arguments (Eg: '--disable-web-security') to the Chrome process via this property. Browse all supported Chromium command-line arguments here: \n https://peter.sh/experiments/chromium-command-line-switches/"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "cli": {
+      "type": "object",
+      "description": "Configuration values for the neu CLI.",
+      "properties": {
+        "binaryName": {
+          "type": "string",
+          "description": "Binary file name of your application. If it is 'myapp', all binaries will use 'myapp-<platform>_<arch>' format."
+        },
+        "resourcesPath": {
+          "type": "string",
+          "description": "Path of your application resources."
+        },
+        "extensionsPath": {
+          "type": "string",
+          "description": "Path of your application extensions."
+        },
+        "clientLibrary": {
+          "type": "string",
+          "description": "Filename of the Neutralinojs Javascript library."
+        },
+        "binaryVersion": {
+          "description": "Neutralinojs server version. Get nightly builds by using the 'nightly' tag.",
+          "anyOf": [
+            {
+              "enum": [
+                "nightly",
+                "5.4.0",
+                "5.3.0",
+                "5.2.0",
+                "5.1.0",
+                "5.0.0",
+                "4.15.0",
+                "4.14.1",
+                "4.14.0",
+                "4.13.0",
+                "4.12.0",
+                "4.11.0",
+                "4.10.0",
+                "4.9.0",
+                "4.8.0",
+                "4.7.0",
+                "4.6.0",
+                "4.5.0",
+                "4.4.0",
+                "4.3.0",
+                "4.2.0",
+                "4.1.0",
+                "4.0.0",
+                "3.0.0-hotfix",
+                "3.0.0",
+                "2.8.0",
+                "2.7.0",
+                "2.6.0",
+                "2.5.0",
+                "2.4.1",
+                "2.4.0",
+                "2.3.0",
+                "2.2.0",
+                "2.1.1",
+                "2.1.0",
+                "2.0.0",
+                "1.9.0",
+                "1.8.0",
+                "1.7.0",
+                "1.6.0",
+                "1.5.0",
+                "1.4.0",
+                "1.3.0",
+                "1.2.0",
+                "1.1.0",
+                "1.0.8",
+                "1.0.7-alpha",
+                "1.0.6-alpha",
+                "1.0.5",
+                "1.0.4-alpha",
+                "1.0.3-alpha",
+                "1.0.2-beta",
+                "1.0.1-alpha",
+                "1.0.0-beta"
+              ]
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "clientVersion": {
+          "description": "Neutralinojs client version. Get nightly builds by using the 'nightly' tag.",
+          "anyOf": [
+            {
+              "enum": [
+                "nightly",
+                "5.4.0",
+                "5.3.0",
+                "5.2.0",
+                "5.1.0",
+                "5.0.0",
+                "4.15.0",
+                "4.14.1",
+                "4.14.0",
+                "4.13.0",
+                "4.12.0",
+                "4.11.0",
+                "4.10.0",
+                "4.9.0",
+                "4.8.0",
+                "4.7.0",
+                "4.6.0",
+                "4.5.0",
+                "4.4.0",
+                "4.3.0",
+                "4.2.0",
+                "4.1.0",
+                "4.0.0",
+                "3.7.0",
+                "3.6.0",
+                "3.5.0",
+                "3.4.0",
+                "3.3.0",
+                "3.2.0",
+                "3.1.0",
+                "3.0.0",
+                "2.0.0",
+                "1.5.0",
+                "1.4.0",
+                "1.3.0",
+                "1.2.0",
+                "1.1.0",
+                "1.0.0"
+              ]
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "autoReloadExclude": {
+          "type": "string",
+          "description": "A JavaScript regular expression to exclude files from the auto-reload file watcher. For example, the following configuration will disable auto-reloading for SASS stylesheets (.scss). \n\n { \n   \"autoReloadExclude\": \".*\\\\.scss$\" \n } \n\n Use '|' character to set multiple regular expressions, as shown below. \n\n { \n   \"autoReloadExclude\": \".*\\\\.scss$|.*\\\\.less$\" \n }"
+        },
+        "frontendLibrary": {
+          "type": "object",
+          "description": "Enables frontend development tools (HMR, etc) for the 'neu run --frontend-lib-dev' command. \n\n Learn more about frontend framework integration from here: \n https://github.com/neutralinojs/neutralinojs.github.io/blob/main/docs/how-to/use-a-frontend-library.md"
         }
       }
     }
   },
-  "additionalProperties": false,
-  "allOf": [
-    {
-      "$ref": "#/definitions/neutralino-properties"
-    },
-    {
-      "type": "object",
-      "properties": {
-        "$schema": {
-          "type": "string"
-        },
-        "applicationId": {
-          "type": "string",
-          "description": "Unique string to identify your application. \\n Eg: js.neutralino.sample",
-          "pattern": "^[a-zA-Z0-9]+(\\.[a-zA-Z0-9]+)*$"
-        },
-        "version": {
-          "type": "string",
-          "description": "Application version. \\n Eg: 2.4.22"
-        },
-        "defaultMode": {
-          "type": "string",
-          "description": "Mode of the application. \\n Accepted values are 'window', 'browser', 'cloud' and 'chrome'.",
-          "x-intellij-enum-metadata": {
-            "window": "Runs the application on a native window.",
-            "browser": "Runs the application in the user's default browser.",
-            "cloud": "Runs the application as a background server.",
-            "chrome": "Runs the application as a Chrome application."
-          },
-          "enum": [
-            "window",
-            "browser",
-            "cloud",
-            "chrome"
-          ]
-        },
-        "modes": {
-          "type": "object",
-          "description": "You can override the configuration values from different modes. For example, you can use a specific URL in root-level and another URL in window-mode-level, as shown below. \\n\\n { \\n   \"url\": \"/\", \\n   \"modes\": { \\n     \"window\": { \\n       \"url\": \"/#window-mode\" \\n     } \\n   } \\n }",
-          "additionalProperties": false,
-          "properties": {
-            "window": {
-              "type": "object",
-              "description": "Configuration values for window mode.",
-              "additionalProperties": false,
-              "allOf": [
-                {
-                  "$ref": "#/definitions/neutralino-properties"
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "title": {
-                      "type": "string",
-                      "description": "Title of the native window."
-                    },
-                    "width": {
-                      "type": "integer",
-                      "description": "Width of the native window."
-                    },
-                    "height": {
-                      "type": "integer",
-                      "description": "Height of the native window."
-                    },
-                    "minWidth": {
-                      "type": "integer",
-                      "description": "Minimum width of the native window."
-                    },
-                    "minHeight": {
-                      "type": "integer",
-                      "description": "Minimum height of the native window."
-                    },
-                    "maxWidth": {
-                      "type": "integer",
-                      "description": "Maximum width of the native window."
-                    },
-                    "maxHeight": {
-                      "type": "integer",
-                      "description": "Maximum height of the native window."
-                    },
-                    "fullScreen": {
-                      "type": "boolean",
-                      "description": "Activates the full-screen mode."
-                    },
-                    "icon": {
-                      "type": "string",
-                      "description": "Application icon's file name. You can directly point to an image file in the resources directory. We recommend you to choose a transparent PNG file."
-                    },
-                    "alwaysOnTop": {
-                      "type": "boolean",
-                      "description": "Activates the top-most mode."
-                    },
-                    "enableInspector": {
-                      "type": "boolean",
-                      "description": "Automatically opens the developer tools window."
-                    },
-                    "borderless": {
-                      "type": "boolean",
-                      "description": "Activates the borderless mode."
-                    },
-                    "maximize": {
-                      "type": "boolean",
-                      "description": "Launches the application maximized."
-                    },
-                    "resizable": {
-                      "type": "boolean",
-                      "description": "Makes the window resizable or not.",
-                      "default": true
-                    },
-                    "hidden": {
-                      "type": "boolean",
-                      "description": "Make the window invisible. This setting can be used to develop background services."
-                    },
-                    "exitProcessOnClose": {
-                      "type": "boolean",
-                      "description": "If this setting is 'true', the app process will exit when the user clicks on the close button. Otherwise, the framework will dispatch the 'windowClose' event."
-                    }
-                  }
-                }
-              ]
-            },
-            "browser": {
-              "type": "object",
-              "additionalProperties": false,
-              "allOf": [
-                {
-                  "$ref": "#/definitions/neutralino-properties"
-                }
-              ]
-            },
-            "cloud": {
-              "type": "object",
-              "additionalProperties": false,
-              "allOf": [
-                {
-                  "$ref": "#/definitions/neutralino-properties"
-                }
-              ]
-            },
-            "chrome": {
-              "type": "object",
-              "description": "Configuration values for chrome mode.",
-              "additionalProperties": false,
-              "allOf": [
-                {
-                  "$ref": "#/definitions/neutralino-properties"
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "width": {
-                      "type": "integer",
-                      "description": "Width of the chrome window."
-                    },
-                    "height": {
-                      "type": "integer",
-                      "description": "Height of the chrome window."
-                    },
-                    "args": {
-                      "type": "string",
-                      "description": "Additional command-line arguments for the Chrome process. \\n\\n Neutralinojs app will run as a Chrome application. The framework uses the following Chrome command-line arguments to make the web application look more like a native app. \\n\\n --disable-background-networking \\n --disable-background-timer-throttling \\n --disable-backgrounding-occluded-windows \\n --disable-breakpad \\n --disable-client-side-phishing-detection \\n --disable-default-apps \\n --disable-dev-shm-usage \\n --disable-infobars \\n --disable-extensions \\n --disable-features=site-per-process \\n --disable-hang-monitor \\n --disable-ipc-flooding-protection \\n --disable-popup-blocking \\n --disable-prompt-on-repost \\n --disable-renderer-backgrounding \\n --disable-sync \\n --disable-translate \\n --disable-windows10-custom-titlebar \\n --metrics-recording-only \\n --no-first-run \\n --no-default-browser-check \\n --safebrowsing-disable-auto-update \\n --password-store=basic \\n --use-mock-keychain \\n --user-data-dir=${NL_PATH}/.tmp/chromedata \\n\\n Neutralinojs chrome mode works on a computer that has a pre-installed version of Google Chrome, Chromium, or Microsoft Edge browser. If no installation was detected, Neutralinojs displays an error message by asking the user to install a Chromium-based browser. \\n\\n You can provide additional arguments (Eg: '--disable-web-security') to the Chrome process via this property. Browse all supported Chromium command-line arguments here: \\n https://peter.sh/experiments/chromium-command-line-switches/"
-                    }
-                  }
-                }
-              ]
-            }
-          }
-        },
-        "cli": {
-          "type": "object",
-          "description": "Configuration values for the neu CLI.",
-          "additionalProperties": false,
-          "properties": {
-            "binaryName": {
-              "type": "string",
-              "description": "Binary file name of your application. If it is 'myapp', all binaries will use 'myapp-<platform>_<arch>' format."
-            },
-            "resourcesPath": {
-              "type": "string",
-              "description": "Path of your application resources."
-            },
-            "extensionsPath": {
-              "type": "string",
-              "description": "Path of your application extensions."
-            },
-            "clientLibrary": {
-              "type": "string",
-              "description": "Filename of the Neutralinojs Javascript library."
-            },
-            "binaryVersion": {
-              "description": "Neutralinojs server version. Get nightly builds by using the 'nightly' tag.",
-              "anyOf": [
-                {
-                  "enum": [
-                    "nightly",
-                    "4.8.0",
-                    "4.7.0",
-                    "4.6.0",
-                    "4.5.0",
-                    "4.4.0",
-                    "4.3.0",
-                    "4.2.0",
-                    "4.1.0",
-                    "4.0.0",
-                    "3.0.0-hotfix",
-                    "3.0.0",
-                    "2.8.0",
-                    "2.7.0",
-                    "2.6.0",
-                    "2.5.0",
-                    "2.4.1",
-                    "2.4.0",
-                    "2.3.0",
-                    "2.2.0",
-                    "2.1.1",
-                    "2.1.0",
-                    "2.0.0",
-                    "1.9.0",
-                    "1.8.0",
-                    "1.7.0",
-                    "1.6.0",
-                    "1.5.0",
-                    "1.4.0",
-                    "1.3.0",
-                    "1.2.0",
-                    "1.1.0",
-                    "1.0.8",
-                    "1.0.7-alpha",
-                    "1.0.6-alpha",
-                    "1.0.5",
-                    "1.0.4-alpha",
-                    "1.0.3-alpha",
-                    "1.0.2-beta",
-                    "1.0.1-alpha",
-                    "1.0.0-beta"
-                  ]
-                },
-                {
-                  "type": "string"
-                }
-              ]
-            },
-            "clientVersion": {
-              "description": "Neutralinojs client version. Get nightly builds by using the 'nightly' tag.",
-              "anyOf": [
-                {
-                  "enum": [
-                    "nightly",
-                    "3.7.0",
-                    "3.6.0",
-                    "3.5.0",
-                    "3.4.0",
-                    "3.3.0",
-                    "3.2.0",
-                    "3.1.0",
-                    "3.0.0",
-                    "2.0.0",
-                    "1.5.0",
-                    "1.4.0",
-                    "1.3.0",
-                    "1.2.0",
-                    "1.1.0",
-                    "1.0.0"
-                  ]
-                },
-                {
-                  "type": "string"
-                }
-              ]
-            },
-            "autoReloadExclude": {
-              "type": "string",
-              "description": "A JavaScript regular expression to exclude files from the auto-reload file watcher. For example, the following configuration will disable auto-reloading for SASS stylesheets (.scss). \\n\\n { \\n   \"autoReloadExclude\": \".*\\\\.scss$\" \\n } \\n\\n Use '|' character to set multiple regular expressions, as shown below. \\n\\n { \\n   \"autoReloadExclude\": \".*\\\\.scss$|.*\\\\.less$\" \\n }"
-            },
-            "frontendLibrary": {
-              "type": "object",
-              "description": "Enables frontend development tools (HMR, etc) for the 'neu run --frontend-lib-dev' command. \\n\\n Learn more about frontend framework integration from here: \\n https://github.com/neutralinojs/neutralinojs.github.io/blob/main/docs/how-to/use-a-frontend-library.md"
-            }
-          }
-        }
-      }
-    }
-  ],
-  "required": [
-    "applicationId",
-    "url",
-    "defaultMode"
-  ]
+  "required": ["applicationId", "url", "defaultMode"]
 }
