@@ -101,7 +101,6 @@
         },
         "logging": {
           "type": "object",
-          "additionalProperties": false,
           "properties": {
             "enabled": {
               "type": "boolean",
@@ -120,7 +119,6 @@
       }
     }
   },
-  "additionalProperties": false,
   "allOf": [
     {
       "$ref": "#/definitions/neutralino-properties"
@@ -159,12 +157,10 @@
         "modes": {
           "type": "object",
           "description": "You can override the configuration values from different modes. For example, you can use a specific URL in root-level and another URL in window-mode-level, as shown below. \\n\\n { \\n   \"url\": \"/\", \\n   \"modes\": { \\n     \"window\": { \\n       \"url\": \"/#window-mode\" \\n     } \\n   } \\n }",
-          "additionalProperties": false,
           "properties": {
             "window": {
               "type": "object",
               "description": "Configuration values for window mode.",
-              "additionalProperties": false,
               "allOf": [
                 {
                   "$ref": "#/definitions/neutralino-properties"
@@ -243,7 +239,6 @@
             },
             "browser": {
               "type": "object",
-              "additionalProperties": false,
               "allOf": [
                 {
                   "$ref": "#/definitions/neutralino-properties"
@@ -252,7 +247,6 @@
             },
             "cloud": {
               "type": "object",
-              "additionalProperties": false,
               "allOf": [
                 {
                   "$ref": "#/definitions/neutralino-properties"
@@ -262,7 +256,6 @@
             "chrome": {
               "type": "object",
               "description": "Configuration values for chrome mode.",
-              "additionalProperties": false,
               "allOf": [
                 {
                   "$ref": "#/definitions/neutralino-properties"
@@ -291,7 +284,6 @@
         "cli": {
           "type": "object",
           "description": "Configuration values for the neu CLI.",
-          "additionalProperties": false,
           "properties": {
             "binaryName": {
               "type": "string",
