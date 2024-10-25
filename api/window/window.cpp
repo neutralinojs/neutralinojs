@@ -554,7 +554,7 @@ namespace controllers {
 void __createWindow() {
     savedState = windowProps.useSavedState && __loadSavedWindowProps();
 
-    nativeWindow = new webview::webview(windowProps.enableInspector, nullptr, windowProps.transparent);
+    nativeWindow = new webview::webview(windowProps.enableInspector, nullptr, windowProps.transparent, windowProps.focusable);
     nativeWindow->set_title(windowProps.title);
     if(windowProps.extendUserAgentWith != "") {
         nativeWindow->extend_user_agent(windowProps.extendUserAgentWith);
@@ -914,6 +914,9 @@ json init(const json &input) {
 
     if(helpers::hasField(input, "useSavedState"))
         windowProps.useSavedState = input["useSavedState"].get<bool>();
+
+    if(helpers::hasField(input, "focusable"))
+        windowProps.focusable = input["focusable"].get<bool>();
 
     __createWindow();
     output["success"] = true;
