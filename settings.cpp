@@ -228,6 +228,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
         {"--single-page-serve", {"/singlePageServe", "bool"}},
         {"--enable-extensions", {"/enableExtensions", "bool"}},
         {"--export-auth-info", {"/exportAuthInfo", "bool"}},
+        {"--storage-location", {"/storageLocation", "string"}},
         // Window mode
         {"--window-title", {"/modes/window/title", "string"}},
         {"--window-width", {"/modes/window/width", "int"}},

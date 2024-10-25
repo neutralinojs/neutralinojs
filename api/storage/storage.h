@@ -8,6 +8,8 @@ using namespace std;
 
 namespace storage {
 
+void init();
+
 namespace controllers {
 
 json setData(const json &input);

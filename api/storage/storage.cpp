@@ -5,6 +5,8 @@
 #include <filesystem>
 
 #include "lib/json/json.hpp"
+#include "lib/platformfolders/platform_folders.h"
+
 #include "settings.h"
 #include "helpers.h"
 #include "errors.h"
@@ -23,7 +25,25 @@
 using namespace std;
 using json = nlohmann::json;
 
+string storagePath;
+
 namespace storage {
+
+void init() {
+    string storageLoc = "app";
+    json jLoc = settings::getOptionForCurrentMode("storageLocation");
+    if(!jLoc.is_null()) {
+        storageLoc = jLoc.get<string>();
+    }
+    
+    if(storageLoc == "system") {
+        storagePath = sago::getDataHome() + "/" + settings::getAppId();
+        storagePath = helpers::normalizePath(storagePath);
+    }
+    else {
+        storagePath = settings::joinAppPath(NEU_STORAGE_DIR);
+    }
+}
 
 namespace controllers {
 
@@ -45,8 +65,8 @@ json getData(const json &input) {
     json errorPayload = __validateStorageBucket(key);
     if(!errorPayload.is_null())
         return errorPayload;
-    string bucketPath = settings::joinAppPath(NEU_STORAGE_DIR);
-    string filename = bucketPath + "/" + key + NEU_STORAGE_EXT;
+
+    string filename = storagePath + "/" + key + NEU_STORAGE_EXT;
 
     fs::FileReaderResult fileReaderResult;
     fileReaderResult = fs::readFile(filename);
@@ -69,14 +89,13 @@ json setData(const json &input) {
     json errorPayload = __validateStorageBucket(key);
     if(!errorPayload.is_null())
         return errorPayload;
-    string bucketPath = settings::joinAppPath(NEU_STORAGE_DIR);
 
-    filesystem::create_directories(CONVSTR(bucketPath));
+    filesystem::create_directories(CONVSTR(storagePath));
     #if defined(_WIN32)
-    SetFileAttributesA(bucketPath.c_str(), FILE_ATTRIBUTE_HIDDEN);
+    SetFileAttributesA(storagePath.c_str(), FILE_ATTRIBUTE_HIDDEN);
     #endif
 
-    string filename = bucketPath + "/" + key + NEU_STORAGE_EXT;
+    string filename = storagePath + "/" + key + NEU_STORAGE_EXT;
     if(!helpers::hasField(input, "data")) {
         filesystem::remove(CONVSTR(filename));
     }
@@ -97,12 +116,11 @@ json setData(const json &input) {
 json getKeys(const json &input) {
     json output;
     output["returnValue"] = json::array();
-    string bucketPath = settings::joinAppPath(NEU_STORAGE_DIR);
 
     fs::DirReaderResult dirResult;
-    dirResult = fs::readDirectory(bucketPath);
+    dirResult = fs::readDirectory(storagePath);
     if(dirResult.status != errors::NE_ST_OK) {
-        output["error"] = errors::makeErrorPayload(errors::NE_ST_NOSTDIR, bucketPath);
+        output["error"] = errors::makeErrorPayload(errors::NE_ST_NOSTDIR, storagePath);
         return output;
     }
 

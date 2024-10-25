@@ -8,6 +8,7 @@
     "documentRoot": "/resources/",
     "enableServer": true,
     "tokenSecurity": "one-time",
+    "storageLocation": "system",
     "enableNativeAPI": true,
     "exportAuthInfo": false,
     "serverHeaders": {

@@ -21,6 +21,7 @@
 #include "api/window/window.h"
 #include "api/os/os.h"
 #include "api/debug/debug.h"
+#include "api/storage/storage.h"
 
 #define NEU_APP_LOG_FILE "/neutralinojs.log"
 #define NEU_APP_LOG_FORMAT "%level %datetime %msg %loc %user@%host"
@@ -135,6 +136,7 @@ void __initFramework(const json &args) {
     }
     authbasic::init();
     permission::init();
+    storage::init();
 }
 
 void __initExtra() {
