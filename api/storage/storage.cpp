@@ -37,7 +37,7 @@ void init() {
     }
     
     if(storageLoc == "system") {
-        storagePath = sago::getDataHome() + "/" + settings::getAppId();
+        storagePath = sago::getDataHome() + "/" + settings::getAppId() + NEU_STORAGE_DIR;
         storagePath = helpers::normalizePath(storagePath);
     }
     else {
