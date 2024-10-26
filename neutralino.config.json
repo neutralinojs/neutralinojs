@@ -73,7 +73,9 @@
         "binaryName": "neutralino",
         "resourcesPath": "/resources/",
         "extensionsPath": "/extensions/",
-        "clientLibrary": "/resources/js/neutralino.js"
+        "clientLibrary": "/resources/js/neutralino.js",
+        "binaryVersion": "5.1.0",
+        "clientVersion": "5.1.0"
     },
     "extensions": [
         {
