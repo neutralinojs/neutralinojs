@@ -12,7 +12,7 @@ function openInBrowser() {
 }
 
 Neutralino.init();
-if(NL_MODE == "window") {
+if (NL_MODE == "window") {
     Neutralino.window.setTitle("Test app"); // This request will be queued and processed when WS connects.
 }
 
@@ -31,3 +31,17 @@ Neutralino.events.on("eventFromExtension", (evt) => {
 });
 
 showInfo();
+
+// New function to test execCommand behavior
+async function funMain() {
+    try {
+        await Neutralino.os.execCommand("chcp 65001 & echo a"); // Ensure UTF-8 encoding on Windows
+        var res = await Neutralino.os.execCommand("chcp 65001 & echo ä"); // Should now handle special characters
+        console.log(res);
+        await Neutralino.os.execCommand("echo a"); // This should now run
+    } catch (error) {
+        console.error("Error executing command:", error);
+    }
+}
+
+funMain(); // Call the function to test it
