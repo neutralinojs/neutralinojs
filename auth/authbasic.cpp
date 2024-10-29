@@ -72,4 +72,21 @@ bool verifyConnectToken(const string &inConnectToken) {
     return connectToken == inConnectToken;
 }
 
+// my comparison to the original code is that I have added the json &input parameter to the function
+bool verifyToken(const jason &input) {
+    vector<string> requiredFields = {"token"};
+    if(!helpers::hasRequiredFields(input, requiredFields)) {
+        return false;
+    }
+    return authbasic::verifyToken(input["token"].get<string>());
+}
+
+bool verifyConnectToken(const json &output) {
+    vector<string> requiredFields = {"connectToken"};
+    if(!helpers::hasRequiredFields(output, requiredFields)) {
+        return false;
+    }
+    return authbasic::verifyConnectToken(output["connectToken"].get<string>());
+}
+
 } // namespace authbasic
