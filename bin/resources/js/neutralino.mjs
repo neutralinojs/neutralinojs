@@ -101,7 +101,10 @@ const extensionMessageQueue = {};
 function init$1() {
     initAuth();
     const connectToken = getAuthToken().split('.')[1];
-    ws = new WebSocket(`ws://${window.location.hostname}:${window.NL_PORT}?connectToken=${connectToken}`);
+    const hostname = (window.NL_GINJECTED || window.NL_CINJECTED) ?
+        'localhost' : window.location.hostname;
+    console.log(hostname);
+    ws = new WebSocket(`ws://${hostname}:${window.NL_PORT}?connectToken=${connectToken}`);
     registerLibraryEvents();
     registerSocketEvents();
 }
@@ -922,7 +925,7 @@ var custom = /*#__PURE__*/Object.freeze({
     getMethods: getMethods
 });
 
-var version = "5.3.0";
+var version = "5.4.0";
 
 let initialized = false;
 function init(options = {}) {

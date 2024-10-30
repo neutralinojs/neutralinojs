@@ -1,6 +1,7 @@
 #include <string>
 #include <iostream>
 #include <filesystem>
+#include <regex>
 
 #if defined(__linux__) || defined(__FreeBSD__)
 #include <gtk/gtk.h>
@@ -551,6 +552,19 @@ void _close(int exitCode) {
 
 namespace controllers {
 
+void __injectClientLibrary() {
+    json options = settings::getConfig();
+    json jClientLibrary = options["cli"]["clientLibrary"];
+    if(!jClientLibrary.is_null()) {
+        string clientLibPath = jClientLibrary.get<string>();
+        fs::FileReaderResult fileReaderResult = resources::getFile(clientLibPath);
+        if(fileReaderResult.status == errors::NE_ST_OK) {
+            nativeWindow->init(settings::getGlobalVars() + "var NL_CINJECTED = true;" + 
+                fileReaderResult.data);
+        }
+    }
+}
+
 void __createWindow() {
     savedState = windowProps.useSavedState && __loadSavedWindowProps();
 
@@ -565,6 +579,12 @@ void __createWindow() {
                     windowProps.sizeOptions.maxWidth, windowProps.sizeOptions.maxHeight,
                     windowProps.sizeOptions.resizable);
     nativeWindow->setEventHandler(&window::handlers::windowStateChange);
+
+    if(windowProps.injectGlobals)
+        nativeWindow->init(settings::getGlobalVars() + "var NL_GINJECTED = true;");
+
+    if(windowProps.injectClientLibrary)
+        __injectClientLibrary();
 
     #if defined(__linux__) || defined(__FreeBSD__)
     windowHandle = (GtkWidget*) nativeWindow->window();
@@ -914,6 +934,12 @@ json init(const json &input) {
 
     if(helpers::hasField(input, "useSavedState"))
         windowProps.useSavedState = input["useSavedState"].get<bool>();
+
+    if(helpers::hasField(input, "injectGlobals"))
+        windowProps.injectGlobals = input["injectGlobals"].get<bool>();
+
+    if(helpers::hasField(input, "injectClientLibrary"))
+        windowProps.injectClientLibrary = input["injectClientLibrary"].get<bool>();
 
     __createWindow();
     output["success"] = true;

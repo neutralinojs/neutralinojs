@@ -50,7 +50,9 @@
             "exitProcessOnClose": false,
             "useSavedState": true,
             "port": 0,
-            "extendUserAgentWith": "NeutralinojsSampleApp"
+            "extendUserAgentWith": "NeutralinojsSampleApp",
+            "injectGlobals": false,
+            "injectClientLibrary": true
         },
         "browser": {
             "globalVariables": {

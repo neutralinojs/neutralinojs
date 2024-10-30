@@ -211,6 +211,15 @@ public:
                     [](void *f) { delete static_cast<dispatch_fn_t *>(f); });
   }
 
+  void init(const std::string js) {
+    WebKitUserContentManager *manager =
+        webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(m_webview));
+    webkit_user_content_manager_add_script(
+        manager, webkit_user_script_new(
+                     js.c_str(), WEBKIT_USER_CONTENT_INJECT_TOP_FRAME,
+                     WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START, NULL, NULL));
+  }
+
   void set_title(const std::string title) {
     gtk_window_set_title(GTK_WINDOW(m_window), title.c_str());
   }
@@ -460,6 +469,19 @@ public:
                      }));
   }
 
+  void init(const std::string js) {
+    // Equivalent Obj-C:
+    // [m_manager addUserScript:[[WKUserScript alloc] initWithSource:[NSString stringWithUTF8String:js.c_str()] injectionTime:WKUserScriptInjectionTimeAtDocumentStart forMainFrameOnly:YES]]
+    ((void (*)(id, SEL, id))objc_msgSend)(
+        m_manager, "addUserScript:"_sel,
+        ((id(*)(id, SEL, id, long, BOOL))objc_msgSend)(
+            ((id(*)(id, SEL))objc_msgSend)("WKUserScript"_cls, "alloc"_sel),
+            "initWithSource:injectionTime:forMainFrameOnly:"_sel,
+            ((id(*)(id, SEL, const char *))objc_msgSend)(
+                "NSString"_cls, "stringWithUTF8String:"_sel, js.c_str()),
+            WKUserScriptInjectionTimeAtDocumentStart, 1));
+  }
+
   void extend_user_agent(const std::string customAgent) {
     std::string ua = std::string(
       ((const char *(*)(id, SEL))objc_msgSend)(
@@ -624,6 +646,7 @@ public:
     m_webview.Navigate(uri);
   }
 
+  void init(const std::string js) override {}
   void extend_user_agent(const std::string customAgent) {}
 
   void resize(HWND wnd) override {
@@ -691,6 +714,12 @@ public:
       DispatchMessage(&msg);
     }
     return true;
+  }
+
+  void init(const std::string js) override {
+    LPCWSTR wjs = to_lpwstr(js);
+    m_webview->AddScriptToExecuteOnDocumentCreated(wjs, nullptr);
+    delete[] wjs;
   }
 
   void extend_user_agent(const std::string customAgent) override {
@@ -1017,6 +1046,7 @@ public:
   }
 
   void navigate(const std::string url) { m_browser->navigate(url); }
+  void init(const std::string js) { m_browser->init(js); }
   void extend_user_agent(const std::string customAgent) { m_browser->extend_user_agent(customAgent); }
 
   DWORD m_originalStyleEx;
