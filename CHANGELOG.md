@@ -6,6 +6,13 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### Client library and globals injection
+Neutralinojs apps usually load globals and the client library using HTTP requests via the static server. This mechanism implements a generic way to enable the native API on all supported Neutralinojs app modes. However, this strategy prevents
+enabling the Neutralinojs native API if the primary web app is loaded through another server (local or remote) in scenarios where the developer can't modify the local/remote server or its resources. Now, app developers can inject globals and
+the client library script into third-party web services using `window.injectGlobals` and `window.injectClientLibrary` configuration options on the window mode.
+
+These options are available as CLI options as well (`--window-inject-globals` and `--window-inject-client-library`), so developers can use these options via the `window.create(url, options)` function. This code injection feature currently works with HTTP URLs only (can be used with local and remote HTTP web servers).
+
 ### Configuration
 - Implement the `storageLocation` config option to let developers use system data directory for the Neutralinojs storage. If this option is 'app' (default), the framework store storage files within the app directory. If `system` is used, the framework will use the platform specific standard data directory. In both `app` and `system` modes, the framework will use the `.storage` sub-directory for storage files.
 
