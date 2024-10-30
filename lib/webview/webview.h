@@ -607,6 +607,7 @@ public:
   virtual ~browser() = default;
   virtual bool embed(HWND, bool) = 0;
   virtual void navigate(const std::string url) = 0;
+  virtual void init(const std::string js) = 0;
   virtual void extend_user_agent(const std::string customAgent) = 0;
   virtual void resize(HWND) = 0;
 };
