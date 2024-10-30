@@ -106,7 +106,6 @@ var Neutralino = (function (exports) {
         const connectToken = getAuthToken().split('.')[1];
         const hostname = (window.NL_GINJECTED || window.NL_CINJECTED) ?
             'localhost' : window.location.hostname;
-        console.log(hostname);
         ws = new WebSocket(`ws://${hostname}:${window.NL_PORT}?connectToken=${connectToken}`);
         registerLibraryEvents();
         registerSocketEvents();
