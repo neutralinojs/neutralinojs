@@ -63,6 +63,7 @@ struct WindowOptions {
     string url = "https://neutralino.js.org";
     string icon = "";
     string extendUserAgentWith = "";
+    string injectScript = "";
     int x = 0;
     int y = 0;
 };

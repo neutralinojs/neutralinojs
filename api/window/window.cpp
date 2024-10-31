@@ -565,6 +565,17 @@ void __injectClientLibrary() {
     }
 }
 
+void __injectScript() {
+    json jInjectScript = settings::getOptionForCurrentMode("injectScript");
+    if(!jInjectScript.is_null()) {
+        string injectScript = jInjectScript.get<string>();
+        fs::FileReaderResult fileReaderResult = resources::getFile(injectScript);
+        if(fileReaderResult.status == errors::NE_ST_OK) {
+            nativeWindow->init("var NL_SINJECTED = true;" + fileReaderResult.data);
+        }
+    }
+}
+
 void __createWindow() {
     savedState = windowProps.useSavedState && __loadSavedWindowProps();
 
@@ -580,11 +591,14 @@ void __createWindow() {
                     windowProps.sizeOptions.resizable);
     nativeWindow->setEventHandler(&window::handlers::windowStateChange);
 
-    if(windowProps.injectGlobals)
+    if(windowProps.injectGlobals) 
         nativeWindow->init(settings::getGlobalVars() + "var NL_GINJECTED = true;");
 
     if(windowProps.injectClientLibrary)
         __injectClientLibrary();
+
+    if(windowProps.injectScript != "")
+        __injectScript();
 
     #if defined(__linux__) || defined(__FreeBSD__)
     windowHandle = (GtkWidget*) nativeWindow->window();
@@ -910,6 +924,9 @@ json init(const json &input) {
 
     if(helpers::hasField(input, "extendUserAgentWith"))
         windowProps.extendUserAgentWith = input["extendUserAgentWith"].get<string>();
+
+    if(helpers::hasField(input, "injectScript"))
+        windowProps.injectScript = input["injectScript"].get<string>();
 
     if(helpers::hasField(input, "enableInspector"))
         windowProps.enableInspector = input["enableInspector"].get<bool>();
