@@ -13,6 +13,19 @@ the client library script into external web services using `window.injectGlobals
 
 These options are available as CLI options as well (`--window-inject-globals` and `--window-inject-client-library`), so developers can use these options via the `window.create(url, options)` function. This code injection feature currently works with HTTP URLs only (can be used with local and remote HTTP web servers).
 
+### Preload script support
+The framework already lets developers set pre-defined global variables for each web page by using custom globals from the app configuration and activating the `window.injectGlobals` option. However, custom globals are static values, so app developers can't define dynamic values or run a custom JavaScript source using globals and `window.injectGlobals` features. This framework version implements the `window.injectScript` configuration option to inject and run custom JavaScript source file before running the web app resource scripts.
+
+For example, the following setup loads an initialization script from the `preload.js` file:
+
+```json
+"window": {
+  "injectScript": "/resources/js/preload.js"
+}
+```
+
+Developers can use native API calls within initialization scripts if `window.injectClientLibrary` is set to `true`. This option also can be set via `--window-inject-script` and `window.create(url, options)`.
+
 ### Configuration
 - Implement the `storageLocation` config option to let developers use system data directory for the Neutralinojs storage. If this option is 'app' (default), the framework store storage files within the app directory. If `system` is used, the framework will use the platform specific standard data directory. In both `app` and `system` modes, the framework will use the `.storage` sub-directory for storage files.
 
