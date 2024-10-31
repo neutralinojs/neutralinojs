@@ -52,7 +52,7 @@
             "port": 0,
             "extendUserAgentWith": "NeutralinojsSampleApp",
             "injectGlobals": false,
-            "injectClientLibrary": true,
+            "injectClientLibrary": false,
             "injectScript": "/resources/js/preload.js"
         },
         "browser": {

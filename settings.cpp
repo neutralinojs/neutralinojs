@@ -255,6 +255,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
         {"--window-extend-user-agent-with", {"/modes/window/extendUserAgentWith", "string"}},
         {"--window-inject-globals", {"/modes/window/injectGlobals", "bool"}},
         {"--window-inject-client-library", {"/modes/window/injectClientLibrary", "bool"}},
+        {"--window-inject-script", {"/modes/window/injectScript", "string"}},
         // Chrome mode
         {"--chrome-width", {"/modes/chrome/width", "int"}},
         {"--chrome-height", {"/modes/chrome/height", "int"}},
