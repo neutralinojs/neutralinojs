@@ -29,6 +29,9 @@ Developers can use native API calls within initialization scripts if `window.inj
 ### Configuration
 - Implement the `storageLocation` config option to let developers use system data directory for the Neutralinojs storage. If this option is 'app' (default), the framework store storage files within the app directory. If `system` is used, the framework will use the platform specific standard data directory. In both `app` and `system` modes, the framework will use the `.storage` sub-directory for storage files.
 
+### Improvements/bugfixes
+- Fix the auto-reload issue during app development.
+
 ## v5.4.0
 
 ### API: resources
