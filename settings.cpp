@@ -183,7 +183,7 @@ void setGlobalArgs(const json &args) {
 
         // Enable dev tools connection (as an extension)
         // Not available for production (resources.neu-based) apps
-        if(cliArg.key == "--neu-dev-extension" && resources::isBundleMode()) {
+        if(cliArg.key == "--neu-dev-extension" && !resources::isBundleMode()) {
             extensions::loadOne("js.neutralino.devtools");
             continue;
         }
