@@ -125,7 +125,7 @@ json writeProcessOutput(const json &input) {
         return output;
     }
 
-    cout << input["data"].get<string>();
+    cout << input["data"].get<string>() << flush;
 
     output["message"] = "Wrote data to stdout";
     output["success"] = true;
@@ -139,7 +139,7 @@ json writeProcessError(const json &input) {
         return output;
     }
 
-    cerr << input["data"].get<string>();
+    cerr << input["data"].get<string>() << flush;
 
     output["message"] = "Wrote data to stderr";
     output["success"] = true;
