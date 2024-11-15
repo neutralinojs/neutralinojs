@@ -27,7 +27,8 @@ For example, the following setup loads an initialization script from the `preloa
 Developers can use native API calls within initialization scripts if `window.injectClientLibrary` is set to `true`. This option also can be set via `--window-inject-script` and `window.create(url, options)`.
 
 ### Configuration
-- Implement the `storageLocation` config option to let developers use system data directory for the Neutralinojs storage. If this option is 'app' (default), the framework store storage files within the app directory. If `system` is used, the framework will use the platform specific standard data directory. In both `app` and `system` modes, the framework will use the `.storage` sub-directory for storage files.
+- Implement the `dataLocation` config option to let users set data directory for framework data storage, such as saving window state, storing extracted resources, etc. If `app` (default) is used, the framework will store app data within the app directory and if `system` is used, the framework will use a platform-specific data directory path (i.e., `/home/username/.local/share/<appId>` on GNU/Linux systems) to store app data. App developers can obtain the current data directory string from the `NL_DATAPATH` global variable.
+- Implement the `storageLocation` config option to let developers use system data directory for the Neutralinojs storage. If this option is 'app' (default), the framework store storage files within the app directory. If `system` is used, the framework will use the platform-specific standard data directory. In both `app` and `system` modes, the framework will use the `.storage` sub-directory for storage files.
 
 ### Improvements/bugfixes
 - Fix the auto-reload issue during app development.
