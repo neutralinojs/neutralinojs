@@ -20,6 +20,8 @@
 #include "api/window/window.h"
 #include "api/computer/computer.h"
 
+#include "lib/platformfolders/platform_folders.h"
+
 using namespace std;
 using json = nlohmann::json;
 
@@ -28,12 +30,22 @@ namespace settings {
 json options;
 json globalArgs;
 string appPath;
+string systemDataPath;
+string appDataPath; // appPath or systemDataPath based on config.dataLocation
 string configFile = NEU_APP_CONFIG_FILE;
 
 vector<settings::ConfigOverride> configOverrides;
 
 string joinAppPath(const string &filename) {
     return appPath + filename;
+}
+
+string joinAppDataPath(const string &filename) {
+    return appDataPath + filename;
+}
+
+string joinSystemDataPath(const string &filename) {
+    return systemDataPath + filename;
 }
 
 string getAppPath() {
@@ -89,6 +101,17 @@ bool init() {
         options = options.patch(patches);
     }
 
+    systemDataPath = sago::getDataHome() + "/" + settings::getAppId();
+    systemDataPath = helpers::normalizePath(systemDataPath);
+
+    string dataLoc = "app";
+    json jLoc = settings::getOptionForCurrentMode("dataLocation");
+    if(!jLoc.is_null()) {
+        dataLoc = jLoc.get<string>();
+    }
+    
+    appDataPath = dataLoc == "system" ? systemDataPath : appPath;
+
     return true;
 }
 
@@ -97,8 +120,12 @@ json getConfig() {
 }
 
 string getAppId() {
-    return !options["applicationId"].is_null() ?
-        options["applicationId"].get<string>() : "js.neutralino.framework";
+    if(!options["applicationId"].is_null()) {
+        string appId = options["applicationId"].get<string>();
+        appId = regex_replace(appId, regex("[^\\w.]"), "");
+        return regex_replace(appId, regex("[.]{2,}"), ".");
+    }
+    return "js.neutralino.framework";
 }
 
 string getNavigationUrl() {
@@ -121,6 +148,7 @@ string getGlobalVars(){
     jsSnippet += "var NL_CWD='" + fs::getCurrentDirectory() + "';";
     jsSnippet += "var NL_ARGS=" + globalArgs.dump() + ";";
     jsSnippet += "var NL_PATH='" + appPath + "';";
+    jsSnippet += "var NL_DATAPATH='" + appDataPath + "';";
     jsSnippet += "var NL_PID=" + to_string(app::getProcessId()) + ";";
     jsSnippet += "var NL_RESMODE='" + resources::getModeString() + "';";
     jsSnippet += "var NL_EXTENABLED=" + json(extensions::isInitialized()).dump() + ";";
@@ -228,6 +256,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
         {"--single-page-serve", {"/singlePageServe", "bool"}},
         {"--enable-extensions", {"/enableExtensions", "bool"}},
         {"--export-auth-info", {"/exportAuthInfo", "bool"}},
+        {"--data-location", {"/dataLocation", "string"}},
         {"--storage-location", {"/storageLocation", "string"}},
         // Window mode
         {"--window-title", {"/modes/window/title", "string"}},

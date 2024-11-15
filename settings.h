@@ -49,6 +49,8 @@ string getNavigationUrl();
 string getGlobalVars();
 void setGlobalArgs(const json &args);
 string joinAppPath(const string &filename);
+string joinSystemDataPath(const string &filename);
+string joinAppDataPath(const string &filename);
 string getAppPath();
 string getConfigFile();
 settings::AppMode getMode();

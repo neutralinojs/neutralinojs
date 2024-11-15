@@ -1,6 +1,6 @@
 {
     "$schema": "https://raw.githubusercontent.com/neutralinojs/neutralinojs/main/schemas/neutralino.config.schema.json",
-    "applicationId": "js.neutralino.sample",
+    "applicationId": "//../js.neutralino.sample/test",
     "version": "0.0.1",
     "defaultMode": "window",
     "port": 0,
@@ -9,6 +9,7 @@
     "enableServer": true,
     "tokenSecurity": "one-time",
     "storageLocation": "system",
+    "dataLocation": "system",
     "enableNativeAPI": true,
     "exportAuthInfo": false,
     "serverHeaders": {

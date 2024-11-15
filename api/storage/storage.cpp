@@ -36,13 +36,7 @@ void init() {
         storageLoc = jLoc.get<string>();
     }
     
-    if(storageLoc == "system") {
-        storagePath = sago::getDataHome() + "/" + settings::getAppId() + NEU_STORAGE_DIR;
-        storagePath = helpers::normalizePath(storagePath);
-    }
-    else {
-        storagePath = settings::joinAppPath(NEU_STORAGE_DIR);
-    }
+    storagePath = storageLoc == "system" ? settings::joinSystemDataPath(NEU_STORAGE_DIR) : settings::joinAppPath(NEU_STORAGE_DIR);
 }
 
 namespace controllers {

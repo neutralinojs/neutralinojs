@@ -927,7 +927,7 @@ var Neutralino = (function (exports) {
         getMethods: getMethods
     };
 
-    var version = "5.4.0";
+    var version = "5.5.0";
 
     let initialized = false;
     function init(options = {}) {

@@ -202,13 +202,13 @@ void __saveWindowProps() {
     options["y"] = pos.second;
     options["maximize"] = window::isMaximized();
 
-    filesystem::create_directories(CONVSTR(settings::joinAppPath("/.tmp")));
-    fs::FileWriterOptions writerOptions = { settings::joinAppPath(NEU_WIN_CONFIG_FILE), options.dump() };
+    filesystem::create_directories(CONVSTR(settings::joinAppDataPath("/.tmp")));
+    fs::FileWriterOptions writerOptions = { settings::joinAppDataPath(NEU_WIN_CONFIG_FILE), options.dump() };
     fs::writeFile(writerOptions);
 }
 
 bool __loadSavedWindowProps() {
-    fs::FileReaderResult readerResult = fs::readFile(settings::joinAppPath(NEU_WIN_CONFIG_FILE));
+    fs::FileReaderResult readerResult = fs::readFile(settings::joinAppDataPath(NEU_WIN_CONFIG_FILE));
     if(readerResult.status != errors::NE_ST_OK) {
         return false;
     }

@@ -109,7 +109,7 @@ void init(const json &input) {
 
     chromeCmd += " " + __getDefaultChromeArgs();
 
-    chromeCmd += " --user-data-dir=\"" + settings::joinAppPath("/.tmp/chromedata") + "\"";
+    chromeCmd += " --user-data-dir=\"" + settings::joinAppDataPath("/.tmp/chromedata") + "\"";
     chromeCmd += " --app=\"" + input["url"].get<string>() + "\"";
 
     if(helpers::hasRequiredFields(input, {"width", "height"})) {

@@ -89,7 +89,7 @@ void __configureLogger() {
 
     if(enableLogFile) {
         defaultConf.setGlobally(
-                el::ConfigurationType::Filename, settings::joinAppPath(NEU_APP_LOG_FILE));
+                el::ConfigurationType::Filename, settings::joinAppDataPath(NEU_APP_LOG_FILE));
     }
     defaultConf.setGlobally(
             el::ConfigurationType::ToFile, enableLogFile ? "true" : "false");
