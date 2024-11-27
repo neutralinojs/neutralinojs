@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build-linux:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     
     strategy:
       matrix:
@@ -20,8 +20,8 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y -f \
         libgtk-3-dev \
-        libwebkit2gtk-4.0-37 \
-        libwebkit2gtk-4.0-dev \
+        libwebkit2gtk-4.1-0 \
+        libwebkit2gtk-4.1-dev \
         libayatana-appindicator3-1 \
         xvfb
 
