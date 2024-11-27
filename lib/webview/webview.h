@@ -60,6 +60,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <type_traits>
 
 #include <cstring>
 
@@ -87,8 +88,55 @@ static int processExitCode = 0;
 #include <gtk/gtk.h>
 #include <gdk/gdkscreen.h>
 #include <cairo/cairo.h>
-#include <webkit2/webkit2.h>
+#include <dlfcn.h>
 
+
+// webkit2gtk definitions
+using WebKitWebView = struct _WebKitWebView;
+using WebKitSettings = struct _WebKitSettings;
+using WebKitWebInspector = struct _WebKitWebInspector;
+using WebKitUserContentManager = struct _WebKitUserContentManager;
+using WebKitUserScript = struct _WebKitUserScript;
+
+enum WebKitUserContentInjectedFrames {
+  WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
+  WEBKIT_USER_CONTENT_INJECT_TOP_FRAME
+};
+
+enum WebKitUserScriptInjectionTime {
+  WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START,
+  WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_END,
+};
+
+using webkit_web_view_new_func = std::add_pointer<GtkWidget*()>::type;
+using webkit_web_view_get_settings_func = std::add_pointer<WebKitSettings*(WebKitWebView*)>::type;
+using webkit_settings_set_javascript_can_access_clipboard_func = std::add_pointer<void(WebKitSettings*, bool)>::type;
+using webkit_settings_set_enable_write_console_messages_to_stdout_func = std::add_pointer<void(WebKitSettings*, bool)>::type;
+using webkit_settings_set_enable_developer_extras_func = std::add_pointer<void(WebKitSettings*, bool)>::type;
+using webkit_web_view_get_inspector_func = std::add_pointer<WebKitWebInspector*(WebKitWebView*)>::type;
+using webkit_web_inspector_show_func = std::add_pointer<void(WebKitWebInspector*)>::type;
+using webkit_web_view_set_background_color_func = std::add_pointer<void(WebKitWebView*, const GdkRGBA*)>::type;
+using webkit_web_view_get_user_content_manager_func = std::add_pointer<WebKitUserContentManager*(WebKitWebView*)>::type;
+using webkit_user_content_manager_add_script_func = std::add_pointer<void(WebKitUserContentManager*, WebKitUserScript*)>::type;
+using webkit_user_script_new_func = std::add_pointer<WebKitUserScript*(const char*, WebKitUserContentInjectedFrames, WebKitUserScriptInjectionTime, const char*, const char*)>::type;
+using webkit_settings_get_user_agent_func = std::add_pointer<const char*(WebKitSettings*)>::type;
+using webkit_settings_set_user_agent_func = std::add_pointer<void(WebKitSettings*, const char*)>::type;
+using webkit_web_view_load_uri_func = std::add_pointer<void(WebKitWebView*, const char*)>::type;
+
+webkit_web_view_new_func webkit_web_view_new = nullptr;
+webkit_web_view_get_settings_func webkit_web_view_get_settings = nullptr;
+webkit_settings_set_javascript_can_access_clipboard_func webkit_settings_set_javascript_can_access_clipboard = nullptr;
+webkit_settings_set_enable_write_console_messages_to_stdout_func webkit_settings_set_enable_write_console_messages_to_stdout = nullptr;
+webkit_settings_set_enable_developer_extras_func webkit_settings_set_enable_developer_extras = nullptr;
+webkit_web_view_get_inspector_func webkit_web_view_get_inspector = nullptr;
+webkit_web_inspector_show_func webkit_web_inspector_show = nullptr;
+webkit_web_view_set_background_color_func webkit_web_view_set_background_color = nullptr;
+webkit_web_view_get_user_content_manager_func webkit_web_view_get_user_content_manager = nullptr;
+webkit_user_content_manager_add_script_func webkit_user_content_manager_add_script = nullptr;
+webkit_user_script_new_func webkit_user_script_new = nullptr;
+webkit_settings_get_user_agent_func webkit_settings_get_user_agent = nullptr;
+webkit_settings_set_user_agent_func webkit_settings_set_user_agent = nullptr;
+webkit_web_view_load_uri_func webkit_web_view_load_uri = nullptr;
 
 namespace webview {
 
@@ -171,6 +219,40 @@ public:
         }),
     nullptr);
 
+    // libwebkit2gtk loader
+    const std::vector<std::string> libs = {
+      "libwebkit2gtk-4.0.so.37",
+      "libwebkit2gtk-4.1.so.0"
+    };
+
+    void *dlib = nullptr;
+
+    for(const auto &lib: libs) {
+      dlib = dlopen(lib.c_str(), RTLD_LAZY);
+
+      if(dlib) break;
+    }
+
+    if(!dlib) {
+      std::cerr << "ERR: libwebkit2gtk-4.0-37 or libwebkit2gtk-4.1-0 required to run Neutralinojs apps." << std::endl;
+      std::exit(1);
+    }
+
+    webkit_web_view_new = (webkit_web_view_new_func)(dlsym(dlib, "webkit_web_view_new"));
+    webkit_web_view_get_settings = (webkit_web_view_get_settings_func)(dlsym(dlib, "webkit_web_view_get_settings"));
+    webkit_settings_set_javascript_can_access_clipboard = (webkit_settings_set_javascript_can_access_clipboard_func)(dlsym(dlib, "webkit_settings_set_javascript_can_access_clipboard"));
+    webkit_settings_set_enable_write_console_messages_to_stdout = (webkit_settings_set_enable_write_console_messages_to_stdout_func)(dlsym(dlib, "webkit_settings_set_enable_write_console_messages_to_stdout"));
+    webkit_settings_set_enable_developer_extras = (webkit_settings_set_enable_developer_extras_func)(dlsym(dlib, "webkit_settings_set_enable_developer_extras"));
+    webkit_web_view_get_inspector = (webkit_web_view_get_inspector_func)(dlsym(dlib, "webkit_web_view_get_inspector"));
+    webkit_web_inspector_show = (webkit_web_inspector_show_func)(dlsym(dlib, "webkit_web_inspector_show"));
+    webkit_web_view_set_background_color = (webkit_web_view_set_background_color_func)(dlsym(dlib, "webkit_web_view_set_background_color"));
+    webkit_web_view_get_user_content_manager = (webkit_web_view_get_user_content_manager_func)(dlsym(dlib, "webkit_web_view_get_user_content_manager"));
+    webkit_user_content_manager_add_script = (webkit_user_content_manager_add_script_func)(dlsym(dlib, "webkit_user_content_manager_add_script"));
+    webkit_user_script_new = (webkit_user_script_new_func)(dlsym(dlib, "webkit_user_script_new"));
+    webkit_settings_get_user_agent = (webkit_settings_get_user_agent_func)(dlsym(dlib, "webkit_settings_get_user_agent"));
+    webkit_settings_set_user_agent = (webkit_settings_set_user_agent_func)(dlsym(dlib, "webkit_settings_set_user_agent"));
+    webkit_web_view_load_uri = (webkit_web_view_load_uri_func)(dlsym(dlib, "webkit_web_view_load_uri"));
+
     // Initialize webview widget
     m_webview = webkit_web_view_new();
 
@@ -178,19 +260,19 @@ public:
     gtk_widget_grab_focus(GTK_WIDGET(m_webview));
 
     WebKitSettings *settings =
-        webkit_web_view_get_settings(WEBKIT_WEB_VIEW(m_webview));
+        webkit_web_view_get_settings((WebKitWebView*)(m_webview));
     webkit_settings_set_javascript_can_access_clipboard(settings, true);
     if (debug) {
       webkit_settings_set_enable_write_console_messages_to_stdout(settings,
                                                                   true);
       webkit_settings_set_enable_developer_extras(settings, true);
-      WebKitWebInspector *inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(m_webview));
-      webkit_web_inspector_show(WEBKIT_WEB_INSPECTOR(inspector));
+      WebKitWebInspector *inspector = webkit_web_view_get_inspector((WebKitWebView*)(m_webview));
+      webkit_web_inspector_show((WebKitWebInspector*)(inspector));
     }
 
     if(transparent) {
-      GdkRGBA color { 0, 0, 0, 0};
-      webkit_web_view_set_background_color(WEBKIT_WEB_VIEW(m_webview), &color);
+      GdkRGBA color { 0, 0, 0, 0 };
+      webkit_web_view_set_background_color((WebKitWebView*)(m_webview), &color);
     }
 
     gtk_widget_show_all(m_window);
@@ -213,11 +295,11 @@ public:
 
   void init(const std::string js) {
     WebKitUserContentManager *manager =
-        webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(m_webview));
-    webkit_user_content_manager_add_script(
-        manager, webkit_user_script_new(
-                     js.c_str(), WEBKIT_USER_CONTENT_INJECT_TOP_FRAME,
-                     WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START, NULL, NULL));
+      webkit_web_view_get_user_content_manager((WebKitWebView*)(m_webview));
+      webkit_user_content_manager_add_script(
+          manager, webkit_user_script_new(
+                      js.c_str(), WEBKIT_USER_CONTENT_INJECT_TOP_FRAME,
+                      WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START, NULL, NULL));
   }
 
   void set_title(const std::string title) {
@@ -226,7 +308,7 @@ public:
 
   void extend_user_agent(const std::string customAgent) {
     WebKitSettings *settings =
-      webkit_web_view_get_settings(WEBKIT_WEB_VIEW(m_webview));
+      webkit_web_view_get_settings((WebKitWebView*)(m_webview));
       std::string ua = std::string(webkit_settings_get_user_agent(settings)) + " " + customAgent;
       webkit_settings_set_user_agent(settings, ua.c_str());
   }
@@ -253,7 +335,7 @@ public:
       g.min_height = minHeight;
       g.max_width = maxWidth;
       g.max_height = maxHeight;
-      gtk_window_set_geometry_hints(GTK_WINDOW(m_window), nullptr, &g, h);
+      gtk_window_set_geometry_hints(GTK_WINDOW(m_window), NULL, &g, h);
     }
     gtk_window_set_resizable(GTK_WINDOW(m_window), resizable);
     if(width != -1 || height != -1) {
@@ -265,7 +347,7 @@ public:
   }
 
   void navigate(const std::string url) {
-    webkit_web_view_load_uri(WEBKIT_WEB_VIEW(m_webview), url.c_str());
+    webkit_web_view_load_uri((WebKitWebView*)(m_webview), url.c_str());
   }
 
 private:
