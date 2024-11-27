@@ -31,6 +31,7 @@ Developers can use native API calls within initialization scripts if `window.inj
 - Implement the `storageLocation` config option to let developers use system data directory for the Neutralinojs storage. If this option is 'app' (default), the framework store storage files within the app directory. If `system` is used, the framework will use the platform-specific standard data directory. In both `app` and `system` modes, the framework will use the `.storage` sub-directory for storage files.
 
 ### Improvements/bugfixes
+- Search and load WebKitGtk functions dynamically from the available webkit2gtk library: `libwebkit2gtk-4.0-37` or `libwebkit2gtk-4.1-0`.
 - Fix the auto-reload issue during app development.
 
 ## v5.4.0
