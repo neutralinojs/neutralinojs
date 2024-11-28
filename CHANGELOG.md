@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v5.5.0
+
 ### Client library and globals injection
 Neutralinojs apps usually load globals and the client library using HTTP requests via the static server. This mechanism implements a generic way to enable the native API on all supported Neutralinojs app modes. However, this strategy prevents
 enabling the Neutralinojs native API if the primary web app is loaded through another server (local or remote). Now, app developers can inject globals and
