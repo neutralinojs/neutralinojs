@@ -550,6 +550,127 @@ void _close(int exitCode) {
     }
 }
 
+#if defined(_WIN32)
+int _GetEncoderClsid(const WCHAR *format, CLSID *pClsid) {
+    UINT num = 0; // Number of image encoders
+    UINT size = 0; // Size of the image encoder array in bytes
+
+    Gdiplus::GetImageEncodersSize(&num, &size);
+    if (size == 0) return -1; // Failure
+
+    Gdiplus::ImageCodecInfo *pImageCodecInfo = (Gdiplus::ImageCodecInfo *)(malloc(size));
+    if (pImageCodecInfo == NULL) return -1; // Failure
+
+    Gdiplus::GetImageEncoders(num, size, pImageCodecInfo);
+    for (UINT i = 0; i < num; ++i) {
+        if (wcscmp(pImageCodecInfo[i].MimeType, format) == 0) {
+            *pClsid = pImageCodecInfo[i].Clsid;
+            free(pImageCodecInfo);
+            return i; // Success
+        }
+    }
+    free(pImageCodecInfo);
+    return -1; // Failure
+}
+#endif
+
+void captureScreen(const std::string &outputFile) {
+    #if defined(__linux__) || defined(__FreeBSD__)              // Working Fine Verifeid
+    if (!gtk_init_check(0, nullptr)) {
+        std::cerr << "GTK initialization failed." << std::endl;
+        return;
+    }
+
+    // Get the application's window handle
+    GdkWindow *window = gtk_widget_get_window(GTK_WIDGET(windowHandle)); 
+    if (!window) {
+        std::cerr << "Unable to get the application window." << std::endl;
+        return;
+    }
+
+    // Get window geometry (width, height)
+    int width, height;
+    gdk_window_get_geometry(window, nullptr, nullptr, &width, &height);
+
+    // Capture the application window 
+    GdkPixbuf *screenshot = gdk_pixbuf_get_from_window(window, 0, 0, width, height);
+    if (!screenshot) {
+        std::cerr << "Failed to capture the application window." << std::endl;
+        return;
+    }
+
+    // Save screenshot to file
+    GError *error = nullptr;
+    if (!gdk_pixbuf_save(screenshot, outputFilePath.c_str(), "png", &error, nullptr)) {
+        std::cerr << "Failed to save screenshot: " << error->message << std::endl;
+        g_error_free(error);
+    } else {
+        std::cout << "Screenshot saved to: " << outputFilePath << std::endl;
+    }
+
+    // Free resources
+    g_object_unref(screenshot);
+
+    #elif defined(__APPLE__)
+    // macOS implementation not done
+   
+
+    #elif defined(_WIN32)                                       // Working Fine Verifeid
+    SetProcessDPIAware();
+
+    // Initialize GDI+
+    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+    ULONG_PTR gdiplusToken;
+    if (Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr) != Gdiplus::Ok) {
+        std::cerr << "Error: Failed to initialize GDI+." << std::endl;
+        return;
+    }
+
+    // Get window dimensions
+    RECT rect;
+    GetWindowRect(windowHandle, &rect);
+    int width = rect.right - rect.left;
+    int height = rect.bottom - rect.top;
+
+    // Create a compatible DC and bitmap
+    HDC hdcWindow = GetDC(windowHandle);
+    HDC hdcMem = CreateCompatibleDC(hdcWindow);
+    HBITMAP hBitmap = CreateCompatibleBitmap(hdcWindow, width, height);
+
+    SelectObject(hdcMem, hBitmap);
+
+    // Use PrintWindow for more accurate rendering
+    if (!PrintWindow(windowHandle, hdcMem, PW_RENDERFULLCONTENT)) {
+        std::cerr << "Warning: PrintWindow failed. Falling back to BitBlt." << std::endl;
+
+        // Fallback to BitBlt
+        if (!BitBlt(hdcMem, 0, 0, width, height, hdcWindow, 0, 0, SRCCOPY)) {
+            std::cerr << "Error: BitBlt also failed." << std::endl;
+            DeleteObject(hBitmap);
+            DeleteDC(hdcMem);
+            ReleaseDC(windowHandle, hdcWindow);
+            Gdiplus::GdiplusShutdown(gdiplusToken);
+            return;
+        }
+    }
+
+    // Save the bitmap using GDI+
+    Gdiplus::Bitmap bitmap(hBitmap, nullptr);
+    CLSID clsid;
+    if (_GetEncoderClsid(L"image/png", &clsid) == -1) {
+        std::cerr << "Error: PNG encoder not found." << std::endl;
+    } else {
+        std::wstring ws(outputFile.begin(), outputFile.end());
+        Gdiplus::Status status = bitmap.Save(ws.c_str(), &clsid, nullptr);
+        if (status != Gdiplus::Ok) {
+            std::cerr << "Error: Failed to save the screenshot. GDI+ status: " << status << std::endl;
+        } else {
+            std::cout << "Screenshot saved to: " << outputFile << std::endl;
+        }
+    }
+    #endif
+}
+
 namespace controllers {
 
 void __injectClientLibrary() {
@@ -959,6 +1080,20 @@ json init(const json &input) {
         windowProps.injectClientLibrary = input["injectClientLibrary"].get<bool>();
 
     __createWindow();
+    output["success"] = true;
+    return output;
+}
+
+json captureScreen(const json &input) {
+    json output;
+    if (!helpers::hasRequiredFields(input, {"outputFile"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    
+
+    std::string outputFile = input["outputFile"].get<std::string>();
+    window::captureScreen(outputFile);
     output["success"] = true;
     return output;
 }

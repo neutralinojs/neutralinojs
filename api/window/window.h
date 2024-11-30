@@ -94,6 +94,7 @@ pair<int, int> getPosition();
 void center(bool useConfigSizes);
 void setAlwaysOnTop(bool onTop);
 void setBorderless();
+void captureScreen(const string &outputfile);
 
 void _close(int exitCode);
 
@@ -122,6 +123,7 @@ json setSize(const json &input);
 json getSize(const json &input);
 json getPosition(const json &input);
 json setAlwaysOnTop(const json &input);
+json captureScreen(const json &input);
 
 } // namespace controllers
 

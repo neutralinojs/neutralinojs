@@ -731,9 +731,13 @@ function create(url, options) {
         });
     });
 }
+function captureScreen(outputFile) {
+    return sendMessage('window.captureScreen', { outputFile });
+}
 
 var window$1 = /*#__PURE__*/Object.freeze({
     __proto__: null,
+    captureScreen: captureScreen,
     center: center,
     create: create,
     exitFullScreen: exitFullScreen,
