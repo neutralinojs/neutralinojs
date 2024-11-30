@@ -734,9 +734,13 @@ var Neutralino = (function (exports) {
             });
         });
     }
+    function captureScreen(outputFile) {
+        return sendMessage('window.captureScreen', { outputFile });
+    }
 
     var window$1 = {
         __proto__: null,
+        captureScreen: captureScreen,
         center: center,
         create: create,
         exitFullScreen: exitFullScreen,
