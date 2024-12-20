@@ -240,7 +240,7 @@ def compile(cmd):
     sys.exit(exit_code)
 
 def print_ascii_art():
-    print('''
+    print(r'''
   ____        _ _     _ ______     _
  |  _ \      (_) |   | |___  /    (_)
  | |_) |_   _ _| | __| |  / / _ __ _
