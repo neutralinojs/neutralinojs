@@ -15,12 +15,13 @@ describe('window.spec: window namespace tests', () => {
     });
 
     describe('window.getTitle', () => {
-        it('returns a string value', async () => {
+        it('checks title value', async () => {
             runner.run(`
+                await Neutralino.window.setTitle("NeutralinoJs");
                 let title = await Neutralino.window.getTitle();
                 await __close(JSON.stringify({out: title}));
             `);
-            assert.ok(typeof JSON.parse(runner.getOutput()).out == 'string');
+            assert.ok(JSON.parse(runner.getOutput()).out === "NeutralinoJs");
         });
     });
 
