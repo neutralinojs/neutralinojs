@@ -94,7 +94,7 @@ pair<int, int> getPosition();
 void center(bool useConfigSizes);
 void setAlwaysOnTop(bool onTop);
 void setBorderless();
-void captureScreen(const string &outputfile);
+bool snapshot(const string &filename);
 
 void _close(int exitCode);
 

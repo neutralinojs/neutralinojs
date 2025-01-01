@@ -1030,7 +1030,7 @@ json init(const json &input) {
     return output;
 }
 
-json screenshot(const json &input) {
+json snapshot(const json &input) {
     json output;
     if (!helpers::hasRequiredFields(input, {"path"})) {
         output["error"] = errors::makeMissingArgErrorPayload();
@@ -1038,7 +1038,7 @@ json screenshot(const json &input) {
     }
 
     string imageFile = input["path"].get<string>();
-    if(window::screenshot(imageFile)) {
+    if(window::snapshot(imageFile)) {
         output["success"] = true;
     }
     else {
