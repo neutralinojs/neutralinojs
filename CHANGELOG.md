@@ -9,6 +9,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ### Improvements/bugfixes
 - Fix the empty string returning issue with the `window.getTitle()` function on Windows.
 
+### DevOps
+- Fix minor string formatting issues in the BuildZri automation script.
+
 ## v5.5.0
 
 ### Client library and globals injection
