@@ -613,7 +613,7 @@ bool snapshot(const string &filename) {
     DeleteObject(hBitmap);
     GdiplusShutdown(gdiplusToken);
 
-    return true;
+    return status;
     #endif
 }
 
