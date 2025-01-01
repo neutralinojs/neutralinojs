@@ -2,9 +2,6 @@
 .lite_workspace.lua
 .vscode
 
-# Neutralinojs client (minified)
-neutralino.js
-
 # Neutralinojs related files
 .storage
 *.log
