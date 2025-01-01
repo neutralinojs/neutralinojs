@@ -250,6 +250,19 @@ bool __loadSavedWindowProps() {
     return true;
 }
 
+void _close(int exitCode) {
+    if(nativeWindow) {
+        if(windowProps.useSavedState) {
+            __saveWindowProps();
+        }
+        nativeWindow->terminate(exitCode);
+        #if defined(_WIN32)
+        FreeConsole();
+        #endif
+        delete nativeWindow;
+    }
+}
+
 NEU_W_HANDLE getWindowHandle() {
     return windowHandle;
 }
@@ -557,19 +570,6 @@ void setBorderless() {
     SetWindowPos(windowHandle, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |
                     SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
     #endif
-}
-
-void _close(int exitCode) {
-    if(nativeWindow) {
-        if(windowProps.useSavedState) {
-            __saveWindowProps();
-        }
-        nativeWindow->terminate(exitCode);
-        #if defined(_WIN32)
-        FreeConsole();
-        #endif
-        delete nativeWindow;
-    }
 }
 
 bool snapshot(const string &filename) {
