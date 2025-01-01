@@ -6,6 +6,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### Improvements/bugfixes
+- Fix the empty string returning issue with the `window.getTitle()` function on Windows.
+
 ## v5.5.0
 
 ### Client library and globals injection
