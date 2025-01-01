@@ -734,8 +734,8 @@ var Neutralino = (function (exports) {
             });
         });
     }
-    function screenshot(path) {
-        return sendMessage('window.screenshot', { path });
+    function snapshot(path) {
+        return sendMessage('window.snapshot', { path });
     }
 
     var window$1 = {
@@ -755,7 +755,6 @@ var Neutralino = (function (exports) {
         maximize: maximize,
         minimize: minimize,
         move: move,
-        screenshot: screenshot,
         setAlwaysOnTop: setAlwaysOnTop,
         setDraggableRegion: setDraggableRegion,
         setFullScreen: setFullScreen,
@@ -763,6 +762,7 @@ var Neutralino = (function (exports) {
         setSize: setSize,
         setTitle: setTitle,
         show: show,
+        snapshot: snapshot,
         unmaximize: unmaximize,
         unminimize: unminimize,
         unsetDraggableRegion: unsetDraggableRegion

@@ -179,6 +179,28 @@ void __undoFakeHidden() {
         x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 	ShowWindow(windowHandle, SW_SHOW);
 }
+
+bool __getEncoderClsid(const WCHAR *format, CLSID *pClsid) {
+    UINT num = 0;
+    UINT size = 0;
+
+    GetImageEncodersSize(&num, &size);
+    if(size == 0) return false; // Failure
+
+    ImageCodecInfo *pImageCodecInfo = (ImageCodecInfo *)(malloc(size));
+    if(pImageCodecInfo == NULL) return false;
+
+    GetImageEncoders(num, size, pImageCodecInfo);
+    for(UINT i = 0; i < num; ++i) {
+        if(wcscmp(pImageCodecInfo[i].MimeType, format) == 0) {
+            *pClsid = pImageCodecInfo[i].Clsid;
+            free(pImageCodecInfo);
+            return true;
+        }
+    }
+    free(pImageCodecInfo);
+    return false;
+}
 #endif
 
 json __sizeOptionsToJson(const window::SizeOptions &opt) {
@@ -550,31 +572,7 @@ void _close(int exitCode) {
     }
 }
 
-#if defined(_WIN32)
-int _GetEncoderClsid(const WCHAR *format, CLSID *pClsid) {
-    UINT num = 0; // Number of image encoders
-    UINT size = 0; // Size of the image encoder array in bytes
-
-    Gdiplus::GetImageEncodersSize(&num, &size);
-    if (size == 0) return -1; // Failure
-
-    Gdiplus::ImageCodecInfo *pImageCodecInfo = (Gdiplus::ImageCodecInfo *)(malloc(size));
-    if (pImageCodecInfo == NULL) return -1; // Failure
-
-    Gdiplus::GetImageEncoders(num, size, pImageCodecInfo);
-    for (UINT i = 0; i < num; ++i) {
-        if (wcscmp(pImageCodecInfo[i].MimeType, format) == 0) {
-            *pClsid = pImageCodecInfo[i].Clsid;
-            free(pImageCodecInfo);
-            return i; // Success
-        }
-    }
-    free(pImageCodecInfo);
-    return -1; // Failure
-}
-#endif
-
-bool screenshot(const string &filename) {
+bool snapshot(const string &filename) {
     #if defined(__linux__) || defined(__FreeBSD__)
     int width, height, x, y;
     GdkWindow *window = gtk_widget_get_window(windowHandle);
@@ -587,58 +585,34 @@ bool screenshot(const string &filename) {
    
 
     #elif defined(_WIN32)
-    SetProcessDPIAware();
-
-    // Initialize GDI+
-    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+    GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;
-    if (Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr) != Gdiplus::Ok) {
-        std::cerr << "Error: Failed to initialize GDI+." << std::endl;
-        return;
-    }
+    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
 
-    // Get window dimensions
     RECT rect;
-    GetWindowRect(windowHandle, &rect);
+    GetClientRect(windowHandle, &rect);
     int width = rect.right - rect.left;
     int height = rect.bottom - rect.top;
 
-    // Create a compatible DC and bitmap
     HDC hdcWindow = GetDC(windowHandle);
     HDC hdcMem = CreateCompatibleDC(hdcWindow);
     HBITMAP hBitmap = CreateCompatibleBitmap(hdcWindow, width, height);
 
     SelectObject(hdcMem, hBitmap);
 
-    // Use PrintWindow for more accurate rendering
-    if (!PrintWindow(windowHandle, hdcMem, PW_RENDERFULLCONTENT)) {
-        std::cerr << "Warning: PrintWindow failed. Falling back to BitBlt." << std::endl;
+    if(!PrintWindow(windowHandle, hdcMem, PW_CLIENTONLY | PW_RENDERFULLCONTENT)) return false;
 
-        // Fallback to BitBlt
-        if (!BitBlt(hdcMem, 0, 0, width, height, hdcWindow, 0, 0, SRCCOPY)) {
-            std::cerr << "Error: BitBlt also failed." << std::endl;
-            DeleteObject(hBitmap);
-            DeleteDC(hdcMem);
-            ReleaseDC(windowHandle, hdcWindow);
-            Gdiplus::GdiplusShutdown(gdiplusToken);
-            return;
-        }
-    }
-
-    // Save the bitmap using GDI+
-    Gdiplus::Bitmap bitmap(hBitmap, nullptr);
+    Bitmap *bitmap = Bitmap::FromHBITMAP(hBitmap, nullptr);
     CLSID clsid;
-    if (_GetEncoderClsid(L"image/png", &clsid) == -1) {
-        std::cerr << "Error: PNG encoder not found." << std::endl;
-    } else {
-        std::wstring ws(outputFile.begin(), outputFile.end());
-        Gdiplus::Status status = bitmap.Save(ws.c_str(), &clsid, nullptr);
-        if (status != Gdiplus::Ok) {
-            std::cerr << "Error: Failed to save the screenshot. GDI+ status: " << status << std::endl;
-        } else {
-            std::cout << "Screenshot saved to: " << outputFile << std::endl;
-        }
-    }
+    if(!__getEncoderClsid(L"image/png", &clsid)) return false;
+
+    bool status = bitmap->Save(CONVSTR(filename).c_str(), &clsid, nullptr) == Gdiplus::Ok;
+
+    DeleteDC(hdcMem);
+    ReleaseDC(windowHandle, hdcWindow);
+    DeleteObject(hBitmap);
+    GdiplusShutdown(gdiplusToken);
+
     return true;
     #endif
 }

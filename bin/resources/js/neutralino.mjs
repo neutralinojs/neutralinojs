@@ -731,8 +731,8 @@ function create(url, options) {
         });
     });
 }
-function screenshot(path) {
-    return sendMessage('window.screenshot', { path });
+function snapshot(path) {
+    return sendMessage('window.snapshot', { path });
 }
 
 var window$1 = /*#__PURE__*/Object.freeze({
@@ -752,7 +752,6 @@ var window$1 = /*#__PURE__*/Object.freeze({
     maximize: maximize,
     minimize: minimize,
     move: move,
-    screenshot: screenshot,
     setAlwaysOnTop: setAlwaysOnTop,
     setDraggableRegion: setDraggableRegion,
     setFullScreen: setFullScreen,
@@ -760,6 +759,7 @@ var window$1 = /*#__PURE__*/Object.freeze({
     setSize: setSize,
     setTitle: setTitle,
     show: show,
+    snapshot: snapshot,
     unmaximize: unmaximize,
     unminimize: unminimize,
     unsetDraggableRegion: unsetDraggableRegion
