@@ -4,6 +4,27 @@ const runner = require('./runner');
 
 describe('window.spec: window namespace tests', () => {
 
+    describe('window.captureScreen', () => {
+        it('captures the screen and saves to the specified file path', async () => {
+            runner.run(`
+                await Neutralino.window.captureScreen("screenshot.png");
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+
+        it('throws an error for missing file path parameter', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.window.captureScreen();
+                } catch (err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+            });
+    }); 
+
     describe('window.setTitle', () => {
         it('works without parameters', async () => {
             runner.run(`
