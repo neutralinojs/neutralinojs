@@ -123,7 +123,7 @@ json setSize(const json &input);
 json getSize(const json &input);
 json getPosition(const json &input);
 json setAlwaysOnTop(const json &input);
-json captureScreen(const json &input);
+json screenshot(const json &input);
 
 } // namespace controllers
 

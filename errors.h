@@ -40,7 +40,7 @@ enum StatusCode {
     NE_FS_UNLCWAT,
     NE_FS_NOWATID,
     // window
-    NE_CF_UNBLWCF,
+    NE_WI_UNBSWSR,
     // router
     NE_RT_INVTOKN,
     NE_RT_APIPRME,
@@ -58,7 +58,8 @@ enum StatusCode {
     // config
     NE_CF_UNBLDCF,
     NE_CF_UNBPRCF,
-    NE_CF_UNSUPMD
+    NE_CF_UNSUPMD,
+    NE_CF_UNBLWCF
 };
 
 json makeMissingArgErrorPayload();

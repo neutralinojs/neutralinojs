@@ -574,48 +574,19 @@ int _GetEncoderClsid(const WCHAR *format, CLSID *pClsid) {
 }
 #endif
 
-void captureScreen(const std::string &outputFile) {
-    #if defined(__linux__) || defined(__FreeBSD__)              // Working Fine Verifeid
-    if (!gtk_init_check(0, nullptr)) {
-        std::cerr << "GTK initialization failed." << std::endl;
-        return;
-    }
-
-    // Get the application's window handle
-    GdkWindow *window = gtk_widget_get_window(GTK_WIDGET(windowHandle)); 
-    if (!window) {
-        std::cerr << "Unable to get the application window." << std::endl;
-        return;
-    }
-
-    // Get window geometry (width, height)
-    int width, height;
-    gdk_window_get_geometry(window, nullptr, nullptr, &width, &height);
-
-    // Capture the application window 
-    GdkPixbuf *screenshot = gdk_pixbuf_get_from_window(window, 0, 0, width, height);
-    if (!screenshot) {
-        std::cerr << "Failed to capture the application window." << std::endl;
-        return;
-    }
-
-    // Save screenshot to file
-    GError *error = nullptr;
-    if (!gdk_pixbuf_save(screenshot, outputFilePath.c_str(), "png", &error, nullptr)) {
-        std::cerr << "Failed to save screenshot: " << error->message << std::endl;
-        g_error_free(error);
-    } else {
-        std::cout << "Screenshot saved to: " << outputFilePath << std::endl;
-    }
-
-    // Free resources
-    g_object_unref(screenshot);
+bool screenshot(const string &filename) {
+    #if defined(__linux__) || defined(__FreeBSD__)
+    int width, height, x, y;
+    GdkWindow *window = gtk_widget_get_window(windowHandle);
+    gdk_window_get_geometry(window, &x, &y, &width, &height);
+    GdkPixbuf *screenshot = gdk_pixbuf_get_from_window(window, x, y, width, height);
+    return gdk_pixbuf_save(screenshot, filename.c_str(), "png", nullptr, nullptr);
 
     #elif defined(__APPLE__)
-    // macOS implementation not done
+    // TODO
    
 
-    #elif defined(_WIN32)                                       // Working Fine Verifeid
+    #elif defined(_WIN32)
     SetProcessDPIAware();
 
     // Initialize GDI+
@@ -668,6 +639,7 @@ void captureScreen(const std::string &outputFile) {
             std::cout << "Screenshot saved to: " << outputFile << std::endl;
         }
     }
+    return true;
     #endif
 }
 
@@ -1084,17 +1056,20 @@ json init(const json &input) {
     return output;
 }
 
-json captureScreen(const json &input) {
+json screenshot(const json &input) {
     json output;
-    if (!helpers::hasRequiredFields(input, {"outputFile"})) {
+    if (!helpers::hasRequiredFields(input, {"path"})) {
         output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
-    
 
-    std::string outputFile = input["outputFile"].get<std::string>();
-    window::captureScreen(outputFile);
-    output["success"] = true;
+    string imageFile = input["path"].get<string>();
+    if(window::screenshot(imageFile)) {
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_WI_UNBSWSR, imageFile);
+    }
     return output;
 }
 

@@ -40,7 +40,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_FS_UNLCWAT: return "NE_FS_UNLCWAT";
         case errors::NE_FS_NOWATID: return "NE_FS_NOWATID";
         // window
-        case errors::NE_CF_UNBLWCF: return "NE_CF_UNBLWCF";
+        case errors::NE_WI_UNBSWSR: return "NE_WI_UNBSWSR";
         // router
         case errors::NE_RT_INVTOKN: return "NE_RT_INVTOKN";
         case errors::NE_RT_APIPRME: return "NE_RT_APIPRME";
@@ -59,6 +59,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_CF_UNBLDCF: return "NE_CF_UNBLDCF";
         case errors::NE_CF_UNBPRCF: return "NE_CF_UNBPRCF";
         case errors::NE_CF_UNSUPMD: return "NE_CF_UNSUPMD";
+        case errors::NE_CF_UNBLWCF: return "NE_CF_UNBLWCF";
     }
     return "NE_ST_NOTOK";
 }
@@ -94,7 +95,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_FS_UNLCWAT: return "Unable to create watcher for path: %1";
         case errors::NE_FS_NOWATID: return "Unable to find watcher: %1";
         // window
-        case errors::NE_CF_UNBLWCF: return "Unable to load the window config file: %1";
+        case errors::NE_WI_UNBSWSR: return "Unable to save window screenshot to %1";
         // router
         case errors::NE_RT_INVTOKN: return "Invalid or expired NL_TOKEN value from client";
         case errors::NE_RT_APIPRME: return "Missing permission to access Native API";
@@ -114,6 +115,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_CF_UNBLDCF: return "Unable to load the %1 configuration file. Framework defaults will be loaded.";
         case errors::NE_CF_UNBPRCF: return "Unable to parse the config file: %1";
         case errors::NE_CF_UNSUPMD: return "Unsupported mode: %1. The default mode (window) is selected.";
+                case errors::NE_CF_UNBLWCF: return "Unable to load the window config file: %1";
     }
     return "";
 }
