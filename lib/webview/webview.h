@@ -1091,11 +1091,12 @@ public:
   }
 
   std::string get_title() {
-    int len = GetWindowTextLength(hwnd);
-    std::wstring title;
-    title.reserve(len + 1);
-    GetWindowText(hwnd, const_cast<WCHAR *>(title.c_str()), title.capacity());
-    return wstr2str(title);
+      int len = GetWindowTextLength(m_window);
+      if (len == 0) return "";
+      std::wstring title(len + 1, 0);
+      if (!GetWindowText(m_window, &title[0], len + 1)) return "";
+      title.resize(len);
+      return wstr2str(title);
   }
 
   void set_size(int width, int height, int minWidth, int minHeight,
