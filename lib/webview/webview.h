@@ -1091,10 +1091,10 @@ public:
   }
 
   std::string get_title() {
-      int len = GetWindowTextLengthW(m_window);
+      int len = GetWindowTextLength(m_window);
       if (len == 0) return "";
       std::wstring title(len + 1, 0);
-      if (!GetWindowTextW(m_window, &title[0], len + 1)) return "";
+      if (!GetWindowText(m_window, &title[0], len + 1)) return "";
       title.resize(len);
       return wstr2str(title);
   }
