@@ -7,7 +7,8 @@ describe('window.spec: window namespace tests', () => {
     describe('window.captureScreen', () => {
         it('captures the screen and saves to the specified file path', async () => {
             runner.run(`
-                await Neutralino.window.captureScreen("screenshot.png");
+                await Neutralino.window.snapshot('screenshot.png');
+                await Neutralino.filesystem.getStats('screenshot.png')
                 await __close('done');
             `);
             assert.equal(runner.getOutput(), 'done');
@@ -16,7 +17,7 @@ describe('window.spec: window namespace tests', () => {
         it('throws an error for missing file path parameter', async () => {
             runner.run(`
                 try {
-                    await Neutralino.window.captureScreen();
+                    await Neutralino.window.snapshot();
                 } catch (err) {
                     await __close(err.code);
                 }
