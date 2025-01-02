@@ -6,6 +6,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: window
+- Implement the `window.snapshot(path)` function to capture the window and save it as a PNG image file.
+
 ### Improvements/bugfixes
 - Fix the empty string returning issue with the `window.getTitle()` function on Windows.
 
