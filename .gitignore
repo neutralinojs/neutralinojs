@@ -2,7 +2,7 @@
 .lite_workspace.lua
 .vscode
 
-# Neutralinojs related files
+# Neutralinojs-related files
 .storage
 *.log
 
@@ -11,6 +11,7 @@
 /bin/.tmp
 /bin/neutralino-*
 /bin/resources.neu
+/bin/resources/js/neutralino.*
 
 # Platform specific 
 Thumbs.db
