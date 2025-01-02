@@ -16,6 +16,10 @@
 #define NSBaseWindowLevel 0
 #define NSFloatingWindowLevel 5
 #define NSWindowStyleMaskFullScreen 16384
+#define NSPNGFileType 4
+
+#define kCGWindowListOptionIncludingWindow 8
+#define kCGWindowImageBoundsIgnoreFraming 1
 
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
@@ -581,7 +585,24 @@ bool snapshot(const string &filename) {
     return gdk_pixbuf_save(screenshot, filename.c_str(), "png", nullptr, nullptr);
 
     #elif defined(__APPLE__)
-    // TODO
+    CGRect frameRect = __getWindowRect();
+    CGRect clientRect =
+            ((CGRect (*)(id, SEL, CGRect))objc_msgSend)(windowHandle, "contentRectForFrameRect:"_sel, frameRect);
+    clientRect.origin.y +=  frameRect.size.height - clientRect.size.height;
+
+    long winId = ((long(*)(id, SEL))objc_msgSend)(windowHandle, "windowNumber"_sel);
+    CGImageRef imgRef = CGWindowListCreateImage(clientRect, kCGWindowListOptionIncludingWindow, winId, kCGWindowImageBoundsIgnoreFraming); 
+      
+    id screenshot =
+        ((id (*)(id, SEL))objc_msgSend)("NSBitmapImageRep"_cls, "alloc"_sel);
+    ((void (*)(id, SEL, CGImageRef))objc_msgSend)(screenshot, "initWithCGImage:"_sel, imgRef);
+    id screenshotData =
+        ((id (*)(id, SEL, int, id))objc_msgSend)(screenshot, "representationUsingType:properties:"_sel, NSPNGFileType, nullptr);
+    bool status = ((bool (*)(id, SEL, id, bool))objc_msgSend)(screenshotData, "writeToFile:atomically:"_sel, 
+            ((id(*)(id, SEL, const char *))objc_msgSend)("NSString"_cls, "stringWithUTF8String:"_sel, filename.c_str())
+    , true);
+    
+    return status;
    
 
     #elif defined(_WIN32)
