@@ -18,6 +18,9 @@ enum StatusCode {
     NE_ST_NOSTKEX,
     NE_ST_STKEYWE,
     NE_ST_NOSTDIR,
+    // app
+    NE_AP_MPINUSE,
+    NE_AP_NOMTPTH,
     // os
     NE_OS_UNLTOUP,
     NE_OS_INVNOTA,
@@ -32,6 +35,7 @@ enum StatusCode {
     NE_FS_REMVERR,
     NE_FS_FILRDER,
     NE_FS_NOPATHE,
+    NE_FS_NOTADIR,
     NE_FS_COPYERR,
     NE_FS_MOVEERR,
     NE_FS_FILOPER,

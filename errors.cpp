@@ -18,6 +18,9 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_ST_NOSTKEX: return "NE_ST_NOSTKEX";
         case errors::NE_ST_STKEYWE: return "NE_ST_STKEYWE";
         case errors::NE_ST_NOSTDIR: return "NE_ST_NOSTDIR";
+        // app
+        case errors::NE_AP_MPINUSE: return "NE_AP_MPINUSE";
+        case errors::NE_AP_NOMTPTH: return "NE_AP_NOMTPTH";
         // os
         case errors::NE_OS_UNLTOUP: return "NE_OS_UNLTOUP";
         case errors::NE_OS_INVNOTA: return "NE_OS_INVNOTA";
@@ -32,6 +35,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_FS_REMVERR: return "NE_FS_REMVERR";
         case errors::NE_FS_FILRDER: return "NE_FS_FILRDER";
         case errors::NE_FS_NOPATHE: return "NE_FS_NOPATHE";
+        case errors::NE_FS_NOTADIR: return "NE_FS_NOTADIR";
         case errors::NE_FS_COPYERR: return "NE_FS_COPYERR";
         case errors::NE_FS_MOVEERR: return "NE_FS_MOVEERR";
         case errors::NE_FS_FILOPER: return "NE_FS_FILOPER";
@@ -72,6 +76,9 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_ST_NOSTKEX: return "Unable to find storage key: %1";
         case errors::NE_ST_STKEYWE: return "Unable to write data to key: %1";
         case errors::NE_ST_NOSTDIR: return "Unable to read storage directory: %1";
+        // app
+        case errors::NE_AP_MPINUSE: return "Mount path is already in use: %1";
+        case errors::NE_AP_NOMTPTH: return "Cannot unmount a path that was not mounted: %1";
         // os
         case errors::NE_OS_UNLTOUP: return "Unable to update process id: %1";
         case errors::NE_OS_INVNOTA: return "Invalid notification style arguments: %1";
@@ -86,6 +93,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_FS_REMVERR: return "Cannot remove path: %1";
         case errors::NE_FS_FILRDER: return "Unable to open file: %1";
         case errors::NE_FS_NOPATHE: return "Unable to open path %1";
+        case errors::NE_FS_NOTADIR: return "Path %1 is not a directory";
         case errors::NE_FS_COPYERR: return "Cannot perform copy: %1";
         case errors::NE_FS_MOVEERR: return "Cannot perform move: %1";
         case errors::NE_FS_FILOPER: return "Unable to open file: %1";
@@ -106,7 +114,6 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_RS_UNBLDRE: return "Unable to load application resource file %1";
         case errors::NE_RS_APIRQRF: return "Resource API works only when the resource file is loaded";
         case errors::NE_RS_FILNOTF: return "The request file (%1) is not found in the resource bundle";
-        
         // server
         case errors::NE_SR_UNBSEND: return "Unable to send native message";
         case errors::NE_SR_UNBPARS: return "Unable to parse native call payload";

@@ -39,6 +39,8 @@ namespace router {
 
 map<string, router::NativeMethod> methodMap = {
     // Neutralino.app
+    {"app.mount", app::controllers::mount},
+    {"app.unmount", app::controllers::unmount},
     {"app.exit", app::controllers::exit},
     {"app.killProcess", app::controllers::killProcess},
     {"app.getConfig", app::controllers::getConfig},
@@ -208,6 +210,18 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
     }
 }
 
+map<string, string> mountedPaths = {};
+
+void mountPath(const string &path, const string &mountPoint) {
+    mountedPaths[path] = mountPoint;
+}
+bool isMounted(const string &path) {
+    return mountedPaths.find(path) != mountedPaths.end();
+}
+void unmountPath(const string &path) {
+    mountedPaths.erase(path);
+}
+
 router::Response getAsset(string path, const string &prependData) {
     router::Response response;
     vector<string> split = helpers::split(path, '.');
@@ -272,7 +286,36 @@ router::Response getAsset(string path, const string &prependData) {
         {"wasm", "application/wasm"}
     };
 
-    fs::FileReaderResult fileReaderResult = resources::getFile(path);
+    fs::FileReaderResult fileReaderResult;
+    bool foundMountedPath = false;
+
+    if (mountedPaths.size() > 0) {
+        // Derive pathname from the path inside the resource folder
+        string pathname = path;
+        json jDocumentRoot = settings::getOptionForCurrentMode("documentRoot");
+        if(!jDocumentRoot.is_null()) {
+            string documentRoot = jDocumentRoot.get<string>();
+            if(documentRoot.back() == '/') {
+                documentRoot.pop_back();
+            }
+            if(!documentRoot.empty()) {
+                pathname = path.substr(documentRoot.length());
+            }
+        }
+        // Find a matching mount path, if there is one
+        for (const auto& [mountedPath, mountTarget] : mountedPaths) {
+            if (pathname.find(mountedPath) == 0) {
+                std::string adjustedPath = mountTarget + pathname.substr(mountedPath.length());
+                fileReaderResult = fs::readFile(adjustedPath);
+                foundMountedPath = true;
+                break;
+            }
+        }
+    }
+    // Load from the app's resources if no mounted path was found
+    if (!foundMountedPath) {
+        fileReaderResult = resources::getFile(path);
+    }
     if(fileReaderResult.status != errors::NE_ST_OK) {
         json jSpaServing = settings::getOptionForCurrentMode("singlePageServe");
         if(!jSpaServing.is_null() && jSpaServing.get<bool>() && regex_match(path, regex(".*index.html$"))) {

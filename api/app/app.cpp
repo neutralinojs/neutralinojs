@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <filesystem>
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 #include <signal.h>
@@ -15,6 +16,7 @@
 #include "helpers.h"
 #include "errors.h"
 #include "server/neuserver.h"
+#include "server/router.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
 #include "api/os/os.h"
@@ -94,6 +96,70 @@ json broadcast(const json &input) {
     events::dispatchToAllApps(event, data);
     output["success"] = true;
 
+    return output;
+}
+
+json mount(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"mountPath"}) || !helpers::hasRequiredFields(input, {"targetPath"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    std::string mountPath = input["mountPath"];
+    std::string targetPath = input["targetPath"];
+
+    // Normalize paths to have a leading and a trailing slash
+    if (mountPath.back() != '/') {
+        mountPath += '/';
+    }
+    if (mountPath.empty() || mountPath[0] != '/') {
+        mountPath = '/' + mountPath;
+    }
+    if (targetPath.back() != '/') {
+        targetPath += '/';
+    }
+
+    // Validate paths
+    if (!std::filesystem::exists(targetPath)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_NOPATHE, targetPath);
+        return output;
+    }
+    if (!std::filesystem::is_directory(targetPath)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_NOTADIR, targetPath);
+        return output;
+    }
+    if (router::isMounted(mountPath)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_AP_MPINUSE, targetPath);
+        return output;
+    }
+
+    router::mountPath(mountPath, targetPath);
+
+    output["success"] = true;
+    return output;
+}
+
+json unmount(const json &input) {
+    json output;
+    std::string mountPath = input["mountPath"];
+
+    // Normalize path to have a leading and a trailing slash
+    if (mountPath.back() != '/') {
+        mountPath += '/';
+    }
+    if (mountPath.empty() || mountPath[0] != '/') {
+        mountPath = '/' + mountPath;
+    }
+
+    // Validate if the mount path exists
+    if (!router::isMounted(mountPath)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_AP_NOMTPTH, mountPath);
+        return output;
+    }
+
+    router::unmountPath(mountPath);
+
+    output["success"] = true;
     return output;
 }
 

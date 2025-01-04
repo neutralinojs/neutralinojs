@@ -12,6 +12,10 @@ using json = nlohmann::json;
 
 namespace router {
 
+void mountPath(const string &path, const string &mountPoint);
+bool isMounted(const string &path);
+void unmountPath(const string &path);
+
 typedef json (*NativeMethod)(const json &);
 
 struct Response {
