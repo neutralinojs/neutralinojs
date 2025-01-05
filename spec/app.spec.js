@@ -71,8 +71,8 @@ describe('app.spec: app namespace tests', () => {
                 `);
                 const output = JSON.parse(runner.getOutput());
                 assert.ok(typeof output === 'object', 'Expected output is an object');
-                assert.ok(output.fetch1 === 404, 'Expected fetch1 to be 404');
-                assert.ok(output.fetch2 === 200, 'Expected fetch2 to be 200');
+                assert.ok(output.fetch1 === 404, 'Expected a request to a file in a yet not mounted directory to fail');
+                assert.ok(output.fetch2 === 200, 'Expected a request to a file in a mounted directory to succeed');
             } finally {
                 await fs.rmdir('./.tmp/test-mount', {
                     recursive: true
@@ -105,8 +105,8 @@ describe('app.spec: app namespace tests', () => {
                 `);
                 const output = JSON.parse(runner.getOutput());
                 assert.ok(typeof output === 'object', 'Expected output is an object');
-                assert.ok(output.fetch1 === 200, 'Expected fetch1 to be 200');
-                assert.ok(output.fetch2 === 404, 'Expected fetch2 to be 404');
+                assert.ok(output.fetch1 === 200, 'Expected a file request to a mounted directory before unmounting it to succeed');
+                assert.ok(output.fetch2 === 404, 'Expected a file request to an unmounted directory to fail');
             } finally {
                 await fs.rmdir('./.tmp/test-mount', {
                     recursive: true
