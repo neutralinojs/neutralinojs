@@ -133,7 +133,7 @@ string init() {
         settings::setPort(port);
     }
 
-    string navigationUrl = "http://localhost:" + std::to_string(port);
+    string navigationUrl = "http://127.0.0.1:" + std::to_string(port);
     json jUrl = settings::getOptionForCurrentMode("url");
 
     if(!jUrl.is_null()) {
