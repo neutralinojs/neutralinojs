@@ -1,9 +1,10 @@
+const fs = require('fs/promises');
 const assert = require('assert');
 const runner = require('./runner');
 
 describe('app.spec: app namespace tests', () => {
     describe('app.exit', () => {
-            
+
         it('works without parameters', async () => {
             let exitCode = runner.run(`
                 setTimeout(() => {
@@ -21,7 +22,7 @@ describe('app.spec: app namespace tests', () => {
             `);
             assert.ok(typeof exitCode != undefined);
         });
-        
+
         it('throws an error for invalid exit codes', async () => {
             runner.run(`
                 try {
@@ -42,6 +43,75 @@ describe('app.spec: app namespace tests', () => {
                 }, 2000);
             `);
             assert.ok(exitCode != 0);
+        });
+    });
+
+    describe('app.mount', () => {
+        it('mounts and serves a directory successfully', async () => {
+            await fs.mkdir('./.tmp/test-mount', {
+                recursive: true
+            });
+            await fs.writeFile('./.tmp/test-mount/test.txt', 'Hello', {
+                encoding: 'utf8'
+            });
+            try {
+                runner.run(`
+                    const response = {};
+                    const targetPath = NL_CWD + '/.tmp/test-mount';
+
+                    const fetch1 = await fetch('/test/test.txt');
+                    response.fetch1 = fetch1.status;
+
+                    await Neutralino.app.mount('/test', targetPath);
+
+                    const fetch2 = await fetch('/test/test.txt');
+                    response.fetch2 = fetch2.status;
+
+                    await __close(JSON.stringify(response));
+                `);
+                const output = JSON.parse(runner.getOutput());
+                assert.ok(typeof output === 'object', 'Expected output is an object');
+                assert.ok(output.fetch1 === 404, 'Expected a request to a file in a yet not mounted directory to fail');
+                assert.ok(output.fetch2 === 200, 'Expected a request to a file in a mounted directory to succeed');
+            } finally {
+                await fs.rmdir('./.tmp/test-mount', {
+                    recursive: true
+                });
+            }
+        });
+        it('unmounts a directory successfully', async () => {
+            await fs.mkdir('./.tmp/test-mount', {
+                recursive: true
+            });
+            await fs.writeFile('./.tmp/test-mount/test.txt', 'Hello', {
+                encoding: 'utf8'
+            });
+            try {
+                runner.run(`
+                    const response = {};
+                    const targetPath = NL_CWD + '/.tmp/test-mount';
+
+                    await Neutralino.app.mount('/test', targetPath);
+
+                    const fetch1 = await fetch('/test/test.txt');
+                    response.fetch1 = fetch1.status;
+
+                    await Neutralino.app.unmount('/test');
+
+                    const fetch2 = await fetch('/test/test.txt');
+                    response.fetch2 = fetch2.status;
+
+                    await __close(JSON.stringify(response));
+                `);
+                const output = JSON.parse(runner.getOutput());
+                assert.ok(typeof output === 'object', 'Expected output is an object');
+                assert.ok(output.fetch1 === 200, 'Expected a file request to a mounted directory before unmounting it to succeed');
+                assert.ok(output.fetch2 === 404, 'Expected a file request to an unmounted directory to fail');
+            } finally {
+                await fs.rmdir('./.tmp/test-mount', {
+                    recursive: true
+                });
+            }
         });
     });
 
