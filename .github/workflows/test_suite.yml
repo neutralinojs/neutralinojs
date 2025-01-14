@@ -98,6 +98,13 @@ jobs:
         ./scripts/bz.py --target_arch x64
         chmod +x ./bin/neutralino-mac_x64
 
+    - name: Setup Spec Requirements (Download client)
+      run: |
+        cd ..
+        git clone https://github.com/neutralinojs/neutralino.js.git
+        npm i -g @electron/asar
+        asar
+
     - name: Setup Spec Requirements
       working-directory: ./bin/extensions/sampleextension
       run: npm ci
