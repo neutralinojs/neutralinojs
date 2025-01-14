@@ -110,7 +110,7 @@ jobs:
         ./make_res_neu.sh
         
 
-    - name: Setup Spec Requirements
+    - name: Setup Spec Requirements (Setup extensions)
       working-directory: ./bin/extensions/sampleextension
       run: npm ci
 
