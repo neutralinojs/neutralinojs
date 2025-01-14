@@ -2,6 +2,17 @@ name: Test suite
 
 on: [push, pull_request]
 
+env: 
+  CLIENT_CMD: |
+        npm i -g @electron/asar
+        cd ..
+        git clone https://github.com/neutralinojs/neutralino.js.git
+        cd neutralino.js
+        npm ci
+        cd ../neutralinojs
+        ./scripts/update_client.sh
+        ./scripts/make_res_neu.sh
+
 jobs:
   build-linux:
     runs-on: ubuntu-20.04
@@ -54,6 +65,11 @@ jobs:
           git config --global --add safe.directory $GITHUB_WORKSPACE
           ./scripts/bz.py
 
+    - name: Setup Spec Requirements (Build client)
+      if: ${{ matrix.arch == 'x64' }}
+      run: |
+        $CLIENT_CMD 
+
     - name: Setup Spec Requirements
       if: ${{ matrix.arch == 'x64' }}
       working-directory: ./bin/extensions/sampleextension
@@ -100,15 +116,7 @@ jobs:
 
     - name: Setup Spec Requirements (Build client)
       run: |
-        npm i -g @electron/asar
-        cd ..
-        git clone https://github.com/neutralinojs/neutralino.js.git
-        cd neutralino.js
-        npm ci
-        cd ../neutralinojs
-        ./scripts/update_client.sh
-        ./scripts/make_res_neu.sh
-        
+        $CLIENT_CMD 
 
     - name: Setup Spec Requirements (Setup extensions)
       working-directory: ./bin/extensions/sampleextension
