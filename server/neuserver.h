@@ -1,5 +1,5 @@
-#ifndef NEU_SERVER_H
-#define NEU_SERVER_H
+#ifndef NEU_NEUSERVER_H
+#define NEU_NEUSERVER_H
 
 #include <string>
 #include <vector>
@@ -28,7 +28,8 @@ void broadcastToAllExtensions(const json &message);
 void broadcastToAllApps(const json &message);
 bool sendToExtension(const string &extensionId, const json &message);
 vector<string> getConnectedExtensions();
+string getDocumentRoot();
 
 } // namespace neuserver
 
-#endif // #define NEU_SERVER_H
+#endif // #define NEU_NEUSERVER_H

@@ -22,8 +22,6 @@ json broadcast(const json &input);
 json readProcessInput(const json &input);
 json writeProcessOutput(const json &input);
 json writeProcessError(const json &input);
-json mount(const json &input);
-json unmount(const json &input);
 
 } // namespace controllers
 

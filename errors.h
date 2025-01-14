@@ -18,9 +18,6 @@ enum StatusCode {
     NE_ST_NOSTKEX,
     NE_ST_STKEYWE,
     NE_ST_NOSTDIR,
-    // app
-    NE_AP_MPINUSE,
-    NE_AP_NOMTPTH,
     // os
     NE_OS_UNLTOUP,
     NE_OS_INVNOTA,
@@ -59,6 +56,8 @@ enum StatusCode {
     // server
     NE_SR_UNBSEND,
     NE_SR_UNBPARS,
+    NE_SR_MPINUSE,
+    NE_SR_NOMTPTH,
     // config
     NE_CF_UNBLDCF,
     NE_CF_UNBPRCF,

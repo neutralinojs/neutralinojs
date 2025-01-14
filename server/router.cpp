@@ -3,6 +3,7 @@
 #include <fstream>
 #include <regex>
 #include <vector>
+#include <filesystem>
 
 #include <websocketpp/server.hpp>
 
@@ -10,6 +11,7 @@
 #include "auth/authbasic.h"
 #include "auth/permission.h"
 #include "server/router.h"
+#include "server/neuserver.h"
 #include "helpers.h"
 #include "errors.h"
 #include "settings.h"
@@ -25,6 +27,7 @@
 #include "api/extensions/extensions.h"
 #include "api/clipboard/clipboard.h"
 #include "api/res/res.h"
+#include "api/server/server.h"
 #include "api/custom/custom.h"
 
 #if defined(__APPLE__)
@@ -39,8 +42,6 @@ namespace router {
 
 map<string, router::NativeMethod> methodMap = {
     // Neutralino.app
-    {"app.mount", app::controllers::mount},
-    {"app.unmount", app::controllers::unmount},
     {"app.exit", app::controllers::exit},
     {"app.killProcess", app::controllers::killProcess},
     {"app.getConfig", app::controllers::getConfig},
@@ -141,6 +142,10 @@ map<string, router::NativeMethod> methodMap = {
     {"resources.extractFile", res::controllers::extractFile},
     {"resources.readFile", res::controllers::readFile},
     {"resources.readBinaryFile", res::controllers::readBinaryFile},
+    // Neutralino.server
+    {"server.mount", server::controllers::mount},
+    {"server.unmount", server::controllers::unmount},
+    {"server.getMounts", server::controllers::getMounts},
     // Neutralino.custom
     {"custom.getMethods", custom::controllers::getMethods},
     // {"custom.add", custom::controllers::add} // Sample custom method
@@ -213,14 +218,47 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
 
 map<string, string> mountedPaths = {};
 
-void mountPath(const string &path, const string &mountPoint) {
-    mountedPaths[path] = mountPoint;
+errors::StatusCode mountPath(string &path, string &target) {
+    path = helpers::normalizePath(path);
+    target = helpers::normalizePath(target);
+
+    if(path.empty()) {
+        path = "/";
+    }
+    if(!filesystem::exists(target)) {
+        return errors::NE_FS_NOPATHE;
+    }
+    if(!filesystem::is_directory(target)) {
+        return errors::NE_FS_NOTADIR;
+    }
+    if(router::isMounted(path)) {
+        return errors::NE_SR_MPINUSE;
+    }
+    
+    mountedPaths[path] = target;
+    return errors::NE_ST_OK;
 }
+
 bool isMounted(const string &path) {
     return mountedPaths.find(path) != mountedPaths.end();
 }
-void unmountPath(const string &path) {
+
+bool unmountPath(string &path) {
+    path = helpers::normalizePath(path);
+    
+    if(path.empty()) {
+        path = "/";
+    }
+    if(!router::isMounted(path)) {
+        return false;
+    }
+    
     mountedPaths.erase(path);
+    return true;
+}
+
+map<string, string> getMounts() {
+    return mountedPaths;
 }
 
 router::Response getAsset(string path, const string &prependData) {
@@ -290,33 +328,28 @@ router::Response getAsset(string path, const string &prependData) {
     fs::FileReaderResult fileReaderResult;
     bool foundMountedPath = false;
 
-    if (mountedPaths.size() > 0) {
-        // Derive pathname from the path inside the resource folder
+    if(mountedPaths.size() > 0) {
         string pathname = path;
-        json jDocumentRoot = settings::getOptionForCurrentMode("documentRoot");
-        if(!jDocumentRoot.is_null()) {
-            string documentRoot = jDocumentRoot.get<string>();
-            if(documentRoot.back() == '/') {
-                documentRoot.pop_back();
-            }
-            if(!documentRoot.empty()) {
-                pathname = path.substr(documentRoot.length());
-            }
+        string documentRoot = neuserver::getDocumentRoot();
+        if(!documentRoot.empty()) {
+            pathname = path.substr(documentRoot.length());
         }
-        // Find a matching mount path, if there is one
-        for (const auto& [mountedPath, mountTarget] : mountedPaths) {
-            if (pathname.find(mountedPath) == 0) {
-                std::string adjustedPath = mountTarget + pathname.substr(mountedPath.length());
+        for(const auto& [mountedPath, mountTarget] : mountedPaths) {
+            cout << mountedPath << ":" << mountTarget << endl;
+            if(pathname.find(mountedPath) == 0) {
+                string adjustedPath = mountTarget + "/" + pathname.substr(mountedPath.length());
                 fileReaderResult = fs::readFile(adjustedPath);
                 foundMountedPath = true;
+                cout << mountedPath << ":+" << mountTarget << endl;
                 break;
             }
         }
     }
-    // Load from the app's resources if no mounted path was found
-    if (!foundMountedPath) {
+
+    if(!foundMountedPath) {
         fileReaderResult = resources::getFile(path);
     }
+    
     if(fileReaderResult.status != errors::NE_ST_OK) {
         json jSpaServing = settings::getOptionForCurrentMode("singlePageServe");
         if(!jSpaServing.is_null() && jSpaServing.get<bool>() && regex_match(path, regex(".*index.html$"))) {

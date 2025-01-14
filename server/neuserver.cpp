@@ -196,17 +196,9 @@ void handleMessage(websocketpp::connection_hdl handler, websocketserver::message
 void handleHTTP(websocketpp::connection_hdl handler) {
     websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
     string resource = con->get_resource();
-    json jDocumentRoot = settings::getOptionForCurrentMode("documentRoot");
-    if(!jDocumentRoot.is_null()) {
-        string documentRoot = jDocumentRoot.get<string>();
-
-        if(documentRoot.back() == '/') {
-            documentRoot.pop_back();
-        }
-
-        if(!documentRoot.empty()) {
-            resource = documentRoot + resource;
-        }
+    string documentRoot = neuserver::getDocumentRoot();
+    if(!documentRoot.empty()) {
+        resource = documentRoot + resource;
     }
     router::Response routerResponse = router::serve(resource);
     con->set_status(routerResponse.status);
@@ -309,6 +301,19 @@ vector<string> getConnectedExtensions() {
         extensions.push_back(extensionId);
     }
     return extensions;
+}
+
+string getDocumentRoot() {
+    string documentRoot = "";
+    json jDocumentRoot = settings::getOptionForCurrentMode("documentRoot");
+    if(!jDocumentRoot.is_null()) {
+        documentRoot = jDocumentRoot.get<string>();
+        
+        if(documentRoot.back() == '/') {
+            documentRoot.pop_back();
+        }
+    }
+    return documentRoot;
 }
 
 } // namespace neuserver

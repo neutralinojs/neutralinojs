@@ -18,9 +18,6 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_ST_NOSTKEX: return "NE_ST_NOSTKEX";
         case errors::NE_ST_STKEYWE: return "NE_ST_STKEYWE";
         case errors::NE_ST_NOSTDIR: return "NE_ST_NOSTDIR";
-        // app
-        case errors::NE_AP_MPINUSE: return "NE_AP_MPINUSE";
-        case errors::NE_AP_NOMTPTH: return "NE_AP_NOMTPTH";
         // os
         case errors::NE_OS_UNLTOUP: return "NE_OS_UNLTOUP";
         case errors::NE_OS_INVNOTA: return "NE_OS_INVNOTA";
@@ -59,6 +56,8 @@ string __getStatusCodeString(const errors::StatusCode code) {
         // server
         case errors::NE_SR_UNBSEND: return "NE_SR_UNBSEND";
         case errors::NE_SR_UNBPARS: return "NE_SR_UNBPARS";
+        case errors::NE_SR_MPINUSE: return "NE_SR_MPINUSE";
+        case errors::NE_SR_NOMTPTH: return "NE_SR_NOMTPTH";
         // config
         case errors::NE_CF_UNBLDCF: return "NE_CF_UNBLDCF";
         case errors::NE_CF_UNBPRCF: return "NE_CF_UNBPRCF";
@@ -77,9 +76,6 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_ST_NOSTKEX: return "Unable to find storage key: %1";
         case errors::NE_ST_STKEYWE: return "Unable to write data to key: %1";
         case errors::NE_ST_NOSTDIR: return "Unable to read storage directory: %1";
-        // app
-        case errors::NE_AP_MPINUSE: return "Mount path is already in use: %1";
-        case errors::NE_AP_NOMTPTH: return "Cannot unmount a path that was not mounted: %1";
         // os
         case errors::NE_OS_UNLTOUP: return "Unable to update process id: %1";
         case errors::NE_OS_INVNOTA: return "Invalid notification style arguments: %1";
@@ -118,6 +114,8 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         // server
         case errors::NE_SR_UNBSEND: return "Unable to send native message";
         case errors::NE_SR_UNBPARS: return "Unable to parse native call payload";
+        case errors::NE_SR_MPINUSE: return "Mount path is already in use: %1";
+        case errors::NE_SR_NOMTPTH: return "Cannot unmount %1, the path that was not mounted";
         // config
         case errors::NE_CF_UNBLDCF: return "Unable to load the %1 configuration file. Framework defaults will be loaded.";
         case errors::NE_CF_UNBPRCF: return "Unable to parse the config file: %1";
