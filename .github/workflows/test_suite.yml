@@ -2,17 +2,6 @@ name: Test suite
 
 on: [push, pull_request]
 
-env: 
-  CLIENT_CMD: |
-        npm i -g @electron/asar
-        cd ..
-        git clone https://github.com/neutralinojs/neutralino.js.git
-        cd neutralino.js
-        npm ci
-        cd ../neutralinojs
-        ./scripts/update_client.sh
-        ./scripts/make_res_neu.sh
-
 jobs:
   build-linux:
     runs-on: ubuntu-20.04
@@ -68,7 +57,14 @@ jobs:
     - name: Setup Spec Requirements (Build client)
       if: ${{ matrix.arch == 'x64' }}
       run: |
-        $CLIENT_CMD 
+        npm i -g @electron/asar
+        cd ..
+        git clone https://github.com/neutralinojs/neutralino.js.git
+        cd neutralino.js
+        npm ci
+        cd ../neutralinojs
+        ./scripts/update_client.sh
+        ./scripts/make_res_neu.sh
 
     - name: Setup Spec Requirements (Setup extensions)
       if: ${{ matrix.arch == 'x64' }}
@@ -96,7 +92,14 @@ jobs:
     - name: Setup Spec Requirements (Build client)
       shell: bash
       run: |
-        $CLIENT_CMD 
+        npm i -g @electron/asar
+        cd ..
+        git clone https://github.com/neutralinojs/neutralino.js.git
+        cd neutralino.js
+        npm ci
+        cd ../neutralinojs
+        ./scripts/update_client.sh
+        ./scripts/make_res_neu.sh
 
     - name: Setup Spec Requirements (Setup extensions)
       working-directory: ./bin/extensions/sampleextension
@@ -121,7 +124,14 @@ jobs:
 
     - name: Setup Spec Requirements (Build client)
       run: |
-        $CLIENT_CMD 
+        npm i -g @electron/asar
+        cd ..
+        git clone https://github.com/neutralinojs/neutralino.js.git
+        cd neutralino.js
+        npm ci
+        cd ../neutralinojs
+        ./scripts/update_client.sh
+        ./scripts/make_res_neu.sh
 
     - name: Setup Spec Requirements (Setup extensions)
       working-directory: ./bin/extensions/sampleextension
