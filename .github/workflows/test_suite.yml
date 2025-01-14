@@ -106,8 +106,8 @@ jobs:
         cd neutralino.js
         npm ci
         cd ../neutralinojs
-        ./update_client.sh
-        ./make_res_neu.sh
+        ./scripts/update_client.sh
+        ./scripts/make_res_neu.sh
         
 
     - name: Setup Spec Requirements (Setup extensions)
