@@ -2,6 +2,17 @@ name: Test suite
 
 on: [push, pull_request]
 
+env: 
+  BUILD_CLIENT: |
+    npm i -g @electron/asar
+    cd ..
+    git clone https://github.com/neutralinojs/neutralino.js.git
+    cd neutralino.js
+    npm ci
+    cd ../neutralinojs
+    ./scripts/update_client.sh
+    ./scripts/make_res_neu.sh
+
 jobs:
   build-linux:
     runs-on: ubuntu-20.04
@@ -57,14 +68,9 @@ jobs:
     - name: Setup Spec Requirements (Build client)
       if: ${{ matrix.arch == 'x64' }}
       run: |
-        npm i -g @electron/asar
-        cd ..
-        git clone https://github.com/neutralinojs/neutralino.js.git
-        cd neutralino.js
-        npm ci
-        cd ../neutralinojs
-        ./scripts/update_client.sh
-        ./scripts/make_res_neu.sh
+        echo "$BUILD_CLIENT" > build_client.sh
+        chmod +x build_client.sh
+        ./build_client.sh
 
     - name: Setup Spec Requirements (Setup extensions)
       if: ${{ matrix.arch == 'x64' }}
@@ -92,14 +98,9 @@ jobs:
     - name: Setup Spec Requirements (Build client)
       shell: bash
       run: |
-        npm i -g @electron/asar
-        cd ..
-        git clone https://github.com/neutralinojs/neutralino.js.git
-        cd neutralino.js
-        npm ci
-        cd ../neutralinojs
-        ./scripts/update_client.sh
-        ./scripts/make_res_neu.sh
+        echo "$BUILD_CLIENT" > build_client.sh
+        chmod +x build_client.sh
+        ./build_client.sh
 
     - name: Setup Spec Requirements (Setup extensions)
       working-directory: ./bin/extensions/sampleextension
@@ -124,14 +125,9 @@ jobs:
 
     - name: Setup Spec Requirements (Build client)
       run: |
-        npm i -g @electron/asar
-        cd ..
-        git clone https://github.com/neutralinojs/neutralino.js.git
-        cd neutralino.js
-        npm ci
-        cd ../neutralinojs
-        ./scripts/update_client.sh
-        ./scripts/make_res_neu.sh
+        echo "$BUILD_CLIENT" > build_client.sh
+        chmod +x build_client.sh
+        ./build_client.sh
 
     - name: Setup Spec Requirements (Setup extensions)
       working-directory: ./bin/extensions/sampleextension
