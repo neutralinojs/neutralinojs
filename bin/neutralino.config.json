@@ -20,7 +20,7 @@
         "enabled": true,
         "writeToLogFile": true
     },
-    "nativeBlockList": ["os.*", "filesystem.*"],
+    "nativeBlockList": [],
     "globalVariables": {
         "TEST1": "Hello",
         "TEST2": [2, 4, 5],
