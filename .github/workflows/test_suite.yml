@@ -70,7 +70,7 @@ jobs:
       run: |
         $CLIENT_CMD 
 
-    - name: Setup Spec Requirements
+    - name: Setup Spec Requirements (Setup extensions)
       if: ${{ matrix.arch == 'x64' }}
       working-directory: ./bin/extensions/sampleextension
       run: npm ci
@@ -93,7 +93,12 @@ jobs:
       run: python ./scripts/bz.py
       shell: cmd
 
-    - name: Setup Spec Requirements
+    - name: Setup Spec Requirements (Build client)
+      shell: bash
+      run: |
+        $CLIENT_CMD 
+
+    - name: Setup Spec Requirements (Setup extensions)
       working-directory: ./bin/extensions/sampleextension
       run: npm ci
 
