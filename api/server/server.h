@@ -15,6 +15,9 @@ json mount(const json &input);
 json unmount(const json &input);
 json getMounts(const json &input);
 
+// set a Virtual Document Root
+json setVDocRoot(const json &input);
+
 
 } // namespace controllers
 

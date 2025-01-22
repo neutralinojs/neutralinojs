@@ -36,6 +36,8 @@ errors::StatusCode mountPath(string &path, string &target);
 bool isMounted(const string &path);
 bool unmountPath(string &path);
 map<string, string> getMounts();
+// set a Virtual Document Root
+errors::StatusCode setVDocRoot(string &path);
 
 } // namespace router
 

@@ -146,6 +146,7 @@ map<string, router::NativeMethod> methodMap = {
     {"server.mount", server::controllers::mount},
     {"server.unmount", server::controllers::unmount},
     {"server.getMounts", server::controllers::getMounts},
+    {"server.setVDocRoot", server::controllers::setVDocRoot},
     // Neutralino.custom
     {"custom.getMethods", custom::controllers::getMethods},
     // {"custom.add", custom::controllers::add} // Sample custom method
@@ -261,6 +262,23 @@ map<string, string> getMounts() {
     return mountedPaths;
 }
 
+// add vdocroot
+string vdocroot = string();
+
+errors::StatusCode setVDocRoot(string &target) {
+    target = helpers::normalizePath(target);
+
+    if(!filesystem::exists(target)) {
+        return errors::NE_FS_NOPATHE;
+    }
+    if(!filesystem::is_directory(target)) {
+        return errors::NE_FS_NOTADIR;
+    }
+    
+    vdocroot = target;
+    return errors::NE_ST_OK;
+}
+
 router::Response getAsset(string path, const string &prependData) {
     router::Response response;
     vector<string> split = helpers::split(path, '.');
@@ -346,6 +364,17 @@ router::Response getAsset(string path, const string &prependData) {
 
     if(!foundMountedPath) {
         fileReaderResult = resources::getFile(path);
+    }
+
+    // just for not found file & setting vdocroot
+    if(fileReaderResult.status != errors::NE_ST_OK && !vdocroot.empty()) {
+        string pathname = path;
+        string documentRoot = neuserver::getDocumentRoot();
+        if(!documentRoot.empty()) {
+            pathname = path.substr(documentRoot.length());
+        }
+        string adjustedPath = vdocroot + pathname;
+        fileReaderResult = fs::readFile(adjustedPath);
     }
     
     if(fileReaderResult.status != errors::NE_ST_OK) {

@@ -55,5 +55,23 @@ json getMounts(const json &input) {
     return output;
 }
 
+//  set a Virtual Document Root
+json setVDocRoot(const json &input) {
+    json output;
+    string path = input["path"].get<string>();
+    errors::StatusCode mountStatus = router::setVDocRoot(path);
+    
+    if(mountStatus != errors::NE_ST_OK) {
+        output["error"] = errors::makeErrorPayload(mountStatus, path);
+    }
+    else {
+        output["message"] = "vdocroot mounts to " + path ;
+        output["success"] = true;
+    }
+
+    return output;
+}
+
+
 } // namespace controllers
 } // namespace server
