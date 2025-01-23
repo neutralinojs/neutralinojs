@@ -6,6 +6,28 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: server
+Neutralinojs doesn't support the `file://` protocol to load local resource files due to application security concerns. Because of this limitation, app developers had to read files using filesystem APIs. The new `server` namespace implements `server.mount(path, target)`, `server.unmount(path)`, and `server.getMounts()` functions to let developers load local files from the Neutralinojs static server by creating directory mappings as an alternative for the `file://` protocol.
+
+For example, the following function call configures the Neutralinojs static server to serve resources on the `${NL_PATH}/app-res` directory:
+
+```js
+await Neutralino.server.mount('/app-res', NL_PATH + '/app-res');
+```
+
+With the above server configuration, `NL_PATH + '/app-res/stat.txt'` can be loaded to the webview via the following URL:
+
+```
+http://127.0.0.1/app-res/stat.txt
+```
+
+This local directory mounting configuration can be deactivated as follows:
+
+```js
+await Neutralino.server.unmount('/app-res');
+```
+
+
 ### API: window
 - Implement the `window.snapshot(path)` function to capture the window and save it as a PNG image file.
 
