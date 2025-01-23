@@ -13,7 +13,7 @@ jobs:
     
     strategy:
       matrix:
-        arch: [x64, arm64, armhf]
+        arch: [x64]
         
     steps:
     - name: Checkout 
