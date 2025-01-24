@@ -101,6 +101,8 @@ jobs:
     steps:
     - name: Checkout 
       uses: actions/checkout@v3
+      env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
     - name: Download Linux build artifacts 
       uses: actions/download-artifact@v4.1.7
