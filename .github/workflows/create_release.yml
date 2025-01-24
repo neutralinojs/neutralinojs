@@ -110,18 +110,6 @@ jobs:
         name: linux_x64_binary
         path: ./bin
         
-    - name: Download Linux build artifacts 
-      uses: actions/download-artifact@v4.1.7
-      with:
-        name: linux_arm64_binary
-        path: ./bin
-        
-    - name: Download Linux build artifacts 
-      uses: actions/download-artifact@v4.1.7
-      with:
-        name: linux_armhf_binary
-        path: ./bin
-
     - name: Download Windows build artifacts
       uses: actions/download-artifact@v4.1.7
       with:
@@ -137,7 +125,7 @@ jobs:
     - name: Create Release zip
       uses: vimtor/action-zip@v1
       with:
-        files: ./bin/neutralino-linux_x64 ./bin/neutralino-linux_arm64 ./bin/neutralino-linux_armhf ./bin/neutralino-win_x64.exe ./bin/neutralino-mac_x64 ./bin/neutralino-mac_arm64 ./bin/neutralino-mac_universal ./bin/WebView2Loader.dll
+        files: ./bin/neutralino-linux_x64 ./bin/neutralino-win_x64.exe ./bin/neutralino-mac_x64 ./bin/neutralino-mac_arm64 ./bin/neutralino-mac_universal ./bin/WebView2Loader.dll
         dest: './bin/neutralinojs-v${{github.event.inputs.version}}.zip'
         
     - name: Create Release Notes
