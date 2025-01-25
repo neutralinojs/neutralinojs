@@ -71,6 +71,13 @@ namespace clip {
   // When the clipboard has UTF8 text.
   format text_format();
 
+  format html_format();
+
+  // High-level API to put/get HTML in/from the clipboard. These
+  // functions returns false in case of error.
+  bool set_html(const std::string& value);
+  bool get_html(std::string& value);
+
 #if CLIP_ENABLE_IMAGE
   // When the clipboard has an image.
   format image_format();

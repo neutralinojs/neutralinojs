@@ -135,6 +135,8 @@ map<string, router::NativeMethod> methodMap = {
     {"clipboard.readText", clipboard::controllers::readText},
     {"clipboard.readImage", clipboard::controllers::readImage},
     {"clipboard.writeText", clipboard::controllers::writeText},
+    {"clipboard.writeHTML", clipboard::controllers::writeHTML},
+    {"clipboard.readHTML", clipboard::controllers::readHTML},
     {"clipboard.writeImage", clipboard::controllers::writeImage},
     {"clipboard.clear", clipboard::controllers::clear},
     // Neutralino.resources
