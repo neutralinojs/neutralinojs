@@ -51,7 +51,6 @@ string __getStatusCodeString(const errors::StatusCode code) {
         // resources
         case errors::NE_RS_TREEGER: return "NE_RS_TREEGER";
         case errors::NE_RS_UNBLDRE: return "NE_RS_UNBLDRE";
-        case errors::NE_RS_APIRQRF: return "NE_RS_APIRQRF";
         case errors::NE_RS_FILNOTF: return "NE_RS_FILNOTF";
         // server
         case errors::NE_SR_UNBSEND: return "NE_SR_UNBSEND";
@@ -109,8 +108,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         // resources
         case errors::NE_RS_TREEGER: return "Resource file tree generation error. %1 is missing.";
         case errors::NE_RS_UNBLDRE: return "Unable to load application resource file %1";
-        case errors::NE_RS_APIRQRF: return "Resource API works only when the resource file is loaded";
-        case errors::NE_RS_FILNOTF: return "The request file (%1) is not found in the resource bundle";
+        case errors::NE_RS_FILNOTF: return "The requested file (%1) is not found in the resources";
         // server
         case errors::NE_SR_UNBSEND: return "Unable to send native message";
         case errors::NE_SR_UNBPARS: return "Unable to parse native call payload";

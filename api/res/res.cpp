@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <filesystem>
 
 #include "lib/json/json.hpp"
 #include "settings.h"
@@ -9,6 +10,7 @@
 #include "errors.h"
 
 #include "api/res/res.h"
+#include "api/fs/fs.h"
 
 #include "lib/base64/base64.hpp"
 
@@ -37,44 +39,79 @@ vector<string> __getFiles(const json &fileTree) {
     return files;
 }
 
+string __getResourcesDirectory() {
+    json options = settings::getConfig();
+    json jResourcesPath = options["cli"]["resourcesPath"];
+    string resourcesPath = "";
+    
+    if(!jResourcesPath.is_null()) {
+        resourcesPath = jResourcesPath.get<string>();
+    }
+
+    return settings::joinAppPath(resourcesPath);
+}
+
 json getFiles(const json &input) {
     json output;
-    if(!resources::isBundleMode()) {
-        output["error"] = errors::makeErrorPayload(errors::NE_RS_APIRQRF);
-        return output;
+    json files = json::array();
+    if(resources::isBundleMode()) {
+        files = __getFiles(resources::getFileTree());
     }
-    output["returnValue"] = __getFiles(resources::getFileTree());
+    else {
+        auto convertPath = [&](const string &path) {
+            return "/" + FS_CONVWSTR(filesystem::relative(CONVSTR(path), 
+                                CONVSTR(settings::getAppPath())));
+        };
+        string resourcesPath = __getResourcesDirectory(); 
+        
+        files.push_back(settings::getConfigFile());
+        files.push_back(convertPath(resourcesPath));
+        
+        fs::DirReaderResult dirResult = fs::readDirectory(resourcesPath, true);
+        for(const fs::DirReaderEntry &entry: dirResult.entries) {
+            files.push_back(convertPath(entry.path));
+        }
+    }
+    
+    output["returnValue"] = files;
     output["success"] = true;
     return output;
 }
 
 json extractFile(const json &input) {
     json output;
-    if(!resources::isBundleMode()) {
-        output["error"] = errors::makeErrorPayload(errors::NE_RS_APIRQRF);
-        return output;
-    }
     if(!helpers::hasRequiredFields(input, {"path", "destination"})) {
         output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
     string path = input["path"].get<string>();
     string destination = input["destination"].get<string>();
-    if(resources::extractFile(path, destination)) {
+
+    auto extractFileDirMode = [&](string &source, const string &destination) {
+        source = settings::joinAppPath(source);
+        
+        error_code ec;
+        auto copyOptions = filesystem::copy_options::recursive |
+                        filesystem::copy_options::overwrite_existing;
+
+        filesystem::copy(CONVSTR(source), CONVSTR(destination), copyOptions, ec);
+        return !ec;
+    };
+    
+    if(resources::isBundleMode() && resources::extractFile(path, destination)) {
+        output["success"] = true;
+    }
+    else if(!resources::isBundleMode() && extractFileDirMode(path, destination)) {
         output["success"] = true;
     }
     else {
-        output["error"] = errors::makeErrorPayload(errors::NE_RS_FILNOTF);
+        output["error"] = errors::makeErrorPayload(errors::NE_RS_FILNOTF, path);
     }
     return output;
 }
 
 json readFile(const json &input) {
     json output;
-    if(!resources::isBundleMode()) {
-        output["error"] = errors::makeErrorPayload(errors::NE_RS_APIRQRF);
-        return output;
-    }
     if(!helpers::hasRequiredFields(input, {"path"})) {
         output["error"] = errors::makeMissingArgErrorPayload();
         return output;
@@ -94,10 +131,6 @@ json readFile(const json &input) {
 
 json readBinaryFile(const json &input) {
     json output;
-    if(!resources::isBundleMode()) {
-        output["error"] = errors::makeErrorPayload(errors::NE_RS_APIRQRF);
-        return output;
-    }
     if(!helpers::hasRequiredFields(input, {"path"})) {
         output["error"] = errors::makeMissingArgErrorPayload();
         return output;

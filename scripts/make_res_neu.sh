@@ -9,11 +9,11 @@ echo "Updating client..."
 
 echo "Packing resources to resources.neu..."
 cd ./bin
-mkdir -p ./.tmp
-cp -r ./resources ./.tmp/
-cp ./neutralino.config.json ./.tmp/neutralino.config.json
-asar pack ./.tmp resources.neu
-rm -r ./.tmp
+mkdir -p ./.res
+cp -r ./resources ./.res/
+cp ./neutralino.config.json ./.res/neutralino.config.json
+asar pack ./.res resources.neu
+rm -r ./.res
 
 echo "Check resources.neu structure"
 asar list resources.neu
