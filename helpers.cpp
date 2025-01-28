@@ -4,6 +4,7 @@
 #include <sstream>
 #include <time.h>
 #include <ctype.h>
+#include <random>
 
 #include "helpers.h"
 #include "lib/json/json.hpp"
@@ -36,23 +37,23 @@ vector<string> splitTwo(const string &s, char delim) {
 }
 
 string generateToken() {
-    srand(time(NULL));
+    static const std::string characters =
+        "-_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-    string s = "";
-    static const char alphanum[] =
-        "-_"
-        "0123456789"
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        "abcdefghijklmnopqrstuvwxyz";
+    const int length = 96;
 
-    for (int i = 0; i < 96; ++i) {
-        s += alphanum[rand() % (sizeof(alphanum) - 1)];
-        if(i == 47) {
-            s += ".";
-        }
+    std::string token;
+    token.reserve(length);
+
+    std::random_device rd;
+    std::mt19937 generator(rd()); 
+    std::uniform_int_distribution<size_t> distribution(0, characters.size() - 1);
+
+    for (size_t i = 0; i < length; ++i) {
+        token += characters[distribution(generator)];
     }
 
-    return s;
+    return token;
 }
 
 /*
