@@ -59,8 +59,9 @@ json getFiles(const json &input) {
     }
     else {
         auto convertPath = [&](const string &path) {
-            return "/" + FS_CONVWSTR(filesystem::relative(CONVSTR(path), 
-                                CONVSTR(settings::getAppPath())));
+            string resPath = FS_CONVWSTR(filesystem::relative(CONVSTR(path), 
+                                CONVSTR(settings::getAppPath())))
+            return "/" + helpers::normalizePath(resPath);
         };
         string resourcesPath = __getResourcesDirectory(); 
         
