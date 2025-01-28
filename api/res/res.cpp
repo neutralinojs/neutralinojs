@@ -51,6 +51,12 @@ string __getResourcesDirectory() {
     return settings::joinAppPath(resourcesPath);
 }
 
+string __convertPath(const string &path) {
+    string resPath = FS_CONVWSTR(filesystem::relative(CONVSTR(path), 
+                        CONVSTR(settings::getAppPath())));
+    return "/" + helpers::normalizePath(resPath);
+};
+
 json getFiles(const json &input) {
     json output;
     json files = json::array();
@@ -58,19 +64,14 @@ json getFiles(const json &input) {
         files = __getFiles(resources::getFileTree());
     }
     else {
-        auto convertPath = [&](const string &path) {
-            string resPath = FS_CONVWSTR(filesystem::relative(CONVSTR(path), 
-                                CONVSTR(settings::getAppPath())));
-            return "/" + helpers::normalizePath(resPath);
-        };
         string resourcesPath = __getResourcesDirectory(); 
         
         files.push_back(settings::getConfigFile());
-        files.push_back(convertPath(resourcesPath));
+        files.push_back(__convertPath(resourcesPath));
         
         fs::DirReaderResult dirResult = fs::readDirectory(resourcesPath, true);
         for(const fs::DirReaderEntry &entry: dirResult.entries) {
-            files.push_back(convertPath(entry.path));
+            files.push_back(__convertPath(entry.path));
         }
     }
     
@@ -87,23 +88,24 @@ json extractFile(const json &input) {
     }
     string path = input["path"].get<string>();
     string destination = input["destination"].get<string>();
-
-    auto extractFileDirMode = [&](string &source, const string &destination) {
-        source = settings::joinAppPath(source);
+    
+    if(resources::isBundleMode() && resources::extractFile(path, destination)) {
+        output["success"] = true;
+    }
+    else if(!resources::isBundleMode()) {
+        path = settings::joinAppPath(path);
         
         error_code ec;
         auto copyOptions = filesystem::copy_options::recursive |
                         filesystem::copy_options::overwrite_existing;
 
-        filesystem::copy(CONVSTR(source), CONVSTR(destination), copyOptions, ec);
-        return !ec;
-    };
-    
-    if(resources::isBundleMode() && resources::extractFile(path, destination)) {
-        output["success"] = true;
-    }
-    else if(!resources::isBundleMode() && extractFileDirMode(path, destination)) {
-        output["success"] = true;
+        filesystem::copy(CONVSTR(path), CONVSTR(destination), copyOptions, ec);
+        if(!ec) {
+            output["success"] = true;
+        }
+        else {
+            output["error"] = errors::makeErrorPayload(errors::NE_RS_FILNOTF, path);
+        }
     }
     else {
         output["error"] = errors::makeErrorPayload(errors::NE_RS_FILNOTF, path);
