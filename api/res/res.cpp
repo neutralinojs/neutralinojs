@@ -20,11 +20,6 @@ using json = nlohmann::json;
 namespace res {
 namespace controllers {
 
-struct TreeParserOptions {
-    string rootPath = "";
-    bool onlyFilesUnderRoot = false;
-};
-
 vector<string> __getAllFiles() {
     vector<string> files = {};
     std::function<void(const string &, const json &)> parseBundleHeader;
