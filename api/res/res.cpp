@@ -104,11 +104,11 @@ json extractFile(const json &input) {
             output["success"] = true;
         }
         else {
-            output["error"] = errors::makeErrorPayload(errors::NE_RS_FILNOTF, path);
+            output["error"] = errors::makeErrorPayload(errors::NE_RS_FILEXTF, destination);
         }
     }
     else {
-        output["error"] = errors::makeErrorPayload(errors::NE_RS_FILNOTF, path);
+        output["error"] = errors::makeErrorPayload(errors::NE_RS_FILEXTF, destination);
     }
     return output;
 }

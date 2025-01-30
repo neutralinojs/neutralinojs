@@ -3,6 +3,7 @@
 #include <fstream>
 #include <regex>
 #include <vector>
+#include <filesystem>
 #include <limits.h>
 
 #include "lib/easylogging/easylogging++.h"
@@ -108,8 +109,13 @@ bool __makeFileTree() {
 bool extractFile(const string &filename, const string &outputFilename) {
     fs::FileReaderResult fileReaderResult = resources::getFile(filename);
     if(fileReaderResult.status != errors::NE_ST_OK) {
-      return false;
+        return false;
     }
+    auto extractPath = filesystem::path(CONVSTR(outputFilename));
+    if(!extractPath.parent_path().empty()) {
+        filesystem::create_directories(extractPath.parent_path());
+    }
+   
     fs::FileWriterOptions fileWriterOptions;
     fileWriterOptions.filename = outputFilename;
     fileWriterOptions.data = fileReaderResult.data;

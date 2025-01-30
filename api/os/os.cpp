@@ -631,8 +631,7 @@ json setTray(const json &input) {
                     useOtherTempTrayIcon ?  "/.tmp/tray_icon_linux_01.png" : "/.tmp/tray_icon_linux_02.png"
             );
 
-            string tempDirPath = settings::joinAppDataPath("/.tmp");
-            filesystem::create_directories(tempDirPath);
+            string tempDirPath = settings::joinAppDataPath("/.tmp");;
             resources::extractFile(iconPath, tempIconPath);
             fullIconPath = filesystem::absolute(tempIconPath);
         }
