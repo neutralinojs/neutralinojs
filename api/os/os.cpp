@@ -710,5 +710,27 @@ json getPath(const json &input) {
     }
     return output;
 }
+string setEnvVar(const std::string& key, const std::string& value) {
+    json output;
+    if(!getEnv(value).empty()){
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_ENVEXISTS);
+    }else if(key.empty() || value.empty()){
+        output["error"] = errors::makeMissingArgErrorPayload();
+    }
+
+#ifdef _WIN32
+    if(_putenv_s(key.c_str(), value.c_str()) != 0){
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_CNCENV);
+    }
+#else
+    if(setenv(key.c_str(), value.c_str(), 1) != 0){
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_CNCENV);
+    }
+#endif
+    output["success"] = true;
+    output["message"] = "Environment variable set successfully";
+    return output;
+}
+
 } // namespace controllers
 } // namespace os

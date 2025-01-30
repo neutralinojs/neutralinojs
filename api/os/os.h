@@ -32,6 +32,9 @@ bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt);
 string getPath(const string &name);
 string getEnv(const string &key);
 
+string setEnvVar(const string& key, const string& value);
+string spawnProcessWithEnv(const string& command, const std::map<std::string, std::string>& env, const string& cwd);
+
 namespace controllers {
 
 json execCommand(const json &input);
@@ -48,6 +51,9 @@ json showMessageBox(const json &input);
 json setTray(const json &input);
 json open(const json &input);
 json getPath(const json &input);
+
+json setEnvVar(const json& input);
+json spawnProcessWithEnv(const json& input);
 
 } // namespace controllers
 

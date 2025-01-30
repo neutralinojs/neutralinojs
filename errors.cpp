@@ -82,6 +82,8 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_OS_INVMSGA: return "Invalid message box style arguments: %1";
         case errors::NE_OS_TRAYIER: return "Unable to initialize the tray menu";
         case errors::NE_OS_INVKNPT: return "Invalid platform path name: %1";
+        case errors::NE_OS_ENVEXISTS: return "Environment variable already exists";
+        case errors::NE_OS_CNCENV: return "Could not create environment variable";
         // extensions
         case errors::NE_EX_EXTNOTC: return "%1 is not connected yet";
         // filesystem
@@ -140,7 +142,6 @@ json makeErrorPayload(const errors::StatusCode code, const string &param) {
     error["message"] = __getStatusCodeDesc(code, param);
     return error;
 }
-
 string makeErrorMsg(const errors::StatusCode code, const string &param) {
     return __getStatusCodeString(code) + ": " + __getStatusCodeDesc(code, param);
 }
