@@ -53,6 +53,7 @@ enum StatusCode {
     NE_RS_UNBLDRE,
     NE_RS_FILNOTF,
     NE_RS_FILEXTF,
+    NE_RS_DIREXTF,
     // server
     NE_SR_UNBSEND,
     NE_SR_UNBPARS,

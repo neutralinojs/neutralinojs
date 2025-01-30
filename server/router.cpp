@@ -140,6 +140,7 @@ map<string, router::NativeMethod> methodMap = {
     // Neutralino.resources
     {"resources.getFiles", res::controllers::getFiles},
     {"resources.extractFile", res::controllers::extractFile},
+    {"resources.extractDirectory", res::controllers::extractDirectory},
     {"resources.readFile", res::controllers::readFile},
     {"resources.readBinaryFile", res::controllers::readBinaryFile},
     // Neutralino.server

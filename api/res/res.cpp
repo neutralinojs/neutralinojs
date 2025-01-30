@@ -20,22 +20,50 @@ using json = nlohmann::json;
 namespace res {
 namespace controllers {
 
-vector<string> __getFiles(const json &fileTree) {
+struct TreeParserOptions {
+    string rootPath = "";
+    bool onlyFilesUnderRoot = false;
+};
+
+vector<string> __getAllFiles() {
     vector<string> files = {};
     std::function<void(const string &, const json &)> parseBundleHeader;
     parseBundleHeader = [&](const string &basePath, const json &data) {
-        if (!helpers::hasField(data, "files")) {
+        if(!helpers::hasField(data, "files")) {
             return;
         }
 
         for(auto &[childPath, childData]: data["files"].items()) {
             string path = basePath + "/" + childPath;
-            files.push_back(path);
+            files.push_back(path);  
             parseBundleHeader(path, childData);
         }
     };
 
-    parseBundleHeader("", fileTree);
+    parseBundleHeader("", resources::getFileTree());
+    return files;
+}
+
+vector<string> __getFiles(const string &rootPath) {
+    vector<string> files = {};
+    std::function<void(const string &, const json &)> parseBundleHeader;
+    parseBundleHeader = [&](const string &path, const json &data) {    
+        if(!helpers::hasField(data, "files")) {
+            if(path.rfind(rootPath, 0) != string::npos) {
+                files.push_back(path);
+            }
+            return;
+        }
+        else if(rootPath.rfind(path, 0) == string::npos && path.rfind(rootPath, 0) == string::npos) {
+            return;
+        }
+
+        for(auto &[childPath, childData]: data["files"].items()) {
+            parseBundleHeader(path + "/" + childPath, childData);
+        }
+    };
+
+    parseBundleHeader("", resources::getFileTree());
     return files;
 }
 
@@ -61,7 +89,7 @@ json getFiles(const json &input) {
     json output;
     json files = json::array();
     if(resources::isBundleMode()) {
-        files = __getFiles(resources::getFileTree());
+        files = __getAllFiles();
     }
     else {
         string resourcesPath = __getResourcesDirectory(); 
@@ -109,6 +137,48 @@ json extractFile(const json &input) {
     }
     else {
         output["error"] = errors::makeErrorPayload(errors::NE_RS_FILEXTF, destination);
+    }
+    return output;
+}
+
+
+json extractDirectory(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path", "destination"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    string path = input["path"].get<string>();
+    string destination = input["destination"].get<string>();
+    
+    if(resources::isBundleMode()) {
+        auto resPaths = __getFiles(path);
+        for(const auto &resPath: resPaths) {
+            string extractPath = resPath;
+            extractPath = helpers::normalizePath(extractPath)
+                                .substr(path == "/" ? 1 : path.size() + 1);
+            resources::extractFile(resPath, FS_CONVWSTR(filesystem::path(CONVSTR(destination)) / 
+                filesystem::path(CONVSTR(extractPath))));
+        }
+        output["success"] = true;
+    }
+    else if(!resources::isBundleMode()) {
+        path = settings::joinAppPath(path);
+        
+        error_code ec;
+        auto copyOptions = filesystem::copy_options::recursive |
+                        filesystem::copy_options::overwrite_existing;
+
+        filesystem::copy(CONVSTR(path), CONVSTR(destination), copyOptions, ec);
+        if(!ec) {
+            output["success"] = true;
+        }
+        else {
+            output["error"] = errors::makeErrorPayload(errors::NE_RS_DIREXTF, destination);
+        }
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_RS_DIREXTF, destination);
     }
     return output;
 }
