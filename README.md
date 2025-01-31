@@ -43,7 +43,7 @@ Start building apps: [neutralino.js.org/docs](https://neutralino.js.org/docs)
 
 In Electron and NWjs, you have to install NodeJs and hundreds of dependency libraries. Embedded Chromium and Node make simple apps bloaty. Neutralinojs offers a lightweight and portable SDK which is an alternative for Electron and NW.js. Neutralinojs doesn't bundle Chromium and uses the existing web browser library in the operating system (Eg: gtk-webkit2 on Linux). Neutralinojs implements a WebSocket connection for native operations and embeds a static web server to serve the web content. Also, it offers a built-in [JavaScript client library](https://github.com/neutralinojs/neutralino.js) for developers.
 
-Ask questions on StackOverflow using tag [neutralinojs](https://stackoverflow.com/questions/tagged/neutralinojs)
+Ask questions on StackOverflow using the tag [neutralinojs](https://stackoverflow.com/questions/tagged/neutralinojs)
 
 ## Contributing
 
@@ -74,7 +74,7 @@ If you like to support our work, you can donate to Neutralinojs via [Patreon](ht
 
 ## Licenses and Copyrights
 
-- Neutralinojs core: MIT. Copyright (c) 2021 Neutralinojs and contributors.
+- Neutralinojs core: MIT. Copyright (c) 2025 Neutralinojs and contributors.
 - C++ websocket client/server library: BSD-3-Clause from [zaphoyd/websocketpp](https://github.com/zaphoyd/websocketpp). Copyright (c) 2014, Peter Thorson. All rights reserved.
 - JSON parser library: MIT from [nlohmann/json](https://github.com/nlohmann/json). Copyright (c) 2013-2022 Niels Lohmann.
 - Cross-platform webview library: MIT from [webview/webview](https://github.com/webview/webview). Copyright (c) 2017 Serge Zaitsev.
@@ -88,7 +88,7 @@ If you like to support our work, you can donate to Neutralinojs via [Patreon](ht
 - Cross-platform C++ clipboard library: MIT from [dacap/clip](https://github.com/dacap/clip). Copyright (c) 2015-2021 David Capello
 - Cross-platform C++ system information library: CC0 1.0 Universal from [ThePhD/infoware](https://github.com/ThePhD/infoware). Written in 2016-2020 by nabijaczleweli and ThePhD
 - Cross-platform C++ filesystem watcher library: MIT from [SpartanJ/efsw](https://github.com/SpartanJ/efsw). Copyright (c) 2020 Martín Lucas Golini
-- Logo design credits: [IconsPng](https://www.iconspng.com/image/2688/atom-orange). Copyright free as mentioned in their website.
+- Logo design credits: [IconsPng](https://www.iconspng.com/image/2688/atom-orange). Copyright free as mentioned on their website.
 
 [See the complete license file](LICENSE)
 
