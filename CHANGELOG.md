@@ -27,15 +27,22 @@ This local directory mounting configuration can be deactivated as follows:
 await Neutralino.server.unmount('/app-res');
 ```
 
+### API: resources
+- Fallback to native filesystem APIs when `NL_RESMODE` is `directory`.
+- Implement `resources.getStats(path)` and `resources.extractDirectory(path, destination)` functions.
+
 
 ### API: window
 - Implement the `window.snapshot(path)` function to capture the window and save it as a PNG image file.
 
 ### Improvements/bugfixes
 - Fix the empty string returning issue with the `window.getTitle()` function on Windows.
+- Create non-existent directories while extracting resource files using the `resources.extractFile()` function.
+- Supports using large `resources.neu` files.
 
 ### DevOps
 - Fix minor string formatting issues in the BuildZri automation script.
+- Fix various test suite failure scenarios.
 
 ## v5.5.0
 
