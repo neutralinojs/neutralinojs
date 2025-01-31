@@ -128,7 +128,11 @@ jobs:
         files: ./bin/neutralino-linux_x64 ./bin/neutralino-win_x64.exe ./bin/neutralino-mac_x64 ./bin/neutralino-mac_arm64 ./bin/neutralino-mac_universal ./bin/WebView2Loader.dll
         dest: './bin/neutralinojs-v${{github.event.inputs.version}}.zip'
         
-       
+    - name: Create Release Notes
+      run: |
+        chmod +x ./scripts/rz.py
+        ./scripts/rz.py create ${{github.event.inputs.version}}
+               
     - name: Commit and Push Changelog
       uses: EndBug/add-and-commit@v9.1.3
       with:
