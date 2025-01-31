@@ -6,7 +6,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
-## 5.5.4
+## v5.5.4
 
 ### API: window
 - Implement the `window.snapshot(path)` function to capture the window and save it as a PNG image file.
