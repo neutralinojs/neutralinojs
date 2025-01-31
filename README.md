@@ -22,7 +22,7 @@ Get started with the neu CLI:
 
 ```bash
 # Creating a new app
-npm i -g @neutralinojs/neu
+bun i -g @neutralinojs/neu
 neu create hello-world
 cd hello-world
 neu run
