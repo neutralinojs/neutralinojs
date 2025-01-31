@@ -4,7 +4,7 @@ const runner = require('./runner');
 
 describe('window.spec: window namespace tests', () => {
 
-    describe('window.captureScreen', () => {
+    describe('window.snapshot', () => {
         it('captures the screen and saves to the specified file path', async () => {
             runner.run(`
                 await Neutralino.window.snapshot('screenshot.png');
