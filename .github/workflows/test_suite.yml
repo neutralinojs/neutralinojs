@@ -31,7 +31,6 @@ jobs:
         sudo apt-get install -y -f \
         libgtk-3-dev \
         libwebkit2gtk-4.0-37 \
-        libwebkit2gtk-4.0-dev \
         libayatana-appindicator3-1 \
         xvfb
 
