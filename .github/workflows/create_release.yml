@@ -24,9 +24,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y -f \
-        libgtk-3-dev \
-        libwebkit2gtk-4.0-37 \
-        libwebkit2gtk-4.0-dev
+        libgtk-3-dev
 
     - name: Build
       if: ${{ matrix.arch == 'x64' }}
@@ -43,7 +41,6 @@ jobs:
           apt-get update
           apt-get install -y -f \
           libgtk-3-dev \
-          libwebkit2gtk-4.0-dev \
           git \
           python3 \
           g++ \
