@@ -62,6 +62,26 @@ vector<string> __getFiles(const string &rootPath) {
     return files;
 }
 
+pair<unsigned long, bool> __getStats(const string &path) {
+    vector<string> pathSegments = helpers::split(path, '/');
+    json json = resources::getFileTree();
+    for(const auto &pathSegment: pathSegments) {
+        if(pathSegment.size() == 0) {
+            continue;
+        }
+        if(json.is_null()) {
+            break;
+        }
+        json = json["files"][pathSegment];
+    }
+    if(!json.is_null()) {
+        bool isFile = json["files"].is_null();
+        return make_pair(
+            isFile ? json["size"].get<unsigned long>() : 4096, isFile);
+    }
+    return make_pair(-1, false);
+}
+
 string __getResourcesDirectory() {
     json options = settings::getConfig();
     json jResourcesPath = options["cli"]["resourcesPath"];
@@ -100,6 +120,47 @@ json getFiles(const json &input) {
     
     output["returnValue"] = files;
     output["success"] = true;
+    return output;
+}
+
+json getStats(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    string path = input["path"].get<string>();
+    if(resources::isBundleMode()) {
+        auto resStats = __getStats(path);
+        if(resStats.first != -1) {
+            json stats;
+            stats["size"] = resStats.first;
+            stats["isFile"] = resStats.second;
+            stats["isDirectory"] = !resStats.second;
+            
+            output["returnValue"] = stats;
+            output["success"] = true;
+        }
+        else {
+            output["error"] = errors::makeErrorPayload(errors::NE_RS_NOPATHE, path);
+        }
+    }
+    else {
+        path = settings::joinAppPath(path);
+        fs::FileStats fileStats = fs::getStats(path);
+        if(fileStats.status == errors::NE_ST_OK) {
+            json stats;
+            stats["size"] = fileStats.size;
+            stats["isFile"] = fileStats.entryType == fs::EntryTypeFile;
+            stats["isDirectory"] = fileStats.entryType == fs::EntryTypeDir;
+            
+            output["returnValue"] = stats;
+            output["success"] = true;
+        }
+        else {
+            output["error"] = errors::makeErrorPayload(fileStats.status, path);
+        }
+    }
     return output;
 }
 

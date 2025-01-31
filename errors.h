@@ -51,7 +51,7 @@ enum StatusCode {
     // resources
     NE_RS_TREEGER,
     NE_RS_UNBLDRE,
-    NE_RS_FILNOTF,
+    NE_RS_NOPATHE,
     NE_RS_FILEXTF,
     NE_RS_DIREXTF,
     // server

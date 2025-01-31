@@ -26,18 +26,17 @@ json fileTree = nullptr;
 unsigned int asarHeaderSize;
 resources::ResourceMode mode = resources::ResourceModeBundle;
 
-pair<int, string> __seekFilePos(const string &path, json node, const string &curpath) {
+pair<unsigned long, string> __seekFilePos(const string &path, json node) {
     vector<string> pathSegments = helpers::split(path, '/');
-    string filename = pathSegments[pathSegments.size() - 1];
     json json = node;
     for(const auto &pathSegment: pathSegments) {
-        if(pathSegment.length() == 0 || json.is_null() || json["files"].is_null())
+        if(pathSegment.size() == 0 || json.is_null() || json["files"].is_null())
             continue;
         json = json["files"][pathSegment];
     }
     if(!json.is_null())
-        return make_pair<int, string>(json["size"].get<int>(), json["offset"].get<string>());
-    return make_pair<int, string>(-1, "");
+        return make_pair(json["size"].get<unsigned long>(), json["offset"].get<string>());
+    return make_pair(-1, "");
 }
 
 // Needs explicit close later
@@ -54,19 +53,19 @@ ifstream __openResourceFile() {
 
 fs::FileReaderResult __getFileFromBundle(const string &filename) {
     fs::FileReaderResult fileReaderResult;
-    pair<int, string> p = __seekFilePos(filename, fileTree, "");
+    pair<long, string> p = __seekFilePos(filename, fileTree);
     if(p.first != -1) {
         ifstream asarArchive = __openResourceFile();
         if (!asarArchive) {
             fileReaderResult.status = errors::NE_RS_TREEGER;
             return fileReaderResult;
         }
-        unsigned int uSize = p.first;
-        unsigned int uOffset = stoi(p.second);
+        unsigned long size = p.first;
+        unsigned long uOffset = stoi(p.second);
 
-        vector<char>fileBuf ( uSize );
+        vector<char>fileBuf ( size );
         asarArchive.seekg(asarHeaderSize + uOffset);
-        asarArchive.read(fileBuf.data(), uSize);
+        asarArchive.read(fileBuf.data(), size);
         string fileContent(fileBuf.begin(), fileBuf.end());
         fileReaderResult.data = fileContent;
         asarArchive.close();
@@ -85,14 +84,14 @@ bool __makeFileTree() {
 
     char *sizeBuf = new char[8];
     asarArchive.read(sizeBuf, 8);
-    unsigned int uSize = *(unsigned int *)(sizeBuf + 4) - 8;
+    unsigned int size = *(unsigned int *)(sizeBuf + 4) - 8;
 
     delete[] sizeBuf;
 
-    asarHeaderSize = uSize + 16;
-    vector<char> headerBuf(uSize);
+    asarHeaderSize = size + 16;
+    vector<char> headerBuf(size);
     asarArchive.seekg(16);
-    asarArchive.read(headerBuf.data(), uSize);
+    asarArchive.read(headerBuf.data(), size);
     json files;
     string headerContent(headerBuf.begin(), headerBuf.end());
     asarArchive.close();

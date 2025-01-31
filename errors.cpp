@@ -51,7 +51,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         // resources
         case errors::NE_RS_TREEGER: return "NE_RS_TREEGER";
         case errors::NE_RS_UNBLDRE: return "NE_RS_UNBLDRE";
-        case errors::NE_RS_FILNOTF: return "NE_RS_FILNOTF";
+        case errors::NE_RS_NOPATHE: return "NE_RS_NOPATHE";
         case errors::NE_RS_FILEXTF: return "NE_RS_FILEXTF";
         case errors::NE_RS_DIREXTF: return "NE_RS_DIREXTF";
         // server
@@ -110,7 +110,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         // resources
         case errors::NE_RS_TREEGER: return "Resource file tree generation error. %1 is missing.";
         case errors::NE_RS_UNBLDRE: return "Unable to load application resource file %1";
-        case errors::NE_RS_FILNOTF: return "The requested file (%1) is not found in the resources";
+        case errors::NE_RS_NOPATHE: return "Path (%1) doesn't exist in resources";
         case errors::NE_RS_FILEXTF: return "Unable to extract the requested file to %1";
         case errors::NE_RS_DIREXTF: return "Unable to extract the requested directory to %1";
         // server
