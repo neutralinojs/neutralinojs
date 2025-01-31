@@ -18,4 +18,6 @@ rm -r ./.res
 echo "Check resources.neu structure"
 asar list resources.neu
 
+cp resources.neu ./resources/updater_test/update_res.neu
+
 echo "OK: Packed."
