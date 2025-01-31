@@ -10,7 +10,6 @@ env:
     cd neutralino.js
     npm ci
     cd ../neutralinojs
-    ./scripts/update_client.sh
     ./scripts/make_res_neu.sh
 
 jobs:
