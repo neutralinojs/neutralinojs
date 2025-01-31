@@ -110,7 +110,7 @@ describe('updater.spec: updater namespace tests', () => {
 
                 // Try deleting existing resources.neu just for testing
                 try {
-                    await Neutralino.filesystem.removeFile(NL_PATH + '/resources.neu');
+                    await Neutralino.filesystem.remove(NL_PATH + '/resources.neu');
                 }
                 catch(err) {
                     // ignore
