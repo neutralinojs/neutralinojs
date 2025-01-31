@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v5.5.5
+
 ### Add function
 - Implement the `server.setVDocRoot(path)` function to set virtual document root to path.
 
