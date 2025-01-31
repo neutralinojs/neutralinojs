@@ -133,7 +133,7 @@ os::CommandResult execCommand(string command, const string &input, bool backgrou
     return commandResult;
 }
 
-pair<int, int> spawnProcess(string command, const string &cwd) {
+pair<int, int> spawnProcess(string command, const string &cwd, const map<string, string> &env) {
     #if defined(_WIN32)
     command = "cmd.exe /c \"" + command + "\"";
     #endif
@@ -146,8 +146,40 @@ pair<int, int> spawnProcess(string command, const string &cwd) {
         nextVirtualPid = 0;
     }
 
+    TinyProcessLib::Process::environment_type processEnv;
+
+    #if defined(_WIN32)
+    wchar_t* envStr = GetEnvironmentStringsW();
+    if (envStr) {
+        for (wchar_t* env = envStr; *env; env += wcslen(env) + 1) {
+            wstring envVar(env);
+            size_t pos = envVar.find(L'=');
+            if (pos != wstring::npos) {
+                processEnv[envVar.substr(0, pos)] = envVar.substr(pos + 1);
+            }
+        }
+        FreeEnvironmentStringsW(envStr);
+    }
+    #else
+    for (char **current = environ; *current != nullptr; current++) {
+        string envVar(*current);
+        size_t pos = envVar.find('=');
+        if (pos != string::npos) {
+            processEnv[envVar.substr(0, pos)] = envVar.substr(pos + 1);
+        }
+    }
+    #endif
+
+    for (const auto& [key, value] : env) {
+        #if defined(_WIN32)
+        processEnv[helpers::str2wstr(key)] = helpers::str2wstr(value);
+        #else
+        processEnv[key] = value;
+        #endif
+    }
+
     childProcess = new TinyProcessLib::Process(
-        CONVSTR(command), CONVSTR(cwd),
+        CONVSTR(command), CONVSTR(cwd), processEnv,
         [=](const char *bytes, size_t n) {
             __dispatchSpawnedProcessEvt(virtualPid, "stdOut", string(bytes, n));
         },
@@ -292,7 +324,16 @@ json spawnProcess(const json &input) {
         cwd = input["cwd"].get<string>();
     }
 
-    auto spawnedData = os::spawnProcess(command, cwd);
+    map<string, string> env;
+    if(helpers::hasField(input, "env") && input["env"].is_object()) {
+        for(auto &[key, value]: input["env"].items()) {
+            if(value.is_string()) {
+                env[key] = value.get<string>();
+            }
+        }
+    }
+
+    auto spawnedData = os::spawnProcess(command, cwd, env);
 
     json process;
     process["id"] = spawnedData.first;
