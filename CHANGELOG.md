@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v5.6.0
+
 ### API: server
 Neutralinojs doesn't support the `file://` protocol to load local resource files due to application security concerns. Because of this limitation, app developers had to read files using filesystem APIs. The new `server` namespace implements `server.mount(path, target)`, `server.unmount(path)`, and `server.getMounts()` functions to let developers load local files from the Neutralinojs static server by creating directory mappings as an alternative for the `file://` protocol.
 
