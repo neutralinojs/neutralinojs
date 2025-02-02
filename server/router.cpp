@@ -120,8 +120,7 @@ map<string, router::NativeMethod> methodMap = {
     {"os.setTray", os::controllers::setTray},
     {"os.open", os::controllers::open},
     {"os.getPath", os::controllers::getPath},
-    {"os.setEnvVar", os::controllers::setEnvVar}
-    {"os.spawnProcessWithEnv", os::controller::spawnProcessWithEnv},
+    {"os.spawnProcessWithEnv", os::controllers::spawnProcessWithEnv},
     // Neutralino.storage
     {"storage.setData", storage::controllers::setData},
     {"storage.getData", storage::controllers::getData},

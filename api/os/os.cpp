@@ -710,27 +710,67 @@ json getPath(const json &input) {
     }
     return output;
 }
-string setEnvVar(const std::string& key, const std::string& value) {
-    json output;
-    if(!getEnv(value).empty()){
-        output["error"] = errors::makeErrorPayload(errors::NE_OS_ENVEXISTS);
-    }else if(key.empty() || value.empty()){
-        output["error"] = errors::makeMissingArgErrorPayload();
+
+pair<int, int> spawnProcessWithEnv(const string& command, const map<string, string>& env, const string& cwd) {
+    unordered_map<string, string> env_unordered(env.begin(), env.end());
+
+    TinyProcessLib::Process* childProcess;
+    lock_guard<mutex> guard(spawnedProcessesLock);
+
+    int virtualPid = nextVirtualPid++;
+    if (nextVirtualPid == INT_MAX) {
+        nextVirtualPid = 1;  
     }
 
-#ifdef _WIN32
-    if(_putenv_s(key.c_str(), value.c_str()) != 0){
-        output["error"] = errors::makeErrorPayload(errors::NE_OS_CNCENV);
+    childProcess = new TinyProcessLib::Process(
+        command, cwd, env_unordered,
+        [=](const char* bytes, size_t n) {
+            __dispatchSpawnedProcessEvt(virtualPid, "stdOut", string(bytes, n));
+        },
+        [=](const char* bytes, size_t n) {
+            __dispatchSpawnedProcessEvt(virtualPid, "stdErr", string(bytes, n));
+        }, true
+    );
+
+    spawnedProcesses[virtualPid] = childProcess;
+
+    thread processThread([=]() {
+        int exitCode = childProcess->get_exit_status();
+        __dispatchSpawnedProcessEvt(virtualPid, "exit", to_string(exitCode));
+
+        lock_guard<mutex> cleanupGuard(spawnedProcessesLock);
+        spawnedProcesses.erase(virtualPid);
+        delete childProcess;
+    });
+    processThread.detach();
+
+    return make_pair(virtualPid, childProcess->get_id());
+}
+
+json spawnProcessWithEnv(const json& input) {
+    json output;
+    if (!input.contains("command") || !input.contains("env") || !input.contains("cwd")) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
     }
-#else
-    if(setenv(key.c_str(), value.c_str(), 1) != 0){
-        output["error"] = errors::makeErrorPayload(errors::NE_OS_CNCENV);
+
+    string command = input["command"].get<string>();
+    string cwd = input["cwd"].get<string>();
+
+    map<string, string> env;
+    for (auto& [key, value] : input["env"].items()) {
+        env[key] = value.get<string>();
     }
-#endif
+
+    json processop;
+    auto [virtualPid, osPid] = os::spawnProcessWithEnv(command, env, cwd);
+    processop["id"] = osPid;
+    processop["pid"] = virtualPid;
+    output["returnValue"] = processop;
     output["success"] = true;
-    output["message"] = "Environment variable set successfully";
     return output;
 }
+
 
 } // namespace controllers
 } // namespace os
