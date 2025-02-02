@@ -74,24 +74,31 @@ namespace helpers
         int length = wai_getExecutablePath(NULL, 0, NULL);
         char *_exepath = (char *)malloc(length + 1);
         int dirname_length;
+        std::stringstream ss;
         wai_getExecutablePath(_exepath, length, &dirname_length);
         _exepath[length] = '\0';
-        string exepath=std::to_string(*_exepath);
+        string exepath(_exepath);
         long long fsize = fs::getStats(exepath).size;
         fs::FileReaderResult fres = fs::readFile(exepath, {pos : fsize - 8, size : 8});
-        if (fres.status != errors::NE_ST_OK)
+        if (fres.status != errors::NE_ST_OK){
+            debug::log(debug::LogTypeError, errors::makeErrorMsg(fres.status, exepath));
             return {offset:-1,filename:""};
-        long long foffset = 0;
-        for (int i = fres.data.length(); --i >= 0;)
-            foffset = (foffset << 8) | fres.data[i];
-        foffset++;
-        if(foffset<0 || foffset>fsize)
+        }
+        long long foffset;
+        std::memcpy(&foffset,fres.data.data(),sizeof(long long));
+        if(foffset<0 || foffset>fsize){
+            debug::log(debug::LogTypeError, "offset off limits");
             return {offset:-1,filename:""};
-        fres=fs::readFile(exepath, {pos : foffset, size : (long long)marker.length()});
-        if (fres.status != errors::NE_ST_OK)
+        }
+        fres=fs::readFile(exepath, {pos : (long long)foffset, size : (long long)marker.length()});
+        if (fres.status != errors::NE_ST_OK){
+            debug::log(debug::LogTypeError, errors::makeErrorMsg(fres.status, exepath));
             return {offset:-1,filename:""};
-        if(fres.data!=marker)
+        }
+        if(fres.data!=marker){
+            debug::log(debug::LogTypeError, "marker `" +marker+"` not found");
             return {offset:-1,filename:""};
+        }
         return {offset:foffset+marker.length(),filename:exepath};
     }
     /*
