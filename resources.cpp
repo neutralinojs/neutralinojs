@@ -24,6 +24,7 @@ namespace resources {
 
 json fileTree = nullptr;
 unsigned int asarHeaderSize;
+helpers::ResourceOffsetResult resourceInfo;
 resources::ResourceMode mode = resources::ResourceModeBundle;
 
 pair<unsigned long, string> __seekFilePos(const string &path, json node) {
@@ -42,8 +43,9 @@ pair<unsigned long, string> __seekFilePos(const string &path, json node) {
 // Needs explicit close later
 ifstream __openResourceFile() {
     ifstream asarArchive;
+
     string resFileName = NEU_APP_RES_FILE;
-    resFileName = settings::joinAppPath(resFileName);
+    resFileName = (isEmbeddedMode())?resourceInfo.filename:settings::joinAppPath(resFileName);
     asarArchive.open(CONVSTR(resFileName), ios::binary);
     if(!asarArchive) {
         debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_RS_TREEGER, resFileName));
@@ -64,7 +66,7 @@ fs::FileReaderResult __getFileFromBundle(const string &filename) {
         unsigned long uOffset = stoi(p.second);
 
         vector<char>fileBuf ( size );
-        asarArchive.seekg(asarHeaderSize + uOffset);
+        asarArchive.seekg(resourceInfo.offset + asarHeaderSize + uOffset);
         asarArchive.read(fileBuf.data(), size);
         string fileContent(fileBuf.begin(), fileBuf.end());
         fileReaderResult.data = fileContent;
@@ -83,6 +85,7 @@ bool __makeFileTree() {
     }
 
     char *sizeBuf = new char[8];
+    if(isEmbeddedMode())asarArchive.seekg(resourceInfo.offset);
     asarArchive.read(sizeBuf, 8);
     unsigned int size = *(unsigned int *)(sizeBuf + 4) - 8;
 
@@ -90,7 +93,7 @@ bool __makeFileTree() {
 
     asarHeaderSize = size + 16;
     vector<char> headerBuf(size);
-    asarArchive.seekg(16);
+    asarArchive.seekg(resourceInfo.offset+ 16);
     asarArchive.read(headerBuf.data(), size);
     json files;
     string headerContent(headerBuf.begin(), headerBuf.end());
@@ -122,7 +125,7 @@ bool extractFile(const string &filename, const string &outputFilename) {
 }
 
 fs::FileReaderResult getFile(const string &filename) {
-    if(resources::isBundleMode()) {
+    if(resources::isBundleMode()||resources::isEmbeddedMode()) {
         return __getFileFromBundle(filename);
     }
     return fs::readFile(settings::joinAppPath(filename));
@@ -132,6 +135,11 @@ void init() {
     if(resources::isDirMode()) {
         return;
     }
+    resourceInfo=helpers::resource_offset(NEU_APP_RES_FILE);
+    if(resourceInfo.offset>=0){
+        resources::setMode(ResourceModeEmbedded);
+    }
+    else resourceInfo.offset=0;
     bool resourceLoaderStatus = __makeFileTree();
     if(!resourceLoaderStatus) {
         resources::setMode(resources::ResourceModeDir); // fallback to directory mode
@@ -152,6 +160,10 @@ bool isDirMode() {
 
 bool isBundleMode() {
    return resources::getMode() == resources::ResourceModeBundle;
+}
+
+bool isEmbeddedMode() {
+   return resources::getMode() == resources::ResourceModeEmbedded;
 }
 
 json getFileTree() {

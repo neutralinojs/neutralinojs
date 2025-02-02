@@ -28,7 +28,8 @@
             "lib/clip/clip.cpp",
             "lib/clip/image.cpp",
             "lib/infoware/src/**/*.cpp",
-            "lib/efsw/src/efsw/*.cpp"
+            "lib/efsw/src/efsw/*.cpp",
+            "whereami.c"
         ],
         "linux": [
             "lib/tinyprocess/process_unix.cpp",

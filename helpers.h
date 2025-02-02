@@ -23,6 +23,11 @@ using json = nlohmann::json;
 
 namespace helpers {
 
+struct ResourceOffsetResult{
+    long long offset;
+    string filename;
+};
+
 vector<string> split(const string &s, char delim, unsigned int stopAfter = -1);
 vector<string> splitTwo(const string &s, char delim);
 string generateToken();
@@ -34,6 +39,7 @@ vector<string> getModes();
 string appModeToStr(settings::AppMode mode);
 string normalizePath(string &path);
 string unNormalizePath(string &path);
+ResourceOffsetResult resource_offset(string marker);
 
 #if defined(_WIN32)
 wstring str2wstr(const string &str);
