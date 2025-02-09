@@ -37,7 +37,12 @@ void init() {
 
 void exportAuthInfo() {
     string tempDirPath = settings::joinAppDataPath("/.tmp");
-    filesystem::create_directories(CONVSTR(tempDirPath));
+    try {
+        filesystem::create_directories(CONVSTR(tempDirPath));
+    } catch (const std::filesystem::filesystem_error& e) {
+        debug::log(debug::LogTypeError, "Failed to create ./tmp directory. Make sure you have sufficient permissions.");
+        debug::log(debug::LogTypeError,std::string(e.what()));
+    }
     string tempAuthInfoPath = settings::joinAppDataPath("/.tmp/auth_info.json");
     fs::FileWriterOptions fileWriterOptions = {
         tempAuthInfoPath,
