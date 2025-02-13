@@ -50,9 +50,12 @@ string generateToken() {
     std::uniform_int_distribution<size_t> distribution(0, characters.size() - 1);
 
     for (size_t i = 0; i < length; ++i) {
+        if (i == 47) {
+            token += ".";
+        }
         token += characters[distribution(generator)];
     }
-
+    
     return token;
 }
 
