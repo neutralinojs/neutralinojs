@@ -133,7 +133,7 @@ os::CommandResult execCommand(string command, const string &input, bool backgrou
     return commandResult;
 }
 
-pair<int, int> spawnProcess(string command, const string &cwd, const map<string, string> &env) {
+pair<int, int> spawnProcess(string command, const os::SpawnProcessOptions &options) {
     #if defined(_WIN32)
     command = "cmd.exe /c \"" + command + "\"";
     #endif
@@ -148,38 +148,18 @@ pair<int, int> spawnProcess(string command, const string &cwd, const map<string,
 
     TinyProcessLib::Process::environment_type processEnv;
 
-    #if defined(_WIN32)
-    wchar_t* envStr = GetEnvironmentStringsW();
-    if (envStr) {
-        for (wchar_t* env = envStr; *env; env += wcslen(env) + 1) {
-            wstring envVar(env);
-            size_t pos = envVar.find(L'=');
-            if (pos != wstring::npos) {
-                processEnv[envVar.substr(0, pos)] = envVar.substr(pos + 1);
-            }
+    if (!options.envs.empty()) {
+        for (const auto& [key, value] : options.envs) {
+            #if defined(_WIN32)
+            processEnv[helpers::str2wstr(key)] = helpers::str2wstr(value);
+            #else
+            processEnv[key] = value;
+            #endif
         }
-        FreeEnvironmentStringsW(envStr);
-    }
-    #else
-    for (char **current = environ; *current != nullptr; current++) {
-        string envVar(*current);
-        size_t pos = envVar.find('=');
-        if (pos != string::npos) {
-            processEnv[envVar.substr(0, pos)] = envVar.substr(pos + 1);
-        }
-    }
-    #endif
-
-    for (const auto& [key, value] : env) {
-        #if defined(_WIN32)
-        processEnv[helpers::str2wstr(key)] = helpers::str2wstr(value);
-        #else
-        processEnv[key] = value;
-        #endif
     }
 
     childProcess = new TinyProcessLib::Process(
-        CONVSTR(command), CONVSTR(cwd), processEnv,
+        CONVSTR(command), CONVSTR(options.cwd), processEnv,
         [=](const char *bytes, size_t n) {
             __dispatchSpawnedProcessEvt(virtualPid, "stdOut", string(bytes, n));
         },
@@ -318,22 +298,24 @@ json spawnProcess(const json &input) {
         output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
+    
     string command = input["command"].get<string>();
-    string cwd = "";
+    os::SpawnProcessOptions options;
+    
     if(helpers::hasField(input, "cwd")) {
-        cwd = input["cwd"].get<string>();
+        options.cwd = input["cwd"].get<string>();
     }
+    
 
-    map<string, string> env;
-    if(helpers::hasField(input, "env") && input["env"].is_object()) {
-        for(auto &[key, value]: input["env"].items()) {
+    if(helpers::hasField(input, "envs") && input["envs"].is_object()) {
+        for(auto &[key, value]: input["envs"].items()) {
             if(value.is_string()) {
-                env[key] = value.get<string>();
+                options.envs[key] = value.get<string>();
             }
         }
     }
 
-    auto spawnedData = os::spawnProcess(command, cwd, env);
+    auto spawnedData = os::spawnProcess(command, options);
 
     json process;
     process["id"] = spawnedData.first;

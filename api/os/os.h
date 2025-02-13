@@ -23,11 +23,16 @@ struct SpawnedProcessEvent {
     string stdIn = "";
 };
 
+struct SpawnProcessOptions {
+    string cwd = "";
+    map<string, string> envs;
+};
+
 bool isTrayInitialized();
 void cleanupTray();
 void open(const string &url);
 os::CommandResult execCommand(string command, const string &input = "", bool background = false, const string &cwd = "");
-pair<int, int> spawnProcess(string command, const string &cwd = "", const map<string, string> &env = {});
+pair<int, int> spawnProcess(string command, const os::SpawnProcessOptions &options = SpawnProcessOptions());
 bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt);
 string getPath(const string &name);
 string getEnv(const string &key);
