@@ -133,7 +133,7 @@ os::CommandResult execCommand(string command, const string &input, bool backgrou
     return commandResult;
 }
 
-pair<int, int> spawnProcess(string command, const string &cwd) {
+pair<int, int> spawnProcess(string command,const std::unordered_map<string, string> envs, const string cwd) {
     #if defined(_WIN32)
     command = "cmd.exe /c \"" + command + "\"";
     #endif
@@ -147,7 +147,7 @@ pair<int, int> spawnProcess(string command, const string &cwd) {
     }
 
     childProcess = new TinyProcessLib::Process(
-        CONVSTR(command), CONVSTR(cwd),
+        CONVSTR(command), CONVSTR(cwd), envs,
         [=](const char *bytes, size_t n) {
             __dispatchSpawnedProcessEvt(virtualPid, "stdOut", string(bytes, n));
         },
@@ -288,11 +288,17 @@ json spawnProcess(const json &input) {
     }
     string command = input["command"].get<string>();
     string cwd = "";
+    unordered_map<string, string> envs;
     if(helpers::hasField(input, "cwd")) {
         cwd = input["cwd"].get<string>();
     }
 
-    auto spawnedData = os::spawnProcess(command, cwd);
+    if (helpers::hasField(input, "envs")) {
+        for (auto &[key, value] : input["envs"].items()) {
+            envs[key] = value.get<string>();
+        }
+    }
+    auto spawnedData = os::spawnProcess(command, envs,cwd);
 
     json process;
     process["id"] = spawnedData.first;
