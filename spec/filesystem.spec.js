@@ -4,6 +4,284 @@ const runner = require('./runner');
 
 describe('filesystem.spec: filesystem namespace tests', () => {
 
+    describe('filesystem.access', () => {
+        it('successfully checks read access for readable file', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/readable.txt', 'Hello');
+                await Neutralino.filesystem.chmod(NL_PATH + '/.tmp/readable.txt', 0o444);
+                let result = await Neutralino.filesystem.access(NL_PATH + '/.tmp/readable.txt', 'R');
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+    
+        it('successfully checks write access for writable file', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/writable.txt', 'Hello');
+                await Neutralino.filesystem.chmod(NL_PATH + '/.tmp/writable.txt', 0o222);
+                let result = await Neutralino.filesystem.access(NL_PATH + '/.tmp/writable.txt', 'W');
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+    
+        it('successfully checks execute access for executable file', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test-exec.sh', '#!/bin/sh\\necho Hello');
+                await Neutralino.filesystem.chmod(NL_PATH + '/.tmp/test-exec.sh', 0o111);
+                let result = await Neutralino.filesystem.access(NL_PATH + '/.tmp/test-exec.sh', 'X');
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+    
+        it('checks multiple access modes simultaneously', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/multi-access.txt', 'Hello');
+                await Neutralino.filesystem.chmod(NL_PATH + '/.tmp/multi-access.txt', 0o777);
+                let result = await Neutralino.filesystem.access(NL_PATH + '/.tmp/multi-access.txt', 'RW');
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+    
+        it('throws error for invalid access mode', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.access(NL_PATH + '/.tmp/test.txt', 'Z');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_INVALIDMODE');
+        });
+    
+        it('throws error for non-existent file', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.access(NL_PATH + '/.tmp/nonexistent.txt', 'R');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_NOPATHE');
+        });
+    
+        it('throws error when access is denied', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/no-access.txt', 'Hello');
+                await Neutralino.filesystem.chmod(NL_PATH + '/.tmp/no-access.txt', 0o000);
+                try {
+                    await Neutralino.filesystem.access(NL_PATH + '/.tmp/no-access.txt', 'R');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_ACCESSDENIED');
+        });
+    
+        it('throws error for write access after setting file to read-only', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/read-only.txt', 'Hello');
+                await Neutralino.filesystem.chmod(NL_PATH + '/.tmp/read-only.txt', 0o444);
+                try {
+                    await Neutralino.filesystem.access(NL_PATH + '/.tmp/read-only.txt', 'W');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_ACCESSDENIED');
+        });
+    
+        it('throws error for read access after removing read permission', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/no-read.txt', 'Hello');
+                await Neutralino.filesystem.chmod(NL_PATH + '/.tmp/no-read.txt', 0o333);
+                try {
+                    await Neutralino.filesystem.access(NL_PATH + '/.tmp/no-read.txt', 'R');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_ACCESSDENIED');
+        });
+
+        it('checks file existence without specific permissions', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/exists.txt', 'Hello');
+                let result = await Neutralino.filesystem.access(NL_PATH + '/.tmp/exists.txt', '');
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+
+        it('checks directory permissions', async () => {
+            runner.run(`
+                await Neutralino.filesystem.createDirectory(NL_PATH + '/.tmp/testdir');
+                await Neutralino.filesystem.chmod(NL_PATH + '/.tmp/testdir', 0o755);
+                let result = await Neutralino.filesystem.access(NL_PATH + '/.tmp/testdir', 'RX');
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+    });
+    
+    describe('filesystem.chmod', () => {
+        it('successfully changes file permissions', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/chmod-test.txt', 'Hello');
+                await Neutralino.filesystem.chmod(NL_PATH + '/.tmp/chmod-test.txt', 0o755);
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+    
+        it('verifies changed permissions with access check', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/verify-chmod.txt', 'Hello');
+                await Neutralino.filesystem.chmod(NL_PATH + '/.tmp/verify-chmod.txt', 0o400);
+                try {
+                    await Neutralino.filesystem.access(NL_PATH + '/.tmp/verify-chmod.txt', 'W');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_ACCESSDENIED');
+        });
+    
+        it('throws error for invalid mode value', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Hello');
+                    await Neutralino.filesystem.chmod(NL_PATH + '/.tmp/test.txt', -1);
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_INVALIDMODE');
+        });
+    
+        it('throws error for non-existent file', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.chmod(NL_PATH + '/.tmp/nonexistent.txt', 0o755);
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_NOPATHE');
+        });
+    
+        it('throws error when permission denied for chmod', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.chmod('/root/test.txt', 0o755);
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_ACCESSDENIED');
+        });
+        
+        it('changes directory permissions recursively', async () => {
+            runner.run(`
+                await Neutralino.filesystem.createDirectory(NL_PATH + '/.tmp/recursive');
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/recursive/test.txt', 'Hello');
+                await Neutralino.filesystem.chmod(NL_PATH + '/.tmp/recursive', 0o700);
+                let result = await Neutralino.filesystem.access(NL_PATH + '/.tmp/recursive/test.txt', 'RW');
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+    });
+    
+    describe('filesystem.chown', () => {
+        it('successfully changes file ownership', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/chown-test.txt', 'Hello');
+                try {
+                    await Neutralino.filesystem.chown(NL_PATH + '/.tmp/chown-test.txt', -1, -1);
+                    await __close('done');
+                } catch (error) {
+                    // On non-root execution, this might fail with ACCESSDENIED
+                    await __close(error.code);
+                }
+            `);
+            const output = runner.getOutput();
+            assert.ok(output === 'done' || output === 'NE_FS_ACCESSDENIED');
+        });
+    
+        it('throws error for invalid uid/gid values', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.chown(NL_PATH + '/.tmp/test.txt', 70000, -1);
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_INVALIDUIDGID');
+        });
+    
+        it('throws error for non-existent file', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.chown(NL_PATH + '/.tmp/nonexistent.txt', -1, -1);
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_NOPATHE');
+        });
+    
+        it('throws error when permission denied for chown', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.chown('/root/test.txt', 1000, 1000);
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_ACCESSDENIED');
+        });
+    
+        it('handles both uid and gid changes', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/chown-both.txt', 'Hello');
+                try {
+                    await Neutralino.filesystem.chown(NL_PATH + '/.tmp/chown-both.txt', 1000, 1000);
+                    await __close('done');
+                } catch (error) {
+                    // On non-root execution, this might fail with ACCESSDENIED
+                    await __close(error.code);
+                }
+            `);
+            const output = runner.getOutput();
+            assert.ok(output === 'done' || output === 'NE_FS_ACCESSDENIED');
+        });
+
+        it('throws error for negative uid and gid values', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.chown(NL_PATH + '/.tmp/test.txt', -2, -2);
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_INVALIDUIDGID');
+        });
+    
+        it('throws error for special characters in path', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.chown(NL_PATH + '/.tmp/special@#$.txt', 1000, 1000);
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_NOPATHE');
+        });
+    });
+
     describe('filesystem.createDirectory', () => {
         it('works without throwing errors', async () => {
             runner.run(`

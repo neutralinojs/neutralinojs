@@ -348,6 +348,99 @@ fs::DirReaderResult readDirectory(const string &path, bool recursive) {
     return dirResult;
 }
 
+fs::AccessResult access(const string &path, const string &mode){
+    fs::AccessResult result;
+
+    for (char c : mode) {
+        if (c != 'R' && c != 'W' && c != 'X') {
+            result.status = errors::NE_FS_INVALIDMODE;
+            return result;
+        }
+    }
+
+    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+    int accessMode = 0;
+    if(mode.find('R') != string::npos) accessMode |= R_OK;
+    if(mode.find('W') != string::npos) accessMode |= W_OK;
+    if(mode.find('X') != string::npos) accessMode |= X_OK;
+
+    if(::access(path.c_str(), accessMode) == 0) {
+        result.status = errors::NE_ST_OK;
+    }
+    else {
+        if(errno == ENOENT) {
+            result.status = errors::NE_FS_NOPATHE;
+        }
+        else {
+            result.status = errors::NE_FS_ACCESSDENIED;
+        }
+    }
+    #elif defined(_WIN32)
+    result.status = errors::NE_FS_UNSUPPORTED;
+    #endif
+    return result;
+}
+
+fs::ChmodResult chmod(const string &path, int mode) {
+    fs::ChmodResult result;
+
+    if (mode < 0) {
+        result.status = errors::NE_FS_INVALIDMODE;
+        return result;
+    }
+
+    mode = mode & 0777;
+
+    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+    if(::chmod(path.c_str(), mode) == 0) {
+        result.status = errors::NE_ST_OK;
+    }
+    else {
+        if(errno == ENOENT) {
+            result.status = errors::NE_FS_NOPATHE;
+        }
+        else if(errno == EACCES || errno == EPERM){
+            result.status = errors::NE_FS_ACCESSDENIED;
+        }
+        else {
+            result.status = errors::NE_FS_CHMODERR;
+        }
+    }
+    #elif defined(_WIN32)
+    result.status = errors::NE_FS_UNSUPPORTED;
+    #endif
+    return result;
+}
+
+fs::ChownResult chown(const string &path, int uid, int gid) {
+    fs::ChownResult result;
+
+    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+    if ((uid < -1 || uid > 65535) || (gid < -1 || gid > 65535)) {
+        result.status = errors::NE_FS_INVALIDUIDGID;
+        return result;
+    }
+
+    if (::chown(path.c_str(), uid, gid) == 0) {
+        result.status = errors::NE_ST_OK;
+    } else {
+        if (errno == ENOENT) {
+            result.status = errors::NE_FS_NOPATHE;
+        }
+        else if(errno == EACCES || errno == EPERM){
+            result.status = errors::NE_FS_ACCESSDENIED;
+        }
+        else {
+            result.status = errors::NE_FS_CHOWNERR;
+        }
+    }
+    #else
+        result.status = errors::NE_FS_UNSUPPORTED;
+    #endif
+
+    return result;
+}
+
 namespace controllers {
 
 json __writeOrAppendFile(const json &input, bool append = false) {
@@ -419,6 +512,59 @@ json remove(const json& input) {
     }
     else {
         output["error"] = errors::makeErrorPayload(errors::NE_FS_REMVERR, path);
+    }
+
+    return output;
+}
+
+json access(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path", "mode"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    
+    fs::AccessResult result = fs::access(input["path"].get<string>(), input["mode"].get<string>());
+    if(result.status == errors::NE_ST_OK) {
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(result.status, input["path"].get<string>());
+    }
+
+    return output;
+}
+
+json chmod(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path", "mode"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    
+    fs::ChmodResult result = fs::chmod(input["path"].get<string>(), input["mode"].get<int>());
+   if(result.status == errors::NE_ST_OK) {
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(result.status, input["path"].get<string>());
+    }
+
+    return output;
+}
+
+json chown(const json &input) {
+    json output;
+    if (!helpers::hasRequiredFields(input, {"path", "uid", "gid"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+
+    fs::ChownResult result = fs::chown(input["path"].get<string>(), input["uid"].get<int>(), input["gid"].get<int>());
+    if (result.status == errors::NE_ST_OK) {
+        output["success"] = true;
+    } else {
+        output["error"] = errors::makeErrorPayload(result.status, input["path"].get<string>());
     }
 
     return output;
