@@ -34,6 +34,7 @@ vector<string> getModes();
 string appModeToStr(settings::AppMode mode);
 string normalizePath(string &path);
 string unNormalizePath(string &path);
+string getCurrentTimestamp();
 
 #if defined(_WIN32)
 wstring str2wstr(const string &str);
