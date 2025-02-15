@@ -140,6 +140,9 @@ string getCurrentTimestamp() {
     std::ostringstream oss;
     oss << std::put_time(std::gmtime(&now_time_t), "%Y-%m-%dT%H:%M:%S")
         << "." << std::setfill('0') << std::setw(3) << now_ms << "Z";
+
+    return oss.str();
+
 }
 string normalizePath(string &path) {
     #if defined(_WIN32)
