@@ -150,11 +150,7 @@ pair<int, int> spawnProcess(string command, const os::SpawnProcessOptions &optio
 
     if (!options.envs.empty()) {
         for (const auto& [key, value] : options.envs) {
-            #if defined(_WIN32)
-            processEnv[helpers::str2wstr(key)] = helpers::str2wstr(value);
-            #else
-            processEnv[key] = value;
-            #endif
+            processEnv[CONVSTR(key)] = CONVSTR(value);
         }
     }
 
