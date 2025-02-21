@@ -37,19 +37,22 @@ vector<string> splitTwo(const string &s, char delim) {
 }
 
 string generateToken() {
-    static const std::string characters =
-        "-_0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    static const string characters =
+        "-_"
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
 
     const int length = 96;
 
-    std::string token;
+    string token;
     token.reserve(length);
 
-    std::random_device rd;
-    std::mt19937 generator(rd()); 
-    std::uniform_int_distribution<size_t> distribution(0, characters.size() - 1);
+    random_device rd;
+    mt19937 generator(rd()); 
+    uniform_int_distribution<int> distribution(0, characters.size() - 1);
 
-    for (size_t i = 0; i < length; ++i) {
+    for (int i = 0; i < length; ++i) {
         if (i == 47) {
             token += ".";
         }
