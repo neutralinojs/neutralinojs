@@ -227,16 +227,18 @@ errors::StatusCode mountPath(string &path, string &target) {
     if(path.empty()) {
         path = "/";
     }
-    if(!filesystem::exists(target)) {
+
+    const auto targetFsPath = filesystem::path(CONVSTR(target));
+    if(!filesystem::exists(targetFsPath)) {
         return errors::NE_FS_NOPATHE;
     }
-    if(!filesystem::is_directory(target)) {
+    if(!filesystem::is_directory(targetFsPath)) {
         return errors::NE_FS_NOTADIR;
     }
     if(router::isMounted(path)) {
         return errors::NE_SR_MPINUSE;
     }
-    
+
     mountedPaths[path] = target;
     return errors::NE_ST_OK;
 }
