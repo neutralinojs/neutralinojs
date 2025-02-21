@@ -51,6 +51,26 @@ describe('server.spec: server namespace tests', () => {
             assert.ok(output.fetch1 === 200, 'Expected a file request to a mounted directory before unmounting it to succeed');
             assert.ok(output.fetch2 === 404, 'Expected a file request to an unmounted directory to fail');
         });
+        it('mounts and reads from a directory that has non-latin characters', async () => {
+            runner.run(`
+                const response = {};
+                const targetPath = NL_PATH + '/.tmp/test-mount-сосисочка';
+                await Neutralino.filesystem.createDirectory(targetPath);
+                await Neutralino.filesystem.writeFile(targetPath + '/test.txt', 'Hello');
+
+                await Neutralino.server.mount('/test', targetPath);
+
+                const fetch1 = await fetch('/test/test.txt');
+                response.fetch1 = fetch1.status;
+
+                await Neutralino.server.unmount('/test');
+
+                await __close(JSON.stringify(response));
+            `);
+            const output = JSON.parse(runner.getOutput());
+            assert.ok(typeof output === 'object', 'Expected output is an object');
+            assert.ok(output.fetch1 === 200, 'The file request to a mounted directory succeeds');
+        });
     });
 
 });
