@@ -62,6 +62,7 @@ void __dispatchWatcherEvt(efsw::WatchID watcherId, const std::string& dir,
     evt["id"] = watcherId;
     evt["dir"] = helpers::normalizePath(dirC);
     evt["filename"] = filename;
+    evt["timestamp"] = helpers::getCurrentTimestamp();
     switch (action) {
         case efsw::Actions::Add:
             evt["action"] = "add";

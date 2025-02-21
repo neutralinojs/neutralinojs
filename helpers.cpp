@@ -2,7 +2,8 @@
 #include <string>
 #include <algorithm>
 #include <sstream>
-#include <time.h>
+#include <chrono>
+#include <iomanip>
 #include <ctype.h>
 #include <random>
 
@@ -135,6 +136,20 @@ string appModeToStr(settings::AppMode mode) {
         default:
             return "invalid";
     }
+}
+
+string getCurrentTimestamp() {
+    auto now = chrono::system_clock::now();
+    auto nowTimeT = chrono::system_clock::to_time_t(now);
+    auto nowMs = chrono::duration_cast<chrono::milliseconds>(
+                      now.time_since_epoch())
+                      .count() % 1000;
+
+    ostringstream oss;
+    oss << put_time(gmtime(&nowTimeT), "%Y-%m-%dT%H:%M:%S")
+        << "." << setfill('0') << setw(3) << nowMs << "Z";
+
+    return oss.str();
 }
 
 string normalizePath(string &path) {
