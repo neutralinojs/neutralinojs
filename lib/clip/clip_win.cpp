@@ -277,10 +277,8 @@ bool lock::impl::set_data(format f, const char* buf, size_t len) {
     }
   }
   else if (f == html_format()) {
-    // Get the registered HTML format
     UINT CF_HTML = html_format();
 
-    // Construct the HTML header with placeholders
     std::string headerTemplate = 
       "Version:0.9\r\n"
       "StartHTML:00000000\r\n"
@@ -295,18 +293,16 @@ bool lock::impl::set_data(format f, const char* buf, size_t len) {
       "</body>\r\n"
       "</html>";
 
-    // Combine header, content, and footer
     std::string fullHtmlContent = headerTemplate + 
       std::string(buf, len) + 
       footerTemplate;
 
-    // Calculate offsets
     size_t startHtmlOffset = headerTemplate.find("StartHTML:") + 10;
     size_t endHtmlOffset = headerTemplate.find("EndHTML:") + 8;
     size_t startFragOffset = headerTemplate.find("StartFragment:") + 14;
     size_t endFragOffset = headerTemplate.find("EndFragment:") + 12;
 
-    // Calculate and replace offsets
+
     char offsetBuffer[9];
     sprintf(offsetBuffer, "%08zu", headerTemplate.length());
     fullHtmlContent.replace(startHtmlOffset, 8, offsetBuffer);
@@ -320,7 +316,6 @@ bool lock::impl::set_data(format f, const char* buf, size_t len) {
     sprintf(offsetBuffer, "%08zu", fullHtmlContent.length() - footerTemplate.length());
     fullHtmlContent.replace(endFragOffset, 8, offsetBuffer);
 
-    // Allocate global memory for the HTML content
     Hglobal hglobal(fullHtmlContent.size() + 1);
     if (hglobal) {
       auto dst = static_cast<char*>(GlobalLock(hglobal));
