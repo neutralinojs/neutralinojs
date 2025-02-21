@@ -2,7 +2,8 @@
 #include <string>
 #include <algorithm>
 #include <sstream>
-#include <time.h>
+#include <chrono>
+#include <iomanip>
 #include <ctype.h>
 
 #include "helpers.h"
@@ -131,19 +132,19 @@ string appModeToStr(settings::AppMode mode) {
 }
 
 string getCurrentTimestamp() {
-    auto now = std::chrono::system_clock::now();
-    auto now_time_t = std::chrono::system_clock::to_time_t(now);
-    auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+    auto now = chrono::system_clock::now();
+    auto nowTimeT = chrono::system_clock::to_time_t(now);
+    auto nowMs = chrono::duration_cast<chrono::milliseconds>(
                       now.time_since_epoch())
                       .count() % 1000;
 
-    std::ostringstream oss;
-    oss << std::put_time(std::gmtime(&now_time_t), "%Y-%m-%dT%H:%M:%S")
-        << "." << std::setfill('0') << std::setw(3) << now_ms << "Z";
+    ostringstream oss;
+    oss << put_time(gmtime(&nowTimeT), "%Y-%m-%dT%H:%M:%S")
+        << "." << setfill('0') << setw(3) << nowMs << "Z";
 
     return oss.str();
-
 }
+
 string normalizePath(string &path) {
     #if defined(_WIN32)
     replace(path.begin(), path.end(), '\\', '/');
