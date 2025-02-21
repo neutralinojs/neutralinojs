@@ -17,6 +17,8 @@ json readText(const json &input);
 json readImage(const json &input);
 json writeText(const json &input);
 json writeImage(const json &input);
+json writeHTML(const json &input);
+json readHTML(const json &input);
 json clear(const json &input);
 
 } // namespace controllers

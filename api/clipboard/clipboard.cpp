@@ -119,6 +119,30 @@ json writeText(const json &input) {
     return output;
 }
 
+json readHTML(const json &input) {
+    json output;
+    string clipHTML = "";
+    if(clip::has(clip::html_format())) {
+        clip::get_html(clipHTML);
+    }
+    output["returnValue"] = clipHTML;
+    output["success"] = true;
+    return output;
+}
+
+json writeHTML(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"data"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    string htmlData = input["data"].get<string>();
+    clip::set_html(htmlData);
+
+    output["success"] = true;
+    return output;
+}
+
 json clear(const json &input) {
     json output;
     clip::clear();

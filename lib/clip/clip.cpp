@@ -78,6 +78,21 @@ format text_format()  { return 1; }
 format image_format() { return 2; }
 #endif
 
+format getHTMLFormat() {
+    #if defined(_WIN32)
+        return register_format("HTML Format");
+    #elif defined(__linux__) 
+        return register_format("text/html");
+    #elif defined(__APPLE__)
+        return register_format("public.html");
+    #endif
+}
+
+format html_format() {
+    static format f = getHTMLFormat();
+    return f;
+}
+
 bool has(format f) {
   lock l;
   if (l.locked())
@@ -125,6 +140,40 @@ bool get_text(std::string& value) {
     return true;
   }
 }
+
+
+bool set_html(const std::string& value) {
+  lock l;
+  if (l.locked()) {
+    l.clear();
+    return l.set_data(html_format(), value.c_str(), value.size());
+  }
+  else
+    return false;
+}
+
+bool get_html(std::string& value) {
+  lock l;
+  if (!l.locked())
+    return false;
+
+  format f = html_format();
+  if (!l.is_convertible(f))
+    return false;
+
+  size_t len = l.get_data_length(f);
+  if (len > 0) {
+    std::vector<char> buf(len);
+    l.get_data(f, &buf[0], len);
+    value = &buf[0];
+    return true;
+  }
+  else {
+    value.clear();
+    return true;
+  }
+}
+
 
 #if CLIP_ENABLE_IMAGE
 

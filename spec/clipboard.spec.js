@@ -170,6 +170,211 @@ describe('clipboard.spec: clipboard namespace tests', () => {
         });
     });
 
+    describe('clipboard.writeHTML', () => {
+        it('throws an error if the parameter is missing', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.clipboard.writeHTML();
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+        });
+
+        it('works without throwing errors if parameter is provided', async () => {
+            runner.run(`
+                await Neutralino.clipboard.writeHTML('<b>Test</b>');
+                let clipboardHTML = await Neutralino.clipboard.readHTML();
+                await __close(clipboardHTML);
+            `);
+            assert.equal(runner.getOutput(), '<b>Test</b>');
+        });
+
+        it('throws an error if the parameter is not a string', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.clipboard.writeHTML(123);
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+            runner.run(`
+                try {
+                    await Neutralino.clipboard.writeHTML(null);
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+            runner.run(`
+                try {
+                    await Neutralino.clipboard.writeHTML(undefined);
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+            runner.run(`
+                try {
+                    await Neutralino.clipboard.writeHTML({ key: 'value' });
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+        });
+
+        it('successfully writes special characters to the clipboard', async () => {
+            runner.run(`
+                await Neutralino.clipboard.writeHTML('<b>Special characters: @#$%^&*☁☀☊☄</b>');
+                let clipboardHTML = await Neutralino.clipboard.readHTML();
+                await __close(clipboardHTML);
+            `);
+            assert.equal(runner.getOutput(), '<b>Special characters: @#$%^&*☁☀☊☄</b>');
+        });
+
+        it('successfully writes an empty string to the clipboard', async () => {
+            runner.run(`
+                await Neutralino.clipboard.writeHTML('');
+                let clipboardHTML = await Neutralino.clipboard.readHTML();
+                await __close(clipboardHTML);
+            `);
+            assert.equal(runner.getOutput(), '');
+        });
+
+        it('handles concurrent writes to the clipboard', async () => {
+            const html1 = '<b>Hello</b>';
+            const html2 = '<b>World</b>';
+            runner.run(`
+                await Promise.all([
+                    Neutralino.clipboard.writeHTML('${html1}'),
+                    Neutralino.clipboard.writeHTML('${html2}')
+                ]);
+                let clipboardHTML = await Neutralino.clipboard.readHTML();
+                await __close(clipboardHTML);
+            `);
+            const clipboardHTML = runner.getOutput();
+            assert(
+                clipboardHTML === html1 || clipboardHTML === html2,
+                `Expected clipboard HTML to be either '${html1}' or '${html2}', but got '${clipboardHTML}'`
+            );
+        });
+    });
+
+    describe('clipboard.readHTML', () => {
+        it('returns the previously stored HTML', async () => {
+            runner.run(`
+                await Neutralino.clipboard.writeHTML('<b>Test value</b>');
+                let clipboardHTML = await Neutralino.clipboard.readHTML();
+                await __close(clipboardHTML);
+            `);
+            assert.equal(runner.getOutput(), '<b>Test value</b>');
+        });
+
+        it('returns an empty string if the clipboard is empty', async () => {
+            runner.run(`
+                await Neutralino.clipboard.clear();
+                let clipboardHTML = await Neutralino.clipboard.readHTML();
+                await __close(clipboardHTML);
+            `);
+            assert.equal(runner.getOutput(), '');
+        });
+
+        it('returns HTML with special characters intact', async () => {
+            runner.run(`
+                await Neutralino.clipboard.writeHTML('<b>@#$%^&*☁☀☊☄</b>');
+                let clipboardHTML = await Neutralino.clipboard.readHTML();
+                await __close(clipboardHTML);
+            `);
+            assert.equal(runner.getOutput(), '<b>@#$%^&*☁☀☊☄</b>');
+        });
+    });
+
+    describe('clipboard.spec: HTML Clipboard Preservation', () => {
+        it('preserves complex HTML formatting structure', async () => {
+            const complexHtml = `
+                <div style="color: blue; font-size: 16px;">
+                    <h1>Formatted Title</h1>
+                    <p>Paragraph with <strong>bold</strong> and <em>italic</em> text</p>
+                    <ul style="list-style-type: square;">
+                        <li>Styled List Item 1</li>
+                        <li>Styled List Item 2</li>
+                    </ul>
+                    <a href="https://example.com">Hyperlink</a>
+                </div>
+            `;
+    
+            runner.run(`
+                await Neutralino.clipboard.writeHTML(${JSON.stringify(complexHtml)});
+                let clipboardHtml = await Neutralino.clipboard.readHTML();
+                await __close(clipboardHtml);
+            `);
+    
+            const writtenHtml = runner.getOutput();
+            
+            assert(writtenHtml.includes('<h1>'), 'Heading structure lost');
+            assert(writtenHtml.includes('<strong>'), 'Strong text formatting lost');
+            assert(writtenHtml.includes('<em>'), 'Italic text formatting lost');
+            assert(writtenHtml.includes('style="color: blue;'), 'Inline styles lost');
+            assert(writtenHtml.includes('href="https://example.com"'), 'Hyperlink lost');
+        });
+
+        it('preserves table formatting', async () => {
+            const htmlTable = `
+                <table style="border-collapse: collapse; width: 100%;">
+                    <tr>
+                        <th style="border: 1px solid black;">Header 1</th>
+                        <th style="border: 1px solid black;">Header 2</th>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid black;">Data 1</td>
+                        <td style="border: 1px solid black;">Data 2</td>
+                    </tr>
+                </table>
+            `;
+        
+            runner.run(`
+                await Neutralino.clipboard.writeHTML(${JSON.stringify(htmlTable)});
+                let clipboardHtml = await Neutralino.clipboard.readHTML();
+                await __close(clipboardHtml);
+            `);
+        
+            const writtenHtml = runner.getOutput();
+            
+            assert(writtenHtml.includes('<table') && writtenHtml.includes('</table>'), 'Table structure lost');
+            assert(writtenHtml.includes('border-collapse:') || writtenHtml.includes('border-collapse: '), 'Table styling lost');
+            assert(writtenHtml.includes('<th'), 'Table headers lost');
+        });
+    
+        it('handles SVG embedded in HTML', async () => {
+            const htmlWithSvg = `
+                <div>
+                    <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow" />
+                    </svg>
+                </div>
+            `;
+    
+            runner.run(`
+                await Neutralino.clipboard.writeHTML(${JSON.stringify(htmlWithSvg)});
+                let clipboardHtml = await Neutralino.clipboard.readHTML();
+                await __close(clipboardHtml);
+            `);
+    
+            const writtenHtml = runner.getOutput();
+            assert(writtenHtml.includes('<svg'), 'SVG tag lost');
+            assert(writtenHtml.includes('<circle'), 'SVG circle element lost');
+            assert(writtenHtml.includes('stroke="green"'), 'SVG attributes lost');
+        });
+    });
+
     describe('clipboard.writeImage', () => {
         it('throws an error when the image data is invalid', async () => {
             runner.run(`

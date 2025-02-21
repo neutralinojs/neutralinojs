@@ -276,6 +276,60 @@ bool lock::impl::set_data(format f, const char* buf, size_t len) {
       }
     }
   }
+  else if (f == html_format()) {
+    UINT CF_HTML = html_format();
+
+    std::string headerTemplate = 
+      "Version:0.9\r\n"
+      "StartHTML:00000000\r\n"
+      "EndHTML:00000000\r\n"
+      "StartFragment:00000000\r\n"
+      "EndFragment:00000000\r\n"
+      "<html><body>\r\n"
+      "<!--StartFragment -->\r\n";
+
+    std::string footerTemplate = 
+      "\r\n<!--EndFragment-->\r\n"
+      "</body>\r\n"
+      "</html>";
+
+    std::string fullHtmlContent = headerTemplate + 
+      std::string(buf, len) + 
+      footerTemplate;
+
+    size_t startHtmlOffset = headerTemplate.find("StartHTML:") + 10;
+    size_t endHtmlOffset = headerTemplate.find("EndHTML:") + 8;
+    size_t startFragOffset = headerTemplate.find("StartFragment:") + 14;
+    size_t endFragOffset = headerTemplate.find("EndFragment:") + 12;
+
+
+    char offsetBuffer[9];
+    sprintf(offsetBuffer, "%08zu", headerTemplate.length());
+    fullHtmlContent.replace(startHtmlOffset, 8, offsetBuffer);
+
+    sprintf(offsetBuffer, "%08zu", fullHtmlContent.length());
+    fullHtmlContent.replace(endHtmlOffset, 8, offsetBuffer);
+
+    sprintf(offsetBuffer, "%08zu", headerTemplate.length() + headerTemplate.find("<!--StartFragment -->") - headerTemplate.find("<html>"));
+    fullHtmlContent.replace(startFragOffset, 8, offsetBuffer);
+
+    sprintf(offsetBuffer, "%08zu", fullHtmlContent.length() - footerTemplate.length());
+    fullHtmlContent.replace(endFragOffset, 8, offsetBuffer);
+
+    Hglobal hglobal(fullHtmlContent.size() + 1);
+    if (hglobal) {
+      auto dst = static_cast<char*>(GlobalLock(hglobal));
+      if (dst) {
+        memcpy(dst, fullHtmlContent.c_str(), fullHtmlContent.size());
+        dst[fullHtmlContent.size()] = '\0';  // Null-terminate
+        GlobalUnlock(hglobal);
+        
+        result = (SetClipboardData(CF_HTML, hglobal) ? true : false);
+        if (result)
+          hglobal.release();
+      }
+    }
+  }
   else {
     Hglobal hglobal(len+sizeof(CustomSizeT));
     if (hglobal) {
@@ -335,6 +389,20 @@ bool lock::impl::get_data(format f, char* buf, size_t len) const {
       }
     }
   }
+  else if (f == html_format()) {
+    if (IsClipboardFormatAvailable(html_format())) {
+      HGLOBAL hglobal = GetClipboardData(html_format());
+      if (hglobal) {
+        LPSTR lpstr = (LPSTR)GlobalLock(hglobal);
+        if (lpstr) {
+          // TODO check length
+          memcpy(buf, lpstr, len);
+          result = true;
+          GlobalUnlock(hglobal);
+        }
+      }
+    }
+  }
   else {
     if (IsClipboardFormatAvailable(f)) {
       HGLOBAL hglobal = GetClipboardData(f);
@@ -383,6 +451,18 @@ size_t lock::impl::get_data_length(format f) const {
     }
     else if (IsClipboardFormatAvailable(CF_TEXT)) {
       HGLOBAL hglobal = GetClipboardData(CF_TEXT);
+      if (hglobal) {
+        LPSTR lpstr = (LPSTR)GlobalLock(hglobal);
+        if (lpstr) {
+          len = strlen(lpstr) + 1;
+          GlobalUnlock(hglobal);
+        }
+      }
+    }
+  }
+  else if(f == html_format()) {
+    if (IsClipboardFormatAvailable(html_format())) {
+      HGLOBAL hglobal = GetClipboardData(html_format());
       if (hglobal) {
         LPSTR lpstr = (LPSTR)GlobalLock(hglobal);
         if (lpstr) {
