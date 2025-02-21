@@ -133,7 +133,7 @@ os::CommandResult execCommand(string command, const string &input, bool backgrou
     return commandResult;
 }
 
-pair<int, int> spawnProcess(string command, const string &cwd) {
+pair<int, int> spawnProcess(string command, const os::SpawnProcessOptions &options) {
     #if defined(_WIN32)
     command = "cmd.exe /c \"" + command + "\"";
     #endif
@@ -146,8 +146,16 @@ pair<int, int> spawnProcess(string command, const string &cwd) {
         nextVirtualPid = 0;
     }
 
+    TinyProcessLib::Process::environment_type processEnv;
+
+    if (!options.envs.empty()) {
+        for (const auto& [key, value] : options.envs) {
+            processEnv[CONVSTR(key)] = CONVSTR(value);
+        }
+    }
+
     childProcess = new TinyProcessLib::Process(
-        CONVSTR(command), CONVSTR(cwd),
+        CONVSTR(command), CONVSTR(options.cwd), processEnv,
         [=](const char *bytes, size_t n) {
             __dispatchSpawnedProcessEvt(virtualPid, "stdOut", string(bytes, n));
         },
@@ -286,13 +294,24 @@ json spawnProcess(const json &input) {
         output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
+    
     string command = input["command"].get<string>();
-    string cwd = "";
+    os::SpawnProcessOptions options;
+    
     if(helpers::hasField(input, "cwd")) {
-        cwd = input["cwd"].get<string>();
+        options.cwd = input["cwd"].get<string>();
+    }
+    
+
+    if(helpers::hasField(input, "envs") && input["envs"].is_object()) {
+        for(auto &[key, value]: input["envs"].items()) {
+            if(value.is_string()) {
+                options.envs[key] = value.get<string>();
+            }
+        }
     }
 
-    auto spawnedData = os::spawnProcess(command, cwd);
+    auto spawnedData = os::spawnProcess(command, options);
 
     json process;
     process["id"] = spawnedData.first;
