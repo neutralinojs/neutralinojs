@@ -48,7 +48,11 @@ void init() {
                                 : extension["command"].get<string>();
             command = regex_replace(command, regex("\\$\\{NL_PATH\\}"), settings::getAppPath());
 
-            os::execCommand(command, __buildExtensionProcessInput(extensionId).dump(), true); // async
+            os::ChildProcessOptions processOptions;
+            processOptions.background = true;
+            processOptions.stdIn = __buildExtensionProcessInput(extensionId).dump();
+            
+            os::execCommand(command, processOptions); // async
         }
 
         extensions::loadOne(extensionId);

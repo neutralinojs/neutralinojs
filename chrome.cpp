@@ -121,7 +121,10 @@ void init(const json &input) {
         chromeCmd += " " + input["args"].get<string>();
     }
 
-    os::execCommand(chromeCmd, "", true);
+    os::ChildProcessOptions processOptions;
+    processOptions.background = true;
+    
+    os::execCommand(chromeCmd, processOptions);
 }
 
 } // namespace chrome
