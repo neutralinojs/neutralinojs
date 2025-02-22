@@ -54,6 +54,9 @@ string __findChrome() {
         "/usr/bin/chromium",
         "/usr/bin/chromium-browser",
         "/snap/bin/chromium",
+        "/usr/local/bin/google-chrome",
+        "/usr/bin/brave-browser",
+        "/opt/microsoft/msedge/msedge"
     };
 
     #elif defined(__APPLE__)
