@@ -35,7 +35,7 @@ string appModeToStr(settings::AppMode mode);
 string normalizePath(string &path);
 string unNormalizePath(string &path);
 string getCurrentTimestamp();
-
+string sanitizeUTF8(const string& inputData);
 #if defined(_WIN32)
 wstring str2wstr(const string &str);
 string wstr2str(const wstring &str);

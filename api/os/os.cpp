@@ -47,7 +47,6 @@ extern char **environ;
 #include "api/debug/debug.h"
 #include "api/os/os.h"
 #include "api/window/window.h"
-
 #define NEU_MAX_TRAY_MENU_ITEMS 50
 
 using namespace std;
@@ -114,11 +113,15 @@ os::CommandResult execCommand(string command, const os::ChildProcessOptions &opt
     }
 
     auto stdOutHandler = [&](const char *bytes, size_t n) {
-        commandResult.stdOut += string(bytes, n);
+        const string data = string(bytes, n);
+        const string sanitizedStdOut = helpers::sanitizeUTF8(data);
+        commandResult.stdOut += sanitizedStdOut;
     };
 
     auto stdErrHandler = [&](const char *bytes, size_t n) {
-        commandResult.stdErr += string(bytes, n);
+        const string data = string(bytes, n);
+        const string sanitizedStdErr = helpers::sanitizeUTF8(data);
+        commandResult.stdErr += sanitizedStdErr;
     };
 
     if(!options.background && options.envs.empty()) { 
@@ -164,11 +167,15 @@ pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &optio
 
 
     auto stdOutHandler = [=](const char *bytes, size_t n) {
-        __dispatchSpawnedProcessEvt(virtualPid, "stdOut", string(bytes, n));
+        const string data = string(bytes, n);
+        const string sanitizedStdOut = helpers::sanitizeUTF8(data);
+        __dispatchSpawnedProcessEvt(virtualPid, "stdOut", sanitizedStdOut);
     };
 
     auto stdErrHandler = [=](const char *bytes, size_t n) {
-        __dispatchSpawnedProcessEvt(virtualPid, "stdErr", string(bytes, n));
+        const string data = string(bytes, n);
+        const string sanitizedStdErr = helpers::sanitizeUTF8(data);
+        __dispatchSpawnedProcessEvt(virtualPid, "stdErr", sanitizedStdErr);
     };
 
     if(options.envs.empty()) {

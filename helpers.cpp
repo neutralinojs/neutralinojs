@@ -169,6 +169,67 @@ string unNormalizePath(string &path) {
     return path;
 }
 
+string sanitizeUTF8(const std::string &input)
+{
+    string sanitized;
+    sanitized.reserve(input.size());
+    auto isContinuationByte = [](uint8_t byte)
+    {
+        return (byte & 0xC0) == 0x80;
+    };
+    for (size_t i = 0; i < input.size();)
+    {
+        uint8_t byte = static_cast<uint8_t>(input[i]);
+        if (byte <= 0x7F)
+        {
+            sanitized.push_back(byte);
+            i++;
+        }
+        else if ((byte & 0xE0) == 0xC0)
+        {
+            if (i + 1 < input.size() && isContinuationByte(input[i + 1]))
+            {
+                sanitized.push_back(byte);sanitized.push_back(input[i + 1]);
+                i += 2;
+            }
+            else
+            {
+                sanitized.push_back('?');i++;
+            }
+        }
+        else if ((byte & 0xF0) == 0xE0)
+        {
+            if (i + 2 < input.size() && isContinuationByte(input[i + 1]) && isContinuationByte(input[i + 2]))
+            {
+                sanitized.push_back(byte);sanitized.push_back(input[i + 1]);
+                sanitized.push_back(input[i + 2]);i += 3;
+            }
+            else
+            {
+                sanitized.push_back('?');
+                i++;
+            }
+        }
+        else if ((byte & 0xF8) == 0xF0)
+        {
+            if (i + 3 < input.size() && isContinuationByte(input[i + 1]) && isContinuationByte(input[i + 2]) && isContinuationByte(input[i + 3]))
+            {
+                sanitized.push_back(byte);sanitized.push_back(input[i + 1]);
+                sanitized.push_back(input[i + 2]);sanitized.push_back(input[i + 3]);
+                i += 4;
+            }
+            else
+            {
+                sanitized.push_back('?');i++;
+            }
+        }
+        else
+        {
+            sanitized.push_back('?');i++;
+        }
+    }
+    return sanitized;
+}
 #if defined(_WIN32)
 wstring str2wstr(const string &str) {
     int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0);
