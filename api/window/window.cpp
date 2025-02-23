@@ -1068,6 +1068,93 @@ json snapshot(const json &input) {
     return output;
 }
 
+
+json setMainMenu(const json &input) {
+    json output;
+    
+    #if defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
+    void mainMenuItemClicked(std::string itemId) {
+        json eventPayload;
+        eventPayload["id"] = itemId;
+        Neutralino.events.dispatch("mainMenuItemClicked", eventPayload);
+    }
+    #endif
+    
+    #if defined(_WIN32)
+    HMENU hMenu = CreateMenu();
+    for (const auto &menu : input) {
+        HMENU hSubMenu = CreatePopupMenu();
+        for (const auto &item : menu["menuItems"]) {
+            if (item["text"] == "-") {
+                AppendMenu(hSubMenu, MF_SEPARATOR, 0, NULL);
+            } else {
+                AppendMenu(hSubMenu, MF_STRING, item["id"].get<int>(), item["text"].get<std::string>().c_str());
+            }
+        }
+        AppendMenu(hMenu, MF_POPUP, (UINT_PTR)hSubMenu, menu["text"].get<std::string>().c_str());
+    }
+    SetMenu(windowHandle, hMenu);
+    
+    case WM_COMMAND:
+        if (HIWORD(wParam) == 0) {
+            mainMenuItemClicked(std::to_string(LOWORD(wParam)));
+        }
+        break;
+    
+    #elif defined(__APPLE__)
+    id mainMenu = ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSMenu"), sel_getUid("alloc"));
+    mainMenu = ((id (*)(id, SEL))objc_msgSend)(mainMenu, sel_getUid("init"));
+    for (const auto &menu : input) {
+        id menuItem = ((id (*)(id, SEL, id))objc_msgSend)(mainMenu, sel_getUid("addItemWithTitle:action:keyEquivalent:"), menu["text"].get<std::string>().c_str(), NULL, @"");
+        id submenu = ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSMenu"), sel_getUid("alloc"));
+        submenu = ((id (*)(id, SEL))objc_msgSend)(submenu, sel_getUid("init"));
+        for (const auto &item : menu["menuItems"]) {
+            if (item["text"] == "-") {
+                ((void (*)(id, SEL, id))objc_msgSend)(submenu, sel_getUid("addItem:"), ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSMenuItem"), sel_getUid("separatorItem")));
+            } else {
+                id subItem = ((id (*)(id, SEL, id, SEL, id))objc_msgSend)((id)objc_getClass("NSMenuItem"), sel_getUid("alloc"), item["text"].get<std::string>().c_str(), sel_getUid("menuAction:"), @"");
+                ((void (*)(id, SEL, id))objc_msgSend)(submenu, sel_getUid("addItem:"), subItem);
+            }
+        }
+        ((void (*)(id, SEL, id))objc_msgSend)(menuItem, sel_getUid("setSubmenu:"), submenu);
+    }
+    ((void (*)(id, SEL, id))objc_msgSend)(((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSApplication"), sel_getUid("sharedApplication")), sel_getUid("setMainMenu:"), mainMenu);
+    
+    void menuAction(id self, SEL _cmd) {
+        id menuItem = self;
+        const char *menuId = ((const char *(*)(id, SEL))objc_msgSend)(menuItem, sel_getUid("identifier"));
+        mainMenuItemClicked(std::string(menuId));
+    }
+    
+    #elif defined(__linux__)
+    GtkWidget *menuBar = gtk_menu_bar_new();
+    for (const auto &menu : input) {
+        GtkWidget *fileMenu = gtk_menu_new();
+        GtkWidget *fileItem = gtk_menu_item_new_with_label(menu["text"].get<std::string>().c_str());
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(fileItem), fileMenu);
+        for (const auto &item : menu["menuItems"]) {
+            GtkWidget *menuItem;
+            if (item["text"] == "-") {
+                menuItem = gtk_separator_menu_item_new();
+            } else {
+                menuItem = gtk_menu_item_new_with_label(item["text"].get<std::string>().c_str());
+                g_signal_connect(menuItem, "activate", G_CALLBACK([](GtkMenuItem *menuItem, gpointer userData) {
+                    mainMenuItemClicked(static_cast<char*>(userData));
+                }), (gpointer)item["id"].get<std::string>().c_str());
+            }
+            gtk_menu_shell_append(GTK_MENU_SHELL(fileMenu), menuItem);
+        }
+        gtk_menu_shell_append(GTK_MENU_SHELL(menuBar), fileItem);
+    }
+    gtk_widget_show_all(menuBar);
+    
+    #endif
+    
+    output["success"] = true;
+    return output;
+}
+
+
 } // namespace controllers
 
 } // namespace window
