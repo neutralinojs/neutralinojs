@@ -40,6 +40,12 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_FS_UNLTFOP: return "NE_FS_UNLTFOP";
         case errors::NE_FS_UNLCWAT: return "NE_FS_UNLCWAT";
         case errors::NE_FS_NOWATID: return "NE_FS_NOWATID";
+        case errors::NE_FS_UNSUPPORTED: return "NE_FS_UNSUPPORTED";
+        case errors::NE_FS_ACCESSDENIED: return "NE_FS_ACCESSDENIED";
+        case errors::NE_FS_CHMODERR: return "NE_FS_CHMODERR";
+        case errors::NE_FS_INVALIDMODE: return "NE_FS_INVALIDMODE";
+        case errors:: NE_FS_INVALIDUIDGID: return "NE_FS_INVALIDUIDGID";
+        case errors:: NE_FS_CHOWNERR: return "NE_FS_CHOWNERR";
         // window
         case errors::NE_WI_UNBSWSR: return "NE_WI_UNBSWSR";
         // router
@@ -99,6 +105,12 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_FS_UNLTFOP: return "Unable to find opened file id: %1";
         case errors::NE_FS_UNLCWAT: return "Unable to create watcher for path: %1";
         case errors::NE_FS_NOWATID: return "Unable to find watcher: %1";
+        case errors::NE_FS_UNSUPPORTED: return "Unsupported operation for windows: %1";
+        case errors::NE_FS_ACCESSDENIED: return "Access denied for path: %1";
+        case errors::NE_FS_CHMODERR: return "Unable to change mode for path: %1";
+        case errors::NE_FS_INVALIDMODE: return "Invalid mode: %1";
+        case errors::NE_FS_INVALIDUIDGID: return "Invalid uid/gid values: %1";
+        case errors::NE_FS_CHOWNERR: return "Failed to change ownership for path: %1";
         // window
         case errors::NE_WI_UNBSWSR: return "Unable to save window screenshot to %1";
         // router
