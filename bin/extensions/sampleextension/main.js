@@ -12,7 +12,7 @@ const NL_TOKEN = processInput.nlToken;
 const NL_CTOKEN = processInput.nlConnectToken;
 const NL_EXTID = processInput.nlExtensionId;
 
-let client = new WS(`ws://localhost:${NL_PORT}?extensionId=${NL_EXTID}&connectToken=${NL_CTOKEN}`);
+let client = new WS(`ws://127.0.0.1:${NL_PORT}?extensionId=${NL_EXTID}&connectToken=${NL_CTOKEN}`);
 
 client.onerror = function() {
     log('Connection error!', 'ERROR');
@@ -36,7 +36,7 @@ client.onmessage = function(e) {
         // to send an event here
         switch(message.event) {
             case 'eventToExtension':
-                log(message.data);
+                log("Logging from extension: " + message.data);
                 // Use Neutralinojs server's messaging protocol to trigger native API functions
                 // Use app.broadcast method to send an event to all app instances
                 client.send(JSON.stringify({
@@ -50,6 +50,8 @@ client.onmessage = function(e) {
                 }));
                 break;
         }
+        //throw new Error("Test error");
+        //console.error("Test error");
     }
 };
 

@@ -196,6 +196,53 @@ pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &optio
     return make_pair(virtualPid, childProcess->get_id());
 }
 
+pair<int, int> spawnProcess(string command, function<void(int, string)> stdOutHandler, function<void(int, string)> stdErrHandler, function<void(int)> exitHandler, const os::ChildProcessOptions& options) {
+#if defined(_WIN32)
+    command = "cmd.exe /c \"" + command + "\"";
+#endif
+
+    TinyProcessLib::Process* childProcess;
+    lock_guard<mutex> guard(spawnedProcessesLock);
+
+    int virtualPid = nextVirtualPid++;
+    if (virtualPid == INT_MAX) {
+        nextVirtualPid = 0;
+    }
+
+
+    auto stdOutHandlerWrap = [=](const char* bytes, size_t n) {
+        stdOutHandler(virtualPid, string(bytes, n));
+    };
+
+    auto stdErrHandlerWrap = [=](const char* bytes, size_t n) {
+        stdErrHandler(virtualPid, string(bytes, n));
+    };
+
+    if (options.envs.empty()) {
+        childProcess = new TinyProcessLib::Process(CONVSTR(command), CONVSTR(options.cwd), stdOutHandlerWrap, stdErrHandlerWrap, true);
+    }
+    else {
+        TinyProcessLib::Process::environment_type processEnv;
+        for (const auto& [key, value] : options.envs) {
+            processEnv[CONVSTR(key)] = CONVSTR(value);
+        }
+        childProcess = new TinyProcessLib::Process(CONVSTR(command), CONVSTR(options.cwd), processEnv, stdOutHandlerWrap, stdErrHandlerWrap, true);
+    }
+
+    spawnedProcesses[virtualPid] = childProcess;
+
+    thread processThread([=]() {
+        int exitCode = childProcess->get_exit_status(); // sync wait
+        exitHandler(virtualPid);
+        lock_guard<mutex> guard(spawnedProcessesLock);
+        spawnedProcesses.erase(virtualPid);
+        delete childProcess;
+        });
+    processThread.detach();
+
+    return make_pair(virtualPid, childProcess->get_id());
+}
+
 bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt) {
     if(spawnedProcesses.find(evt.id) == spawnedProcesses.end()) {
         return false;
