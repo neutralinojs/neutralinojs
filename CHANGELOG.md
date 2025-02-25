@@ -24,7 +24,7 @@ await Neutralino.os.spawnCommand('env', {
 ```
 
 ### API: filesystem
-- Add the ISO 8601 timestamp of the file event via the `timestamp` property to the `watchFile` event data.
+- Add the `timestamp` (ISO 8601) property to the `watchFile` event's data payload to identify when a specific file watcher event occured.
 
 ### Security
 - Improve the `NL_TOKEN` generation algorithm to strengthen security using the C++ `std::mt19937` random number generator.
