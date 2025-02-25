@@ -52,12 +52,12 @@ void init() {
             os::ChildProcessOptions processOptions;
             
             pair<int, int> res = os::spawnProcess(command,
-                [](int pid, string stdOut) { //stdOut handler
-                    debug::log(debug::LogTypeInfo, stdOut);
-                }, [](int pid, string stdErr) { //stdErr handler
-                    debug::log(debug::LogTypeError, stdErr);
+                [=](int pid, string stdOut) { //stdOut handler
+                    debug::log(debug::LogTypeInfo, "[" + extensionId + "]: " + stdOut);
+                }, [=](int pid, string stdErr) { //stdErr handler
+                    debug::log(debug::LogTypeError, "[" + extensionId + "]: " + stdErr);
                 }, [=](int pid) { //exit handler
-                    debug::log(debug::LogTypeInfo, "Extension " + extensionId + " process exited");
+                    debug::log(debug::LogTypeInfo, "[" + extensionId + "]: Process exited.");
                 }, processOptions);
             int id = res.first;
             os::updateSpawnedProcess(os::SpawnedProcessEvent{ id, "stdIn", __buildExtensionProcessInput(extensionId).dump() });
