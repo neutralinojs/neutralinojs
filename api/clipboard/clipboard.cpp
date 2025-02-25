@@ -22,6 +22,9 @@ json getFormat(const json &input) {
     else if(clip::has(clip::image_format())) {
         format = "image";
     }
+    else if(clip::has(clip::html_format())) {
+        format = "html";
+    }
     output["returnValue"] = format;
     output["success"] = true;
     return output;
@@ -136,8 +139,8 @@ json writeHTML(const json &input) {
         output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
-    string htmlData = input["data"].get<string>();
-    clip::set_html(htmlData);
+    string data = input["data"].get<string>();
+    clip::set_html(data);
 
     output["success"] = true;
     return output;

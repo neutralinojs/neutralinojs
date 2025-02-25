@@ -78,7 +78,7 @@ format text_format()  { return 1; }
 format image_format() { return 2; }
 #endif
 
-format getHTMLFormat() {
+format get_html_format() {
     #if defined(_WIN32)
         return register_format("HTML Format");
     #elif defined(__linux__) 
@@ -89,7 +89,7 @@ format getHTMLFormat() {
 }
 
 format html_format() {
-    static format f = getHTMLFormat();
+    static format f = get_html_format();
     return f;
 }
 
