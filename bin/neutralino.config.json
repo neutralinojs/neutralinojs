@@ -12,7 +12,6 @@
     "dataLocation": "app",
     "enableNativeAPI": true,
     "exportAuthInfo": false,
-    "enableExtensions": true,
     "serverHeaders": {
         "Test-Header-Option": "Test Value"
     },

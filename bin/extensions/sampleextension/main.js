@@ -50,9 +50,9 @@ client.onmessage = function(e) {
                         data: 'Hello app!'
                     }
                 }));
+                //throw new Error("Test error");
+                //console.log("Test error");
                 break;
         }
-        //throw new Error("Test error");
-        //console.error("Test error");
     }
 };
