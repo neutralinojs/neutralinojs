@@ -12,6 +12,7 @@
 
 #include "lib/json/json.hpp"
 #include "settings.h"
+#include "helpers.h"
 #include "errors.h"
 #include "extensions_loader.h"
 #include "server/neuserver.h"
@@ -183,7 +184,7 @@ void handleMessage(websocketpp::connection_hdl handler, websocketserver::message
             nativeMessage["method"] = nativeResponse.method;
             nativeMessage["data"] = nativeResponse.data;
 
-            server->send(handler, nativeMessage.dump(), msg->get_opcode());
+            server->send(handler, helpers::jsonToString(nativeMessage), msg->get_opcode());
         } catch (websocketpp::exception const & e) {
             debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_SR_UNBSEND));
         }
@@ -277,7 +278,7 @@ void broadcast(const json &message) {
 
 bool sendToExtension(const string &extensionId, const json &message) {
     if(extConnections.find(extensionId) != extConnections.end()) {
-        server->send(extConnections[extensionId], message.dump(), websocketpp::frame::opcode::text);
+        server->send(extConnections[extensionId], helpers::jsonToString(message), websocketpp::frame::opcode::text);
         return true;
     }
     return false;
@@ -285,13 +286,13 @@ bool sendToExtension(const string &extensionId, const json &message) {
 
 void broadcastToAllExtensions(const json &message) {
     for (const auto &[_, connection]: extConnections) {
-        server->send(connection, message.dump(), websocketpp::frame::opcode::text);
+        server->send(connection, helpers::jsonToString(message), websocketpp::frame::opcode::text);
     }
 }
 
 void broadcastToAllApps(const json &message) {
     for (const auto &connection: appConnections) {
-        server->send(connection, message.dump(), websocketpp::frame::opcode::text);
+        server->send(connection, helpers::jsonToString(message), websocketpp::frame::opcode::text);
     }
 }
 

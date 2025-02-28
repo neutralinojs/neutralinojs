@@ -6,6 +6,34 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: clipboard
+- Implement `clipboard.writeHTML(html)` and `clipboard.readHTML()` functions to write/read HTML strings
+
+### API: os
+- Adding `envs` key-value pair parameter to the `options` of the `os.execCommand(command, options)` function to set specific environment variables for the child process.
+- Change the `os.spawnProcess(command, cwd)` to `os.spawnProcess(command, options)` to set environment variables and the current working directory via the `options` object for the spawned child process:
+```js
+// e.g.:
+await Neutralino.os.spawnCommand('env', {
+  cwd: NL_PATH,
+  envs: {
+    VAR1: 'var1',
+    VAR2: 'var2'
+  }
+});
+```
+
+### API: filesystem
+- Add the `timestamp` (ISO 8601) property to the `watchFile` event's data payload to identify when a specific file watcher event occured.
+
+### Security
+- Improve the `NL_TOKEN` generation algorithm to strengthen security using the C++ `std::mt19937` random number generator.
+
+### Improvements/bugfixes
+- Fix framework crashing when creating the `.tmp` directory under restricted file manipulation permissions.
+- Fix several issues in the Windows-specific GUI notification implementation of the `os.showNotification()` function.
+- Fix invalid utf8 character handling issues in several native APIs (i.e., `os.spawnProcess('./bin')` crashed if `bin` output `"ä\xA9ü"`)
+
 ## v5.6.0
 
 ### API: server

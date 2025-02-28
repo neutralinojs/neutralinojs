@@ -146,20 +146,20 @@ string getGlobalVars(){
     jsSnippet += "var NL_MODE='" + helpers::appModeToStr(settings::getMode()) + "';";
     jsSnippet += "var NL_TOKEN='" + authbasic::getToken() + "';";
     jsSnippet += "var NL_CWD='" + fs::getCurrentDirectory() + "';";
-    jsSnippet += "var NL_ARGS=" + globalArgs.dump() + ";";
+    jsSnippet += "var NL_ARGS=" + helpers::jsonToString(globalArgs) + ";";
     jsSnippet += "var NL_PATH='" + appPath + "';";
     jsSnippet += "var NL_DATAPATH='" + appDataPath + "';";
     jsSnippet += "var NL_PID=" + to_string(app::getProcessId()) + ";";
     jsSnippet += "var NL_RESMODE='" + resources::getModeString() + "';";
-    jsSnippet += "var NL_EXTENABLED=" + json(extensions::isInitialized()).dump() + ";";
-    jsSnippet += "var NL_CMETHODS=" + json(custom::getMethods()).dump() + ";";
-    jsSnippet += "var NL_WSAVSTLOADED=" + json(window::isSavedStateLoaded()).dump() + ";";
+    jsSnippet += "var NL_EXTENABLED=" + helpers::jsonToString(json(extensions::isInitialized())) + ";";
+    jsSnippet += "var NL_CMETHODS=" + helpers::jsonToString(json(custom::getMethods())) + ";";
+    jsSnippet += "var NL_WSAVSTLOADED=" + helpers::jsonToString(json(window::isSavedStateLoaded())) + ";";
     jsSnippet += "var NL_CONFIGFILE='" + settings::getConfigFile() + "';";
 
     json jGlobalVariables = settings::getOptionForCurrentMode("globalVariables");
     if(!jGlobalVariables.is_null()) {
         for(const auto &it: jGlobalVariables.items()) {
-            jsSnippet += "var NL_" + it.key() +  "=JSON.parse('" + it.value().dump() + "');";
+            jsSnippet += "var NL_" + it.key() +  "=JSON.parse('" + helpers::jsonToString(it.value()) + "');";
         }
     }
     return jsSnippet;

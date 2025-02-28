@@ -48,8 +48,6 @@ void init() {
             string command = helpers::hasField(extension, commandKeyForOs) ? extension[commandKeyForOs].get<string>()
                                 : extension["command"].get<string>();
             command = regex_replace(command, regex("\\$\\{NL_PATH\\}"), settings::getAppPath());
-
-            os::ChildProcessOptions processOptions;
             
             pair<int, int> res = os::spawnProcess(command,
                 [=](int pid, string stdOut) { //stdOut handler
@@ -58,7 +56,7 @@ void init() {
                     debug::log(debug::LogTypeError, "[" + extensionId + "]: " + stdErr);
                 }, [=](int pid) { //exit handler
                     debug::log(debug::LogTypeInfo, "[" + extensionId + "]: Process exited.");
-                }, processOptions);
+                });
             int id = res.first;
             os::updateSpawnedProcess(os::SpawnedProcessEvent{ id, "stdIn", __buildExtensionProcessInput(extensionId).dump() });
             os::updateSpawnedProcess(os::SpawnedProcessEvent{ id, "stdInEnd" });

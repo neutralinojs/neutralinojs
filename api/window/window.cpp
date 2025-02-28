@@ -229,7 +229,7 @@ void __saveWindowProps() {
     options["maximize"] = window::isMaximized();
 
     filesystem::create_directories(CONVSTR(settings::joinAppDataPath("/.tmp")));
-    fs::FileWriterOptions writerOptions = { settings::joinAppDataPath(NEU_WIN_CONFIG_FILE), options.dump() };
+    fs::FileWriterOptions writerOptions = { settings::joinAppDataPath(NEU_WIN_CONFIG_FILE), helpers::jsonToString(options) };
     fs::writeFile(writerOptions);
 }
 

@@ -169,6 +169,10 @@ string unNormalizePath(string &path) {
     return path;
 }
 
+string jsonToString(const json &obj) {
+    return obj.dump(-1, ' ', false, json::error_handler_t::replace);
+}
+
 #if defined(_WIN32)
 wstring str2wstr(const string &str) {
     int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0);
