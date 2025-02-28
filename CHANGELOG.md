@@ -32,6 +32,7 @@ await Neutralino.os.spawnCommand('env', {
 ### Improvements/bugfixes
 - Fix framework crashing when creating the `.tmp` directory under restricted file manipulation permissions.
 - Fix several issues in the Windows-specific GUI notification implementation of the `os.showNotification()` function.
+- Fix invalid utf8 character handling issues in several native APIs (i.e., `os.spawnProcess('./bin')` crashed if `bin` output `"ä\xA9ü"`)
 
 ## v5.6.0
 
