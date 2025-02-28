@@ -196,7 +196,7 @@ pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &optio
     return make_pair(virtualPid, childProcess->get_id());
 }
 
-pair<int, int> spawnProcess(string command, function<void(int, string)> stdOutHandler, function<void(int, string)> stdErrHandler, function<void(int)> exitHandler, const os::ChildProcessOptions& options) {
+pair<int, int> spawnProcess(string command, function<void(int, string)> stdOutHandler, function<void(int, string)> stdErrHandler, function<void(int)> exitHandler, const os::ChildProcessOptions &options) {
 #if defined(_WIN32)
     command = "cmd.exe /c \"" + command + "\"";
 #endif
