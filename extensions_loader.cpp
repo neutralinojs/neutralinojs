@@ -50,7 +50,7 @@ void init() {
 
             os::ChildProcessOptions processOptions;
             processOptions.background = true;
-            processOptions.stdIn = __buildExtensionProcessInput(extensionId).dump();
+            processOptions.stdIn = helpers::jsonToString(__buildExtensionProcessInput(extensionId));
             
             os::execCommand(command, processOptions); // async
         }
