@@ -17,7 +17,7 @@ client.onerror = function () {
     // Always good to log some useful things from extension
     // You also can write to neutralinojs.log by calling debug.log
     // But, don't try to manipulate the log file directly via the extension process.
-    console.log('Connection error!', 'ERROR');
+    console.error('Connection error!');
 };
 
 client.onopen = function() {
