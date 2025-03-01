@@ -10,6 +10,7 @@
 #include "helpers.h"
 #include "auth/authbasic.h"
 #include "api/os/os.h"
+#include "api/debug/debug.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -47,12 +48,18 @@ void init() {
             string command = helpers::hasField(extension, commandKeyForOs) ? extension[commandKeyForOs].get<string>()
                                 : extension["command"].get<string>();
             command = regex_replace(command, regex("\\$\\{NL_PATH\\}"), settings::getAppPath());
-
-            os::ChildProcessOptions processOptions;
-            processOptions.background = true;
-            processOptions.stdIn = helpers::jsonToString(__buildExtensionProcessInput(extensionId));
             
-            os::execCommand(command, processOptions); // async
+            pair<int, int> res = os::spawnProcess(command,
+                [=](int pid, string stdOut) { //stdOut handler
+                    debug::log(debug::LogTypeInfo, "[" + extensionId + "]: " + stdOut);
+                }, [=](int pid, string stdErr) { //stdErr handler
+                    debug::log(debug::LogTypeError, "[" + extensionId + "]: " + stdErr);
+                }, [=](int pid) { //exit handler
+                    debug::log(debug::LogTypeInfo, "[" + extensionId + "]: Process exited.");
+                });
+            int id = res.first;
+            os::updateSpawnedProcess(os::SpawnedProcessEvent{ id, "stdIn", __buildExtensionProcessInput(extensionId).dump() });
+            os::updateSpawnedProcess(os::SpawnedProcessEvent{ id, "stdInEnd" });
         }
 
         extensions::loadOne(extensionId);
