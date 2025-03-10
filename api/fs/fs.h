@@ -56,6 +56,18 @@ struct DirReaderResult {
     vector<DirReaderEntry> entries;
 };
 
+struct AccessResult {
+    errors::StatusCode status = errors::NE_ST_OK;
+};
+
+struct ChmodResult {
+    errors::StatusCode status = errors::NE_ST_OK;
+};
+
+struct ChownResult {
+    errors::StatusCode status = errors::NE_ST_OK;
+};
+
 fs::FileReaderResult readFile(const string &filename, const fs::FileReaderOptions &fileReaderOptions = {});
 bool writeFile(const fs::FileWriterOptions &fileWriterOptions);
 string getDirectoryName(const string &filename);
@@ -90,6 +102,9 @@ json getWatchers(const json &input);
 json getAbsolutePath(const json &input);
 json getRelativePath(const json &input);
 json getPathParts(const json &input);
+json access(const json &input);
+json chmod(const json &input);
+json chown(const json &input);
 
 } // namespace controllers
 
