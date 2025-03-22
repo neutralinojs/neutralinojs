@@ -874,9 +874,9 @@ json setPermissions(const json &input) {
 
     if(helpers::hasField(input, "mode")) {
         string mode = input["mode"].get<string>();
-        if(mode == "add") permMode = filesystem::perm_options::add;
-        if(mode == "replace") permMode = filesystem::perm_options::replace;
-        if(mode == "remove") permMode = filesystem::perm_options::remove;
+        if(mode == "ADD") permMode = filesystem::perm_options::add;
+        if(mode == "REPLACE") permMode = filesystem::perm_options::replace;
+        if(mode == "REMOVE") permMode = filesystem::perm_options::remove;
     }
     
     filesystem::permissions(CONVSTR(path), permissions, permMode, ec);
