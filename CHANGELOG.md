@@ -24,7 +24,17 @@ await Neutralino.os.spawnCommand('env', {
 ```
 
 ### API: filesystem
-- Add the `timestamp` (ISO 8601) property to the `watchFile` event's data payload to identify when a specific file watcher event occured.
+- Add the `timestamp` (ISO 8601) property to the `watchFile` event's data payload to identify when a specific file watcher event occurred.
+- Implement `filesystem.setPermissions(path, permissions, mode)` and `filesystem.getPermissions(path)` functions to set/get file permissions in a cross-platform way:
+```js
+// e.g.:
+await Neutralino.filesystem.setPermissions(NL_PATH + '/my-directory-1', {ownerRead: true, groupRead: true});
+await Neutralino.filesystem.setPermissions(NL_PATH + '/my-directory-2', {all: true});
+await Neutralino.filesystem.setPermissions(NL_PATH + '/my-directory-3', {otherAll: true}, 'REMOVE');
+
+const permissions = await Neutralino.filesystem.getPermissions(NL_PATH);
+// permissions -> {all:.., ownerRead, ownerWrite...}
+```
 
 ### Security
 - Improve the `NL_TOKEN` generation algorithm to strengthen security using the C++ `std::mt19937` random number generator.
