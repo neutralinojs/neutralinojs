@@ -833,6 +833,64 @@ json getPermissions(const json &input) {
     return output;
 }
 
+json setPermissions(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    string path = input["path"].get<string>();
+    
+    error_code ec;
+    filesystem::perms permissions = filesystem::perms::none;
+    filesystem::perm_options permMode = filesystem::perm_options::replace;
+
+    if(helpers::hasField(input, "all") && input["all"].get<bool>())
+        permissions |= filesystem::perms::all;
+    if(helpers::hasField(input, "ownerAll") && input["ownerAll"].get<bool>())
+        permissions |= filesystem::perms::owner_all;
+    if(helpers::hasField(input, "groupAll") && input["groupAll"].get<bool>())
+        permissions |= filesystem::perms::group_all;
+    if(helpers::hasField(input, "othersAll") && input["othersAll"].get<bool>())
+        permissions |= filesystem::perms::others_all;
+    if(helpers::hasField(input, "ownerRead") && input["ownerRead"].get<bool>())
+        permissions |= filesystem::perms::owner_read;
+    if(helpers::hasField(input, "ownerWrite") && input["ownerWrite"].get<bool>())
+        permissions |= filesystem::perms::owner_write;
+    if(helpers::hasField(input, "ownerExec") && input["ownerExec"].get<bool>())
+        permissions |= filesystem::perms::owner_exec;
+    if(helpers::hasField(input, "groupRead") && input["groupRead"].get<bool>())
+        permissions |= filesystem::perms::group_read;
+    if(helpers::hasField(input, "groupWrite") && input["groupWrite"].get<bool>())
+        permissions |= filesystem::perms::group_write;
+    if(helpers::hasField(input, "groupExec") && input["groupExec"].get<bool>())
+        permissions |= filesystem::perms::group_exec;
+    if(helpers::hasField(input, "othersRead") && input["othersRead"].get<bool>())
+        permissions |= filesystem::perms::others_read;
+    if(helpers::hasField(input, "othersWrite") && input["othersWrite"].get<bool>())
+        permissions |= filesystem::perms::others_write;
+    if(helpers::hasField(input, "othersExec") && input["othersExec"].get<bool>())
+        permissions |= filesystem::perms::others_exec;
+
+    if(helpers::hasField(input, "mode")) {
+        string mode = input["mode"].get<string>();
+        if(mode == "add") permMode = filesystem::perm_options::add;
+        if(mode == "replace") permMode = filesystem::perm_options::replace;
+        if(mode == "remove") permMode = filesystem::perm_options::remove;
+    }
+    
+    filesystem::permissions(CONVSTR(path), permissions, permMode, ec);
+
+    if(!ec) { 
+        output["returnValue"] = permissions;
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_UNLSTPR, path);
+    }
+    return output;
+}
+
 } // namespace controllers
 
 } // namespace fs

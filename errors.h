@@ -40,6 +40,7 @@ enum StatusCode {
     NE_FS_UNLTFOP,
     NE_FS_UNLCWAT,
     NE_FS_NOWATID,
+    NE_FS_UNLSTPR,
     // window
     NE_WI_UNBSWSR,
     // router
