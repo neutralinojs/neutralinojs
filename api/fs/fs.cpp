@@ -779,18 +779,56 @@ json getPathParts(const json &input) {
         output["error"] = errors::makeMissingArgErrorPayload();
         return output;
     }
-    auto path = filesystem::path(input["path"].get<string>());
+    string path = input["path"].get<string>();
+    auto pathObj = filesystem::path(CONVSTR(path));
+    
     json pathParts = {
-        {"rootName", FS_CONVWSTRN(path.root_name())},
-        {"rootDirectory", FS_CONVWSTRN(path.root_directory())},
-        {"rootPath", FS_CONVWSTRN(path.root_path())},
-        {"relativePath", FS_CONVWSTRN(path.relative_path())},
-        {"parentPath", FS_CONVWSTRN(path.parent_path())},
-        {"filename", path.filename()},
-        {"stem", path.stem()},
-        {"extension", path.extension()}
+        {"rootName", FS_CONVWSTRN(pathObj.root_name())},
+        {"rootDirectory", FS_CONVWSTRN(pathObj.root_directory())},
+        {"rootPath", FS_CONVWSTRN(pathObj.root_path())},
+        {"relativePath", FS_CONVWSTRN(pathObj.relative_path())},
+        {"parentPath", FS_CONVWSTRN(pathObj.parent_path())},
+        {"filename", pathObj.filename()},
+        {"stem", pathObj.stem()},
+        {"extension", pathObj.extension()}
     };
     output["returnValue"] = pathParts;
+    output["success"] = true;
+    return output;
+}
+
+json getPermissions(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    string path = input["path"].get<string>();
+    
+    fs::FileStats fileStats = fs::getStats(path);
+    if(fileStats.status != errors::NE_ST_OK) {
+        output["error"] = errors::makeErrorPayload(fileStats.status, path);
+        return output;
+    }
+    auto perms = filesystem::status(CONVSTR(path)).permissions();
+    
+    json permissions = {
+        {"all", filesystem::perms::all == (perms & filesystem::perms::all)},
+        {"ownerAll", filesystem::perms::owner_all == (perms & filesystem::perms::owner_all)},
+        {"ownerRead", filesystem::perms::none != (perms & filesystem::perms::owner_read)},
+        {"ownerWrite", filesystem::perms::none != (perms & filesystem::perms::owner_write)},
+        {"ownerExec", filesystem::perms::none != (perms & filesystem::perms::owner_exec)},
+        {"groupAll", filesystem::perms::group_all == (perms & filesystem::perms::group_all)},
+        {"groupRead", filesystem::perms::none != (perms & filesystem::perms::group_read)},
+        {"groupWrite", filesystem::perms::none != (perms & filesystem::perms::group_write)},
+        {"groupExec", filesystem::perms::none != (perms & filesystem::perms::group_exec)},
+        {"othersAll", filesystem::perms::others_all == (perms & filesystem::perms::others_all)},
+        {"othersRead", filesystem::perms::none != (perms & filesystem::perms::others_read)},
+        {"othersWrite", filesystem::perms::none != (perms & filesystem::perms::others_write)},
+        {"othersExec", filesystem::perms::none != (perms & filesystem::perms::others_exec)}
+    };
+    
+    output["returnValue"] = permissions;
     output["success"] = true;
     return output;
 }

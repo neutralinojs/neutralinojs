@@ -90,6 +90,7 @@ json getWatchers(const json &input);
 json getAbsolutePath(const json &input);
 json getRelativePath(const json &input);
 json getPathParts(const json &input);
+json getPermissions(const json &input);
 
 } // namespace controllers
 

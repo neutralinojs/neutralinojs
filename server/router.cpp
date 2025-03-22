@@ -105,6 +105,7 @@ map<string, router::NativeMethod> methodMap = {
     {"filesystem.getAbsolutePath", fs::controllers::getAbsolutePath},
     {"filesystem.getRelativePath", fs::controllers::getRelativePath},
     {"filesystem.getPathParts", fs::controllers::getPathParts},
+    {"filesystem.getPermissions", fs::controllers::getPermissions},
     // Neutralino.os
     {"os.execCommand", os::controllers::execCommand},
     {"os.spawnProcess", os::controllers::spawnProcess},
