@@ -1283,4 +1283,162 @@ describe('filesystem.spec: filesystem namespace tests', () => {
               });
         });
     });
+    describe('filesystem.getPermissions', () => {
+        it('throws an error if the path field is missing', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.getPermissions();
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+        });
+
+        it('throws an error if the path doesn\'t exist', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.getPermissions(NL_PATH + '/.tmp/test-dir');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_NOPATHE');
+        });
+        
+        it('returns file permissions', async () => {
+            runner.run(`
+                await Neutralino.filesystem.createDirectory(NL_PATH + '/.tmp/test-dir')
+                await Neutralino.filesystem.setPermissions(NL_PATH + '/.tmp/test-dir', {
+                    ownerRead: true,
+                    groupRead: true,
+                    othersRead: true,
+                });
+                const permissions = await Neutralino.filesystem.getPermissions(NL_PATH + '/.tmp/test-dir');
+                await __close(JSON.stringify(permissions));
+            `);
+            const permissions = JSON.parse(runner.getOutput());
+            
+            assert.ok(typeof permissions == 'object');
+            assert.equal(permissions.ownerRead, true);
+            assert.equal(permissions.groupRead, true);
+            assert.equal(permissions.othersRead, true);
+        });
+
+        it('updates file permissions when all parameters are used', async () => {
+            runner.run(`
+                await Neutralino.filesystem.createDirectory(NL_PATH + '/.tmp/test-dir')
+                const permissions = await Neutralino.filesystem.getPermissions(NL_PATH + '/.tmp/test-dir');
+                await __close(JSON.stringify(permissions));
+            `);
+            const permissions = JSON.parse(runner.getOutput());
+            
+            assert.ok(typeof permissions == 'object');
+            assert.ok(typeof permissions.all == 'boolean');
+            assert.ok(typeof permissions.ownerAll == 'boolean');
+            assert.ok(typeof permissions.groupAll == 'boolean');
+            assert.ok(typeof permissions.othersAll == 'boolean');
+            assert.ok(typeof permissions.ownerRead == 'boolean');
+            assert.ok(typeof permissions.ownerWrite == 'boolean');
+            assert.ok(typeof permissions.ownerExec == 'boolean');
+            assert.ok(typeof permissions.groupRead == 'boolean');
+            assert.ok(typeof permissions.groupWrite == 'boolean');
+            assert.ok(typeof permissions.groupExec == 'boolean');
+            assert.ok(typeof permissions.othersRead == 'boolean');
+            assert.ok(typeof permissions.othersWrite == 'boolean');
+            assert.ok(typeof permissions.othersExec == 'boolean');
+        });
+    });
+
+    describe('filesystem.setPermissions', () => {
+        it('throws an error if the path field is missing', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.setPermissions();
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+        });
+
+        it('throws an error if the path doesn\'t exist', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.setPermissions(NL_PATH + '/.tmp/test-dir', {ownerRead: true});
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_UNLSTPR');
+        });
+        
+        it('updates file permissions when two parameters are used', async () => {
+            runner.run(`
+                await Neutralino.filesystem.createDirectory(NL_PATH + '/.tmp/test-dir')
+                await Neutralino.filesystem.setPermissions(NL_PATH + '/.tmp/test-dir', {
+                    ownerRead: true,
+                    groupRead: true,
+                    othersRead: true,
+                });
+                const permissions = await Neutralino.filesystem.getPermissions(NL_PATH + '/.tmp/test-dir');
+                await __close(JSON.stringify(permissions));
+            `);
+            const permissions = JSON.parse(runner.getOutput());
+            
+            assert.ok(typeof permissions == 'object');
+            assert.equal(permissions.ownerRead, true);
+            assert.equal(permissions.groupRead, true);
+            assert.equal(permissions.othersRead, true);
+        });
+
+        it('updates file permissions when all parameters are used', async () => {
+            runner.run(`
+                await Neutralino.filesystem.createDirectory(NL_PATH + '/.tmp/test-dir')
+                await Neutralino.filesystem.setPermissions(NL_PATH + '/.tmp/test-dir', {
+                    ownerRead: true,
+                    groupRead: true,
+                    othersRead: true,
+                }, 'REPLACE');
+                const permissions = await Neutralino.filesystem.getPermissions(NL_PATH + '/.tmp/test-dir');
+                await __close(JSON.stringify(permissions));
+            `);
+            const permissions = JSON.parse(runner.getOutput());
+            
+            assert.ok(typeof permissions == 'object');
+            assert.equal(permissions.ownerRead, true);
+            assert.equal(permissions.groupRead, true);
+            assert.equal(permissions.othersRead, true);
+        });
+
+        it('adds file permissions', async () => {
+            runner.run(`
+                await Neutralino.filesystem.createDirectory(NL_PATH + '/.tmp/test-dir')
+                await Neutralino.filesystem.setPermissions(NL_PATH + '/.tmp/test-dir', {
+                    othersAll: true 
+                }, 'ADD');
+                const permissions = await Neutralino.filesystem.getPermissions(NL_PATH + '/.tmp/test-dir');
+                await __close(JSON.stringify(permissions));
+            `);
+            const permissions = JSON.parse(runner.getOutput());
+            
+            assert.ok(typeof permissions == 'object');
+            assert.equal(permissions.othersAll, true);
+        });
+
+        it('removes file permissions', async () => {
+            runner.run(`
+                await Neutralino.filesystem.createDirectory(NL_PATH + '/.tmp/test-dir')
+                await Neutralino.filesystem.setPermissions(NL_PATH + '/.tmp/test-dir', {
+                    all: true 
+                }, 'REMOVE');
+                const permissions = await Neutralino.filesystem.getPermissions(NL_PATH + '/.tmp/test-dir');
+                await __close(JSON.stringify(permissions));
+            `);
+            const permissions = JSON.parse(runner.getOutput());
+            
+            assert.ok(typeof permissions == 'object');
+            assert.equal(permissions.all, false);
+        });
+    });
 });
