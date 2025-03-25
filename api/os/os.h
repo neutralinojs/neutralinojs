@@ -2,6 +2,7 @@
 #define NEU_OS_H
 
 #include <string>
+#include <functional>
 
 #include "lib/json/json.hpp"
 
@@ -25,9 +26,12 @@ struct SpawnedProcessEvent {
 
 struct ChildProcessOptions {
     bool background = false;
+    bool events = true;
     string cwd = "";
     string stdIn = "";
     map<string, string> envs;
+    function<void(const char *bytes, size_t n)> stdOutHandler;
+    function<void(const char *bytes, size_t n)> stdErrHandler;
 };
 
 bool isTrayInitialized();

@@ -164,11 +164,21 @@ pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &optio
 
 
     auto stdOutHandler = [=](const char *bytes, size_t n) {
-        __dispatchSpawnedProcessEvt(virtualPid, "stdOut", string(bytes, n));
+        if(options.events) {
+            __dispatchSpawnedProcessEvt(virtualPid, "stdOut", string(bytes, n));
+        }
+        if(options.stdOutHandler != nullptr) {
+            options.stdOutHandler(bytes, n);
+        }
     };
 
     auto stdErrHandler = [=](const char *bytes, size_t n) {
-        __dispatchSpawnedProcessEvt(virtualPid, "stdErr", string(bytes, n));
+        if(options.events) {
+            __dispatchSpawnedProcessEvt(virtualPid, "stdErr", string(bytes, n));
+        }
+        if(options.stdErrHandler != nullptr) {
+            options.stdErrHandler(bytes, n);
+        }
     };
 
     if(options.envs.empty()) {
@@ -186,7 +196,11 @@ pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &optio
 
     thread processThread([=](){
         int exitCode = childProcess->get_exit_status(); // sync wait
-        __dispatchSpawnedProcessEvt(virtualPid, "exit", exitCode);
+        
+        if(options.events) {
+            __dispatchSpawnedProcessEvt(virtualPid, "exit", exitCode);
+        }
+        
         lock_guard<mutex> guard(spawnedProcessesLock);
         spawnedProcesses.erase(virtualPid);
         delete childProcess;
