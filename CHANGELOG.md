@@ -35,6 +35,8 @@ await Neutralino.filesystem.setPermissions(NL_PATH + '/my-directory-3', {otherAl
 const permissions = await Neutralino.filesystem.getPermissions(NL_PATH);
 // permissions -> {all:.., ownerRead, ownerWrite...}
 ```
+### Core: extensions
+- Extensions are now loaded internally using the `os.spawnProcess()` function without triggering process events. This modification displays extension logs within the Windows terminal and lets app developers control extensions using the existing spawn process API.
 
 ### Security
 - Improve the `NL_TOKEN` generation algorithm to strengthen security using the C++ `std::mt19937` random number generator.
