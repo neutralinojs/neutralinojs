@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v6.0.0
+
 ### API: clipboard
 - Implement `clipboard.writeHTML(html)` and `clipboard.readHTML()` functions to write/read HTML strings
 
