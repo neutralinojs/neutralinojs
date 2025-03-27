@@ -273,7 +273,7 @@ public:
                     it->second->begin()+n,
                     buf);
 
-          if (f == text_format()) {
+          if (f == text_format() || f == html_format()) {
             // Add an extra null char
             if (n < len)
               buf[n] = 0;
