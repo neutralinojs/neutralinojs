@@ -13,6 +13,7 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include <regex>
 
 #include <windows.h>
 
@@ -285,16 +286,14 @@ bool lock::impl::set_data(format f, const char* buf, size_t len) {
       "EndHTML:00000000\r\n"
       "StartFragment:00000000\r\n"
       "EndFragment:00000000\r\n"
-      "<html><body>\r\n"
-      "<!--StartFragment -->\r\n";
+      "<html><body>\r\n";
 
     std::string footerTemplate = 
-      "\r\n<!--EndFragment-->\r\n"
       "</body>\r\n"
       "</html>";
-
+    std::string fragment = std::string(buf, len);
     std::string fullHtmlContent = headerTemplate + 
-      std::string(buf, len) + 
+      fragment + 
       footerTemplate;
 
     size_t startHtmlOffset = headerTemplate.find("StartHTML:") + 10;
@@ -304,16 +303,16 @@ bool lock::impl::set_data(format f, const char* buf, size_t len) {
 
 
     char offsetBuffer[9];
-    sprintf(offsetBuffer, "%08zu", headerTemplate.length());
+    sprintf(offsetBuffer, "%08zu", headerTemplate.find("<html>"));
     fullHtmlContent.replace(startHtmlOffset, 8, offsetBuffer);
 
     sprintf(offsetBuffer, "%08zu", fullHtmlContent.length());
     fullHtmlContent.replace(endHtmlOffset, 8, offsetBuffer);
 
-    sprintf(offsetBuffer, "%08zu", headerTemplate.length() + headerTemplate.find("<!--StartFragment -->") - headerTemplate.find("<html>"));
+    sprintf(offsetBuffer, "%08zu", headerTemplate.length());
     fullHtmlContent.replace(startFragOffset, 8, offsetBuffer);
 
-    sprintf(offsetBuffer, "%08zu", fullHtmlContent.length() - footerTemplate.length());
+    sprintf(offsetBuffer, "%08zu", headerTemplate.length() + fragment.length());
     fullHtmlContent.replace(endFragOffset, 8, offsetBuffer);
 
     Hglobal hglobal(fullHtmlContent.size() + 1);
@@ -396,8 +395,17 @@ bool lock::impl::get_data(format f, char* buf, size_t len) const {
         LPSTR lpstr = (LPSTR)GlobalLock(hglobal);
         if (lpstr) {
           // TODO check length
-          memcpy(buf, lpstr, len);
-          result = true;
+          std::string html = std::string(lpstr); 
+          std::smatch sMatches, eMatches;
+          regex_search(html, sMatches, std::regex("StartFragment:(\\d+)"));
+          regex_search(html, eMatches, std::regex("EndFragment:(\\d+)"));
+          if(sMatches.size() > 1 && eMatches.size() > 1) {
+            size_t fragmentStart = std::stoi(sMatches[1]);
+            size_t fragmentEnd = std::stoi(eMatches[1]);
+            std::string fragment = html.substr(fragmentStart, fragmentEnd - fragmentStart);
+            memcpy(buf, fragment.c_str(), len);
+            result = true;
+          }
           GlobalUnlock(hglobal);
         }
       }
