@@ -73,6 +73,7 @@ map<string, router::NativeMethod> methodMap = {
     {"window.getPosition", window::controllers::getPosition},
     {"window.setAlwaysOnTop", window::controllers::setAlwaysOnTop},
     {"window.snapshot", window::controllers::snapshot},
+    {"window.setMainMenu", window::controllers::setMainMenu},
     // Neutralino.computer
     {"computer.getMemoryInfo", computer::controllers::getMemoryInfo},
     {"computer.getArch", computer::controllers::getArch},

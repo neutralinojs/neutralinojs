@@ -95,6 +95,7 @@ void center(bool useConfigSizes);
 void setAlwaysOnTop(bool onTop);
 void setBorderless();
 bool snapshot(const string &filename);
+bool applyMainMenu(const json &menu);
 
 void _close(int exitCode);
 
@@ -124,6 +125,7 @@ json getSize(const json &input);
 json getPosition(const json &input);
 json setAlwaysOnTop(const json &input);
 json snapshot(const json &input);
+json setMainMenu(const json &input);
 
 } // namespace controllers
 
