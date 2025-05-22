@@ -705,7 +705,7 @@ bool snapshot(const string &filename) {
 
 void setMainMenu(const json &menu) {
     #if defined(_WIN32)
-    SetMenu(windowHandle, __createMenu());
+    SetMenu(windowHandle, __createMenu(menu, true));
 
     #elif defined(__APPLE__)
     id mainMenu = ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSMenu"), sel_getUid("alloc"));
