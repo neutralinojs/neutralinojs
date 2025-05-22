@@ -1068,6 +1068,85 @@ json snapshot(const json &input) {
     return output;
 }
 
+bool applyMainMenu(const json &menu) {
+    
+    #if defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
+    auto mainMenuItemClicked = [](std::string itemId) {
+        json eventPayload;
+        eventPayload["id"] = itemId;
+        Neutralino.events.dispatch("mainMenuItemClicked", eventPayload);
+    };
+    #endif
+
+    #if defined(_WIN32)
+    HMENU hMenu = CreateMenu();
+    for (const auto &menuItem : menu) {
+        HMENU hSubMenu = CreatePopupMenu();
+        for (const auto &item : menuItem["menuItems"]) {
+            if (item["text"] == "-") {
+                AppendMenu(hSubMenu, MF_SEPARATOR, 0, NULL);
+            } else {
+                AppendMenu(hSubMenu, MF_STRING, item["id"].get<int>(), item["text"].get<std::string>().c_str());
+            }
+        }
+        AppendMenu(hMenu, MF_POPUP, (UINT_PTR)hSubMenu, menuItem["text"].get<std::string>().c_str());
+    }
+    SetMenu(windowHandle, hMenu);
+    return true;
+
+    #elif defined(__APPLE__)
+    id mainMenu = ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSMenu"), sel_getUid("alloc"));
+    mainMenu = ((id (*)(id, SEL))objc_msgSend)(mainMenu, sel_getUid("init"));
+
+    for (const auto &menuItem : menu) {
+        id menuItemObj = ((id (*)(id, SEL, id))objc_msgSend)(mainMenu, sel_getUid("addItemWithTitle:action:keyEquivalent:"), menuItem["text"].get<std::string>().c_str(), NULL, @"");
+        id submenu = ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSMenu"), sel_getUid("alloc"));
+        submenu = ((id (*)(id, SEL))objc_msgSend)(submenu, sel_getUid("init"));
+
+        for (const auto &item : menuItem["menuItems"]) {
+            if (item["text"] == "-") {
+                ((void (*)(id, SEL, id))objc_msgSend)(submenu, sel_getUid("addItem:"), ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSMenuItem"), sel_getUid("separatorItem")));
+            } else {
+                id subItem = ((id (*)(id, SEL, id, SEL, id))objc_msgSend)((id)objc_getClass("NSMenuItem"), sel_getUid("alloc"), item["text"].get<std::string>().c_str(), sel_getUid("menuAction:"), @"");
+                ((void (*)(id, SEL, id))objc_msgSend)(submenu, sel_getUid("addItem:"), subItem);
+            }
+        }
+        ((void (*)(id, SEL, id))objc_msgSend)(menuItemObj, sel_getUid("setSubmenu:"), submenu);
+    }
+    ((void (*)(id, SEL, id))objc_msgSend)(((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSApplication"), sel_getUid("sharedApplication")), sel_getUid("setMainMenu:"), mainMenu);
+
+    // lambda
+    auto menuAction = [](id self, SEL _cmd) {
+        id menuItem = self;
+        const char *menuId = ((const char *(*)(id, SEL))objc_msgSend)(menuItem, sel_getUid("identifier"));
+        json eventPayload;
+        eventPayload["id"] = std::string(menuId);
+        Neutralino.events.dispatch("mainMenuItemClicked", eventPayload);
+    };
+
+    return true;
+    #endif
+}
+
+json setMainMenu(const json &input) {
+    json output;
+
+    if (!helpers::hasField(input, "menu")) {
+        output["error"] = "Missing required field: menu";
+        return output;
+    }
+
+    json menu = input["menu"];
+
+    if (!applyMainMenu(menu)) {
+        output["error"] = "Failed to set the menu";
+        return output;
+    }
+
+    output["success"] = true;
+    return output;
+}
+
 } // namespace controllers
 
 } // namespace window
