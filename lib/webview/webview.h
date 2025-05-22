@@ -71,6 +71,15 @@ using eventHandler_t = std::function<void(int)>;
 static eventHandler_t windowStateChange;
 static int processExitCode = 0;
 
+struct WindowMenuItem {
+  std::string id;
+  std::string text;
+  int disabled = false;
+  int checked = false;
+
+  void (*cb)(struct WindowMenuItem *);
+};
+
 } // namespace webview
 
 #if defined(WEBVIEW_GTK)
@@ -681,6 +690,10 @@ using browser_engine = cocoa_wkwebview_engine;
 
 #include "darkmode.h"
 
+#define WM_WINDOW_PASS_MENU_REFS (WM_USER + 3)
+#define WM_WINDOW_DELETE_MENU_REFS (WM_USER + 4)
+#define ID_MENU_FIRST 20000
+
 namespace webview {
 
 // Common interface for EdgeHTML and Edge/Chromium
@@ -928,6 +941,7 @@ public:
           (WNDPROC)(+[](HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) -> int {
             auto w = (win32_edge_engine *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
             static HMENU menuRef;
+            static std::vector<HMENU> menuRefs;
             switch (msg) {
             case WM_SIZE:
               w->m_browser->resize(hwnd);
@@ -953,6 +967,12 @@ public:
             case WM_TRAY_PASS_MENU_REF:
               menuRef = (HMENU) wp;
               break;
+            case WM_WINDOW_PASS_MENU_REFS:
+              menuRefs.push_back((HMENU) wp);
+              break;
+            case WM_WINDOW_DELETE_MENU_REFS:
+              menuRefs.clear();
+              break;
             case WM_TRAY_CALLBACK_MESSAGE:
               if (lp == WM_LBUTTONUP || lp == WM_RBUTTONUP) {
                 POINT p;
@@ -965,7 +985,22 @@ public:
               }
               break;
             case WM_COMMAND:
-              if (wp >= ID_TRAY_FIRST) {
+              if (wp >= ID_MENU_FIRST) {
+                for(const HMENU itMenuRef: menuRefs) {
+                  MENUITEMINFO item;
+                  memset(&item, 0, sizeof(item));
+                  item.cbSize = sizeof(MENUITEMINFO);
+                  item.fMask = MIIM_ID | MIIM_DATA;
+                  if (GetMenuItemInfo(itMenuRef, wp, false, &item)) {
+                    WindowMenuItem *menu = (WindowMenuItem *)item.dwItemData;
+                    if (menu != nullptr && menu->cb != nullptr) {
+                      menu->cb(menu);
+                    }
+                  }
+                }
+                return 0;
+              }
+              else if (wp >= ID_TRAY_FIRST) {
                 MENUITEMINFO item;
                 memset(&item, 0, sizeof(item));
                 item.cbSize = sizeof(MENUITEMINFO);

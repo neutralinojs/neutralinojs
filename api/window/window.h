@@ -71,8 +71,8 @@ struct WindowOptions {
 struct WindowMenuItem {
   string id;
   string text;
-  int disabled;
-  int checked;
+  int disabled = false;
+  int checked = false;
 
   void (*cb)(struct WindowMenuItem *);
 };

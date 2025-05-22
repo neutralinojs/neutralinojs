@@ -58,11 +58,13 @@ bool isGtkWindowFullScreen = false;
 bool isGtkWindowMinimized = false;
 
 #elif defined(_WIN32)
+#define ID_MENU_FIRST 20000;
 bool isWinWindowFullScreen = false;
 DWORD savedStyle;
 DWORD savedStyleX;
 RECT savedRect;
-int windowMenuItemId = 20000;
+HMENU windowMenu;
+int windowMenuItemId = ID_MENU_FIRST;
 #endif
 
 window::WindowOptions windowProps;
@@ -255,6 +257,16 @@ bool __loadSavedWindowProps() {
     return true;
 }
 
+void __handleMainMenuItem(window::WindowMenuItem *item) {
+    (void)item;
+    json eventData;
+    eventData["id"] = item->id;
+    eventData["text"] = item->text;
+    eventData["isChecked"] = item->checked;
+    eventData["isDisabled"] = item->disabled;
+    events::dispatch("mainMenuItemClicked", eventData);
+}
+
 #if defined(_WIN32)
 HMENU __createMenu(const json &menu, bool root) {
     HMENU hMenu = root ? CreateMenu() : CreatePopupMenu();
@@ -277,6 +289,8 @@ HMENU __createMenu(const json &menu, bool root) {
             menuItem->checked = jMenuItem["checked"].get<bool>();
         }  
 
+        menuItem->cb = __handleMainMenuItem;
+
         if(menuItem->text == "-") {
             InsertMenu(hMenu, windowMenuItemId, MF_SEPARATOR, 1, L"");
         } 
@@ -290,6 +304,7 @@ HMENU __createMenu(const json &menu, bool root) {
             if (helpers::hasField(jMenuItem, "menuItems")) {
                 item.fMask = item.fMask | MIIM_SUBMENU;
                 item.hSubMenu = __createMenu(jMenuItem["menuItems"], false);
+                SendMessage(windowHandle, WM_WINDOW_PASS_MENU_REFS, (WPARAM)item.hSubMenu, 0);
             }
             if(menuItem->disabled) {
                 item.fState |= MFS_DISABLED;
@@ -307,6 +322,7 @@ HMENU __createMenu(const json &menu, bool root) {
             windowMenuItemId++;
         }   
     }
+
     return hMenu;
 }
 #elif defined(__APPLE__)
@@ -705,7 +721,15 @@ bool snapshot(const string &filename) {
 
 void setMainMenu(const json &menu) {
     #if defined(_WIN32)
-    SetMenu(windowHandle, __createMenu(menu, true));
+    SendMessage(windowHandle, WM_WINDOW_DELETE_MENU_REFS, 0, 0);
+    HMENU prevMenu = windowMenu;
+    windowMenuItemId = ID_MENU_FIRST;
+    windowMenu = __createMenu(menu, true);
+    SetMenu(windowHandle, windowMenu);
+
+    if(prevMenu) {
+        DestroyMenu(prevMenu);
+    }
 
     #elif defined(__APPLE__)
     id mainMenu = ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSMenu"), sel_getUid("alloc"));
