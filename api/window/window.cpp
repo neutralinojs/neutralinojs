@@ -313,7 +313,7 @@ HMENU __createMenu(const json &menu, bool root) {
 void __createMenu() {
     
 }
-#if defined(__linux__) || defined(__FreeBSD__)
+#elif defined(__linux__) || defined(__FreeBSD__)
 void __createMenu() {
     
 }
