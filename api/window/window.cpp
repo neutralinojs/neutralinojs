@@ -62,6 +62,7 @@ bool isWinWindowFullScreen = false;
 DWORD savedStyle;
 DWORD savedStyleX;
 RECT savedRect;
+int windowMenuItemId = 20000;
 #endif
 
 window::WindowOptions windowProps;
@@ -253,6 +254,70 @@ bool __loadSavedWindowProps() {
     }
     return true;
 }
+
+#if defined(_WIN32)
+HMENU __createMenu(const json &menu, bool root) {
+    HMENU hMenu = root ? CreateMenu() : CreatePopupMenu();
+    for(const auto &jMenuItem : menu) {
+        window::WindowMenuItem *menuItem = new window::WindowMenuItem;
+
+        if(helpers::hasField(jMenuItem, "id")) {
+            menuItem->id = jMenuItem["id"].get<string>();
+        }
+
+        if(helpers::hasField(jMenuItem, "text")) {
+            menuItem->text = jMenuItem["text"].get<string>();
+        } 
+
+        if(helpers::hasField(jMenuItem, "disabled")) {
+            menuItem->disabled = jMenuItem["disabled"].get<bool>();
+        }
+
+        if(helpers::hasField(jMenuItem, "checked")) {
+            menuItem->checked = jMenuItem["checked"].get<bool>();
+        }  
+
+        if(menuItem->text == "-") {
+            InsertMenu(hMenu, windowMenuItemId, MF_SEPARATOR, 1, L"");
+        } 
+        else {
+            MENUITEMINFO item;
+            memset(&item, 0, sizeof(item));
+            item.cbSize = sizeof(MENUITEMINFO);
+            item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
+            item.fType = 0;
+            item.fState = 0;
+            if (helpers::hasField(jMenuItem, "menuItems")) {
+                item.fMask = item.fMask | MIIM_SUBMENU;
+                item.hSubMenu = window::createMenu(jMenuItem["menuItems"], false);
+            }
+            if(menuItem->disabled) {
+                item.fState |= MFS_DISABLED;
+            }
+            if (menuItem->checked) {
+                item.fState |= MFS_CHECKED;
+            }
+            item.wID = windowMenuItemId;
+            wstring wtext = helpers::str2wstr(menuItem->text);
+            item.dwTypeData = (LPWSTR)wtext.data();
+            item.dwItemData = (ULONG_PTR)menuItem;
+
+            InsertMenuItem(hMenu, windowMenuItemId, 1, &item);
+
+            windowMenuItemId++;
+        }   
+    }
+    return hMenu;
+}
+#elif defined(__APPLE__)
+void __createMenu() {
+    
+}
+#if defined(__linux__) || defined(__FreeBSD__)
+void __createMenu() {
+    
+}
+#endif
 
 void _close(int exitCode) {
     if(nativeWindow) {
@@ -635,6 +700,42 @@ bool snapshot(const string &filename) {
     GdiplusShutdown(gdiplusToken);
 
     return status;
+    #endif
+}
+
+void setMainMenu(const json &menu) {
+    #if defined(_WIN32)
+    SetMenu(windowHandle, __createMenu());
+
+    #elif defined(__APPLE__)
+    id mainMenu = ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSMenu"), sel_getUid("alloc"));
+    mainMenu = ((id (*)(id, SEL))objc_msgSend)(mainMenu, sel_getUid("init"));
+
+    for (const auto &menuItem : menu) {
+        id menuItemObj = ((id (*)(id, SEL, id))objc_msgSend)(mainMenu, sel_getUid("addItemWithTitle:action:keyEquivalent:"), menuItem["text"].get<std::string>().c_str(), NULL, @"");
+        id submenu = ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSMenu"), sel_getUid("alloc"));
+        submenu = ((id (*)(id, SEL))objc_msgSend)(submenu, sel_getUid("init"));
+
+        for (const auto &item : menuItem["menuItems"]) {
+            if (item["text"] == "-") {
+                ((void (*)(id, SEL, id))objc_msgSend)(submenu, sel_getUid("addItem:"), ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSMenuItem"), sel_getUid("separatorItem")));
+            } else {
+                id subItem = ((id (*)(id, SEL, id, SEL, id))objc_msgSend)((id)objc_getClass("NSMenuItem"), sel_getUid("alloc"), item["text"].get<std::string>().c_str(), sel_getUid("menuAction:"), @"");
+                ((void (*)(id, SEL, id))objc_msgSend)(submenu, sel_getUid("addItem:"), subItem);
+            }
+        }
+        ((void (*)(id, SEL, id))objc_msgSend)(menuItemObj, sel_getUid("setSubmenu:"), submenu);
+    }
+    ((void (*)(id, SEL, id))objc_msgSend)(((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSApplication"), sel_getUid("sharedApplication")), sel_getUid("setMainMenu:"), mainMenu);
+
+    // lambda
+    auto menuAction = [](id self, SEL _cmd) {
+        id menuItem = self;
+        const char *menuId = ((const char *(*)(id, SEL))objc_msgSend)(menuItem, sel_getUid("identifier"));
+        json eventPayload;
+        eventPayload["id"] = std::string(menuId);
+        Neutralino.events.dispatch("mainMenuItemClicked", eventPayload);
+    };
     #endif
 }
 
@@ -1068,80 +1169,10 @@ json snapshot(const json &input) {
     return output;
 }
 
-bool applyMainMenu(const json &menu) {
-    
-    #if defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
-    auto mainMenuItemClicked = [](std::string itemId) {
-        json eventPayload;
-        eventPayload["id"] = itemId;
-        Neutralino.events.dispatch("mainMenuItemClicked", eventPayload);
-    };
-    #endif
-
-    #if defined(_WIN32)
-    HMENU hMenu = CreateMenu();
-    for (const auto &menuItem : menu) {
-        HMENU hSubMenu = CreatePopupMenu();
-        for (const auto &item : menuItem["menuItems"]) {
-            if (item["text"] == "-") {
-                AppendMenu(hSubMenu, MF_SEPARATOR, 0, NULL);
-            } else {
-                AppendMenu(hSubMenu, MF_STRING, item["id"].get<int>(), item["text"].get<std::string>().c_str());
-            }
-        }
-        AppendMenu(hMenu, MF_POPUP, (UINT_PTR)hSubMenu, menuItem["text"].get<std::string>().c_str());
-    }
-    SetMenu(windowHandle, hMenu);
-    return true;
-
-    #elif defined(__APPLE__)
-    id mainMenu = ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSMenu"), sel_getUid("alloc"));
-    mainMenu = ((id (*)(id, SEL))objc_msgSend)(mainMenu, sel_getUid("init"));
-
-    for (const auto &menuItem : menu) {
-        id menuItemObj = ((id (*)(id, SEL, id))objc_msgSend)(mainMenu, sel_getUid("addItemWithTitle:action:keyEquivalent:"), menuItem["text"].get<std::string>().c_str(), NULL, @"");
-        id submenu = ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSMenu"), sel_getUid("alloc"));
-        submenu = ((id (*)(id, SEL))objc_msgSend)(submenu, sel_getUid("init"));
-
-        for (const auto &item : menuItem["menuItems"]) {
-            if (item["text"] == "-") {
-                ((void (*)(id, SEL, id))objc_msgSend)(submenu, sel_getUid("addItem:"), ((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSMenuItem"), sel_getUid("separatorItem")));
-            } else {
-                id subItem = ((id (*)(id, SEL, id, SEL, id))objc_msgSend)((id)objc_getClass("NSMenuItem"), sel_getUid("alloc"), item["text"].get<std::string>().c_str(), sel_getUid("menuAction:"), @"");
-                ((void (*)(id, SEL, id))objc_msgSend)(submenu, sel_getUid("addItem:"), subItem);
-            }
-        }
-        ((void (*)(id, SEL, id))objc_msgSend)(menuItemObj, sel_getUid("setSubmenu:"), submenu);
-    }
-    ((void (*)(id, SEL, id))objc_msgSend)(((id (*)(id, SEL))objc_msgSend)((id)objc_getClass("NSApplication"), sel_getUid("sharedApplication")), sel_getUid("setMainMenu:"), mainMenu);
-
-    // lambda
-    auto menuAction = [](id self, SEL _cmd) {
-        id menuItem = self;
-        const char *menuId = ((const char *(*)(id, SEL))objc_msgSend)(menuItem, sel_getUid("identifier"));
-        json eventPayload;
-        eventPayload["id"] = std::string(menuId);
-        Neutralino.events.dispatch("mainMenuItemClicked", eventPayload);
-    };
-
-    return true;
-    #endif
-}
-
 json setMainMenu(const json &input) {
     json output;
 
-    if (!helpers::hasField(input, "menu")) {
-        output["error"] = "Missing required field: menu";
-        return output;
-    }
-
-    json menu = input["menu"];
-
-    if (!applyMainMenu(menu)) {
-        output["error"] = "Failed to set the menu";
-        return output;
-    }
+    window::setMainMenu(input);
 
     output["success"] = true;
     return output;
