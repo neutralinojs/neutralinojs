@@ -289,7 +289,7 @@ HMENU __createMenu(const json &menu, bool root) {
             item.fState = 0;
             if (helpers::hasField(jMenuItem, "menuItems")) {
                 item.fMask = item.fMask | MIIM_SUBMENU;
-                item.hSubMenu = window::createMenu(jMenuItem["menuItems"], false);
+                item.hSubMenu = __createMenu(jMenuItem["menuItems"], false);
             }
             if(menuItem->disabled) {
                 item.fState |= MFS_DISABLED;
