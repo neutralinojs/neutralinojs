@@ -289,6 +289,11 @@ HMENU __createMenu(const json &menu, bool root) {
             menuItem->checked = jMenuItem["checked"].get<bool>();
         }  
 
+        if(helpers::hasField(jMenuItem, "shortcut")) {
+            menuItem->shortcut = jMenuItem["shortcut"].get<string>();
+            menuItem->text += "\t" + menuItem->shortcut;
+        }
+
         menuItem->cb = __handleMainMenuItem;
 
         if(menuItem->text == "-") {

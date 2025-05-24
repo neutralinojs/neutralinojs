@@ -1009,6 +1009,7 @@ public:
                     if (menu != nullptr && menu->cb != nullptr) {
                       menu->cb(menu);
                     }
+                    break;
                   }
                 }
                 return 0;
