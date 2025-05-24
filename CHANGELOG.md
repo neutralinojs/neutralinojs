@@ -24,6 +24,7 @@ const menu = [
     {id: 'paste', text: 'Paste'},
   ]}
 ];
+
 await Neutralino.window.setMainMenu(menu);
 ```
 The framework will trigger the `mainMenuItemClicked` event with menu item data when the user clicks on a specific menu item.
