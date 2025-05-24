@@ -6,6 +6,47 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: Native window main menu
+The new `window.setMainMenu(menu)` function lets developers create a native window menu on GNU/Linux and Windows and an application menu on macOS. This function can be called multiple times with different menu objects to update menu items dynamically:
+
+```js
+const menu = [
+  {id: 'file', text: 'File',
+    menuItems: [
+    {id: 'open', text: 'Open'},
+    {text: '-'},
+    {id: 'quit', text: 'Quit'},
+  ]},
+  {id: 'edit', text: 'Edit',
+    menuItems: [
+    {id: 'cut', text: 'Cut'},
+    {id: 'copy', text: 'Copy'},
+    {id: 'paste', text: 'Paste'},
+  ]}
+];
+await Neutralino.window.setMainMenu(menu);
+```
+The framework will trigger the `mainMenuItemClicked` event with menu item data when the user clicks on a specific menu item.
+
+On macOS, app developers can register key accelerators and pre-defined actions as follows:
+
+```js
+{id: 'edit', text: 'Edit',
+  menuItems: [
+  {id: 'cut', text: 'Cut', action: 'cut:', shortcut: 'c'},
+  {id: 'copy', text: 'Copy', action: 'copy:', shortcut: 'x'},
+  {id: 'paste', text: 'Paste', action: 'paste:', shortcut: 'v'},
+]}
+```
+
+On GNU/Linux and Windows, the framework only displays the keyboard shortcut within the particular menu item and doesn't register a key accelerator yet:
+
+```js
+{id: 'cut', text: 'Cut', shortcut: 'Ctrl + C'}
+```
+
+*Note: We are planning to add key accelerator support for GNU/Linux and Windows native window menus with a global key accelerator feature in an upcoming framework version.* 
+
 ## v6.0.0
 
 ### API: clipboard
