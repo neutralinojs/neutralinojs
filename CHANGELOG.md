@@ -34,8 +34,8 @@ On macOS, app developers can register key accelerators and pre-defined actions a
 ```js
 {id: 'edit', text: 'Edit',
   menuItems: [
-  {id: 'cut', text: 'Cut', action: 'cut:', shortcut: 'c'},
-  {id: 'copy', text: 'Copy', action: 'copy:', shortcut: 'x'},
+  {id: 'cut', text: 'Cut', action: 'cut:', shortcut: 'x'},
+  {id: 'copy', text: 'Copy', action: 'copy:', shortcut: 'c'},
   {id: 'paste', text: 'Paste', action: 'paste:', shortcut: 'v'},
 ]}
 ```
