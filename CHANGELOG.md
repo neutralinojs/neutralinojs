@@ -43,7 +43,7 @@ On macOS, app developers can register key accelerators and pre-defined actions a
 On GNU/Linux and Windows, the framework only displays the keyboard shortcut within the particular menu item and doesn't register a key accelerator yet:
 
 ```js
-{id: 'cut', text: 'Cut', shortcut: 'Ctrl + C'}
+{id: 'copy', text: 'Copy', shortcut: 'Ctrl + C'}
 ```
 
 *Note: We are planning to add key accelerator support for GNU/Linux and Windows native window menus with a global key accelerator feature in an upcoming framework version.* 
