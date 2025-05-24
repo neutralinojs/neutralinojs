@@ -267,7 +267,10 @@ public:
     // Initialize webview widget
     m_webview = webkit_web_view_new();
 
-    gtk_container_add(GTK_CONTAINER(m_window), GTK_WIDGET(m_webview));
+    GtkWidget *parentContainer = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_box_pack_start(GTK_BOX(parentContainer), GTK_WIDGET(m_webview), true, true, 0);    
+    gtk_container_add(GTK_CONTAINER(m_window), parentContainer);
+
     gtk_widget_grab_focus(GTK_WIDGET(m_webview));
 
     WebKitSettings *settings =

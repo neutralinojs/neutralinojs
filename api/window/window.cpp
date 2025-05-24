@@ -56,6 +56,7 @@ webview::webview *nativeWindow;
 #if defined(__linux__) || defined(__FreeBSD__)
 bool isGtkWindowFullScreen = false;
 bool isGtkWindowMinimized = false;
+GtkWidget *menuContainer;
 
 #elif defined(_WIN32)
 #define ID_MENU_FIRST 20000;
@@ -291,7 +292,7 @@ HMENU __createMenu(const json &menu, bool root) {
 
         if(helpers::hasField(jMenuItem, "shortcut")) {
             menuItem->shortcut = jMenuItem["shortcut"].get<string>();
-            menuItem->text += "\t" + menuItem->shortcut;
+            menuItem->text += "\t\t" + menuItem->shortcut;
         }
 
         menuItem->cb = __handleMainMenuItem;
@@ -418,8 +419,67 @@ id __createMenu(const json &menu) {
     return nsMenu;
 }
 #elif defined(__linux__) || defined(__FreeBSD__)
-void __createMenu() {
-    
+static void __menuCallback(GtkMenuItem *item, gpointer data) {
+  (void)item;
+  window::WindowMenuItem *menuItem = (window::WindowMenuItem *)data;
+  menuItem->cb(menuItem);
+}
+
+GtkMenuShell* __createMenu(const json &menu, bool root) {
+    GtkMenuShell *gMenu = root ? (GtkMenuShell *)gtk_menu_bar_new() : (GtkMenuShell *)gtk_menu_new() ;
+    for(const auto &jMenuItem : menu) {
+        window::WindowMenuItem *menuItem = new window::WindowMenuItem;
+
+        if(helpers::hasField(jMenuItem, "id")) {
+            menuItem->id = jMenuItem["id"].get<string>();
+        }
+
+        if(helpers::hasField(jMenuItem, "text")) {
+            menuItem->text = jMenuItem["text"].get<string>();
+        } 
+
+        if(helpers::hasField(jMenuItem, "disabled")) {
+            menuItem->disabled = jMenuItem["disabled"].get<bool>();
+        }
+
+        if(helpers::hasField(jMenuItem, "checked")) {
+            menuItem->checked = jMenuItem["checked"].get<bool>();
+        }  
+
+        if(helpers::hasField(jMenuItem, "shortcut")) {
+            menuItem->shortcut = jMenuItem["shortcut"].get<string>();
+            menuItem->text += "\t\t" + menuItem->shortcut;
+        }
+
+        menuItem->cb = __handleMainMenuItem;
+
+        GtkWidget *item;
+        if(menuItem->text == "-") {
+            item = gtk_separator_menu_item_new();
+        } 
+        else {
+            if (helpers::hasField(jMenuItem, "menuItems")) {
+                item = gtk_menu_item_new_with_label(menuItem->text.c_str());
+                gtk_menu_item_set_submenu(GTK_MENU_ITEM(item),
+                                        GTK_WIDGET(__createMenu(jMenuItem["menuItems"], false)));
+            } 
+            else if(menuItem->checked) {
+                item = gtk_check_menu_item_new_with_label(menuItem->text.c_str());
+                gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), menuItem->checked);
+            } 
+            else {
+                item = gtk_menu_item_new_with_label(menuItem->text.c_str());
+            }
+            gtk_widget_set_sensitive(item, !menuItem->disabled);
+            if (menuItem->cb) {
+                g_signal_connect(item, "activate", G_CALLBACK(__menuCallback), menuItem);
+            }
+        }
+        gtk_widget_show(item);
+        gtk_menu_shell_append(gMenu, item);   
+    }
+
+    return gMenu;
 }
 #endif
 
@@ -824,6 +884,20 @@ void setMainMenu(const json &menu) {
                                             "sharedApplication"_sel);
     ((void (*)(id, SEL, id))objc_msgSend)(app, "mainMenu"_sel, nullptr);
     ((void (*)(id, SEL, id))objc_msgSend)(app, "setMainMenu:"_sel, __createMenu(menu));
+
+    #elif defined(__linux__) || defined(__FreeBSD__)
+    if(menuContainer) {
+        gtk_widget_destroy(menuContainer);
+    }
+
+    menuContainer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
+    GtkMenuShell *windowMenu = __createMenu(menu, true);
+    GtkWidget *parentContainer = gtk_bin_get_child(GTK_BIN(windowHandle));
+
+    gtk_box_pack_start(GTK_BOX(parentContainer), menuContainer, false, false, 0);
+    gtk_box_reorder_child(GTK_BOX(parentContainer), menuContainer, 0);
+    gtk_box_pack_start(GTK_BOX(menuContainer), GTK_WIDGET(windowMenu), false, false, 0);
+    gtk_widget_show_all(menuContainer);
 
     #endif
 }
