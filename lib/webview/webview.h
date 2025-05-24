@@ -74,8 +74,10 @@ static int processExitCode = 0;
 struct WindowMenuItem {
   std::string id;
   std::string text;
-  int disabled = false;
-  int checked = false;
+  bool disabled = false;
+  bool checked = false;
+  std::string action = "menuCallback:";
+  std::string shortcut;
 
   void (*cb)(struct WindowMenuItem *);
 };
@@ -419,6 +421,17 @@ public:
     class_addProtocol(cls, objc_getProtocol("NSTouchBarProvider"));
     class_addMethod(cls, "applicationShouldTerminateAfterLastWindowClosed:"_sel,
                     (IMP)(+[](id, SEL, id) -> BOOL { return 0; }), "c@:@");
+    class_addMethod(cls, "menuCallback:"_sel,
+      (IMP)(+[](id, SEL, id sender) -> void { 
+      WindowMenuItem *m = ((WindowMenuItem *(*)(id, SEL))objc_msgSend)(
+          ((id (*)(id, SEL))objc_msgSend)(sender, "representedObject"_sel),
+          "pointerValue"_sel);
+
+      if (m && m->cb) {
+        m->cb(m);
+      }
+
+    }), "v@:@");
 
     objc_registerClassPair(cls);
 

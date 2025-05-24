@@ -71,8 +71,10 @@ struct WindowOptions {
 struct WindowMenuItem {
   string id;
   string text;
-  int disabled = false;
-  int checked = false;
+  bool disabled = false;
+  bool checked = false;
+  string action = "menuCallback:";
+  string shortcut;
 
   void (*cb)(struct WindowMenuItem *);
 };

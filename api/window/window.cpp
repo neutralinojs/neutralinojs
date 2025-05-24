@@ -355,6 +355,14 @@ id __createMenu(const json &menu) {
             menuItem->checked = jMenuItem["checked"].get<bool>();
         }  
 
+        if(helpers::hasField(jMenuItem, "action")) {
+            menuItem->action = jMenuItem["action"].get<string>();
+        }
+
+        if(helpers::hasField(jMenuItem, "shortcut")) {
+            menuItem->shortcut = jMenuItem["shortcut"].get<string>();
+        } 
+
         menuItem->cb = __handleMainMenuItem;
 
         if(menuItem->text == "-") {
@@ -373,8 +381,8 @@ id __createMenu(const json &menu) {
                 nsMenuItem,
                 "initWithTitle:action:keyEquivalent:"_sel,
                 ((id (*)(id, SEL, const char *))objc_msgSend)("NSString"_cls, "stringWithUTF8String:"_sel, menuItem->text.c_str()),
-                "menuCallback:"_sel,
-                ((id (*)(id, SEL, const char *))objc_msgSend)("NSString"_cls, "stringWithUTF8String:"_sel, ""));
+                sel_registerName(menuItem->action.c_str()),
+                ((id (*)(id, SEL, const char *))objc_msgSend)("NSString"_cls, "stringWithUTF8String:"_sel, menuItem->shortcut.c_str()));
 
             ((id (*)(id, SEL, bool))objc_msgSend)(nsMenuItem, "setEnabled:"_sel, !menuItem->disabled);
             ((id (*)(id, SEL, bool))objc_msgSend)(nsMenuItem, "setState:"_sel, menuItem->checked);
