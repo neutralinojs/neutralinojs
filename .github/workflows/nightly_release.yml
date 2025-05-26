@@ -10,6 +10,9 @@ jobs:
 
     container:
       image: ubuntu:20.04
+      env:
+        DEBIAN_FRONTEND: noninteractive
+        GIT_DISCOVERY_ACROSS_FILESYSTEM: 1
         
     steps:
     - name: Checkout 
@@ -17,8 +20,6 @@ jobs:
       
     - name: Configure
       run: |
-        pwd
-        export DEBIAN_FRONTEND=noninteractive
         apt-get update
         apt-get install -y -f \
         g++ \
@@ -29,7 +30,7 @@ jobs:
         
     - name: Build
       run: |
-        export GIT_DISCOVERY_ACROSS_FILESYSTEM=1
+        git config --global --add safe.directory $GITHUB_WORKSPACE
         ./scripts/bz.py --verbose
       
     - name: Upload Artifacts
