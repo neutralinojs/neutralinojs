@@ -31,7 +31,7 @@ jobs:
       
     - name: Build
       if: ${{ matrix.arch == 'arm64' || matrix.arch == 'armhf' }}
-      uses: uraimo/run-on-arch-action@v2
+      uses: uraimo/run-on-arch-action@v3
       id: build-package
       with:
         arch: ${{ matrix.arch == 'arm64' && 'aarch64' || 'armv7' }}
