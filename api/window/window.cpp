@@ -282,12 +282,12 @@ HMENU __createMenu(const json &menu, bool root) {
             menuItem->text = jMenuItem["text"].get<string>();
         } 
 
-        if(helpers::hasField(jMenuItem, "disabled")) {
-            menuItem->disabled = jMenuItem["disabled"].get<bool>();
+        if(helpers::hasField(jMenuItem, "isDisabled")) {
+            menuItem->disabled = jMenuItem["idDisabled"].get<bool>();
         }
 
-        if(helpers::hasField(jMenuItem, "checked")) {
-            menuItem->checked = jMenuItem["checked"].get<bool>();
+        if(helpers::hasField(jMenuItem, "isChecked")) {
+            menuItem->checked = jMenuItem["isChecked"].get<bool>();
         }  
 
         if(helpers::hasField(jMenuItem, "shortcut")) {
@@ -353,12 +353,12 @@ id __createMenu(const json &menu) {
             menuItem->text = jMenuItem["text"].get<string>();
         } 
 
-        if(helpers::hasField(jMenuItem, "disabled")) {
-            menuItem->disabled = jMenuItem["disabled"].get<bool>();
+        if(helpers::hasField(jMenuItem, "isDisabled")) {
+            menuItem->disabled = jMenuItem["isDisabled"].get<bool>();
         }
 
-        if(helpers::hasField(jMenuItem, "checked")) {
-            menuItem->checked = jMenuItem["checked"].get<bool>();
+        if(helpers::hasField(jMenuItem, "isChecked")) {
+            menuItem->checked = jMenuItem["isChecked"].get<bool>();
         }  
 
         if(helpers::hasField(jMenuItem, "action")) {
@@ -438,12 +438,12 @@ GtkMenuShell* __createMenu(const json &menu, bool root) {
             menuItem->text = jMenuItem["text"].get<string>();
         } 
 
-        if(helpers::hasField(jMenuItem, "disabled")) {
-            menuItem->disabled = jMenuItem["disabled"].get<bool>();
+        if(helpers::hasField(jMenuItem, "isDisabled")) {
+            menuItem->disabled = jMenuItem["isDisabled"].get<bool>();
         }
 
-        if(helpers::hasField(jMenuItem, "checked")) {
-            menuItem->checked = jMenuItem["checked"].get<bool>();
+        if(helpers::hasField(jMenuItem, "isChecked")) {
+            menuItem->checked = jMenuItem["isChecked"].get<bool>();
         }  
 
         if(helpers::hasField(jMenuItem, "shortcut")) {
