@@ -283,7 +283,7 @@ HMENU __createMenu(const json &menu, bool root) {
         } 
 
         if(helpers::hasField(jMenuItem, "isDisabled")) {
-            menuItem->disabled = jMenuItem["idDisabled"].get<bool>();
+            menuItem->disabled = jMenuItem["isDisabled"].get<bool>();
         }
 
         if(helpers::hasField(jMenuItem, "isChecked")) {
