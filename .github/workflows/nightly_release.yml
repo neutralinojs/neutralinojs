@@ -109,7 +109,7 @@ jobs:
           bin/neutralino-mac_universal
         
   update-nightly-release:
-    needs: [build-linux, build-windows, build-darwin]
+    needs: [build-linux-x64, build-linux-arm, build-windows, build-darwin]
     runs-on: ubuntu-latest
     steps:
     - name: Checkout 
