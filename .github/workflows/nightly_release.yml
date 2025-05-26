@@ -17,6 +17,7 @@ jobs:
       
     - name: Configure
       run: |
+        export DEBIAN_FRONTEND=noninteractive
         apt-get update
         apt-get install -y -f \
         libgtk-3-dev \
