@@ -20,6 +20,10 @@
 
 #define NEU_APP_CONFIG_FILE "/neutralino.config.json"
 
+#if !defined(NEU_COMPILATION_DATA)
+#define NEU_COMPILATION_DATA ""
+#endif
+
 #include <string>
 
 #include "lib/json/json.hpp"

@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <locale>
 
 #include "lib/json/json.hpp"
 #include "settings.h"
@@ -155,6 +156,8 @@ string getGlobalVars(){
     jsSnippet += "var NL_CMETHODS=" + helpers::jsonToString(json(custom::getMethods())) + ";";
     jsSnippet += "var NL_WSAVSTLOADED=" + helpers::jsonToString(json(window::isSavedStateLoaded())) + ";";
     jsSnippet += "var NL_CONFIGFILE='" + settings::getConfigFile() + "';";
+    jsSnippet += "var NL_LOCALE='" + locale("").name() + "';";
+    jsSnippet += "var NL_COMPDATA='" + string(NEU_COMPILATION_DATA) + "';";
 
     json jGlobalVariables = settings::getOptionForCurrentMode("globalVariables");
     if(!jGlobalVariables.is_null()) {
