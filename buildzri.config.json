@@ -1,7 +1,7 @@
 {
     "std": "c++17",
     "name": "Neutralinojs",
-    "version": "6.0.0",
+    "version": "6.1.0",
     "output": "./bin/neutralino-${BZ_OS}_${BZ_TARGET_ARCH}",
     "include": {
         "*": [
