@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v6.1.0
+
 ### API: Native window main menu
 The new `window.setMainMenu(menu)` function lets developers create a native window menu on GNU/Linux and Windows and an application menu on macOS. This function can be called multiple times with different menu objects to update menu items dynamically:
 
