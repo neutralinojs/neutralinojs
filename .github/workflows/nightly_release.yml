@@ -30,10 +30,10 @@ jobs:
         
     - name: Build
       run: |
+        git config --global --add safe.directory $GITHUB_WORKSPACE
         ls -a
         echo $GITHUB_WORKSPACE
         git show
-        git config --global --add safe.directory $GITHUB_WORKSPACE
         ./scripts/bz.py --verbose
       
     - name: Upload Artifacts
