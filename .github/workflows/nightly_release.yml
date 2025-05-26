@@ -11,7 +11,7 @@ jobs:
     container:
       image: ubuntu:18.04
       volumes:
-        - ${PWD}/bin:${PWD}/bin
+        - "${PWD}/bin:${PWD}/bin"
         
     steps:
     - name: Checkout 
