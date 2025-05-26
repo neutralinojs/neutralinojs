@@ -5,19 +5,19 @@ on:
     - cron: 0 0 * * *
 
 jobs:
-  build-linux:
+  build-linux-x64:
     runs-on: ubuntu-22.04
-    
-    strategy:
-      matrix:
-        arch: [x64, arm64, armhf]
+
+    container:
+      image: ubuntu:18.04
+      volumes:
+        - ${PWD}/bin:${PWD}/bin
         
     steps:
     - name: Checkout 
       uses: actions/checkout@v3
       
     - name: Configure
-      if: ${{ matrix.arch == 'x64' }}
       run: |
         sudo apt-get update
         sudo apt-get install -y -f \
@@ -26,11 +26,26 @@ jobs:
         libwebkit2gtk-4.0-dev
         
     - name: Build
-      if: ${{ matrix.arch == 'x64' }}
       run: ./scripts/bz.py
       
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4.4.0
+      with:
+        name: linux_x64_binary
+        path: bin/neutralino-linux_x64
+
+  build-linux-arm:
+    runs-on: ubuntu-22.04
+    
+    strategy:
+      matrix:
+        arch: [arm64, armhf]
+        
+    steps:
+    - name: Checkout 
+      uses: actions/checkout@v3
+      
     - name: Build
-      if: ${{ matrix.arch == 'arm64' || matrix.arch == 'armhf' }}
       uses: uraimo/run-on-arch-action@v3
       id: build-package
       with:
