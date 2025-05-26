@@ -30,6 +30,9 @@ jobs:
         
     - name: Build
       run: |
+        ls
+        echo $GITHUB_WORKSPACE
+        git show
         git config --global --add safe.directory $GITHUB_WORKSPACE
         ./scripts/bz.py --verbose
       
