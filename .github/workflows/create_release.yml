@@ -8,31 +8,53 @@ on:
         description: 'Version number Eg: 4.2.0' 
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-20.04
+  build-linux-x64:
+    runs-on: ubuntu-22.04
+
+    container:
+      image: ubuntu:20.04
+      env:
+        DEBIAN_FRONTEND: noninteractive
+        GIT_DISCOVERY_ACROSS_FILESYSTEM: 1
+        
+    steps:
+    - name: Configure
+      run: |
+        apt-get update
+        apt-get install -y -f \
+        g++ \
+        git \
+        libgtk-3-dev \
+        libwebkit2gtk-4.0-37 \
+        libwebkit2gtk-4.0-dev
+        
+    - name: Checkout 
+      uses: actions/checkout@v3
+        
+    - name: Build
+      run: |
+        git config --global --add safe.directory $GITHUB_WORKSPACE
+        ./scripts/bz.py
+      
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4.4.0
+      with:
+        name: linux_x64_binary
+        path: bin/neutralino-linux_x64
+
+  build-linux-arm:
+    runs-on: ubuntu-22.04
     
     strategy:
       matrix:
-        arch: [x64, arm64, armhf]
+        arch: [arm64, armhf]
         
     steps:
     - name: Checkout 
       uses: actions/checkout@v3
       
-    - name: Configure
-      if: ${{ matrix.arch == 'x64' }}
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y -f \
-        libgtk-3-dev
-
     - name: Build
-      if: ${{ matrix.arch == 'x64' }}
-      run: ./scripts/bz.py
-      
-    - name: Build
-      if: ${{ matrix.arch == 'arm64' || matrix.arch == 'armhf' }}
-      uses: uraimo/run-on-arch-action@v2
+      uses: uraimo/run-on-arch-action@v3
       id: build-package
       with:
         arch: ${{ matrix.arch == 'arm64' && 'aarch64' || 'armv7' }}
@@ -41,6 +63,7 @@ jobs:
           apt-get update
           apt-get install -y -f \
           libgtk-3-dev \
+          libwebkit2gtk-4.0-dev \
           git \
           python3 \
           g++ \
@@ -49,6 +72,7 @@ jobs:
         
         dockerRunArgs: |
             --volume "${PWD}/bin:${PWD}/bin"
+
         run: |
           git config --global --add safe.directory $GITHUB_WORKSPACE
           ./scripts/bz.py
