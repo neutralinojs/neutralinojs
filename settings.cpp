@@ -6,7 +6,7 @@
 #include <vector>
 #include <map>
 #include <set>
-#include <locale>
+#include <clocale>
 
 #include "lib/json/json.hpp"
 #include "settings.h"
@@ -34,6 +34,7 @@ string appPath;
 string systemDataPath;
 string appDataPath; // appPath or systemDataPath based on config.dataLocation
 string configFile = NEU_APP_CONFIG_FILE;
+string localeName;
 
 vector<settings::ConfigOverride> configOverrides;
 
@@ -58,6 +59,11 @@ string getConfigFile() {
 }
 
 bool init() {
+    #if defined(_WIN32)
+    localeName = helpers::wstr2str(_wsetlocale(LC_ALL, L""));
+    #else
+    localeName = setlocale(LC_ALL, "");
+    #endif
     options = json::object();
     json config;
     fs::FileReaderResult fileReaderResult = resources::getFile(configFile);
@@ -156,7 +162,7 @@ string getGlobalVars(){
     jsSnippet += "var NL_CMETHODS=" + helpers::jsonToString(json(custom::getMethods())) + ";";
     jsSnippet += "var NL_WSAVSTLOADED=" + helpers::jsonToString(json(window::isSavedStateLoaded())) + ";";
     jsSnippet += "var NL_CONFIGFILE='" + settings::getConfigFile() + "';";
-    jsSnippet += "var NL_LOCALE='" + locale("").name() + "';";
+    jsSnippet += "var NL_LOCALE='" + localeName + "';";
     jsSnippet += "var NL_COMPDATA='" + string(NEU_COMPILATION_DATA) + "';";
 
     json jGlobalVariables = settings::getOptionForCurrentMode("globalVariables");
