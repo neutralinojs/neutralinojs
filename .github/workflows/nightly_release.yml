@@ -18,6 +18,7 @@ jobs:
     - name: Configure
       run: |
         export DEBIAN_FRONTEND=noninteractive
+        export GIT_DISCOVERY_ACROSS_FILESYSTEM=1
         apt-get update
         apt-get install -y -f \
         g++ \
