@@ -48,6 +48,16 @@ On GNU/Linux and Windows, the framework only displays the keyboard shortcut with
 
 *Note: We are planning to add key accelerator support for GNU/Linux and Windows native window menus with a global key accelerator feature in an upcoming framework version.* 
 
+### Core: global variables
+- Add `NL_LOCALE` to get the user locale name, e.g., `en_US.UTF-8`
+- Add `NL_COMPDATA` to display custom data strings embedded in the binary via the BuildZri configuration. Developers can use this global variable to set the build number or other static data when they compile their own framework binary with the BuildZri script:
+
+```json
+"definitions": {
+    "*": [
+        "NEU_COMPILATION_DATA=\\\"build_number=${BZ_BUILDNUMBER};compiler_name=${BZ_CONPILERNAME}\\\"",
+```
+
 ## v6.0.0
 
 ### API: clipboard
