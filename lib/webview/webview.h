@@ -292,6 +292,7 @@ public:
     gtk_widget_show_all(m_window);
   }
   void *window() { return (void *)m_window; }
+  void *wv() { return (void *)m_webview; }
   void run() { gtk_main(); }
   void terminate(int exitCode = 0) {
     processExitCode = exitCode;
@@ -1110,6 +1111,7 @@ public:
     }
   }
   void *window() { return (void *)m_window; }
+  void *wv() { return (void *)m_webview; }
   void terminate(int exitCode = 0) {
 
     // event to wait for window close completion
