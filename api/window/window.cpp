@@ -496,8 +496,12 @@ void _close(int exitCode) {
     }
 }
 
-NEU_W_HANDLE getWindowHandle() {
-    return windowHandle;
+void *getWindowHandle() {
+    return nativeWindow->window();
+}
+
+void *getWebviewHandle() {
+    return nativeWindow->wv();
 }
 
 bool isSavedStateLoaded() {

@@ -552,6 +552,7 @@ public:
   }
   ~cocoa_wkwebview_engine() { close(); }
   void *window() { return (void *)m_window; }
+  void *wv() { return (void *)m_webview; }
   void terminate(int exitCode = 0) {
     close();
     ((void (*)(id, SEL, id))objc_msgSend)("NSApp"_cls, "terminate:"_sel,

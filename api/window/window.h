@@ -85,7 +85,8 @@ void onClose();
 
 } // namespace handlers
 
-NEU_W_HANDLE getWindowHandle();
+void *getWindowHandle();
+void *getWebviewHandle();
 bool isSavedStateLoaded();
 bool isMaximized();
 void maximize();
