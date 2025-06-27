@@ -28,6 +28,7 @@
 #include "api/clipboard/clipboard.h"
 #include "api/res/res.h"
 #include "api/server/server.h"
+#include "api/webview/webview.h"
 #include "api/custom/custom.h"
 
 #if defined(__APPLE__)
@@ -82,7 +83,7 @@ map<string, router::NativeMethod> methodMap = {
     {"computer.getCPUInfo", computer::controllers::getCPUInfo},
     {"computer.getDisplays", computer::controllers::getDisplays},
     {"computer.getMousePosition", computer::controllers::getMousePosition},
-    // Neutralino.log
+    // Neutralino.debug
     {"debug.log", debug::controllers::log},
     // Neutralino.filesystem
     {"filesystem.createDirectory", fs::controllers::createDirectory},
@@ -153,6 +154,8 @@ map<string, router::NativeMethod> methodMap = {
     {"server.mount", server::controllers::mount},
     {"server.unmount", server::controllers::unmount},
     {"server.getMounts", server::controllers::getMounts},
+    // Neutralino.webview
+    {"webview.print", webview::controllers::print},
     // Neutralino.custom
     {"custom.getMethods", custom::controllers::getMethods},
     // {"custom.add", custom::controllers::add} // Sample custom method
