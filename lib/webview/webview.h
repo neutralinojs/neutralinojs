@@ -723,6 +723,7 @@ public:
   virtual void init(const std::string js) = 0;
   virtual void extend_user_agent(const std::string customAgent) = 0;
   virtual void resize(HWND) = 0;
+  virtual void *wv() = 0;
 };
 
 //
@@ -772,6 +773,11 @@ public:
     Rect bounds(r.left, r.top, r.right - r.left, r.bottom - r.top);
     m_webview.Bounds(bounds);
   }
+
+  void *wv() {
+    return (void *)&m_webview;
+  }
+
 
 private:
   WebViewControl m_webview = nullptr;
@@ -863,6 +869,10 @@ public:
     auto wurl = to_lpwstr(url);
     m_webview->Navigate(wurl);
     delete[] wurl;
+  }
+
+  void *wv() {
+    return (void *)m_webview;
   }
 
 private:
@@ -1111,7 +1121,7 @@ public:
     }
   }
   void *window() { return (void *)m_window; }
-  void *wv() { return (void *)m_webview; }
+  void *wv() { return (void *)m_browser->wv(); }
   void terminate(int exitCode = 0) {
 
     // event to wait for window close completion
