@@ -30,6 +30,7 @@
 #include <winuser.h>
 #pragma comment(lib, "Gdiplus.lib")
 #pragma comment(lib, "WebView2LoaderStatic.lib")
+#include "webview2.h"
 #endif
 
 #include "lib/json/json.hpp"
@@ -1358,7 +1359,11 @@ json print(const json &input) {
     ((void(*)(id, SEL, id, id, SEL, void(*)))objc_msgSend)(printInfo,
         "runOperationModalForWindow:delegate:didRunSelector:contextInfo:"_sel, windowHandle, nullptr, nullptr, nullptr);  
     #elif defined(_WIN32)
-    
+    ICoreWebView2 *webview = (ICoreWebView2*)nativeWindow->wv();
+    nativeWindow->dispatch([=] {
+        webview->ExecuteScript(L"window.print()", nullptr);
+    });
+
     #endif
     output["success"] = true;
     return output;
