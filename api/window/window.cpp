@@ -4,6 +4,8 @@
 #include <regex>
 
 #if defined(__linux__) || defined(__FreeBSD__)
+#include <type_traits>
+#include <dlfcn.h>
 #include <gtk/gtk.h>
 #include <glib.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
@@ -494,14 +496,6 @@ void _close(int exitCode) {
         #endif
         delete nativeWindow;
     }
-}
-
-void *getWindowHandle() {
-    return nativeWindow->window();
-}
-
-void *getWebviewHandle() {
-    return nativeWindow->wv();
 }
 
 bool isSavedStateLoaded() {
@@ -1341,6 +1335,31 @@ json setMainMenu(const json &input) {
 
     window::setMainMenu(input);
 
+    output["success"] = true;
+    return output;
+}
+
+json print(const json &input) {
+    json output;
+
+    #if defined(__linux__) || defined(__FreeBSD__)
+    void *dlib = nativeWindow->dl();
+    webkit_print_operation_new_func webkit_print_operation_new = (webkit_print_operation_new_func)(dlsym(dlib, "webkit_print_operation_new"));
+    webkit_print_operation_run_dialog_func webkit_print_operation_run_dialog = (webkit_print_operation_run_dialog_func)(dlsym(dlib, "webkit_print_operation_run_dialog"));
+    
+    WebKitPrintOperation *printOp = webkit_print_operation_new((WebKitWebView*)(nativeWindow->wv()));
+    webkit_print_operation_run_dialog((WebKitPrintOperation*)printOp, GTK_WINDOW(windowHandle));
+    
+    #elif defined(__APPLE__)
+    id sharedPrintInfo = ((id(*)(id, SEL))objc_msgSend)("NSPrintInfo"_cls,
+                                            "sharedPrintInfo"_sel);
+    id printInfo = ((id(*)(id, SEL, id))objc_msgSend)(windowHandle,
+                                            "printOperationWithPrintInfo:"_sel, sharedPrintInfo);
+    ((void(*)(id, SEL, id, id, SEL, void(*)))objc_msgSend)(printInfo,
+        "runOperationModalForWindow:delegate:didRunSelector:contextInfo:"_sel, windowHandle, nullptr, nullptr, nullptr);  
+    #elif defined(_WIN32)
+    
+    #endif
     output["success"] = true;
     return output;
 }

@@ -28,7 +28,6 @@
 #include "api/clipboard/clipboard.h"
 #include "api/res/res.h"
 #include "api/server/server.h"
-#include "api/webview/webview.h"
 #include "api/custom/custom.h"
 
 #if defined(__APPLE__)
@@ -75,6 +74,7 @@ map<string, router::NativeMethod> methodMap = {
     {"window.setAlwaysOnTop", window::controllers::setAlwaysOnTop},
     {"window.snapshot", window::controllers::snapshot},
     {"window.setMainMenu", window::controllers::setMainMenu},
+    {"window.print", window::controllers::print},
     // Neutralino.computer
     {"computer.getMemoryInfo", computer::controllers::getMemoryInfo},
     {"computer.getArch", computer::controllers::getArch},
@@ -154,8 +154,6 @@ map<string, router::NativeMethod> methodMap = {
     {"server.mount", server::controllers::mount},
     {"server.unmount", server::controllers::unmount},
     {"server.getMounts", server::controllers::getMounts},
-    // Neutralino.webview
-    {"webview.print", webview::controllers::print},
     // Neutralino.custom
     {"custom.getMethods", custom::controllers::getMethods},
     // {"custom.add", custom::controllers::add} // Sample custom method
@@ -200,7 +198,7 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
             __block json apiOutput;
             // In macos, child threads cannot run UI logic
             if(nativeMethodId == "os.showMessageBox" ||
-                regex_match(nativeMethodId, regex("^(window|webview).*")) ||
+                regex_match(nativeMethodId, regex("^window.*")) ||
                 nativeMethodId == "os.setTray") {
                 dispatch_sync(dispatch_get_main_queue(), ^{
                     apiOutput = (*nativeMethod)(request.data);

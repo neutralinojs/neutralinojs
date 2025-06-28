@@ -8,6 +8,7 @@
 
 #if defined(__linux__) || defined(__FreeBSD__)
 #include <gtk/gtk.h>
+#include <type_traits>
 #define NEU_W_HANDLE GtkWidget*
 
 #elif defined(__APPLE__)
@@ -79,14 +80,23 @@ struct WindowMenuItem {
   void (*cb)(struct WindowMenuItem *);
 };
 
+#if defined(__linux__) || defined(__FreeBSD__)
+
+using WebKitWebView = struct _WebKitWebView;
+using WebKitPrintOperation = struct _WebKitPrintOperation;
+using WebKitPrintOperationResponse = struct _WebKitPrintOperationResponse;
+
+using webkit_print_operation_new_func = add_pointer<WebKitPrintOperation*(WebKitWebView*)>::type;
+using webkit_print_operation_run_dialog_func = add_pointer<WebKitPrintOperationResponse*(WebKitPrintOperation*, GtkWindow*)>::type; 
+
+#endif
+
 namespace handlers {
 
 void onClose();
 
 } // namespace handlers
 
-void *getWindowHandle();
-void *getWebviewHandle();
 bool isSavedStateLoaded();
 bool isMaximized();
 void maximize();
@@ -138,6 +148,7 @@ json getPosition(const json &input);
 json setAlwaysOnTop(const json &input);
 json snapshot(const json &input);
 json setMainMenu(const json &input);
+json print(const json &input);
 
 } // namespace controllers
 
