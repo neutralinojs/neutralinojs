@@ -1353,7 +1353,7 @@ json print(const json &input) {
     #elif defined(__APPLE__)
     id sharedPrintInfo = ((id(*)(id, SEL))objc_msgSend)("NSPrintInfo"_cls,
                                             "sharedPrintInfo"_sel);
-    id printInfo = ((id(*)(id, SEL, id))objc_msgSend)(windowHandle,
+    id printInfo = ((id(*)(id, SEL, id))objc_msgSend)((id)nativeWindow->wv(),
                                             "printOperationWithPrintInfo:"_sel, sharedPrintInfo);
     ((void(*)(id, SEL, id, id, SEL, void(*)))objc_msgSend)(printInfo,
         "runOperationModalForWindow:delegate:didRunSelector:contextInfo:"_sel, windowHandle, nullptr, nullptr, nullptr);  
