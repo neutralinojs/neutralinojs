@@ -121,9 +121,7 @@ void setMainMenu(const json &menu);
 
 void _close(int exitCode);
 
-void beginDragNative(int screenX,
-    int screenY,
-    int button = 1);
+void beginDrag();
 
 namespace controllers {
 

@@ -44,6 +44,34 @@ string getArch() {
     }
 }
 
+
+pair<int, int> getMousePosition() {
+    json output;
+    int x, y;
+
+    #if defined(__linux__)
+    GdkDisplay* display = gdk_display_get_default();
+    GdkSeat* seat = gdk_display_get_default_seat(display);
+    GdkDevice* device = gdk_seat_get_pointer(seat);
+    gdk_device_get_position(device, nullptr, &x, &y);
+
+    #elif defined(_WIN32)
+    POINT pos;
+    GetCursorPos(&pos);
+    x = pos.x;
+    y = pos.y;
+
+    #elif defined(__APPLE__)
+    CGEventRef event = CGEventCreate(nullptr);
+    CGPoint pos = CGEventGetLocation(event);
+    x = pos.x;
+    y = pos.y;
+    CFRelease(event);
+    #endif
+
+    return make_pair(x, y);
+}
+
 namespace controllers {
 
 string __getKernelVariant(const iware::system::kernel_t &variant) {
@@ -157,31 +185,11 @@ json getDisplays(const json &input) {
 
 json getMousePosition(const json &input) {
     json output;
-    int x, y;
-
-    #if defined(__linux__)
-    GdkDisplay* display = gdk_display_get_default();
-    GdkSeat* seat = gdk_display_get_default_seat(display);
-    GdkDevice* device = gdk_seat_get_pointer(seat);
-    gdk_device_get_position(device, nullptr, &x, &y);
-
-    #elif defined(_WIN32)
-    POINT pos;
-    GetCursorPos(&pos);
-    x = pos.x;
-    y = pos.y;
-
-    #elif defined(__APPLE__)
-    CGEventRef event = CGEventCreate(nullptr);
-    CGPoint pos = CGEventGetLocation(event);
-    x = pos.x;
-    y = pos.y;
-    CFRelease(event);
-    #endif
+    auto pos = computer::getMousePosition();
 
     json posRes = {
-        {"x", x},
-        {"y", y}
+        {"x", pos.first},
+        {"y", pos.second}
     };
     output["returnValue"] = posRes;
     output["success"] = true;

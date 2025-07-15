@@ -46,6 +46,7 @@
 #include "api/events/events.h"
 #include "api/fs/fs.h"
 #include "api/debug/debug.h"
+#include "api/computer/computer.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -726,17 +727,17 @@ void move(int x, int y) {
     #endif
 }
 
-void beginDragNative(int x, int y, int button) {
+void beginDrag() {
 
-#if defined(__linux__) || defined(__FreeBSD__)
-    gtk_window_begin_move_drag(GTK_WINDOW(windowHandle),
-        button, x, y, GDK_CURRENT_TIME);
+    #if defined(__linux__) || defined(__FreeBSD__)
+    auto mousePos = computer::getMousePosition();
+    gtk_window_begin_move_drag(GTK_WINDOW(windowHandle), 1, mousePos.first, mousePos.second, GDK_CURRENT_TIME);
 
-#elif defined(_WIN32)
+    #elif defined(_WIN32)
     ReleaseCapture();
     SendMessage(windowHandle, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, 0);
 
-#elif defined(__APPLE__)
+    #elif defined(__APPLE__)
     NSEvent* ev = ((id(*)(id, SEL, NSUInteger, CGPoint, NSUInteger,
         NSTimeInterval, NSInteger, BOOL, NSInteger, CGFloat))
         objc_msgSend)("NSEvent"_cls,
@@ -751,7 +752,7 @@ void beginDragNative(int x, int y, int button) {
             nil, 0, 1, 0.0f);
     ((void (*)(id, SEL, id))objc_msgSend)(windowHandle,
         "performWindowDragWithEvent:"_sel, ev);
-#endif
+    #endif
 }
 
 window::SizeOptions getSize() {
@@ -1371,10 +1372,11 @@ json setMainMenu(const json &input) {
 
 json beginDrag(const json& input) {
     json output;
-    int sx = 0, sy = 0;
-    if (helpers::hasField(input, "screenX")) sx = input["screenX"].get<int>();
-    if (helpers::hasField(input, "screenY")) sy = input["screenY"].get<int>();
-    nativeWindow->dispatch([&]() { beginDragNative(sx, sy); });
+    
+    window::beginDrag();
+    
+    output["success"] = true;
+    return output;
 }
 
 json print(const json &input) {

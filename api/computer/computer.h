@@ -11,6 +11,7 @@ using namespace std;
 namespace computer {
 
 string getArch();
+pair<int, int> getMousePosition();
 
 namespace controllers {
 
