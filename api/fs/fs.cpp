@@ -748,8 +748,8 @@ json getAbsolutePath(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
-    string absPath = FS_CONVWSTR(filesystem::absolute(path));
-    output["returnValue"] = helpers::normalizePath(absPath);
+    string absPath = FS_CONVWSTRN(filesystem::absolute(path));
+    output["returnValue"] = absPath;
     output["success"] = true;
     return output;
 }
@@ -767,8 +767,8 @@ json getRelativePath(const json &input) {
         base = input["base"].get<string>();
     }
     
-    string relPath = FS_CONVWSTR(filesystem::relative(CONVSTR(path), CONVSTR(base)));
-    output["returnValue"] = helpers::normalizePath(relPath);
+    string relPath = FS_CONVWSTRN(filesystem::relative(CONVSTR(path), CONVSTR(base)));
+    output["returnValue"] = relPath;
     output["success"] = true;
     return output;
 }
@@ -888,6 +888,50 @@ json setPermissions(const json &input) {
     else {
         output["error"] = errors::makeErrorPayload(errors::NE_FS_UNLSTPR, path);
     }
+    return output;
+}
+
+json getJoinedPath(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"paths"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    vector<string> paths = input["paths"].get<vector<string>>();
+    filesystem::path joinedPath = "";
+
+    for(const string &path: paths) {
+        joinedPath /= filesystem::path(CONVSTR(path));
+    }
+    
+    output["returnValue"] = FS_CONVWSTRN(filesystem::weakly_canonical(joinedPath));
+    output["success"] = true;
+    return output;
+}
+
+json getNormalizedPath(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    string path = input["path"].get<string>();
+    
+    output["returnValue"] = helpers::normalizePath(path);
+    output["success"] = true;
+    return output;
+}
+
+json getUnnormalizedPath(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload();
+        return output;
+    }
+    string path = input["path"].get<string>();
+    
+    output["returnValue"] = helpers::unNormalizePath(path);
+    output["success"] = true;
     return output;
 }
 
