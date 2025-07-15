@@ -726,6 +726,34 @@ void move(int x, int y) {
     #endif
 }
 
+void beginDragNative(int x, int y, int button) {
+
+#if defined(__linux__) || defined(__FreeBSD__)
+    gtk_window_begin_move_drag(GTK_WINDOW(windowHandle),
+        button, x, y, GDK_CURRENT_TIME);
+
+#elif defined(_WIN32)
+    ReleaseCapture();
+    SendMessage(windowHandle, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, 0);
+
+#elif defined(__APPLE__)
+    NSEvent* ev = ((id(*)(id, SEL, NSUInteger, CGPoint, NSUInteger,
+        NSTimeInterval, NSInteger, BOOL, NSInteger, CGFloat))
+        objc_msgSend)("NSEvent"_cls,
+            "mouseEventWithType:location:"
+            "modifierFlags:timestamp:windowNumber:"
+            "context:eventNumber:clickCount:pressure:"_sel,
+            1 /*NSLeftMouseDown*/,
+            CGPointMake(x, y),
+            0, 0,
+            ((NSInteger(*)(id, SEL))objc_msgSend)
+            (windowHandle, "windowNumber"_sel),
+            nil, 0, 1, 0.0f);
+    ((void (*)(id, SEL, id))objc_msgSend)(windowHandle,
+        "performWindowDragWithEvent:"_sel, ev);
+#endif
+}
+
 window::SizeOptions getSize() {
     int width, height = 0;
     #if defined(__linux__) || defined(__FreeBSD__)
@@ -1338,6 +1366,15 @@ json setMainMenu(const json &input) {
 
     output["success"] = true;
     return output;
+}
+
+
+json beginDrag(const json& input) {
+    json output;
+    int sx = 0, sy = 0;
+    if (helpers::hasField(input, "screenX")) sx = input["screenX"].get<int>();
+    if (helpers::hasField(input, "screenY")) sy = input["screenY"].get<int>();
+    nativeWindow->dispatch([&]() { beginDragNative(sx, sy); });
 }
 
 json print(const json &input) {

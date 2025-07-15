@@ -121,6 +121,10 @@ void setMainMenu(const json &menu);
 
 void _close(int exitCode);
 
+void beginDragNative(int screenX,
+    int screenY,
+    int button = 1);
+
 namespace controllers {
 
 json init(const json &input);
@@ -148,6 +152,7 @@ json getPosition(const json &input);
 json setAlwaysOnTop(const json &input);
 json snapshot(const json &input);
 json setMainMenu(const json &input);
+json beginDrag(const json& input);
 json print(const json &input);
 
 } // namespace controllers
