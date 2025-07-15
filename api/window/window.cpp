@@ -738,20 +738,11 @@ void beginDrag() {
     SendMessage(windowHandle, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, 0);
 
     #elif defined(__APPLE__)
-    NSEvent* ev = ((id(*)(id, SEL, NSUInteger, CGPoint, NSUInteger,
-        NSTimeInterval, NSInteger, BOOL, NSInteger, CGFloat))
-        objc_msgSend)("NSEvent"_cls,
-            "mouseEventWithType:location:"
-            "modifierFlags:timestamp:windowNumber:"
-            "context:eventNumber:clickCount:pressure:"_sel,
-            1 /*NSLeftMouseDown*/,
-            CGPointMake(x, y),
-            0, 0,
-            ((NSInteger(*)(id, SEL))objc_msgSend)
-            (windowHandle, "windowNumber"_sel),
-            nil, 0, 1, 0.0f);
     ((void (*)(id, SEL, id))objc_msgSend)(windowHandle,
-        "performWindowDragWithEvent:"_sel, ev);
+        "performWindowDragWithEvent:"_sel, 
+        ((id (*)(id, SEL))objc_msgSend)(windowHandle,
+        "currentEvent"_sel)
+        );
     #endif
 }
 
