@@ -6,6 +6,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: window
+- Add `Neutralino.window.print()` to display the native print dialog on all platforms. This was especially added since the macOS webview doesn't implement the `window.print()` function.
+
 ## v6.1.0
 
 ### API: Native window main menu

@@ -75,6 +75,7 @@ map<string, router::NativeMethod> methodMap = {
     {"window.setAlwaysOnTop", window::controllers::setAlwaysOnTop},
     {"window.snapshot", window::controllers::snapshot},
     {"window.setMainMenu", window::controllers::setMainMenu},
+    {"window.print", window::controllers::print},
     // Neutralino.computer
     {"computer.getMemoryInfo", computer::controllers::getMemoryInfo},
     {"computer.getArch", computer::controllers::getArch},
@@ -83,7 +84,7 @@ map<string, router::NativeMethod> methodMap = {
     {"computer.getCPUInfo", computer::controllers::getCPUInfo},
     {"computer.getDisplays", computer::controllers::getDisplays},
     {"computer.getMousePosition", computer::controllers::getMousePosition},
-    // Neutralino.log
+    // Neutralino.debug
     {"debug.log", debug::controllers::log},
     // Neutralino.filesystem
     {"filesystem.createDirectory", fs::controllers::createDirectory},
@@ -109,6 +110,9 @@ map<string, router::NativeMethod> methodMap = {
     {"filesystem.getPathParts", fs::controllers::getPathParts},
     {"filesystem.getPermissions", fs::controllers::getPermissions},
     {"filesystem.setPermissions", fs::controllers::setPermissions},
+    {"filesystem.getJoinedPath", fs::controllers::getJoinedPath},
+    {"filesystem.getNormalizedPath", fs::controllers::getNormalizedPath},
+    {"filesystem.getUnnormalizedPath", fs::controllers::getUnnormalizedPath},
     // Neutralino.os
     {"os.execCommand", os::controllers::execCommand},
     {"os.spawnProcess", os::controllers::spawnProcess},

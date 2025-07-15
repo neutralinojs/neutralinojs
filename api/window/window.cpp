@@ -4,6 +4,8 @@
 #include <regex>
 
 #if defined(__linux__) || defined(__FreeBSD__)
+#include <type_traits>
+#include <dlfcn.h>
 #include <gtk/gtk.h>
 #include <glib.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
@@ -28,6 +30,7 @@
 #include <winuser.h>
 #pragma comment(lib, "Gdiplus.lib")
 #pragma comment(lib, "WebView2LoaderStatic.lib")
+#include "webview2.h"
 #endif
 
 #include "lib/json/json.hpp"
@@ -494,10 +497,6 @@ void _close(int exitCode) {
         #endif
         delete nativeWindow;
     }
-}
-
-NEU_W_HANDLE getWindowHandle() {
-    return windowHandle;
 }
 
 bool isSavedStateLoaded() {
@@ -1369,12 +1368,40 @@ json setMainMenu(const json &input) {
     return output;
 }
 
+
 json beginDrag(const json& input) {
     json output;
     int sx = 0, sy = 0;
     if (helpers::hasField(input, "screenX")) sx = input["screenX"].get<int>();
     if (helpers::hasField(input, "screenY")) sy = input["screenY"].get<int>();
     nativeWindow->dispatch([&]() { beginDragNative(sx, sy); });
+}
+
+json print(const json &input) {
+    json output;
+
+    #if defined(__linux__) || defined(__FreeBSD__)
+    void *dlib = nativeWindow->dl();
+    webkit_print_operation_new_func webkit_print_operation_new = (webkit_print_operation_new_func)(dlsym(dlib, "webkit_print_operation_new"));
+    webkit_print_operation_run_dialog_func webkit_print_operation_run_dialog = (webkit_print_operation_run_dialog_func)(dlsym(dlib, "webkit_print_operation_run_dialog"));
+    
+    WebKitPrintOperation *printOp = webkit_print_operation_new((WebKitWebView*)(nativeWindow->wv()));
+    webkit_print_operation_run_dialog((WebKitPrintOperation*)printOp, GTK_WINDOW(windowHandle));
+    
+    #elif defined(__APPLE__)
+    id sharedPrintInfo = ((id(*)(id, SEL))objc_msgSend)("NSPrintInfo"_cls,
+                                            "sharedPrintInfo"_sel);
+    id printInfo = ((id(*)(id, SEL, id))objc_msgSend)((id)nativeWindow->wv(),
+                                            "printOperationWithPrintInfo:"_sel, sharedPrintInfo);
+    ((void(*)(id, SEL, id, id, SEL, void(*)))objc_msgSend)(printInfo,
+        "runOperationModalForWindow:delegate:didRunSelector:contextInfo:"_sel, windowHandle, nullptr, nullptr, nullptr);  
+    #elif defined(_WIN32)
+    ICoreWebView2 *webview = (ICoreWebView2*)nativeWindow->wv();
+    nativeWindow->dispatch([=] {
+        webview->ExecuteScript(L"window.print()", nullptr);
+    });
+
+    #endif
     output["success"] = true;
     return output;
 }

@@ -61,7 +61,6 @@
 #include <utility>
 #include <vector>
 #include <type_traits>
-
 #include <cstring>
 
 namespace webview {
@@ -134,24 +133,25 @@ using webkit_settings_get_user_agent_func = std::add_pointer<const char*(WebKitS
 using webkit_settings_set_user_agent_func = std::add_pointer<void(WebKitSettings*, const char*)>::type;
 using webkit_web_view_load_uri_func = std::add_pointer<void(WebKitWebView*, const char*)>::type;
 
-webkit_web_view_new_func webkit_web_view_new = nullptr;
-webkit_web_view_get_settings_func webkit_web_view_get_settings = nullptr;
-webkit_settings_set_javascript_can_access_clipboard_func webkit_settings_set_javascript_can_access_clipboard = nullptr;
-webkit_settings_set_enable_write_console_messages_to_stdout_func webkit_settings_set_enable_write_console_messages_to_stdout = nullptr;
-webkit_settings_set_enable_developer_extras_func webkit_settings_set_enable_developer_extras = nullptr;
-webkit_web_view_get_inspector_func webkit_web_view_get_inspector = nullptr;
-webkit_web_inspector_show_func webkit_web_inspector_show = nullptr;
-webkit_web_view_set_background_color_func webkit_web_view_set_background_color = nullptr;
-webkit_web_view_get_user_content_manager_func webkit_web_view_get_user_content_manager = nullptr;
-webkit_user_content_manager_add_script_func webkit_user_content_manager_add_script = nullptr;
-webkit_user_script_new_func webkit_user_script_new = nullptr;
-webkit_settings_get_user_agent_func webkit_settings_get_user_agent = nullptr;
-webkit_settings_set_user_agent_func webkit_settings_set_user_agent = nullptr;
-webkit_web_view_load_uri_func webkit_web_view_load_uri = nullptr;
-
 namespace webview {
 
+static webkit_web_view_new_func webkit_web_view_new = nullptr;
+static webkit_web_view_get_settings_func webkit_web_view_get_settings = nullptr;
+static webkit_settings_set_javascript_can_access_clipboard_func webkit_settings_set_javascript_can_access_clipboard = nullptr;
+static webkit_settings_set_enable_write_console_messages_to_stdout_func webkit_settings_set_enable_write_console_messages_to_stdout = nullptr;
+static webkit_settings_set_enable_developer_extras_func webkit_settings_set_enable_developer_extras = nullptr;
+static webkit_web_view_get_inspector_func webkit_web_view_get_inspector = nullptr;
+static webkit_web_inspector_show_func webkit_web_inspector_show = nullptr;
+static webkit_web_view_set_background_color_func webkit_web_view_set_background_color = nullptr;
+static webkit_web_view_get_user_content_manager_func webkit_web_view_get_user_content_manager = nullptr;
+static webkit_user_content_manager_add_script_func webkit_user_content_manager_add_script = nullptr;
+static webkit_user_script_new_func webkit_user_script_new = nullptr;
+static webkit_settings_get_user_agent_func webkit_settings_get_user_agent = nullptr;
+static webkit_settings_set_user_agent_func webkit_settings_set_user_agent = nullptr;
+static webkit_web_view_load_uri_func webkit_web_view_load_uri = nullptr;
+
 static bool gtkSupportsAlpha = true;
+static void *dlib = nullptr;
 
 class gtk_webkit_engine {
 public:
@@ -236,12 +236,12 @@ public:
       "libwebkit2gtk-4.1.so.0"
     };
 
-    void *dlib = nullptr;
-
     for(const auto &lib: libs) {
       dlib = dlopen(lib.c_str(), RTLD_LAZY);
 
-      if(dlib) break;
+      if(dlib) {
+        break;
+      }
     }
 
     if(!dlib) {
@@ -263,6 +263,7 @@ public:
     webkit_settings_get_user_agent = (webkit_settings_get_user_agent_func)(dlsym(dlib, "webkit_settings_get_user_agent"));
     webkit_settings_set_user_agent = (webkit_settings_set_user_agent_func)(dlsym(dlib, "webkit_settings_set_user_agent"));
     webkit_web_view_load_uri = (webkit_web_view_load_uri_func)(dlsym(dlib, "webkit_web_view_load_uri"));
+
 
     // Initialize webview widget
     m_webview = webkit_web_view_new();
@@ -292,6 +293,7 @@ public:
     gtk_widget_show_all(m_window);
   }
   void *window() { return (void *)m_window; }
+  void *wv() { return (void *)m_webview; }
   void run() { gtk_main(); }
   void terminate(int exitCode = 0) {
     processExitCode = exitCode;
@@ -307,6 +309,10 @@ public:
                     [](void *f) { delete static_cast<dispatch_fn_t *>(f); });
   }
 
+  void *dl() {
+    return dlib;
+  }
+
   void init(const std::string js) {
     WebKitUserContentManager *manager =
       webkit_web_view_get_user_content_manager((WebKitWebView*)(m_webview));
@@ -318,6 +324,7 @@ public:
 
   void set_title(const std::string title) {
     gtk_window_set_title(GTK_WINDOW(m_window), title.c_str());
+
   }
 
   void extend_user_agent(const std::string customAgent) {
@@ -552,6 +559,7 @@ public:
   }
   ~cocoa_wkwebview_engine() { close(); }
   void *window() { return (void *)m_window; }
+  void *wv() { return (void *)m_webview; }
   void terminate(int exitCode = 0) {
     close();
     ((void (*)(id, SEL, id))objc_msgSend)("NSApp"_cls, "terminate:"_sel,
@@ -721,6 +729,7 @@ public:
   virtual void init(const std::string js) = 0;
   virtual void extend_user_agent(const std::string customAgent) = 0;
   virtual void resize(HWND) = 0;
+  virtual void *wv() = 0;
 };
 
 //
@@ -770,6 +779,11 @@ public:
     Rect bounds(r.left, r.top, r.right - r.left, r.bottom - r.top);
     m_webview.Bounds(bounds);
   }
+
+  void *wv() {
+    return (void *)&m_webview;
+  }
+
 
 private:
   WebViewControl m_webview = nullptr;
@@ -861,6 +875,10 @@ public:
     auto wurl = to_lpwstr(url);
     m_webview->Navigate(wurl);
     delete[] wurl;
+  }
+
+  void *wv() {
+    return (void *)m_webview;
   }
 
 private:
@@ -1109,6 +1127,7 @@ public:
     }
   }
   void *window() { return (void *)m_window; }
+  void *wv() { return (void *)m_browser->wv(); }
   void terminate(int exitCode = 0) {
 
     // event to wait for window close completion
