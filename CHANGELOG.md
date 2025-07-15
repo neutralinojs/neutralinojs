@@ -8,6 +8,11 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ### API: window
 - Add `Neutralino.window.print()` to display the native print dialog on all platforms. This was especially added since the macOS webview doesn't implement the `window.print()` function.
+- Introduce the `window.beginDrag()` function to trigger native window dragging. The new draggable region API implementation uses this function internally. 
+
+### API: filesystem
+- Add `filesystem.getJoinedPath(...paths: string[])` to create a single path by joining multiple path strings.
+- Add `filesystem.getNormalizedPath()` and `filesystem.getUnnormalizedPath()` functions make Windows paths look like Unix paths by replacing `\\` with `/` and revert normalized paths into Windows-specific paths respectively on the Windows platform. On non-Windows platforms, these functions return the same input strings. 
 
 ## v6.1.0
 
