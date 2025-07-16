@@ -12,7 +12,21 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ### API: filesystem
 - Add `filesystem.getJoinedPath(...paths: string[])` to create a single path by joining multiple path strings.
-- Add `filesystem.getNormalizedPath()` and `filesystem.getUnnormalizedPath()` functions make Windows paths look like Unix paths by replacing `\\` with `/` and revert normalized paths into Windows-specific paths respectively on the Windows platform. On non-Windows platforms, these functions return the same input strings. 
+- Add `filesystem.getNormalizedPath()` and `filesystem.getUnnormalizedPath()` functions, which make Windows paths look like Unix paths by replacing `\\` with `/` and revert normalized paths into Windows-specific paths respectively on the Windows platform. On non-Windows platforms, these functions return the same input strings.
+
+### Configuration
+- Implement the `window.webviewArgs` configuration option to pass additional browser arguments to the WebView2 instance on Windows:
+```js
+"modes": {
+  "window": {
+     // ....
+     "webviewArgs": "--user-agent=\"Custom user agent\""
+  }
+}
+```
+
+### Improvements/bugfixes
+- Display GUI error messages for webview initialization failures. i.e., if the WebView2 runtime is not installed on Windows and if the WebKitGTK library is not installed on GNU/Linux platforms.
 
 ## v6.1.0
 
