@@ -50,7 +50,17 @@ void __startApp() {
         case settings::AppModeWindow: {
             json windowOptions = options["modes"]["window"];
             windowOptions["url"] = navigationUrl;
-            window::controllers::init(windowOptions);
+            if(!window::init(windowOptions)) {
+                pfd::message("Unable to create a webview instance",
+                    #if defined(_WIN32)
+                    "Please install Microsoft Edge WebView2 runtime to run this application.",
+                    #else
+                    "",
+                    #endif
+                    pfd::choice::ok,
+                    pfd::icon::error);
+                std::exit(1);
+            }
             }
             break;
         case settings::AppModeCloud:

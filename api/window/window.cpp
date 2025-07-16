@@ -487,6 +487,138 @@ GtkMenuShell* __createMenu(const json &menu, bool root) {
 }
 #endif
 
+window::SizeOptions __jsonToSizeOptions(const json &input, bool useDefaultRect = false) {
+    window::SizeOptions sizeOptions;
+
+    if(useDefaultRect) {
+        sizeOptions.width = 800;
+        sizeOptions.height = 600;
+    }
+
+    if(helpers::hasField(input, "width"))
+        sizeOptions.width = input["width"].get<int>();
+
+    if(helpers::hasField(input, "height"))
+        sizeOptions.height = input["height"].get<int>();
+
+    if(helpers::hasField(input, "minWidth"))
+        sizeOptions.minWidth = input["minWidth"].get<int>();
+
+    if(helpers::hasField(input, "minHeight"))
+        sizeOptions.minHeight = input["minHeight"].get<int>();
+
+    if(helpers::hasField(input, "maxWidth"))
+        sizeOptions.maxWidth = input["maxWidth"].get<int>();
+
+    if(helpers::hasField(input, "maxHeight"))
+        sizeOptions.maxHeight = input["maxHeight"].get<int>();
+
+    if(helpers::hasField(input, "resizable"))
+        sizeOptions.resizable = input["resizable"].get<bool>();
+    return sizeOptions;
+}
+
+void __injectClientLibrary() {
+    json options = settings::getConfig();
+    json jClientLibrary = options["cli"]["clientLibrary"];
+    if(!jClientLibrary.is_null()) {
+        string clientLibPath = jClientLibrary.get<string>();
+        fs::FileReaderResult fileReaderResult = resources::getFile(clientLibPath);
+        if(fileReaderResult.status == errors::NE_ST_OK) {
+            nativeWindow->init(settings::getGlobalVars() + "var NL_CINJECTED = true;" + 
+                fileReaderResult.data);
+        }
+    }
+}
+
+void __injectScript() {
+    json jInjectScript = settings::getOptionForCurrentMode("injectScript");
+    if(!jInjectScript.is_null()) {
+        string injectScript = jInjectScript.get<string>();
+        fs::FileReaderResult fileReaderResult = resources::getFile(injectScript);
+        if(fileReaderResult.status == errors::NE_ST_OK) {
+            nativeWindow->init("var NL_SINJECTED = true;" + fileReaderResult.data);
+        }
+    }
+}
+
+bool __createWindow() {
+    savedState = windowProps.useSavedState && __loadSavedWindowProps();
+
+    nativeWindow = new webview::webview(windowProps.enableInspector, nullptr, windowProps.transparent,
+        windowProps.webviewArgs);
+    
+    if(nativeWindow->get_init_code() == 1) {
+        return false;
+    }
+
+    nativeWindow->set_title(windowProps.title);
+    if(windowProps.extendUserAgentWith != "") {
+        nativeWindow->extend_user_agent(windowProps.extendUserAgentWith);
+    }
+    nativeWindow->set_size(windowProps.sizeOptions.width,
+                    windowProps.sizeOptions.height,
+                    windowProps.sizeOptions.minWidth, windowProps.sizeOptions.minHeight,
+                    windowProps.sizeOptions.maxWidth, windowProps.sizeOptions.maxHeight,
+                    windowProps.sizeOptions.resizable);
+    nativeWindow->setEventHandler(&window::handlers::windowStateChange);
+
+    if(windowProps.injectGlobals) 
+        nativeWindow->init(settings::getGlobalVars() + "var NL_GINJECTED = true;");
+
+    if(windowProps.injectClientLibrary)
+        __injectClientLibrary();
+
+    if(windowProps.injectScript != "")
+        __injectScript();
+
+    #if defined(__linux__) || defined(__FreeBSD__)
+    windowHandle = (GtkWidget*) nativeWindow->window();
+
+    #elif defined(__APPLE__)
+    windowHandle = (id) nativeWindow->window();
+    ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle,
+                "setHasShadow:"_sel, true);
+
+    #elif defined(_WIN32)
+    windowHandle = (HWND) nativeWindow->window();
+    #endif
+
+    #if !defined(_WIN32)
+    if(!window::isSavedStateLoaded() && windowProps.center)
+        window::center(true);
+    else
+        window::move(windowProps.x, windowProps.y);
+    #endif
+
+    if(windowProps.maximize)
+        window::maximize();
+
+    if(windowProps.hidden)
+        window::hide();
+
+    #if defined(_WIN32)
+    if (!windowProps.hidden && __isFakeHidden())
+		__undoFakeHidden();
+    #endif
+
+    if(windowProps.fullScreen)
+        window::setFullScreen();
+
+    if(windowProps.icon != "")
+        window::setIcon(windowProps.icon);
+
+    if(windowProps.alwaysOnTop)
+        window::setAlwaysOnTop(true);
+
+    if(windowProps.borderless)
+        window::setBorderless();
+
+    nativeWindow->navigate(windowProps.url);
+
+    return true;
+}
+
 void _close(int exitCode) {
     if(nativeWindow) {
         if(windowProps.useSavedState) {
@@ -921,133 +1053,80 @@ void setMainMenu(const json &menu) {
     #endif
 }
 
-namespace controllers {
+bool init(const json &windowOptions) {
+    json output;
 
-void __injectClientLibrary() {
-    json options = settings::getConfig();
-    json jClientLibrary = options["cli"]["clientLibrary"];
-    if(!jClientLibrary.is_null()) {
-        string clientLibPath = jClientLibrary.get<string>();
-        fs::FileReaderResult fileReaderResult = resources::getFile(clientLibPath);
-        if(fileReaderResult.status == errors::NE_ST_OK) {
-            nativeWindow->init(settings::getGlobalVars() + "var NL_CINJECTED = true;" + 
-                fileReaderResult.data);
-        }
+    windowProps.sizeOptions = __jsonToSizeOptions(windowOptions, true);
+
+    if(helpers::hasField(windowOptions, "x"))
+        windowProps.x = windowOptions["x"].get<int>();
+
+    if(helpers::hasField(windowOptions, "y"))
+        windowProps.y = windowOptions["y"].get<int>();
+
+    if(helpers::hasField(windowOptions, "fullScreen"))
+        windowProps.fullScreen = windowOptions["fullScreen"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "alwaysOnTop"))
+        windowProps.alwaysOnTop = windowOptions["alwaysOnTop"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "title"))
+        windowProps.title = windowOptions["title"].get<string>();
+
+    if(helpers::hasField(windowOptions, "url"))
+        windowProps.url = windowOptions["url"].get<string>();
+
+    if(helpers::hasField(windowOptions, "icon"))
+        windowProps.icon = windowOptions["icon"].get<string>();
+
+    if(helpers::hasField(windowOptions, "extendUserAgentWith"))
+        windowProps.extendUserAgentWith = windowOptions["extendUserAgentWith"].get<string>();
+
+    if(helpers::hasField(windowOptions, "injectScript"))
+        windowProps.injectScript = windowOptions["injectScript"].get<string>();
+
+    if(helpers::hasField(windowOptions, "enableInspector"))
+        windowProps.enableInspector = windowOptions["enableInspector"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "borderless"))
+        windowProps.borderless = windowOptions["borderless"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "maximize"))
+        windowProps.maximize = windowOptions["maximize"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "hidden"))
+        windowProps.hidden = windowOptions["hidden"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "center"))
+        windowProps.center = windowOptions["center"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "transparent"))
+        windowProps.transparent = windowOptions["transparent"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "exitProcessOnClose"))
+        windowProps.exitProcessOnClose = windowOptions["exitProcessOnClose"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "useSavedState"))
+        windowProps.useSavedState = windowOptions["useSavedState"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "injectGlobals"))
+        windowProps.injectGlobals = windowOptions["injectGlobals"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "injectClientLibrary"))
+        windowProps.injectClientLibrary = windowOptions["injectClientLibrary"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "webviewArgs"))
+        windowProps.webviewArgs = windowOptions["webviewArgs"].get<string>();
+
+    if(!__createWindow()) {
+        return false;
     }
-}
 
-void __injectScript() {
-    json jInjectScript = settings::getOptionForCurrentMode("injectScript");
-    if(!jInjectScript.is_null()) {
-        string injectScript = jInjectScript.get<string>();
-        fs::FileReaderResult fileReaderResult = resources::getFile(injectScript);
-        if(fileReaderResult.status == errors::NE_ST_OK) {
-            nativeWindow->init("var NL_SINJECTED = true;" + fileReaderResult.data);
-        }
-    }
-}
-
-void __createWindow() {
-    savedState = windowProps.useSavedState && __loadSavedWindowProps();
-
-    nativeWindow = new webview::webview(windowProps.enableInspector, nullptr, windowProps.transparent,
-        windowProps.webviewArgs);
-    nativeWindow->set_title(windowProps.title);
-    if(windowProps.extendUserAgentWith != "") {
-        nativeWindow->extend_user_agent(windowProps.extendUserAgentWith);
-    }
-    nativeWindow->set_size(windowProps.sizeOptions.width,
-                    windowProps.sizeOptions.height,
-                    windowProps.sizeOptions.minWidth, windowProps.sizeOptions.minHeight,
-                    windowProps.sizeOptions.maxWidth, windowProps.sizeOptions.maxHeight,
-                    windowProps.sizeOptions.resizable);
-    nativeWindow->setEventHandler(&window::handlers::windowStateChange);
-
-    if(windowProps.injectGlobals) 
-        nativeWindow->init(settings::getGlobalVars() + "var NL_GINJECTED = true;");
-
-    if(windowProps.injectClientLibrary)
-        __injectClientLibrary();
-
-    if(windowProps.injectScript != "")
-        __injectScript();
-
-    #if defined(__linux__) || defined(__FreeBSD__)
-    windowHandle = (GtkWidget*) nativeWindow->window();
-
-    #elif defined(__APPLE__)
-    windowHandle = (id) nativeWindow->window();
-    ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle,
-                "setHasShadow:"_sel, true);
-
-    #elif defined(_WIN32)
-    windowHandle = (HWND) nativeWindow->window();
-    #endif
-
-    #if !defined(_WIN32)
-    if(!window::isSavedStateLoaded() && windowProps.center)
-        window::center(true);
-    else
-        window::move(windowProps.x, windowProps.y);
-    #endif
-
-    if(windowProps.maximize)
-        window::maximize();
-
-    if(windowProps.hidden)
-        window::hide();
-
-    #if defined(_WIN32)
-    if (!windowProps.hidden && __isFakeHidden())
-		__undoFakeHidden();
-    #endif
-
-    if(windowProps.fullScreen)
-        window::setFullScreen();
-
-    if(windowProps.icon != "")
-        window::setIcon(windowProps.icon);
-
-    if(windowProps.alwaysOnTop)
-        window::setAlwaysOnTop(true);
-
-    if(windowProps.borderless)
-        window::setBorderless();
-
-    nativeWindow->navigate(windowProps.url);
     nativeWindow->run();
+    return true;
 }
 
-window::SizeOptions __jsonToSizeOptions(const json &input, bool useDefaultRect = false) {
-    window::SizeOptions sizeOptions;
-
-    if(useDefaultRect) {
-        sizeOptions.width = 800;
-        sizeOptions.height = 600;
-    }
-
-    if(helpers::hasField(input, "width"))
-        sizeOptions.width = input["width"].get<int>();
-
-    if(helpers::hasField(input, "height"))
-        sizeOptions.height = input["height"].get<int>();
-
-    if(helpers::hasField(input, "minWidth"))
-        sizeOptions.minWidth = input["minWidth"].get<int>();
-
-    if(helpers::hasField(input, "minHeight"))
-        sizeOptions.minHeight = input["minHeight"].get<int>();
-
-    if(helpers::hasField(input, "maxWidth"))
-        sizeOptions.maxWidth = input["maxWidth"].get<int>();
-
-    if(helpers::hasField(input, "maxHeight"))
-        sizeOptions.maxHeight = input["maxHeight"].get<int>();
-
-    if(helpers::hasField(input, "resizable"))
-        sizeOptions.resizable = input["resizable"].get<bool>();
-    return sizeOptions;
-}
+namespace controllers {
 
 json setTitle(const json &input) {
     json output;
@@ -1264,76 +1343,6 @@ json getPosition(const json &input) {
     posRes["x"] = pos.first;
     posRes["y"] = pos.second;
     output["returnValue"] = posRes;
-    output["success"] = true;
-    return output;
-}
-
-json init(const json &input) {
-    json output;
-
-    windowProps.sizeOptions = __jsonToSizeOptions(input, true);
-
-    if(helpers::hasField(input, "x"))
-        windowProps.x = input["x"].get<int>();
-
-    if(helpers::hasField(input, "y"))
-        windowProps.y = input["y"].get<int>();
-
-    if(helpers::hasField(input, "fullScreen"))
-        windowProps.fullScreen = input["fullScreen"].get<bool>();
-
-    if(helpers::hasField(input, "alwaysOnTop"))
-        windowProps.alwaysOnTop = input["alwaysOnTop"].get<bool>();
-
-    if(helpers::hasField(input, "title"))
-        windowProps.title = input["title"].get<string>();
-
-    if(helpers::hasField(input, "url"))
-        windowProps.url = input["url"].get<string>();
-
-    if(helpers::hasField(input, "icon"))
-        windowProps.icon = input["icon"].get<string>();
-
-    if(helpers::hasField(input, "extendUserAgentWith"))
-        windowProps.extendUserAgentWith = input["extendUserAgentWith"].get<string>();
-
-    if(helpers::hasField(input, "injectScript"))
-        windowProps.injectScript = input["injectScript"].get<string>();
-
-    if(helpers::hasField(input, "enableInspector"))
-        windowProps.enableInspector = input["enableInspector"].get<bool>();
-
-    if(helpers::hasField(input, "borderless"))
-        windowProps.borderless = input["borderless"].get<bool>();
-
-    if(helpers::hasField(input, "maximize"))
-        windowProps.maximize = input["maximize"].get<bool>();
-
-    if(helpers::hasField(input, "hidden"))
-        windowProps.hidden = input["hidden"].get<bool>();
-
-    if(helpers::hasField(input, "center"))
-        windowProps.center = input["center"].get<bool>();
-
-    if(helpers::hasField(input, "transparent"))
-        windowProps.transparent = input["transparent"].get<bool>();
-
-    if(helpers::hasField(input, "exitProcessOnClose"))
-        windowProps.exitProcessOnClose = input["exitProcessOnClose"].get<bool>();
-
-    if(helpers::hasField(input, "useSavedState"))
-        windowProps.useSavedState = input["useSavedState"].get<bool>();
-
-    if(helpers::hasField(input, "injectGlobals"))
-        windowProps.injectGlobals = input["injectGlobals"].get<bool>();
-
-    if(helpers::hasField(input, "injectClientLibrary"))
-        windowProps.injectClientLibrary = input["injectClientLibrary"].get<bool>();
-
-    if(helpers::hasField(input, "webviewArgs"))
-        windowProps.webviewArgs = input["webviewArgs"].get<string>();
-
-    __createWindow();
     output["success"] = true;
     return output;
 }

@@ -371,6 +371,9 @@ public:
     webkit_web_view_load_uri((WebKitWebView*)(m_webview), url.c_str());
   }
 
+protected:
+  int initCode = 0;
+
 private:
   GtkWidget *m_window;
   GtkWidget *m_webview;
@@ -665,6 +668,10 @@ public:
                                            "requestWithURL:"_sel, nsurl));
   }
 
+
+protected:
+  int initCode = 0;
+
 private:
   void close() { ((void (*)(id, SEL))objc_msgSend)(m_window, "close"_sel); }
   id m_window;
@@ -696,13 +703,6 @@ using browser_engine = cocoa_wkwebview_engine;
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "Shlwapi.lib")
 
-// EdgeHTML headers and libs
-#include <objbase.h>
-#include <winrt/Windows.Foundation.Collections.h>
-#include <winrt/Windows.Foundation.h>
-#include <winrt/Windows.Web.UI.Interop.h>
-#pragma comment(lib, "windowsapp")
-
 // Edge/Chromium headers and libs
 #include "webview2.h"
 #pragma comment(lib, "ole32.lib")
@@ -720,81 +720,9 @@ using browser_engine = cocoa_wkwebview_engine;
 
 namespace webview {
 
-// Common interface for EdgeHTML and Edge/Chromium
-class browser {
+class edge_chromium {
 public:
-  virtual ~browser() = default;
-  virtual bool embed(HWND, bool) = 0;
-  virtual void navigate(const std::string url) = 0;
-  virtual void init(const std::string js) = 0;
-  virtual void extend_user_agent(const std::string customAgent) = 0;
-  virtual void resize(HWND) = 0;
-  virtual void *wv() = 0;
-};
-
-//
-// EdgeHTML browser engine
-//
-using namespace winrt;
-using namespace Windows::Foundation;
-using namespace Windows::Web::UI;
-using namespace Windows::Web::UI::Interop;
-
-class edge_html : public browser {
-public:
-  bool embed(HWND wnd, bool debug) override {
-    init_apartment(winrt::apartment_type::single_threaded);
-    auto process = WebViewControlProcess();
-    auto op = process.CreateWebViewControlAsync(reinterpret_cast<int64_t>(wnd),
-                                                Rect());
-    if (op.Status() != AsyncStatus::Completed) {
-      handle h(CreateEvent(nullptr, false, false, nullptr));
-      op.Completed([h = h.get()](auto, auto) { SetEvent(h); });
-      HANDLE hs[] = {h.get()};
-      DWORD i;
-      CoWaitForMultipleHandles(COWAIT_DISPATCH_WINDOW_MESSAGES |
-                                   COWAIT_DISPATCH_CALLS |
-                                   COWAIT_INPUTAVAILABLE,
-                               INFINITE, 1, hs, &i);
-    }
-    m_webview = op.GetResults();
-    m_webview.IsVisible(true);
-    return true;
-  }
-
-  void navigate(const std::string url) override {
-    Uri uri(winrt::to_hstring(url));
-    m_webview.Navigate(uri);
-  }
-
-  void init(const std::string js) override {}
-  void extend_user_agent(const std::string customAgent) {}
-
-  void resize(HWND wnd) override {
-    if (m_webview == nullptr) {
-      return;
-    }
-    RECT r;
-    GetClientRect(wnd, &r);
-    Rect bounds(r.left, r.top, r.right - r.left, r.bottom - r.top);
-    m_webview.Bounds(bounds);
-  }
-
-  void *wv() {
-    return (void *)&m_webview;
-  }
-
-
-private:
-  WebViewControl m_webview = nullptr;
-};
-
-//
-// Edge/Chromium browser engine
-//
-class edge_chromium : public browser {
-public:
-  bool embed(HWND wnd, bool debug) override {
+  bool embed(HWND wnd, bool debug) {
     CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
     std::atomic_flag flag = ATOMIC_FLAG_INIT;
     flag.test_and_set();
@@ -842,13 +770,13 @@ public:
     return true;
   }
 
-  void init(const std::string js) override {
+  void init(const std::string js) {
     LPCWSTR wjs = to_lpwstr(js);
     m_webview->AddScriptToExecuteOnDocumentCreated(wjs, nullptr);
     delete[] wjs;
   }
 
-  void extend_user_agent(const std::string customAgent) override {
+  void extend_user_agent(const std::string customAgent) {
     ICoreWebView2Settings *settings = nullptr;
     m_webview->get_Settings(&settings);
     ICoreWebView2Settings2 *settings2 = nullptr;
@@ -862,7 +790,7 @@ public:
     CoTaskMemFree(ua);
   }
 
-  void resize(HWND wnd) override {
+  void resize(HWND wnd) {
     if (m_controller == nullptr) {
       return;
     }
@@ -871,7 +799,7 @@ public:
     m_controller->put_Bounds(bounds);
   }
 
-  void navigate(const std::string url) override {
+  void navigate(const std::string url) {
     auto wurl = to_lpwstr(url);
     m_webview->Navigate(wurl);
     delete[] wurl;
@@ -1104,8 +1032,7 @@ public:
     TrySetWindowTheme(m_window);
 
     if (!m_browser->embed(m_window, debug)) {
-      m_browser = std::make_unique<webview::edge_html>();
-      m_browser->embed(m_window, debug);
+      initCode = 1;
     }
 
     m_browser->resize(m_window);
@@ -1210,6 +1137,9 @@ public:
 
   DWORD m_originalStyleEx;
 
+protected:
+  int initCode = 0;
+
 private:
 
   void setDpi() {
@@ -1226,7 +1156,7 @@ private:
   POINT m_minsz = POINT{0, 0};
   POINT m_maxsz = POINT{0, 0};
   DWORD m_main_thread = GetCurrentThreadId();
-  std::unique_ptr<webview::browser> m_browser =
+  std::unique_ptr<webview::edge_chromium> m_browser =
       std::make_unique<webview::edge_chromium>();
 
   static std::wstring str2wstr(std::string const &str) {
@@ -1263,6 +1193,10 @@ public:
 
   void setEventHandler(eventHandler_t handler) {
     windowStateChange = handler;
+  }
+
+  int get_init_code() {
+    return initCode;
   }
 
 };

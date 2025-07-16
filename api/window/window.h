@@ -119,6 +119,7 @@ void setAlwaysOnTop(bool onTop);
 void setBorderless();
 bool snapshot(const string &filename);
 void setMainMenu(const json &menu);
+bool init(const json &windowOptions);
 
 void _close(int exitCode);
 
@@ -126,7 +127,6 @@ void beginDrag();
 
 namespace controllers {
 
-json init(const json &input);
 json setTitle(const json &input);
 json getTitle(const json &input);
 json maximize(const json &input);
