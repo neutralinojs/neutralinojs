@@ -60,7 +60,7 @@ struct WindowOptions {
     bool useSavedState = true;
     bool injectGlobals = false;
     bool injectClientLibrary = false;
-    string additionalBrowserArguments = "";
+    string webviewArgs = "";
     string title = "Neutralinojs";
     string url = "https://neutralino.js.org";
     string icon = "";

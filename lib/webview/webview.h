@@ -957,9 +957,9 @@ private:
 
 class win32_edge_engine {
 public:
-  win32_edge_engine(bool debug, void *window, bool transparent, const std::string& additionalBrowserArguments) {
-    if(additionalBrowserArguments != "") {
-        std::wstring wargs = str2wstr(additionalBrowserArguments);
+  win32_edge_engine(bool debug, void *window, bool transparent, const std::string& args) {
+    if(args != "") {
+        std::wstring wargs = str2wstr(args);
         SetEnvironmentVariableW(L"WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", wargs.c_str());
     }
     if (window == nullptr) {
@@ -1254,8 +1254,8 @@ namespace webview {
 
 class webview : public browser_engine {
 public:
-  webview(bool debug = false, void *wnd = nullptr, bool transparent = false, const std::string& additionalBrowserArguments = "")
-      : browser_engine(debug, wnd, transparent, additionalBrowserArguments) {}
+  webview(bool debug = false, void *wnd = nullptr, bool transparent = false, const std::string& args = "")
+      : browser_engine(debug, wnd, transparent, args) {}
 
   void navigate(const std::string url) {
     browser_engine::navigate(url);

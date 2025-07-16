@@ -951,7 +951,7 @@ void __createWindow() {
     savedState = windowProps.useSavedState && __loadSavedWindowProps();
 
     nativeWindow = new webview::webview(windowProps.enableInspector, nullptr, windowProps.transparent,
-        windowProps.additionalBrowserArguments);
+        windowProps.webviewArgs);
     nativeWindow->set_title(windowProps.title);
     if(windowProps.extendUserAgentWith != "") {
         nativeWindow->extend_user_agent(windowProps.extendUserAgentWith);
@@ -1330,8 +1330,8 @@ json init(const json &input) {
     if(helpers::hasField(input, "injectClientLibrary"))
         windowProps.injectClientLibrary = input["injectClientLibrary"].get<bool>();
 
-    if(helpers::hasField(input, "additionalBrowserArguments"))
-        windowProps.additionalBrowserArguments = input["additionalBrowserArguments"].get<string>();
+    if(helpers::hasField(input, "webviewArgs"))
+        windowProps.webviewArgs = input["webviewArgs"].get<string>();
 
     __createWindow();
     output["success"] = true;
