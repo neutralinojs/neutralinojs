@@ -155,7 +155,7 @@ static void *dlib = nullptr;
 
 class gtk_webkit_engine {
 public:
-  gtk_webkit_engine(bool debug, void *window, bool transparent)
+  gtk_webkit_engine(bool debug, void *window, bool transparent, const std::string &args)
       : m_window(static_cast<GtkWidget *>(window)) {
 
     XInitThreads();
@@ -245,8 +245,8 @@ public:
     }
 
     if(!dlib) {
-      std::cerr << "ERR: libwebkit2gtk-4.0-37 or libwebkit2gtk-4.1-0 required to run Neutralinojs apps." << std::endl;
-      std::exit(1);
+      initCode = 1;
+      return;
     }
 
     webkit_web_view_new = (webkit_web_view_new_func)(dlsym(dlib, "webkit_web_view_new"));

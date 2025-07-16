@@ -55,7 +55,7 @@ void __startApp() {
                     #if defined(_WIN32)
                     "Please install Microsoft Edge WebView2 runtime to run this application.",
                     #else
-                    "",
+                    "Please install libwebkit2gtk-4.0-37 or libwebkit2gtk-4.1-0 libraries to run this application.",
                     #endif
                     pfd::choice::ok,
                     pfd::icon::error);
