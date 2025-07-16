@@ -204,6 +204,10 @@
             "exitProcessOnClose": {
               "type": "boolean",
               "description": "If this setting is 'true', the app process will exit when the user clicks on the close button. Otherwise, the framework will dispatch the 'windowClose' event."
+            },
+            "additionalBrowserArguments": {
+                "type": "string",
+                "description": "Additional command-line arguments for the WebView2 process."
             }
           }
         },
