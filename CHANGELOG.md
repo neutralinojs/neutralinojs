@@ -6,30 +6,6 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
-### API: draggable region API
-The new draggable region API implementation uses native, platform-specific window dragging event via the `window.beginDrag()` function, so now draggable regions behave the same as native window dragging with features such as window snapping, unlike the previous draggable region implementation.
-
-The new draggable region API lets developers exclude specific elements (i.e., window control buttons) from the registered draggable region DOM element:
-
-```js
-const d = await setDraggableRegion('title-bar', { 
-  exclude: ['close-btn'],
-})
-
-// Exclude elements using DOM references or IDs
-d.exclusions.add('help-btn') 
-d.exclusions.add(document.getElementById('info-btn')) 
-d.exclusions.add('tag1', 'tag2') 
-
-// Remove excluded elements
-d.exclusions.remove('help-btn') 
-d.exclusions.remove(document.getElementById('info-btn')) 
-d.exclusions.remove('tag1', 'tag2')
-
-// Remove all exclusions
-d.exclusions.removeAll() 
-```
-
 ### API: window
 - Add `Neutralino.window.print()` to display the native print dialog on all platforms. This was especially added since the macOS webview doesn't implement the `window.print()` function.
 - Introduce the `window.beginDrag()` function to trigger native window dragging. The new draggable region API implementation uses this function internally. 
