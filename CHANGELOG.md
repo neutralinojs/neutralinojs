@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v6.2.0
+
 ### API: window
 - Add `Neutralino.window.print()` to display the native print dialog on all platforms. This was especially added since the macOS webview doesn't implement the `window.print()` function.
 - Introduce the `window.beginDrag()` function to trigger native window dragging. The new draggable region API implementation uses this function internally. 
