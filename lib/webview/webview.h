@@ -732,8 +732,7 @@ public:
     char *currentExeName = PathFindFileNameA(currentExePath);
 
     std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wideCharConverter;
-    std::wstring userDataFolder =
-        wideCharConverter.from_bytes(std::getenv("APPDATA"));
+    std::wstring userDataFolder = _wgetenv(L"APPDATA");
     std::wstring currentExeNameW = wideCharConverter.from_bytes(currentExeName);
 
     HRESULT res = CreateCoreWebView2EnvironmentWithOptions(
