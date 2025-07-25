@@ -727,17 +727,32 @@ public:
     std::atomic_flag flag = ATOMIC_FLAG_INIT;
     flag.test_and_set();
 
-    char currentExePath[MAX_PATH];
-    GetModuleFileNameA(NULL, currentExePath, MAX_PATH);
-    char *currentExeName = PathFindFileNameA(currentExePath);
+    // Use Unicode APIs to properly handle special characters in paths
+    wchar_t currentExePath[MAX_PATH];
+    GetModuleFileNameW(NULL, currentExePath, MAX_PATH);
+    wchar_t *currentExeName = PathFindFileNameW(currentExePath);
 
-    std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wideCharConverter;
-    std::wstring userDataFolder = _wgetenv(L"APPDATA");
-    std::wstring currentExeNameW = wideCharConverter.from_bytes(currentExeName);
+    // Get APPDATA with proper null check and fallback
+    wchar_t* appdataEnv = _wgetenv(L"APPDATA");
+    std::wstring userDataFolder;
+    if (appdataEnv) {
+        userDataFolder = std::wstring(appdataEnv);
+    } else {
+        // Fallback to temp directory if APPDATA is not available
+        wchar_t tempPath[MAX_PATH];
+        GetTempPathW(MAX_PATH, tempPath);
+        userDataFolder = std::wstring(tempPath);
+    }
+    std::wstring currentExeNameW = currentExeName ? std::wstring(currentExeName) : L"neutralino";
+
+    // Ensure the user data folder path is properly formatted
+    if (!userDataFolder.empty() && userDataFolder.back() != L'\\' && userDataFolder.back() != L'/') {
+        userDataFolder += L"\\";
+    }
 
     HRESULT res = CreateCoreWebView2EnvironmentWithOptions(
         nullptr,
-        (userDataFolder + L"/" + currentExeNameW).c_str(),
+        (userDataFolder + currentExeNameW).c_str(),
         nullptr,
         new webview2_com_handler(wnd, [&](ICoreWebView2Controller* controller) {
             m_controller = controller;
