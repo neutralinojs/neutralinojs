@@ -38,7 +38,7 @@ namespace controllers {
 json broadcast(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"event"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("event");
         return output;
     }
     string event = input["event"].get<string>();

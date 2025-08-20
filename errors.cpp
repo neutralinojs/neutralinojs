@@ -107,7 +107,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_RT_INVTOKN: return "Invalid or expired NL_TOKEN value from client";
         case errors::NE_RT_APIPRME: return "Missing permission to access Native API";
         case errors::NE_RT_NATPRME: return "Missing permission to execute the native method: %1";
-        case errors::NE_RT_NATRTER: return "Native method execution error occurred. Make sure that you've provided required parameters properly.";
+        case errors::NE_RT_NATRTER: return "Native method execution error occurred. Required parameter is missing: %1";
         case errors::NE_RT_NATNTIM: return "%1 is not implemented in the Neutralinojs server";
         // resources
         case errors::NE_RS_TREEGER: return "Resource file tree generation error. %1 is missing.";
@@ -134,8 +134,8 @@ string __getStatusCodeDesc(errors::StatusCode code, string param = "") {
     return regex_replace(msg, regex("%1"), param);
 }
 
-json makeMissingArgErrorPayload() {
-    return errors::makeErrorPayload(errors::NE_RT_NATRTER);
+json makeMissingArgErrorPayload(const string& missingArg) {
+    return errors::makeErrorPayload(errors::NE_RT_NATRTER, missingArg);
 }
 
 json makeErrorPayload(const errors::StatusCode code, const string &param) {

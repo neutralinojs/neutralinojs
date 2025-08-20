@@ -36,7 +36,7 @@ json log(const json &input) {
     debug::LogType typeEn = debug::LogTypeInfo;
 
     if(!helpers::hasRequiredFields(input, {"message"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("message");
         return output;
     }
     if(helpers::hasField(input, "type")) {

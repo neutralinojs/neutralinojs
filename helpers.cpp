@@ -115,6 +115,15 @@ bool hasRequiredFields(const json &input, const vector<string> &keys) {
     return true;
 }
 
+optional<string> missingRequiredField(const json &input, const vector<string> &keys) {
+    for(const string &key: keys) {
+        if(!helpers::hasField(input, key)) {
+            return key;
+        }
+    }
+    return {};
+}
+
 bool hasField(const json &input, const string &key) {
     return input.contains(key) && !input[key].is_null();
 }

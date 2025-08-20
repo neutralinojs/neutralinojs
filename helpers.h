@@ -29,6 +29,7 @@ string generateToken();
 void urldecode(char *dst, const char *src);
 char* cStrCopy(const string &str);
 bool hasRequiredFields(const json &input, const vector<string> &keys);
+optional<string> missingRequiredField(const json &input, const vector<string> &keys);
 bool hasField(const json &input, const string &key);
 vector<string> getModes();
 string appModeToStr(settings::AppMode mode);

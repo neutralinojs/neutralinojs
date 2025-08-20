@@ -80,10 +80,11 @@ json readImage(const json &input) {
 
 json writeImage(const json &input) {
     json output;
-    if (!helpers::hasRequiredFields(input,
+    const auto missingRequiredField = helpers::missingRequiredField(input,
         { "width", "height", "bpp", "bpr", "redMask", "greenMask", "blueMask",
-        "redShift", "greenShift", "blueShift", "data", "alphaShift", "alphaMask"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        "redShift", "greenShift", "blueShift", "data", "alphaShift", "alphaMask"});
+    if (missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
     clip::image_spec spec;
@@ -112,7 +113,7 @@ json writeImage(const json &input) {
 json writeText(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"data"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("data");
         return output;
     }
     string data = input["data"].get<string>();
@@ -136,7 +137,7 @@ json readHTML(const json &input) {
 json writeHTML(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"data"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("data");
         return output;
     }
     string data = input["data"].get<string>();

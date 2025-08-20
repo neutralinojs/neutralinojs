@@ -1276,7 +1276,7 @@ json focus(const json &input) {
 json setIcon(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"icon"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("icon");
         return output;
     }
     string icon = input["icon"].get<string>();
@@ -1287,8 +1287,9 @@ json setIcon(const json &input) {
 
 json move(const json &input) {
     json output;
-    if(!helpers::hasRequiredFields(input, {"x", "y"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"x", "y"});
+    if(missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
     int x = input["x"].get<int>();
@@ -1350,7 +1351,7 @@ json getPosition(const json &input) {
 json snapshot(const json &input) {
     json output;
     if (!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
 

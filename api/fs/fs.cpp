@@ -353,8 +353,9 @@ namespace controllers {
 
 json __writeOrAppendFile(const json &input, bool append = false) {
     json output;
-    if(!helpers::hasRequiredFields(input, {"path", "data"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"path", "data"});
+    if(missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
     fs::FileWriterOptions fileWriterOptions;
@@ -371,8 +372,9 @@ json __writeOrAppendFile(const json &input, bool append = false) {
 
 json __writeOrAppendBinaryFile(const json &input, bool append = false) {
     json output;
-    if(!helpers::hasRequiredFields(input, {"path", "data"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"path", "data"});
+    if(missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
     fs::FileWriterOptions fileWriterOptions;
@@ -390,7 +392,7 @@ json __writeOrAppendBinaryFile(const json &input, bool append = false) {
 json createDirectory(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
     string path = input["path"].get<string>();
@@ -408,7 +410,7 @@ json remove(const json& input) {
     json output;
 
     if (!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
 
@@ -428,7 +430,7 @@ json remove(const json& input) {
 json readFile(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
     fs::FileReaderOptions readerOptions;
@@ -454,7 +456,7 @@ json readFile(const json &input) {
 json readBinaryFile(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
     fs::FileReaderOptions readerOptions;
@@ -496,7 +498,7 @@ json appendBinaryFile(const json &input) {
 json openFile(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
     string path = input["path"].get<string>();
@@ -513,8 +515,9 @@ json openFile(const json &input) {
 
 json updateOpenedFile(const json &input) {
     json output;
-    if(!helpers::hasRequiredFields(input, {"id", "event"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"id", "event"});
+    if(missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
 
@@ -546,7 +549,7 @@ json getOpenedFileInfo(const json &input) {
     lock_guard<mutex> guard(openedFilesLock);
 
     if(!helpers::hasRequiredFields(input, {"id"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("id");
         return output;
     }
     int fileId = input["id"].get<int>();
@@ -573,7 +576,7 @@ json readDirectory(const json &input) {
     json output;
     output["returnValue"] = json::array();
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
     string path = input["path"].get<string>();
@@ -611,8 +614,9 @@ json readDirectory(const json &input) {
 
 json copy(const json &input) {
     json output;
-    if(!helpers::hasRequiredFields(input, {"source", "destination"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"source", "destination"});
+    if(missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
     string source = input["source"].get<string>();
@@ -647,8 +651,9 @@ json copy(const json &input) {
 
 json move(const json &input) {
     json output;
-    if(!helpers::hasRequiredFields(input, {"source", "destination"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"source", "destination"});
+    if(missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
     string source = input["source"].get<string>();
@@ -670,7 +675,7 @@ json move(const json &input) {
 json getStats(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
     string path = input["path"].get<string>();
@@ -694,7 +699,7 @@ json getStats(const json &input) {
 json createWatcher(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
     string path = input["path"].get<string>();
@@ -714,7 +719,7 @@ json createWatcher(const json &input) {
 json removeWatcher(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"id"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("id");
         return output;
     }
     long watcherId = input["id"].get<long>();
@@ -744,7 +749,7 @@ json getWatchers(const json &input) {
 json getAbsolutePath(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
     string path = input["path"].get<string>();
@@ -757,7 +762,7 @@ json getAbsolutePath(const json &input) {
 json getRelativePath(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
     string path = input["path"].get<string>();
@@ -776,7 +781,7 @@ json getRelativePath(const json &input) {
 json getPathParts(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
     string path = input["path"].get<string>();
@@ -800,7 +805,7 @@ json getPathParts(const json &input) {
 json getPermissions(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
     string path = input["path"].get<string>();
@@ -836,7 +841,7 @@ json getPermissions(const json &input) {
 json setPermissions(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
     string path = input["path"].get<string>();
@@ -894,7 +899,7 @@ json setPermissions(const json &input) {
 json getJoinedPath(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"paths"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("paths");
         return output;
     }
     vector<string> paths = input["paths"].get<vector<string>>();
@@ -912,7 +917,7 @@ json getJoinedPath(const json &input) {
 json getNormalizedPath(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
     string path = input["path"].get<string>();
@@ -925,7 +930,7 @@ json getNormalizedPath(const json &input) {
 json getUnnormalizedPath(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
     string path = input["path"].get<string>();
