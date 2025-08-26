@@ -965,7 +965,10 @@ void setSkipTaskbar(bool skip) {
     #if defined(__linux__) || defined(__FreeBSD__)
     gdk_window_set_skip_taskbar_hint(gtk_widget_get_window(windowHandle), skip);
     #elif defined(__APPLE__)
-
+    id app = ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls,
+                                            "sharedApplication"_sel);
+    ((void (*)(id, SEL, long))objc_msgSend)(
+        app, "setActivationPolicy:"_sel, skip ? NSApplicationActivationPolicyAccessory : NSApplicationActivationPolicyRegular);
     #elif defined(_WIN32)
     Microsoft::WRL::ComPtr<ITaskbarList> taskbar;
     if(FAILED(CoCreateInstance(CLSID_TaskbarList, nullptr,

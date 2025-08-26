@@ -406,6 +406,7 @@ using browser_engine = gtk_webkit_engine;
 #define NSWindowStyleMaskClosable 2
 
 #define NSApplicationActivationPolicyRegular 0
+#define NSApplicationActivationPolicyAccessory 1
 
 #define WKUserScriptInjectionTimeAtDocumentStart 0
 
