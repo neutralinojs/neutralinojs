@@ -614,6 +614,9 @@ bool __createWindow() {
     if(windowProps.borderless)
         window::setBorderless();
 
+    if(windowProps.skipTaskbar)
+        window::setSkipTaskbar(true);
+
     nativeWindow->navigate(windowProps.url);
 
     return true;
@@ -956,6 +959,16 @@ void setBorderless() {
     #endif
 }
 
+void setSkipTaskbar(bool skip) {
+    #if defined(__linux__) || defined(__FreeBSD__)
+    gdk_window_set_skip_taskbar_hint(gtk_widget_get_window(windowHandle), skip);
+    #elif defined(__APPLE__)
+
+    #elif defined(_WIN32)
+
+    #endif
+}
+
 bool snapshot(const string &filename) {
     #if defined(__linux__) || defined(__FreeBSD__)
     int width, height, x, y;
@@ -1117,6 +1130,9 @@ bool init(const json &windowOptions) {
 
     if(helpers::hasField(windowOptions, "webviewArgs"))
         windowProps.webviewArgs = windowOptions["webviewArgs"].get<string>();
+
+    if(helpers::hasField(windowOptions, "skipTaskbar"))
+        windowProps.skipTaskbar = windowOptions["skipTaskbar"].get<bool>();
 
     if(!__createWindow()) {
         return false;
