@@ -31,6 +31,8 @@
 #pragma comment(lib, "Gdiplus.lib")
 #pragma comment(lib, "WebView2LoaderStatic.lib")
 #include "webview2.h"
+#include <wrl.h>
+#include <ShlObj_core.h>
 #endif
 
 #include "lib/json/json.hpp"
@@ -965,7 +967,16 @@ void setSkipTaskbar(bool skip) {
     #elif defined(__APPLE__)
 
     #elif defined(_WIN32)
-
+    Microsoft::WRL::ComPtr<ITaskbarList> taskbar;
+    if(FAILED(CoCreateInstance(CLSID_TaskbarList, nullptr,
+                                    CLSCTX_INPROC_SERVER,
+                                    IID_PPV_ARGS(&taskbar))) ||
+        FAILED(taskbar->HrInit()))
+        return;
+    if(skip)
+        taskbar->DeleteTab(windowHandle);
+    else
+        taskbar->AddTab(windowHandle);
     #endif
 }
 
