@@ -6,8 +6,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
-### Bug fixes
+### Improvements/bugfixes
 - Fix WebView2 crash when Windows usernames or executable paths contain Unicode characters (e.g., äüö, Chinese characters). Replaced ANSI Windows APIs with Unicode equivalents and added proper null pointer checking for environment variable access.
+- Include details about missing parameter names in the error object of `NE_RT_NATRTER`.
 
 ## v6.2.0
 
