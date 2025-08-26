@@ -177,7 +177,7 @@ jobs:
       with:
         branch: v${{github.event.inputs.version}}
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.COMMIT_TOKEN }}
         
     - name: Create a GitHub release
       uses: ncipollo/release-action@v1
