@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <optional>
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 #define CONVSTR(S) S
