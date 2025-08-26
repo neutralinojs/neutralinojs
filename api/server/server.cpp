@@ -15,8 +15,9 @@ namespace controllers {
 
 json mount(const json &input) {
     json output;
-    if(!helpers::hasRequiredFields(input, {"path"}) || !helpers::hasRequiredFields(input, {"target"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"path", "target"});
+    if(missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
     

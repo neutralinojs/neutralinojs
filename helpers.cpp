@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <ctype.h>
 #include <random>
+#include <optional>
 
 #include "helpers.h"
 #include "lib/json/json.hpp"
@@ -113,6 +114,15 @@ bool hasRequiredFields(const json &input, const vector<string> &keys) {
         }
     }
     return true;
+}
+
+optional<string> missingRequiredField(const json &input, const vector<string> &keys) {
+    for(const string &key: keys) {
+        if(!helpers::hasField(input, key)) {
+            return key;
+        }
+    }
+    return {};
 }
 
 bool hasField(const json &input, const string &key) {

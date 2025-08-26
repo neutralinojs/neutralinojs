@@ -290,7 +290,7 @@ vector<string> __extensionsToVector(const json &filters) {
 json execCommand(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"command"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("command");
         return output;
     }
     string command = input["command"].get<string>();
@@ -329,7 +329,7 @@ json execCommand(const json &input) {
 json spawnProcess(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"command"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("command");
         return output;
     }
     
@@ -358,8 +358,9 @@ json spawnProcess(const json &input) {
 
 json updateSpawnedProcess(const json &input) {
     json output;
-    if(!helpers::hasRequiredFields(input, {"id", "event"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"id", "event"});
+    if(missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
 
@@ -400,7 +401,7 @@ json getSpawnedProcesses(const json &input) {
 json getEnv(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"key"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("key");
         return output;
     }
     string key = input["key"].get<string>();
@@ -535,8 +536,9 @@ json showSaveDialog(const json &input) {
 
 json showNotification(const json &input) {
     json output;
-    if(!helpers::hasRequiredFields(input, {"title", "content"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"title", "content"});
+    if(missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
     string title = input["title"].get<string>();
@@ -566,8 +568,9 @@ json showNotification(const json &input) {
 
 json showMessageBox(const json &input) {
     json output;
-    if(!helpers::hasRequiredFields(input, {"title", "content"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"title", "content"});
+    if(missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
     string icon = "INFO";
@@ -737,7 +740,7 @@ json setTray(const json &input) {
 json open(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"url"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("url");
         return output;
     }
     string url = input["url"].get<string>();
@@ -749,7 +752,7 @@ json open(const json &input) {
 json getPath(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"name"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("name");
         return output;
     }
     string name = input["name"].get<string>();

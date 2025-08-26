@@ -52,7 +52,7 @@ json __validateStorageBucket(const string &key) {
 json getData(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"key"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("key");
         return output;
     }
     string key = input["key"].get<string>();
@@ -76,7 +76,7 @@ json getData(const json &input) {
 json setData(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"key"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("key");
         return output;
     }
     string key = input["key"].get<string>();

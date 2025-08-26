@@ -16,8 +16,10 @@ namespace controllers {
 
 json dispatch(const json &input) {
     json output;
-    if(!helpers::hasRequiredFields(input, {"extensionId", "event"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+    const auto missingRequiredField = helpers::missingRequiredField(
+        input, {"extensionId", "event"});
+    if(missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
     string extensionId = input["extensionId"].get<string>();
@@ -40,7 +42,7 @@ json dispatch(const json &input) {
 json broadcast(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"event"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("event");
         return output;
     }
     string event = input["event"].get<string>();

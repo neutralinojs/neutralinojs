@@ -81,7 +81,7 @@ json getConfig(const json &input) {
 json broadcast(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"event"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("event");
         return output;
     }
     string event = input["event"].get<string>();
@@ -121,7 +121,7 @@ json readProcessInput(const json &input) {
 json writeProcessOutput(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"data"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("data");
         return output;
     }
 
@@ -135,7 +135,7 @@ json writeProcessOutput(const json &input) {
 json writeProcessError(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"data"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("data");
         return output;
     }
 

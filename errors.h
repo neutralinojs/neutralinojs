@@ -67,7 +67,7 @@ enum StatusCode {
     NE_CF_UNBLWCF
 };
 
-json makeMissingArgErrorPayload();
+json makeMissingArgErrorPayload(const string& missingArg);
 json makeErrorPayload(const errors::StatusCode code, const string &param = "");
 string makeErrorMsg(const errors::StatusCode code, const string &param = "");
 

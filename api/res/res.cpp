@@ -126,7 +126,7 @@ json getFiles(const json &input) {
 json getStats(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
     string path = input["path"].get<string>();
@@ -166,8 +166,9 @@ json getStats(const json &input) {
 
 json extractFile(const json &input) {
     json output;
-    if(!helpers::hasRequiredFields(input, {"path", "destination"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"path", "destination"});
+    if(missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
     string path = input["path"].get<string>();
@@ -200,8 +201,9 @@ json extractFile(const json &input) {
 
 json extractDirectory(const json &input) {
     json output;
-    if(!helpers::hasRequiredFields(input, {"path", "destination"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"path", "destination"});
+    if(missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
     string path = input["path"].get<string>();
@@ -242,7 +244,7 @@ json extractDirectory(const json &input) {
 json readFile(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
     string path = input["path"].get<string>();
@@ -261,7 +263,7 @@ json readFile(const json &input) {
 json readBinaryFile(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload();
+        output["error"] = errors::makeMissingArgErrorPayload("path");
         return output;
     }
     string path = input["path"].get<string>();
