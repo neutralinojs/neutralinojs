@@ -570,7 +570,7 @@ json showMessageBox(const json &input) {
     json output;
     const auto missingRequiredField = helpers::missingRequiredField(input, {"title", "content"});
     if(missingRequiredField) {
-        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value);
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
     string icon = "INFO";
