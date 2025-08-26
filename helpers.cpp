@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <ctype.h>
 #include <random>
+#include <optional>
 
 #include "helpers.h"
 #include "lib/json/json.hpp"
