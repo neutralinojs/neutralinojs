@@ -200,9 +200,23 @@ void setGlobalArgs(const json &args) {
                 appPath = fs::getCurrentDirectory();
         }
 
-        // Resources read mode (resources.neu or from directory)
+        // DEPRECATED: Resources read mode (resources.neu or from directory)
         if(cliArg.key == "--load-dir-res") {
             resources::setMode(resources::ResourceModeDir);
+            continue;
+        }
+
+        // Resource mode (resources.neu, from directory or embedded)
+        if(cliArg.key == "--res-mode") {
+            if (cliArg.value == "directory") {
+                resources::setMode(resources::ResourceModeDir);
+            }
+            else if (cliArg.value == "bundle") {
+                resources::setMode(resources::ResourceModeBundle);
+            }
+            else if (cliArg.value == "embedded") {
+                resources::setMode(resources::ResourceModeEmbedded);
+            }
             continue;
         }
 
@@ -220,7 +234,7 @@ void setGlobalArgs(const json &args) {
 
         // Enable dev tools connection (as an extension)
         // Not available for production (resources.neu-based) apps
-        if(cliArg.key == "--neu-dev-extension" && !resources::isBundleMode()) {
+        if(cliArg.key == "--neu-dev-extension" && !resources::isBundleMode() && !resources::isEmbeddedMode()) {
             extensions::loadOne("js.neutralino.devtools");
             continue;
         }

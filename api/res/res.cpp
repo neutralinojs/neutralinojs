@@ -103,7 +103,7 @@ string __convertPath(const string &path) {
 json getFiles(const json &input) {
     json output;
     json files = json::array();
-    if(resources::isBundleMode()) {
+    if(resources::isBundleMode() || resources::isEmbeddedMode()) {
         files = __getAllFiles();
     }
     else {
@@ -130,7 +130,7 @@ json getStats(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
-    if(resources::isBundleMode()) {
+    if(resources::isBundleMode() || resources::isEmbeddedMode()) {
         auto resStats = __getStats(path);
         if(resStats.first != -1) {
             json stats;
@@ -177,7 +177,10 @@ json extractFile(const json &input) {
     if(resources::isBundleMode() && resources::extractFile(path, destination)) {
         output["success"] = true;
     }
-    else if(!resources::isBundleMode()) {
+    else if(resources::isEmbeddedMode() && resources::extractFile(path, destination)) {
+        output["success"] = true;
+    }
+    else if(resources::isDirMode()) {
         path = settings::joinAppPath(path);
         
         error_code ec;
@@ -208,8 +211,8 @@ json extractDirectory(const json &input) {
     }
     string path = input["path"].get<string>();
     string destination = input["destination"].get<string>();
-    
-    if(resources::isBundleMode()) {
+
+    if(resources::isBundleMode() || resources::isEmbeddedMode()) {
         auto resPaths = __getFiles(path);
         for(const auto &resPath: resPaths) {
             string extractPath = resPath;
@@ -220,7 +223,7 @@ json extractDirectory(const json &input) {
         }
         output["success"] = true;
     }
-    else if(!resources::isBundleMode()) {
+    else if(resources::isDirMode()) {
         path = settings::joinAppPath(path);
         
         error_code ec;
