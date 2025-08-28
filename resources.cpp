@@ -137,7 +137,7 @@ bool __makeBundleFileTree() {
 }
 
 bool __makeEmbeddedFileTree() {
-    unsigned long resource_size = 0;
+    size_t resource_size = 0;
     const void* resource_ptr = postject_find_resource(RESOURCE_NAME_EMBEDDED, &resource_size, NULL);
     if (resource_ptr == NULL || resource_size <= 0) {
       return false;
