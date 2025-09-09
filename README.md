@@ -88,6 +88,7 @@ If you like to support our work, you can donate to Neutralinojs via [Patreon](ht
 - Cross-platform C++ clipboard library: MIT from [dacap/clip](https://github.com/dacap/clip). Copyright (c) 2015-2021 David Capello
 - Cross-platform C++ system information library: CC0 1.0 Universal from [ThePhD/infoware](https://github.com/ThePhD/infoware). Written in 2016-2020 by nabijaczleweli and ThePhD
 - Cross-platform C++ filesystem watcher library: MIT from [SpartanJ/efsw](https://github.com/SpartanJ/efsw). Copyright (c) 2020 Martín Lucas Golini
+- Resource injection/reading library for C++/Node.js: MIT from [nodejs/postject](https://github.com/nodejs/postject). Copyright (c) 2022 Postman, Inc
 - Logo design credits: [IconsPng](https://www.iconspng.com/image/2688/atom-orange). Copyright free as mentioned on their website.
 
 [See the complete license file](LICENSE)
