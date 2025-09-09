@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <limits.h>
 
+#include "lib/postject/postject-api.h"
 #include "lib/easylogging/easylogging++.h"
 #include "lib/json/json.hpp"
 #include "helpers.h"
@@ -16,6 +17,7 @@
 #include "api/fs/fs.h"
 
 #define NEU_APP_RES_FILE "/resources.neu"
+#define RESOURCE_NAME_EMBEDDED "NEUTRALINOJS_RESOURCES_NEU"
 
 using namespace std;
 using json = nlohmann::json;
@@ -24,7 +26,7 @@ namespace resources {
 
 json fileTree = nullptr;
 unsigned int asarHeaderSize;
-resources::ResourceMode mode = resources::ResourceModeBundle;
+resources::ResourceMode mode = resources::ResourceModeEmbedded;
 
 pair<unsigned long, string> __seekFilePos(const string &path, json node) {
     vector<string> pathSegments = helpers::split(path, '/');
@@ -76,7 +78,36 @@ fs::FileReaderResult __getFileFromBundle(const string &filename) {
    return fileReaderResult;
 }
 
-bool __makeFileTree() {
+fs::FileReaderResult __getFileFromEmbedded(const string &filename) {
+    fs::FileReaderResult fileReaderResult;
+    pair<long, string> p = __seekFilePos(filename, fileTree);
+    if(p.first != -1) {
+        size_t resource_size = 0;
+        const void* resource_ptr = postject_find_resource(RESOURCE_NAME_EMBEDDED, &resource_size, NULL);
+        if (resource_ptr == NULL || resource_size <= 0) {
+            fileReaderResult.status = errors::NE_RS_TREEGER;
+            return fileReaderResult;
+        }
+
+        const unsigned char* bytes = (const unsigned char*)resource_ptr;
+        unsigned long size = p.first;
+        unsigned long uOffset = stoi(p.second);
+
+        vector<char>fileBuf ( size );
+        for (size_t i = asarHeaderSize + uOffset; i < asarHeaderSize + uOffset + size; i++) {
+          fileBuf[i - (asarHeaderSize + uOffset)] = bytes[i];
+        }
+
+        string fileContent(fileBuf.begin(), fileBuf.end());
+        fileReaderResult.data = fileContent;
+   }
+   else {
+        fileReaderResult.status = errors::NE_RS_NOPATHE;
+   }
+   return fileReaderResult;
+}
+
+bool __makeBundleFileTree() {
     ifstream asarArchive = __openResourceFile();
     if (!asarArchive) {
         return false;
@@ -105,6 +136,40 @@ bool __makeFileTree() {
     return fileTree != nullptr;
 }
 
+bool __makeEmbeddedFileTree() {
+    size_t resource_size = 0;
+    const void* resource_ptr = postject_find_resource(RESOURCE_NAME_EMBEDDED, &resource_size, NULL);
+    if (resource_ptr == NULL || resource_size <= 0) {
+      return false;
+    }
+
+    const unsigned char* bytes = (const unsigned char*)resource_ptr;
+    char *sizeBuf = new char[8];
+    for (size_t i = 0; i < 8; ++i) {
+      sizeBuf[i] = bytes[i];
+    }
+
+    unsigned int size = *(unsigned int *)(sizeBuf + 4) - 8;
+    delete[] sizeBuf;
+
+    asarHeaderSize = size + 16;
+    vector<char> headerBuf(size);
+    for (size_t i = 16; i < 16 + size; ++i) {
+      headerBuf[i - 16] = bytes[i];
+    }
+
+    json files;
+    string headerContent(headerBuf.begin(), headerBuf.end());
+    try {
+        files = json::parse(headerContent);
+    }
+    catch(exception e) {
+        debug::log(debug::LogTypeError, e.what());
+    }
+    fileTree = files;
+    return fileTree != nullptr;
+}
+
 bool extractFile(const string &filename, const string &outputFilename) {
     fs::FileReaderResult fileReaderResult = resources::getFile(filename);
     if(fileReaderResult.status != errors::NE_ST_OK) {
@@ -122,6 +187,9 @@ bool extractFile(const string &filename, const string &outputFilename) {
 }
 
 fs::FileReaderResult getFile(const string &filename) {
+    if (resources::isEmbeddedMode()) {
+        return __getFileFromEmbedded(filename);
+    }
     if(resources::isBundleMode()) {
         return __getFileFromBundle(filename);
     }
@@ -132,7 +200,13 @@ void init() {
     if(resources::isDirMode()) {
         return;
     }
-    bool resourceLoaderStatus = __makeFileTree();
+    if (resources::isEmbeddedMode()) {
+        if (postject_has_resource() && __makeEmbeddedFileTree()) {
+            return;
+        }
+        resources::setMode(resources::ResourceModeBundle); // Try bundle mode
+    }
+    bool resourceLoaderStatus = __makeBundleFileTree();
     if(!resourceLoaderStatus) {
         resources::setMode(resources::ResourceModeDir); // fallback to directory mode
     }
@@ -154,12 +228,18 @@ bool isBundleMode() {
    return resources::getMode() == resources::ResourceModeBundle;
 }
 
+bool isEmbeddedMode() {
+   return resources::getMode() == resources::ResourceModeEmbedded;
+}
+
 json getFileTree() {
    return fileTree;
 }
 
 string getModeString() {
-    return resources::isDirMode() ? "directory" : "bundle";
+    if (resources::isDirMode()) return "directory";
+    else if (resources::isBundleMode()) return "bundle";
+    else return "embedded";
 }
 
 } // namespace resources
