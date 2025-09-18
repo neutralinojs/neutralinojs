@@ -547,8 +547,8 @@ void __injectScript() {
 bool __createWindow() {
     savedState = windowProps.useSavedState && __loadSavedWindowProps();
 
-    nativeWindow = new webview::webview(windowProps.enableInspector, nullptr, windowProps.transparent,
-        windowProps.webviewArgs);
+    nativeWindow = new webview::webview(windowProps.enableInspector, windowProps.openInspectorOnStartup, 
+        nullptr, windowProps.transparent, windowProps.webviewArgs);
     
     if(nativeWindow->get_init_code() == 1) {
         return false;
@@ -1114,6 +1114,9 @@ bool init(const json &windowOptions) {
 
     if(helpers::hasField(windowOptions, "enableInspector"))
         windowProps.enableInspector = windowOptions["enableInspector"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "openInspectorOnStartup"))
+        windowProps.openInspectorOnStartup = windowOptions["openInspectorOnStartup"].get<bool>();
 
     if(helpers::hasField(windowOptions, "borderless"))
         windowProps.borderless = windowOptions["borderless"].get<bool>();
