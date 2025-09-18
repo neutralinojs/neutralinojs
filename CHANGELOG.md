@@ -7,9 +7,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ## Unreleased
 
 ### Single-executable mode
-Earlier, the Neutralinojs framework normally loaded resources either from the resources directory or the `resources.neu` file, and didn't offer a proper way to use embedded resource files in the app binary, allowing developers to create single-executable apps. Now, the framework loads resources from the binary itself on all platforms if the app was built using the `neu build --embed-resources` CLI flag. This feature deprecates the `--load-dir-res` option and introduces the new `--res-mode=<mode>` option to choose the preferred resource loading mode from `embedded` (default), `bundle`, or `directory`. 
+Earlier, the Neutralinojs framework normally loaded resources either from the resources directory or the `resources.neu` file, and didn't offer a proper way to use embedded resource files in the app binary to allow developers to create single-executable apps. Now, the framework loads resources from the binary itself on all platforms if the app was built using the `neu build --embed-resources` CLI flag. This feature deprecates the `--load-dir-res` option and introduces the new `--res-mode=<mode>` option to choose the preferred resource loading mode from `embedded` (default), `bundle`, or `directory`. 
 
-Neutralinojs single-executable feature internally uses the [`postject` library](https://github.com/nodejs/postject) to embed the `resources.neu` file into platform-specific binaries via the neu CLI and the `postject` library C header file to read the embedded resources during application runtime.
+The Neutralinojs single-executable feature internally uses the [`postject` library](https://github.com/nodejs/postject) to embed the `resources.neu` file into platform-specific binaries via the neu CLI and the `postject` library C header file to read the embedded resources during application runtime.
 
 ### Configuration
 - Support the `window.skipTaskbar` boolean option to hide the application icon from the operating system taskbar/dock. This option can also be passed from the command line via the `--window-skip-taskbar=<true|false>` option.
