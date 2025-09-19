@@ -62,7 +62,8 @@
             "-Wno-deprecated-declarations",
             "-framework WebKit",
             "-framework Cocoa",
-            "-Os"
+            "-Os",
+            "-mmacosx-version-min=11.01"
         ],
         "windows": [
             "/utf-8",
