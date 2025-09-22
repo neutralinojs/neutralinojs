@@ -14,6 +14,7 @@ parser.add_argument('--target_arch', choices=['x64', 'arm64', 'armhf'])
 args = parser.parse_args()
 
 C = {}
+RSP_FILENAME = 'buildzri.rsp'
 
 BZ_VERSION = '1.0.0'
 BZ_CONFIG_FILE = 'buildzri.config.json'
@@ -193,6 +194,22 @@ def get_options():
             opts += '%s ' % apply_template_vars(entry)
     return opts
 
+def get_rsp_file():
+    rsp_content = ''
+    rsp_content += get_includes()
+    rsp_content += get_definitions()
+    rsp_content += get_source_files()
+
+    with open(RSP_FILENAME, 'w') as rsp_file:
+        rsp_file.write(rsp_content)
+    return '@%s ' % RSP_FILENAME
+
+def clean_rsp_file():
+    try:
+        os.remove(RSP_FILENAME)
+    except OSError:
+        pass
+
 def build_compiler_cmd():
 
     arch = get_arch()
@@ -203,9 +220,7 @@ def build_compiler_cmd():
         cmd += '%s && ' % configure_vs_tools()
     cmd += get_compiler()
     cmd += get_std()
-    cmd += get_includes()
-    cmd += get_source_files()
-    cmd += get_definitions()
+    cmd += get_rsp_file()
     cmd += get_options()
     cmd += get_target()
 
@@ -228,8 +243,12 @@ def compile(cmd):
 
     if args.verbose:
         print('Running command: %s' % cmd)
+        print(os.linesep + '@%s contents:' % RSP_FILENAME)
+        with open(RSP_FILENAME) as rsp_file:
+            print(rsp_file.read())
 
     exit_code = subprocess.call(cmd, shell = True)
+    clean_rsp_file()
     msg = ''
     if exit_code == 0:
         msg = 'OK: %s compiled into %s' % (C['name'], get_target_name())
