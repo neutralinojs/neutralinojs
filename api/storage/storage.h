@@ -15,6 +15,7 @@ namespace controllers {
 json setData(const json &input);
 json getData(const json &input);
 json getKeys(const json &input);
+json clear(const json &input);
 
 } // namespace controllers
 

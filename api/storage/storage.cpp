@@ -127,6 +127,17 @@ json getKeys(const json &input) {
     return output;
 }
 
+json clear(const json &input) {
+    json output;
+
+    filesystem::remove_all(CONVSTR(storagePath));
+    
+    output["success"] = true;
+    output["message"] = "Storage was cleared";
+    return output;
+}
+
+
 } // namespace controllers
 
 } // namespace storage

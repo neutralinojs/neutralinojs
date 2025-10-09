@@ -132,6 +132,7 @@ map<string, router::NativeMethod> methodMap = {
     {"storage.setData", storage::controllers::setData},
     {"storage.getData", storage::controllers::getData},
     {"storage.getKeys", storage::controllers::getKeys},
+    {"storage.clear", storage::controllers::clear},
     // Neutralino.events
     {"events.broadcast", events::controllers::broadcast},
     // Neutralino.extensions
