@@ -17,6 +17,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_ST_INVSTKY: return "NE_ST_INVSTKY";
         case errors::NE_ST_NOSTKEX: return "NE_ST_NOSTKEX";
         case errors::NE_ST_STKEYWE: return "NE_ST_STKEYWE";
+        case errors::NE_ST_STKEYRE: return "NE_ST_STKEYRE";
         case errors::NE_ST_NOSTDIR: return "NE_ST_NOSTDIR";
         // os
         case errors::NE_OS_UNLTOUP: return "NE_OS_UNLTOUP";
@@ -77,6 +78,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_ST_INVSTKY: return "Invalid storage key format. The key should match regex: %1";
         case errors::NE_ST_NOSTKEX: return "Unable to find storage key: %1";
         case errors::NE_ST_STKEYWE: return "Unable to write data to key: %1";
+        case errors::NE_ST_STKEYRE: return "Unable to remove storage key: %1";
         case errors::NE_ST_NOSTDIR: return "Unable to read storage directory: %1";
         // os
         case errors::NE_OS_UNLTOUP: return "Unable to update process id: %1";

@@ -17,6 +17,7 @@ enum StatusCode {
     NE_ST_INVSTKY,
     NE_ST_NOSTKEX,
     NE_ST_STKEYWE,
+    NE_ST_STKEYRE,
     NE_ST_NOSTDIR,
     // os
     NE_OS_UNLTOUP,
