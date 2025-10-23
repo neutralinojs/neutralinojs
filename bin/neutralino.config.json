@@ -78,6 +78,7 @@
         "extensionsPath": "/extensions/",
         "clientLibrary": "/resources/js/neutralino.js"
     },
+    "enableExtensions": true,
     "extensions": [
         {
             "id": "js.neutralino.sampleextension",
