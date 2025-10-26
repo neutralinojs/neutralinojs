@@ -50,6 +50,10 @@
 #include "api/debug/debug.h"
 #include "api/computer/computer.h"
 
+#if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 120300
+#import <ScreenCaptureKit/ScreenCaptureKit.h>
+#endif
+
 using namespace std;
 using json = nlohmann::json;
 #if defined(_WIN32)
@@ -998,7 +1002,41 @@ bool snapshot(const string &filename) {
     clientRect.origin.y +=  frameRect.size.height - clientRect.size.height;
 
     long winId = ((long(*)(id, SEL))objc_msgSend)(windowHandle, "windowNumber"_sel);
-    CGImageRef imgRef = CGWindowListCreateImage(clientRect, kCGWindowListOptionIncludingWindow, winId, kCGWindowImageBoundsIgnoreFraming); 
+    
+CGImageRef imgRef = nil;
+
+#if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 120300
+    // Modern ScreenCaptureKit API (macOS 12.3+)
+    // Eliminates monthly permission prompts on macOS 15+
+    __block CGImageRef screenshotImage = nil;
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    
+    SCContentFilter *filter = [[SCContentFilter alloc] initWithDesktopIndependentWindow:
+        [SCWindow windowWithWindowID:winId]];
+    
+    SCStreamConfiguration *config = [[SCStreamConfiguration alloc] init];
+    config.scalesToFit = NO;  // Maintain original quality without distortion
+    
+    // Capture screenshot asynchronously
+    [SCScreenshotManager captureImageWithFilter:filter
+                                  configuration:config
+                              completionHandler:^(CGImageRef capturedImage, NSError *error) {
+        if (error == nil && capturedImage != NULL) {
+            
+            screenshotImage = CGImageCreateWithImageInRect(capturedImage, clientRect);
+        }
+        dispatch_semaphore_signal(semaphore);  
+    }];
+    
+    // Wait for async operation (5 second timeout)
+    dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_SEC));
+    imgRef = screenshotImage;
+
+#else
+    // Fallback for macOS < 12.3: Use deprecated but functional API
+    imgRef = CGWindowListCreateImage(clientRect, kCGWindowListOptionIncludingWindow, winId, kCGWindowImageBoundsIgnoreFraming);
+#endif
+
       
     id screenshot =
         ((id (*)(id, SEL))objc_msgSend)("NSBitmapImageRep"_cls, "alloc"_sel);
