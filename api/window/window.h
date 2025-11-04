@@ -126,7 +126,7 @@ bool init(const json &windowOptions);
 
 void _close(int exitCode);
 
-void beginDrag();
+void beginDragNative();
 
 namespace controllers {
 
