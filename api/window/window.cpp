@@ -1007,7 +1007,6 @@ CGImageRef imgRef = nil;
 
 #if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 120300
     // Modern ScreenCaptureKit API (macOS 12.3+)
-    // Eliminates monthly permission prompts on macOS 15+
     __block CGImageRef screenshotImage = nil;
     dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
     
@@ -1015,9 +1014,8 @@ CGImageRef imgRef = nil;
         [SCWindow windowWithWindowID:winId]];
     
     SCStreamConfiguration *config = [[SCStreamConfiguration alloc] init];
-    config.scalesToFit = NO;  // Maintain original quality without distortion
+    config.scalesToFit = NO;
     
-    // Capture screenshot asynchronously
     [SCScreenshotManager captureImageWithFilter:filter
                                   configuration:config
                               completionHandler:^(CGImageRef capturedImage, NSError *error) {
@@ -1028,12 +1026,11 @@ CGImageRef imgRef = nil;
         dispatch_semaphore_signal(semaphore);  
     }];
     
-    // Wait for async operation (5 second timeout)
-    dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, 5 * NSEC_PER_SEC));
+    dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC));
     imgRef = screenshotImage;
 
 #else
-    // Fallback for macOS < 12.3: Use deprecated but functional API
+    // Fallback for macOS < 12.3
     imgRef = CGWindowListCreateImage(clientRect, kCGWindowListOptionIncludingWindow, winId, kCGWindowImageBoundsIgnoreFraming);
 #endif
 
