@@ -1414,7 +1414,6 @@ json beginDrag(const json &input) {
     #if defined(_WIN32)
     nativeWindow->dispatch([&]() { beginDragNative(); });
     #elif defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
-    // to keep the Mac/Linux improved impl details
     window::beginDragNative();
     #endif
 
