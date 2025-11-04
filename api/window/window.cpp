@@ -864,7 +864,7 @@ void move(int x, int y) {
     #endif
 }
 
-void beginDrag() {
+void beginDragNative() {
 
     #if defined(__linux__) || defined(__FreeBSD__)
     auto mousePos = computer::getMousePosition();
@@ -1408,11 +1408,16 @@ json setMainMenu(const json &input) {
 }
 
 
-json beginDrag(const json& input) {
+json beginDrag(const json &input) {
     json output;
     
-    window::beginDrag();
-    
+    #if defined(_WIN32)
+    nativeWindow->dispatch([&]() { beginDragNative(); });
+    #elif defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
+    // to keep the Mac/Linux improved impl details
+    window::beginDragNative();
+    #endif
+
     output["success"] = true;
     return output;
 }
