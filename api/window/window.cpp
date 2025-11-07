@@ -159,15 +159,8 @@ pair<int, int> __getCenterPos(bool useConfigSizes = false) {
 
 #if defined(__APPLE__)
 CGRect __getWindowRect() {
-    // "frame"_sel is the easiest way, but it crashes
-    // So, this is a workaround with low-level APIs.
-    long winId = ((long(*)(id, SEL))objc_msgSend)(windowHandle, "windowNumber"_sel);
-    auto winInfoArray = CGWindowListCopyWindowInfo(kCGWindowListOptionIncludingWindow, winId);
-    auto winInfo = CFArrayGetValueAtIndex(winInfoArray, 0);
-    auto winBounds = CFDictionaryGetValue((CFDictionaryRef) winInfo, kCGWindowBounds);
-
-    CGRect winPos;
-    CGRectMakeWithDictionaryRepresentation((CFDictionaryRef) winBounds, &winPos);
+    CGRect winPos = ((CGRect (*)(id, SEL))objc_msgSend)(
+        (id) windowHandle, "frame"_sel);
     return winPos;
 }
 #endif
@@ -893,10 +886,10 @@ window::SizeOptions getSize() {
     gtk_window_get_size(GTK_WINDOW(windowHandle),
                         &width, &height);
     #elif defined(__APPLE__)
-    CGRect winPos = __getWindowRect();
+    CGRect frameRect = __getWindowRect();
 
-    width = winPos.size.width;
-    height = winPos.size.height;
+    width = frameRect.size.width;
+    height = frameRect.size.height;
 
     #elif defined(_WIN32)
     RECT winPos;
@@ -916,9 +909,12 @@ pair<int, int> getPosition() {
     gdk_window_get_root_origin(gtk_widget_get_window(windowHandle), &x, &y);
 
     #elif defined(__APPLE__)
-    CGRect winPos = __getWindowRect();
-    x = winPos.origin.x;
-    y = winPos.origin.y;
+    CGRect frameRect = __getWindowRect();
+    auto displayId = CGMainDisplayID();
+    int height = CGDisplayPixelsHigh(displayId);
+
+    x = frameRect.origin.x;
+    y = height - frameRect.origin.y - frameRect.size.height;
 
     #elif defined(_WIN32)
     RECT winPos;
