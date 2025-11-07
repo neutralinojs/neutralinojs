@@ -892,10 +892,18 @@ window::SizeOptions getSize() {
     height = frameRect.size.height;
 
     #elif defined(_WIN32)
-    RECT winPos;
-    GetWindowRect(windowHandle, &winPos);
-    width = winPos.right - winPos.left;
-    height = winPos.bottom - winPos.top;
+    if(IsIconic(windowHandle)) {
+        WINDOWPLACEMENT wp = { sizeof(WINDOWPLACEMENT) };
+        GetWindowPlacement(windowHandle, &wp);
+        width = wp.rcNormalPosition.right - wp.rcNormalPosition.left;
+        height = wp.rcNormalPosition.bottom - wp.rcNormalPosition.top;
+    }
+    else {
+        RECT winPos;
+        GetWindowRect(windowHandle, &winPos);
+        width = winPos.right - winPos.left;
+        height = winPos.bottom - winPos.top;
+    }
     #endif
 
     windowProps.sizeOptions.width = width;
@@ -917,10 +925,18 @@ pair<int, int> getPosition() {
     y = height - frameRect.origin.y - frameRect.size.height;
 
     #elif defined(_WIN32)
-    RECT winPos;
-    GetWindowRect(windowHandle, &winPos);
-    x = winPos.left;
-    y = winPos.top;
+    if(IsIconic(windowHandle)) {
+        WINDOWPLACEMENT wp = { sizeof(WINDOWPLACEMENT) };
+        GetWindowPlacement(windowHandle, &wp);
+        x = wp.rcNormalPosition.left;
+        y = wp.rcNormalPosition.top;
+    }
+    else {
+        RECT winPos;
+        GetWindowRect(windowHandle, &winPos);
+        x = winPos.left;
+        y = winPos.top;
+    }
     #endif
 
     return make_pair(x, y);
