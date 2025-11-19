@@ -4,6 +4,7 @@
 #include <fstream>
 #include <regex>
 #include <filesystem>
+#include <string>
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 #include <unistd.h>
@@ -21,6 +22,14 @@
 
 #define NEU_WINDOWS_TICK 10000000
 #define NEU_SEC_TO_UNIX_EPOCH 11644473600LL
+#endif
+
+// Conditional include for statx on Linux
+#if defined(__linux__) && defined(__GLIBC__) && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 28))
+    #define USE_STATX
+    #include <sys/syscall.h>
+    #include <linux/stat.h>
+    #include <unistd.h>
 #endif
 
 #include <efsw/efsw.hpp>
@@ -271,48 +280,117 @@ bool removeWatcher(long watcherId) {
 
 fs::FileStats getStats(const string &path) {
     fs::FileStats fileStats;
-    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
-    struct stat statBuffer;
-    if(stat(path.c_str(), &statBuffer) == 0) {
-        fileStats.size = statBuffer.st_size;
-        if(S_ISREG(statBuffer.st_mode)) {
-            fileStats.entryType = fs::EntryTypeFile;
-        }
-        if(S_ISDIR(statBuffer.st_mode)) {
-            fileStats.entryType = fs::EntryTypeDir;
-        }
-        fileStats.createdAt = statBuffer.st_ctime * 1000;
-        fileStats.modifiedAt = statBuffer.st_mtime * 1000;
-    }
+    bool success = false;
 
+    // --- UNIX-LIKE SYSTEMS ---
+    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+    
+        // 1. LINUX: Attempt to use the robust statx() system call for birth time
+        #ifdef USE_STATX
+            struct statx statxBuffer;
+            // The mask defines which fields we want to retrieve
+            unsigned int mask = STATX_ALL; 
+            
+            // Call statx
+            long statx_result = syscall(SYS_statx, AT_FDCWD, path.c_str(), 0, mask, &statxBuffer);
+            
+            if (statx_result == 0) {
+                // Check if birth time was actually available on the filesystem
+                if (statxBuffer.stx_mask & STATX_BTIME) {
+                    // Use the accurate birth time (stx_btime)
+                    fileStats.createdAt = (long long)statxBuffer.stx_btime.tv_sec * 1000;
+                } else {
+                    // Fallback to st_ctime if birth time is not supported by the filesystem
+                    fileStats.createdAt = (long long)statxBuffer.stx_ctime.tv_sec * 1000;
+                }
+
+                // Populate other fields using statx
+                fileStats.size = (long long)statxBuffer.stx_size;
+                if(statxBuffer.stx_mode & S_IFREG) {
+                    fileStats.entryType = fs::EntryTypeFile;
+                } else if(statxBuffer.stx_mode & S_IFDIR) {
+                    fileStats.entryType = fs::EntryTypeDir;
+                }
+                
+                // st_ctime (Metadata Change Time)
+                fileStats.modifiedAt = (long long)statxBuffer.stx_ctime.tv_sec * 1000; 
+                // st_mtime (Content Write Time)
+                fileStats.lastWriteTime = (long long)statxBuffer.stx_mtime.tv_sec * 1000; 
+                
+                success = true;
+            }
+        #endif // USE_STATX
+        
+        // 2. FALLBACK/OTHER UNIX (stat, st_birthtime on macOS/FreeBSD)
+        if (!success) {
+            struct stat statBuffer;
+            if(stat(path.c_str(), &statBuffer) == 0) {
+                fileStats.size = statBuffer.st_size;
+                if(S_ISREG(statBuffer.st_mode)) {
+                    fileStats.entryType = fs::EntryTypeFile;
+                } else if(S_ISDIR(statBuffer.st_mode)) {
+                    fileStats.entryType = fs::EntryTypeDir;
+                }
+                
+                // True Birth Time check for macOS/FreeBSD
+                #if defined(__APPLE__) || defined(__FreeBSD__)
+                    // macOS and FreeBSD have st_birthtime in struct stat
+                    fileStats.createdAt = statBuffer.st_birthtime * 1000;
+                #else
+                    // Linux/Other fallback: Use st_ctime as approximation
+                    fileStats.createdAt = statBuffer.st_ctime * 1000;
+                #endif
+                
+                // st_ctime (Change Time)
+                fileStats.modifiedAt = statBuffer.st_ctime * 1000;
+                // st_mtime (Last Write Time)
+                fileStats.lastWriteTime = statBuffer.st_mtime * 1000;
+
+                success = true;
+            }
+        } // end of stat fallback block
+
+    // --- WINDOWS SYSTEMS (No change needed here for birth time) ---
     #elif defined(_WIN32)
     HANDLE hFile = CreateFile(helpers::str2wstr(path).c_str(), GENERIC_READ,
-                    FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
-                    FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL);
+                             FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING,
+                             FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, NULL);
 
     LARGE_INTEGER size;
     FILE_BASIC_INFO basicInfo;
     if(GetFileSizeEx(hFile, &size) &&
-        GetFileInformationByHandleEx(hFile, FileBasicInfo, &basicInfo, sizeof(basicInfo))
+       GetFileInformationByHandleEx(hFile, FileBasicInfo, &basicInfo, sizeof(basicInfo))
     ) {
         fileStats.size = size.QuadPart;
         if(!(basicInfo.FileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
             fileStats.entryType = fs::EntryTypeFile;
-        }
-        if(basicInfo.FileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+        } else if(basicInfo.FileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
             fileStats.entryType = fs::EntryTypeDir;
         }
+        
+        // Windows CreationTime (True birth time)
         fileStats.createdAt = __winTickToUnixMS(basicInfo.CreationTime.QuadPart);
+        // Windows ChangeTime
         fileStats.modifiedAt = __winTickToUnixMS(basicInfo.ChangeTime.QuadPart);
+        // Windows LastWriteTime (Date Modified)
+        fileStats.lastWriteTime = __winTickToUnixMS(basicInfo.LastWriteTime.QuadPart);
+        
+        success = true;
     }
 
+    // --- ERROR HANDLING & CLEANUP ---
     #endif
-    else {
+
+    if (!success) {
         fileStats.status = errors::NE_FS_NOPATHE;
     }
+    
     #if defined(_WIN32)
-    CloseHandle(hFile);
+    if (hFile != INVALID_HANDLE_VALUE) { 
+        CloseHandle(hFile);
+    }
     #endif
+    
     return fileStats;
 }
 
