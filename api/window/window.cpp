@@ -234,6 +234,17 @@ void __saveWindowProps() {
     options["x"] = pos.first;
     options["y"] = pos.second;
     options["maximize"] = window::isMaximized();
+    
+    #if defined(_WIN32)
+    if(IsZoomed(windowHandle)) {
+        WINDOWPLACEMENT wp = { sizeof(WINDOWPLACEMENT) };
+        GetWindowPlacement(windowHandle, &wp);
+        options["width"] = wp.rcNormalPosition.right - wp.rcNormalPosition.left;
+        options["height"] = wp.rcNormalPosition.bottom - wp.rcNormalPosition.top;
+        options["x"] = wp.rcNormalPosition.left;
+        options["y"] = wp.rcNormalPosition.top;
+    }
+    #endif
 
     filesystem::create_directories(CONVSTR(settings::joinAppDataPath("/.tmp")));
     fs::FileWriterOptions writerOptions = { settings::joinAppDataPath(NEU_WIN_CONFIG_FILE), helpers::jsonToString(options) };
@@ -253,6 +264,17 @@ bool __loadSavedWindowProps() {
         windowProps.maximize = options["maximize"].get<bool>();
         windowProps.sizeOptions.width = options["width"].get<int>();
         windowProps.sizeOptions.height = options["height"].get<int>();
+
+        #if defined(_WIN32)
+        WINDOWPLACEMENT wp = {sizeof(WINDOWPLACEMENT)};
+        wp.rcNormalPosition.left = windowProps.x;
+        wp.rcNormalPosition.top = windowProps.y;
+        wp.rcNormalPosition.right = windowProps.x + windowProps.sizeOptions.width;
+        wp.rcNormalPosition.bottom = windowProps.y + windowProps.sizeOptions.height;
+        wp.showCmd = SW_SHOWNORMAL;
+
+        SetWindowPlacement(windowHandle, &wp);
+        #endif
     }
     catch(exception e) {
         debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_CF_UNBLWCF, string(NEU_WIN_CONFIG_FILE)));
@@ -590,9 +612,6 @@ bool __createWindow() {
         window::move(windowProps.x, windowProps.y);
     #endif
 
-    if(windowProps.maximize)
-        window::maximize();
-
     if(windowProps.hidden)
         window::hide();
 
@@ -600,6 +619,9 @@ bool __createWindow() {
     if (!windowProps.hidden && __isFakeHidden())
 		__undoFakeHidden();
     #endif
+
+    if(windowProps.maximize)
+        window::maximize();
 
     if(windowProps.fullScreen)
         window::setFullScreen();
