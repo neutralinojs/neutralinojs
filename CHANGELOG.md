@@ -14,7 +14,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 - Replace deprecated macOS API with suitable modern APIs in the codebase.
 - Static file server enhancements.
 - Improve `window.getPositon()` in macOS.
-- Save the correct window size and position when a maximized/minimized window is being closed.
+- Save the correct window size and position when a maximized/minimized window is being closed on Windows.
 - Fix the window disappearing issue while restoring the window on Windows
 
 ## v6.3.0
