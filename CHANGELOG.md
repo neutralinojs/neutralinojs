@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v6.4.0
+
 ### API: storage
 - Implement `storage.clear()` and `storage.removeData(key)` functions to remove saved storage data.
 
