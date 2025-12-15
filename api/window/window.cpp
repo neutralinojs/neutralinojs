@@ -115,11 +115,13 @@ void windowStateChange(int state) {
             #if defined(__linux__) || defined(__FreeBSD__)
                 isGtkWindowMinimized = true;
             #endif
+            events::dispatch("windowMinimize", nullptr);
             break;
         case WEBVIEW_WINDOW_UNMINIMIZED:
             #if defined(__linux__) || defined(__FreeBSD__)
                 isGtkWindowMinimized = false;
             #endif
+            events::dispatch("windowRestore", nullptr);
             break;
     }
 }
