@@ -131,6 +131,9 @@ void windowStateChange(int state) {
         case WEBVIEW_WINDOW_HIDE:
             events::dispatch("windowHide", nullptr);
             break;
+        case WEBVIEW_WINDOW_MAXIMIZE:
+            events::dispatch("windowMaximize", nullptr);
+            break;
     }
 }
 

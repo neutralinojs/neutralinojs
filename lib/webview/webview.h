@@ -39,6 +39,7 @@
 #define WEBVIEW_WINDOW_RESTORED 6
 #define WEBVIEW_WINDOW_SHOW 7
 #define WEBVIEW_WINDOW_HIDE 8
+#define WEBVIEW_WINDOW_MAXIMIZE 9
 #define WEBVIEW_WINDOW_UNDEFINED 100
 
 #ifndef WEBVIEW_HEADER
@@ -226,6 +227,10 @@ public:
             else if(event->changed_mask & GDK_WINDOW_STATE_FOCUSED) {
                 windowStateChange(event->new_window_state & GDK_WINDOW_STATE_FOCUSED ? 
                   WEBVIEW_WINDOW_FOCUS : WEBVIEW_WINDOW_BLUR);
+            }
+            else if(event->changed_mask & GDK_WINDOW_STATE_MAXIMIZED && 
+                event->new_window_state & GDK_WINDOW_STATE_MAXIMIZED) {
+                windowStateChange(WEBVIEW_WINDOW_MAXIMIZE);
             }
             else
                 windowStateChange(WEBVIEW_WINDOW_UNDEFINED);
