@@ -98,7 +98,7 @@ jobs:
         path: bin/neutralino-win_x64.exe
 
   build-darwin:
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
     - name: Checkout
       uses: actions/checkout@v3
