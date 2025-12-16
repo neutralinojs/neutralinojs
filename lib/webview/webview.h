@@ -501,6 +501,16 @@ public:
                         if(windowStateChange)
                           windowStateChange(WEBVIEW_WINDOW_RESTORED);
                     }), "c@:@");
+    class_addMethod(wcls, "windowDidEnterFullScreen:"_sel,
+                    (IMP)(+[](id, SEL, id) {
+                        if(windowStateChange)
+                          windowStateChange(WEBVIEW_WINDOW_FULLSCREEN);
+                    }), "c@:@");
+    class_addMethod(wcls, "windowDidExitFullScreen:"_sel,
+                    (IMP)(+[](id, SEL, id) {
+                        if(windowStateChange)
+                          windowStateChange(WEBVIEW_WINDOW_UNFULLSCREEN);
+                    }), "c@:@");
 
     objc_registerClassPair(wcls);
 
