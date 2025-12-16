@@ -518,6 +518,15 @@ public:
                         if(windowStateChange)
                           windowStateChange(WEBVIEW_WINDOW_UNFULLSCREEN);
                     }), "c@:@");
+    class_addMethod(wcls, "windowDidEndLiveResize:"_sel,
+                    (IMP)(+[](id, SEL, id notification) {
+                        bool isZoomed = ((bool (*)(id, SEL))objc_msgSend)(
+                            ((id (*)(id, SEL))objc_msgSend)((id) notification,
+                            "object"_sel),
+                          "isZoomed"_sel);
+                        if(isZoomed && windowStateChange)
+                          windowStateChange(WEBVIEW_WINDOW_MAXIMIZE);
+                    }), "c@:@");
 
     objc_registerClassPair(wcls);
 
