@@ -125,6 +125,12 @@ void windowStateChange(int state) {
             #endif
             events::dispatch("windowRestore", nullptr);
             break;
+        case WEBVIEW_WINDOW_SHOW:
+            events::dispatch("windowShow", nullptr);
+            break;
+        case WEBVIEW_WINDOW_HIDE:
+            events::dispatch("windowHide", nullptr);
+            break;
     }
 }
 
@@ -742,6 +748,8 @@ void show() {
     if (__isFakeHidden())
         __undoFakeHidden();
     #endif
+
+    window::handlers::windowStateChange(WEBVIEW_WINDOW_SHOW);
 }
 
 void hide() {
@@ -755,6 +763,8 @@ void hide() {
     #elif defined(_WIN32)
     ShowWindow(windowHandle, SW_HIDE);
     #endif
+
+    window::handlers::windowStateChange(WEBVIEW_WINDOW_HIDE);
 }
 
 bool isFullScreen() {
