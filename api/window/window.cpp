@@ -105,11 +105,13 @@ void windowStateChange(int state) {
             #if defined(__linux__) || defined(__FreeBSD__)
                 isGtkWindowFullScreen = true;
             #endif
+            events::dispatch("windowFullScreenEnter", nullptr);
             break;
         case WEBVIEW_WINDOW_UNFULLSCREEN:
             #if defined(__linux__) || defined(__FreeBSD__)
                 isGtkWindowFullScreen = false;
             #endif
+            events::dispatch("windowFullScreenExit", nullptr);
             break;
         case WEBVIEW_WINDOW_MINIMIZED:
             #if defined(__linux__) || defined(__FreeBSD__)
