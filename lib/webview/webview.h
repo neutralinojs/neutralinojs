@@ -961,6 +961,8 @@ public:
                 windowStateChange(WEBVIEW_WINDOW_MINIMIZED);
               else if(wp == SIZE_RESTORED) 
                 windowStateChange(WEBVIEW_WINDOW_RESTORED);
+              else if(wp == SIZE_MAXIMIZED) 
+                windowStateChange(WEBVIEW_WINDOW_MAXIMIZE);
               break;
             case WM_CLOSE:
               if(windowStateChange)
