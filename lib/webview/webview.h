@@ -491,6 +491,16 @@ public:
                         if(windowStateChange)
                           windowStateChange(WEBVIEW_WINDOW_BLUR);
                     }), "c@:@");
+    class_addMethod(wcls, "windowDidMiniaturize:"_sel,
+                    (IMP)(+[](id, SEL, id) {
+                        if(windowStateChange)
+                          windowStateChange(WEBVIEW_WINDOW_MINIMIZED);
+                    }), "c@:@");
+    class_addMethod(wcls, "windowDidDeminiaturize:"_sel,
+                    (IMP)(+[](id, SEL, id) {
+                        if(windowStateChange)
+                          windowStateChange(WEBVIEW_WINDOW_RESTORED);
+                    }), "c@:@");
 
     objc_registerClassPair(wcls);
 
