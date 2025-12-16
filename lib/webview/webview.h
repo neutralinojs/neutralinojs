@@ -35,8 +35,8 @@
 #define WEBVIEW_WINDOW_BLUR 2
 #define WEBVIEW_WINDOW_FULLSCREEN 3 // GTK only
 #define WEBVIEW_WINDOW_UNFULLSCREEN 4 // GTK only
-#define WEBVIEW_WINDOW_MINIMIZED 5 // GTK only
-#define WEBVIEW_WINDOW_UNMINIMIZED 6 // GTK only
+#define WEBVIEW_WINDOW_MINIMIZED 5
+#define WEBVIEW_WINDOW_RESTORED 6
 #define WEBVIEW_WINDOW_UNDEFINED 100 // GTK only
 
 #ifndef WEBVIEW_HEADER
@@ -219,7 +219,7 @@ public:
             }
             else if(event->changed_mask & GDK_WINDOW_STATE_ICONIFIED) {
                 windowStateChange(event->new_window_state & GDK_WINDOW_STATE_ICONIFIED ? 
-                  WEBVIEW_WINDOW_MINIMIZED : WEBVIEW_WINDOW_UNMINIMIZED);
+                  WEBVIEW_WINDOW_MINIMIZED : WEBVIEW_WINDOW_RESTORED);
             }
             else if(event->changed_mask & GDK_WINDOW_STATE_FOCUSED) {
                 windowStateChange(event->new_window_state & GDK_WINDOW_STATE_FOCUSED ? 
@@ -929,6 +929,11 @@ public:
             switch (msg) {
             case WM_SIZE:
               w->m_browser->resize(hwnd);
+              if(!windowStateChange) break;
+              if(wp == SIZE_MINIMIZED) 
+                windowStateChange(WEBVIEW_WINDOW_MINIMIZED);
+              else if(wp == SIZE_RESTORED) 
+                windowStateChange(WEBVIEW_WINDOW_RESTORED);
               break;
             case WM_CLOSE:
               if(windowStateChange)
