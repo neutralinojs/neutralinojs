@@ -118,8 +118,8 @@ jobs:
 
     - name: Build
       run: |
-        ./scripts/bz.py --target_arch x64
-        chmod +x ./bin/neutralino-mac_x64
+        ./scripts/bz.py
+        chmod +x ./bin/neutralino-mac_arm64
 
     - name: Setup Spec Requirements (Build client)
       run: |
