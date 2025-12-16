@@ -6,6 +6,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### Core: events
+- New window events: `windowMinimize` and `windowRestore`
+
 ## v6.4.0
 
 ### API: storage
