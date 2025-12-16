@@ -801,6 +801,7 @@ void setFullScreen() {
                 r.bottom - r.top,
                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
     isWinWindowFullScreen = true;
+    window::handlers::windowStateChange(WEBVIEW_WINDOW_FULLSCREEN);
     #endif
 }
 
@@ -819,6 +820,7 @@ void exitFullScreen() {
                 savedRect.bottom - savedRect.top,
                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
     isWinWindowFullScreen = false;
+    window::handlers::windowStateChange(WEBVIEW_WINDOW_UNFULLSCREEN);
     #endif
 }
 
