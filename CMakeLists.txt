@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
-project(NeutralinoJS LANGUAGES C CXX)
-set(NEU_VERSION "6.3.0")
+set(NEU_VERSION "6.4.0")
 set(NEU_CXX_STANDARD 17)
+if(APPLE)
+  project(NeutralinoJS LANGUAGES C CXX OBJC OBJCXX)
+else()
+  project(NeutralinoJS LANGUAGES C CXX)
+endif()
 
 execute_process(
   COMMAND git rev-parse HEAD
@@ -61,6 +65,12 @@ elseif(APPLE)
     lib/efsw/src/efsw/platform/posix/*.cpp
   )
   list(APPEND SOURCES ${OS_SOURCES})
+
+  # Force window.cpp to compile as Objective-C++ for ScreenCaptureKit support
+  set_source_files_properties(
+    ${PROJECT_SOURCE_DIR}/api/window/window.cpp
+    PROPERTIES LANGUAGE OBJCXX
+  )
 
   if(DEFINED CMAKE_OSX_ARCHITECTURES AND CMAKE_OSX_ARCHITECTURES STREQUAL "arm64")
     message("Building macOS arm64 🍏...")
@@ -195,9 +205,11 @@ elseif(APPLE)
     # macOS
     find_library(WebKit_FRAMEWORK WebKit)
     find_library(COCOA_FRAMEWORK Cocoa)
+    find_library(SCREENCAPTUREKIT_FRAMEWORK ScreenCaptureKit)
     target_link_libraries(${PROJECT_NAME} PRIVATE
       ${WebKit_FRAMEWORK}
       ${COCOA_FRAMEWORK}
+      ${SCREENCAPTUREKIT_FRAMEWORK}
     )
     target_compile_options(${PROJECT_NAME} PRIVATE
       -Wno-deprecated-declarations
