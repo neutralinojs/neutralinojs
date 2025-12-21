@@ -40,7 +40,11 @@ jobs:
         libwebkit2gtk-4.0-dev
         
     - name: Build
-      run: ./scripts/bz.py
+      run: |
+        git config --global --add safe.directory $GITHUB_WORKSPACE
+        mkdir -p build
+        cmake -DCMAKE_BUILD_TYPE=Release . -G Ninja -B build
+        ninja -C build -j$(nproc)
     
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
