@@ -66,6 +66,12 @@ elseif(APPLE)
   )
   list(APPEND SOURCES ${OS_SOURCES})
 
+  # Force window.cpp to compile as Objective-C++ for ScreenCaptureKit support
+  set_source_files_properties(
+    ${PROJECT_SOURCE_DIR}/api/window/window.cpp
+    PROPERTIES LANGUAGE OBJCXX
+  )
+
   if(DEFINED CMAKE_OSX_ARCHITECTURES AND CMAKE_OSX_ARCHITECTURES STREQUAL "arm64")
     message("Building macOS arm64 🍏...")
     set(NEU_SYSTEM_PROCESSOR "arm64")
