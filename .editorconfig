@@ -1,0 +1,21 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Use tabs for code and markup
+[*.{cpp,h,js,html}]
+indent_style = tab
+indent_size = 4
+
+# Use spaces for data and configuration files
+[*.{json,yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# Avoid stripping whitespace in markdown
+[*.md]
+trim_trailing_whitespace = false
