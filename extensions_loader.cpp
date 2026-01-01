@@ -10,6 +10,7 @@
 #include "helpers.h"
 #include "auth/authbasic.h"
 #include "api/os/os.h"
+#include "lib/dynlib/dynlib.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -43,7 +44,20 @@ void init() {
 
         string extensionId = extension["id"].get<string>();
 
-        if(helpers::hasField(extension, "command") || helpers::hasField(extension, commandKeyForOs)) {
+        // Check if this is a dynamic library extension
+        if(helpers::hasField(extension, "library")) {
+            string libraryPath = extension["library"].get<string>();
+            libraryPath = regex_replace(libraryPath, regex("\\$\\{NL_PATH\\}"), settings::getAppPath());
+            
+            string config = "{}";
+            if(helpers::hasField(extension, "config")) {
+                config = helpers::jsonToString(extension["config"]);
+            }
+            
+            loadDynamicLibrary(extensionId, libraryPath, config);
+        }
+        // Traditional process-based extension
+        else if(helpers::hasField(extension, "command") || helpers::hasField(extension, commandKeyForOs)) {
             string command = helpers::hasField(extension, commandKeyForOs) ? extension[commandKeyForOs].get<string>()
                                 : extension["command"].get<string>();
             command = regex_replace(command, regex("\\$\\{NL_PATH\\}"), settings::getAppPath());
@@ -72,6 +86,16 @@ void loadOne(const string &extensionId) {
     loadedExtensions.push_back(extensionId);
 }
 
+void loadDynamicLibrary(const string &extensionId, const string &libraryPath, const string &config) {
+    if(dynlib::loadLibrary(libraryPath, extensionId, config)) {
+        cout << "[Neutralino] Loaded dynamic library extension: " << extensionId << endl;
+    }
+    else {
+        cerr << "[Neutralino] Failed to load dynamic library extension '" << extensionId 
+             << "': " << dynlib::getLastError() << endl;
+    }
+}
+
 vector<string> getLoaded() {
     return loadedExtensions;
 }
@@ -83,6 +107,10 @@ bool isLoaded(const string &extensionId) {
 
 bool isInitialized() {
     return initialized;
+}
+
+void cleanup() {
+    dynlib::unloadAll();
 }
 
 } // namespace extensions
