@@ -205,5 +205,6 @@ int main(int argc, char ** argv)
     __configureLogger();
     __initExtra();
     __startApp();
+    extensions::cleanup(); // Cleanup dynamic libraries on exit
     return 0;
 }

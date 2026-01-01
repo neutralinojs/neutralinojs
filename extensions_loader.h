@@ -13,9 +13,11 @@ namespace extensions {
 
 void init();
 void loadOne(const string &extensionId);
+void loadDynamicLibrary(const string &extensionId, const string &libraryPath, const string &config = "{}");
 vector<string> getLoaded();
 bool isLoaded(const string &extensionId);
 bool isInitialized();
+void cleanup();
 
 } // namesapce extensions
 

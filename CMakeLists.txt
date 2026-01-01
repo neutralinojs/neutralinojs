@@ -26,6 +26,7 @@ file(GLOB_RECURSE RECURSIVE_SOURCES
   lib/clip/image.cpp
   lib/infoware/src/**/*.cpp
   lib/efsw/src/efsw/*.cpp
+  lib/dynlib/dynlib.cpp
 )
 list(APPEND SOURCES ${RECURSIVE_SOURCES})
 
@@ -198,6 +199,7 @@ elseif(APPLE)
     target_link_libraries(${PROJECT_NAME} PRIVATE
       ${WebKit_FRAMEWORK}
       ${COCOA_FRAMEWORK}
+      dl
     )
     target_compile_options(${PROJECT_NAME} PRIVATE
       -Wno-deprecated-declarations
