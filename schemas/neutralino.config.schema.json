@@ -22,7 +22,10 @@
     "tokenSecurity": {
       "type": "string",
       "description": "Neutralinojs uses a client-server communication pattern with a local WebSocket to handle native calls. This local server is protected with an auto-generated token. This option defines the security implementation for the token. \n\n Accepts the following values: \n\n - one-time (Recommended): Server sends the access token only once, and the client persists it in the sessionStorage. If another client (Eg: browser) tries to access the app, 'NE_RT_INVTOKN' error message will be shown instead of the application. Using this option is recommended since it reduces security issues. \n\n - none: Server sends the access token always, so any new client can see the application. \n\n ::: Danger: If you are using native APIs that can access your computer's internals such as 'os', 'filesystem', modules, never use 'none' option since any new client can use those APIs. :::",
-      "enum": ["one-time", "none"],
+      "enum": [
+        "one-time",
+        "none"
+      ],
       "default": "one-time",
       "x-intellij-enum-metadata": {
         "one-time": "(Recommended): Server sends the access token only once, and the client persists it in the 'sessionStorage'.",
@@ -74,7 +77,9 @@
             "description": "Extension startup command for Windows."
           }
         },
-        "required": ["id"]
+        "required": [
+          "id"
+        ]
       }
     },
     "nativeBlockList": {
@@ -130,7 +135,12 @@
         "cloud": "Runs the application as a background server.",
         "chrome": "Runs the application as a Chrome application."
       },
-      "enum": ["window", "browser", "cloud", "chrome"]
+      "enum": [
+        "window",
+        "browser",
+        "cloud",
+        "chrome"
+      ]
     },
     "modes": {
       "type": "object",
@@ -206,8 +216,8 @@
               "description": "If this setting is 'true', the app process will exit when the user clicks on the close button. Otherwise, the framework will dispatch the 'windowClose' event."
             },
             "webviewArgs": {
-                "type": "string",
-                "description": "Additional command-line arguments for the WebView2 process."
+              "type": "string",
+              "description": "Additional command-line arguments for the WebView2 process."
             }
           }
         },
@@ -231,6 +241,10 @@
                 "height": {
                   "type": "integer",
                   "description": "Height of the chrome window."
+                },
+                "chromeBin": {
+                  "type": "string",
+                  "description": "Custom path to the Chrome binary/executable. This is useful for systems like NixOS or when using portable versions."
                 },
                 "args": {
                   "type": "string",
@@ -389,5 +403,9 @@
       }
     }
   },
-  "required": ["applicationId", "url", "defaultMode"]
+  "required": [
+    "applicationId",
+    "url",
+    "defaultMode"
+  ]
 }
