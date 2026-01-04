@@ -212,6 +212,7 @@ void handleHTTP(websocketpp::connection_hdl handler) {
     con->set_body(routerResponse.data);
     con->replace_header("Content-Type", routerResponse.contentType);
 
+
     if(applyConfigHeaders) {
         __applyConfigHeaders(con);
     }
