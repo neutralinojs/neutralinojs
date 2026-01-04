@@ -197,11 +197,17 @@ void handleMessage(websocketpp::connection_hdl handler, websocketserver::message
 void handleHTTP(websocketpp::connection_hdl handler) {
     websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
     string resource = con->get_resource();
+
+    // Strip query string for routing, but let the browser keep it
+    auto qpos = resource.find('?');
+    string path = (qpos != string::npos) ? resource.substr(0, qpos) : resource;
+
     string documentRoot = neuserver::getDocumentRoot();
     if(!documentRoot.empty()) {
-        resource = documentRoot + resource;
+        path = documentRoot + path;
     }
-    router::Response routerResponse = router::serve(resource);
+
+    router::Response routerResponse = router::serve(path);
     con->set_status(routerResponse.status);
     con->set_body(routerResponse.data);
     con->replace_header("Content-Type", routerResponse.contentType);
@@ -210,6 +216,7 @@ void handleHTTP(websocketpp::connection_hdl handler) {
         __applyConfigHeaders(con);
     }
 }
+
 
 void handleConnect(websocketpp::connection_hdl handler) {
     websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
