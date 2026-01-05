@@ -618,12 +618,10 @@ bool __createWindow() {
     windowHandle = (HWND) nativeWindow->window();
     #endif
 
-    #if !defined(_WIN32)
     if(!window::isSavedStateLoaded() && windowProps.center)
         window::center(true);
     else
         window::move(windowProps.x, windowProps.y);
-    #endif
 
     if(windowProps.hidden)
         window::hide();
@@ -636,8 +634,14 @@ bool __createWindow() {
     if(windowProps.maximize)
         window::maximize();
 
-    if(windowProps.fullScreen)
+    if(windowProps.fullScreen){
+       #if defined(_WIN32)
+        if (__isFakeHidden()) {
+            __undoFakeHidden();
+        }
+        #endif
         window::setFullScreen();
+    }
 
     if(windowProps.icon != "")
         window::setIcon(windowProps.icon);
