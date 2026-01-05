@@ -160,6 +160,8 @@ class gtk_webkit_engine {
 public:
   gtk_webkit_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string &args)
       : m_window(static_cast<GtkWidget *>(window)) {
+        
+    setlocale(LC_ALL, "");
 
     XInitThreads();
     gtk_init_check(0, NULL);
