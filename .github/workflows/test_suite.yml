@@ -147,11 +147,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Build x64
+    - name: Build arm64
       run: |
         rm -fr build
         mkdir -p build
-        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=x86_64 . -G Ninja -B build
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64 . -G Ninja -B build
         ninja -C build
 
     - name: Setup Spec Requirements (Build client)
