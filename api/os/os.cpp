@@ -15,6 +15,7 @@
 #include <functional>
 #include <atomic>
 #include <climits>
+#include <thread>
 
 #include "resources.h"
 #include "lib/tinyprocess/process.hpp"
@@ -155,20 +156,19 @@ pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &optio
     #endif
 
     TinyProcessLib::Process *childProcess;
-    lock_guard<mutex> guard(spawnedProcessesLock);
+    int virtualPid;
 
-    int virtualPid = nextVirtualPid++;
-    if(virtualPid == INT_MAX) {
-        nextVirtualPid = 0;
+    {
+        lock_guard<mutex> guard(spawnedProcessesLock);
+        virtualPid = nextVirtualPid++;
+        if(virtualPid == INT_MAX) {
+            nextVirtualPid = 0;
+        }
     }
-
 
     auto stdOutHandler = [=](const char *bytes, size_t n) {
         if(options.events) {
             __dispatchSpawnedProcessEvt(virtualPid, "stdOut", string(bytes, n));
-        }
-        if(options.stdOutHandler != nullptr) {
-            options.stdOutHandler(bytes, n);
         }
     };
 
@@ -176,36 +176,59 @@ pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &optio
         if(options.events) {
             __dispatchSpawnedProcessEvt(virtualPid, "stdErr", string(bytes, n));
         }
-        if(options.stdErrHandler != nullptr) {
-            options.stdErrHandler(bytes, n);
-        }
     };
 
+    TinyProcessLib::Process::environment_type processEnv;
+
     if(options.envs.empty()) {
+        #if defined(_WIN32)
+        // Fix for #1448: Manually inherit environment strings to support NVM/Path
+        LPWCH envsO = GetEnvironmentStringsW();
+        if (envsO) {
+            LPWCH envs = envsO;
+            while (*envs) {
+                wstring envStrW(envs);
+                string envStr = helpers::wstr2str(envStrW);
+                if (!envStr.empty() && envStr[0] != '=') {
+                    size_t pos = envStr.find('=');
+                    if (pos != string::npos) {
+                        processEnv[CONVSTR(envStr.substr(0, pos))] = CONVSTR(envStr.substr(pos + 1));
+                    }
+                }
+                envs += envStrW.length() + 1;
+            }
+            FreeEnvironmentStringsW(envsO);
+        }
+        childProcess = new TinyProcessLib::Process(CONVSTR(command), CONVSTR(options.cwd), processEnv, stdOutHandler, stdErrHandler, true);
+        #else
         childProcess = new TinyProcessLib::Process(CONVSTR(command), CONVSTR(options.cwd), stdOutHandler, stdErrHandler, true);
+        #endif
     }
     else {
-        TinyProcessLib::Process::environment_type processEnv;
         for(const auto& [key, value]: options.envs) {
             processEnv[CONVSTR(key)] = CONVSTR(value);
         }
         childProcess = new TinyProcessLib::Process(CONVSTR(command), CONVSTR(options.cwd), processEnv, stdOutHandler, stdErrHandler, true);
     }
 
-    spawnedProcesses[virtualPid] = childProcess;
+    {
+        lock_guard<mutex> guard(spawnedProcessesLock);
+        spawnedProcesses[virtualPid] = childProcess;
+    }
 
-    thread processThread([=](){
-        int exitCode = childProcess->get_exit_status(); // sync wait
+    thread([=](){
+        int exitCode = childProcess->get_exit_status();
         
         if(options.events) {
             __dispatchSpawnedProcessEvt(virtualPid, "exit", exitCode);
         }
         
         lock_guard<mutex> guard(spawnedProcessesLock);
-        spawnedProcesses.erase(virtualPid);
-        delete childProcess;
-    });
-    processThread.detach();
+        if (spawnedProcesses.count(virtualPid)) {
+            spawnedProcesses.erase(virtualPid);
+            delete childProcess;
+        }
+    }).detach();
 
     return make_pair(virtualPid, childProcess->get_id());
 }
@@ -417,29 +440,23 @@ json getEnvs(const json &input) {
     char **envs = environ;
     for(; *envs; envs++) {
         vector<string> env = helpers::splitTwo(string(*envs), '=');
-        string key = env[0];
-        string value = env.size() == 2 ? env[1] : "";
-        output["returnValue"][key] = value;
+        if(env.size() == 2) output["returnValue"][env[0]] = env[1];
     }
     #elif defined(_WIN32)
-    const wchar_t *envsO = GetEnvironmentStrings();
-    const wchar_t *envs = envsO;
-    int prevIndex = 0;
-    for(int i = 0; ; i++) {
-        if(envs[i] != '\0') {
-            continue;
+    LPWCH envsO = GetEnvironmentStringsW();
+    LPWCH envs = envsO;
+    while (*envs) {
+        wstring envStrW(envs);
+        string envStr = helpers::wstr2str(envStrW);
+        if (!envStr.empty() && envStr[0] != '=') {
+            size_t pos = envStr.find('=');
+            if (pos != string::npos) {
+                output["returnValue"][envStr.substr(0, pos)] = envStr.substr(pos + 1);
+            }
         }
-        vector<string> env = helpers::splitTwo(helpers::wstr2str(wstring(envs + prevIndex, envs + i)), '=');
-        string key = env[0];
-        string value = env.size() == 2 ? env[1] : "";
-        output["returnValue"][key] = value;
-
-        prevIndex = i + 1;
-        if(envs[i + 1] == '\0') {
-            break;
-        }
+        envs += envStrW.length() + 1;
     }
-    FreeEnvironmentStrings((LPWCH) envsO);
+    FreeEnvironmentStringsW(envsO);
     #endif
     output["success"] = true;
     return output;
