@@ -81,6 +81,11 @@ string __findChrome() {
     };
     #endif
 
+    if(helpers::hasField(input, "chromeBin")) {
+        string customBin = input["chromeBin"].get<string>();
+        chromeBins.insert(chromeBins.begin(), customBin);
+    }
+
     for(const string &cmd: chromeBins) {
         fs::FileStats stats = fs::getStats(cmd);
         if(stats.status == errors::NE_ST_OK && stats.entryType == fs::EntryTypeFile) {
@@ -94,24 +99,10 @@ string __findChrome() {
 void init(const json &input) {
 
     string chromeCmd = __findChrome();
-    
-    // Check if user has specified a custom Chrome binary path
-    if(helpers::hasField(input, "chromeBin")) {
-        chromeCmd = input["chromeBin"].get<string>();
-        // Validate that the custom path exists
-        fs::FileStats stats = fs::getStats(chromeCmd);
-        if(stats.status != errors::NE_ST_OK || stats.entryType != fs::EntryTypeFile) {
-            pfd::message("Unable to start Chrome mode",
-                            "The specified Chrome binary path does not exist: " + chromeCmd,
-                            pfd::choice::ok,
-                            pfd::icon::error);
-            std::exit(1);
-        }
-    }
 
     if(chromeCmd.empty()) {
         pfd::message("Unable to start Chrome mode",
-                        "You need to install Chrome browser to use the Neutralinojs chrome mode, or specify a custom path using 'chromeBin' in the config",
+                        "You need to install Google Chrome to run this Neutralinojs application",
                         pfd::choice::ok,
                         pfd::icon::error);
         std::exit(1);
