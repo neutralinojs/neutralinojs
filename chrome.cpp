@@ -81,6 +81,11 @@ string __findChrome() {
     };
     #endif
 
+    if(helpers::hasField(input, "chromeBin")) {
+        string customBin = input["chromeBin"].get<string>();
+        chromeBins.insert(chromeBins.begin(), customBin);
+    }
+
     for(const string &cmd: chromeBins) {
         fs::FileStats stats = fs::getStats(cmd);
         if(stats.status == errors::NE_ST_OK && stats.entryType == fs::EntryTypeFile) {
@@ -97,7 +102,7 @@ void init(const json &input) {
 
     if(chromeCmd.empty()) {
         pfd::message("Unable to start Chrome mode",
-                        "You need to install Chrome browser to use the Neutralinojs chrome mode",
+                        "You need to install Google Chrome to run this Neutralinojs application",
                         pfd::choice::ok,
                         pfd::icon::error);
         std::exit(1);
