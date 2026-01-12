@@ -45,7 +45,7 @@ string __getDefaultChromeArgs() {
     "--use-mock-keychain";
 }
 
-string __findChrome() {
+string __findChrome(const json &input) {
     string chromePath = "";
     #if defined(__linux__)
     vector<string> chromeBins = {
@@ -98,7 +98,7 @@ string __findChrome() {
 
 void init(const json &input) {
 
-    string chromeCmd = __findChrome();
+    string chromeCmd = __findChrome(input);
 
     if(chromeCmd.empty()) {
         pfd::message("Unable to start Chrome mode",
