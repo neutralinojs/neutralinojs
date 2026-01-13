@@ -647,7 +647,7 @@ bool __createWindow() {
         window::setAlwaysOnTop(true);
 
     if(windowProps.borderless)
-        window::setBorderless();
+        window::setBorderless(true);
 
     if(windowProps.skipTaskbar)
         window::setSkipTaskbar(true);
@@ -1001,18 +1001,20 @@ void setAlwaysOnTop(bool onTop) {
     #endif
 }
 
-void setBorderless() {
+void setBorderless(bool borderless) {
     #if defined(__linux__) || defined(__FreeBSD__)
-    gtk_window_set_decorated(GTK_WINDOW(windowHandle), false);
+    gtk_window_set_decorated(GTK_WINDOW(windowHandle), !borderless);
     #elif defined(__APPLE__)
     unsigned long windowStyleMask = ((unsigned long (*)(id, SEL))objc_msgSend)(
         (id) windowHandle, "styleMask"_sel);
-    windowStyleMask &= ~NSWindowStyleMaskTitled;
+    windowStyleMask = borderless ? (windowStyleMask & ~NSWindowStyleMaskTitled) : 
+                    (windowStyleMask | ~NSWindowStyleMaskTitled);
     ((void (*)(id, SEL, int))objc_msgSend)((id) windowHandle,
             "setStyleMask:"_sel, windowStyleMask);
     #elif defined(_WIN32)
     DWORD currentStyle = GetWindowLong(windowHandle, GWL_STYLE);
-    currentStyle &= ~(WS_CAPTION | WS_THICKFRAME);
+    currentStyle = borderless ? (currentStyle & ~(WS_CAPTION | WS_THICKFRAME)) : 
+                    (currentStyle | ~(WS_CAPTION | WS_THICKFRAME));
     SetWindowLong(windowHandle, GWL_STYLE, currentStyle);
     SetWindowPos(windowHandle, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE |
                     SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
@@ -1459,6 +1461,17 @@ json setAlwaysOnTop(const json &input) {
     return output;
 }
 
+json setBorderless(const json &input) {
+    json output;
+    bool borderless = true;
+    if(helpers::hasField(input, "borderless")) {
+        borderless = input["borderless"].get<bool>();
+    }
+    window::setBorderless(borderless);
+    output["success"] = true;
+    return output;
+}
+
 json getPosition(const json &input) {
     json output;
     json posRes;
@@ -1538,6 +1551,7 @@ json print(const json &input) {
     output["success"] = true;
     return output;
 }
+
 
 } // namespace controllers
 
