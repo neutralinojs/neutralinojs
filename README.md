@@ -61,8 +61,8 @@ Image created with [contributors-img](https://contributors-img.firebaseapp.com).
 
 ## Subprojects
 
-- Builds are powered by [BuildZri](https://codezri.org/docs/buildzri/intro)
 - Releases are powered by [ReleaseZri](https://codezri.org/docs/releasezri/intro)
+- Previous binary builds were powered by [BuildZri](https://codezri.org/docs/buildzri/intro) (now the project uses CMake + Ninja)
 
 ## Sponsors and Donators
 
