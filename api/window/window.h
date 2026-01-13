@@ -118,7 +118,7 @@ window::SizeOptions getSize();
 pair<int, int> getPosition();
 void center(bool useConfigSizes);
 void setAlwaysOnTop(bool onTop);
-void setBorderless(bool activate);
+void setBorderless(bool borderless);
 void setSkipTaskbar(bool skip);
 bool snapshot(const string &filename);
 void setMainMenu(const json &menu);
