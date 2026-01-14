@@ -77,7 +77,7 @@ jobs:
       run: |
         git config --global --add safe.directory $GITHUB_WORKSPACE
         mkdir -p build
-        cmake -DCMAKE_BUILD_TYPE=Debug . -G Ninja -B build ${{ matrix.toolchain }}
+        cmake -DCMAKE_BUILD_TYPE=Release . -G Ninja -B build ${{ matrix.toolchain }}
         ninja -C build -j$(nproc)
       
     - name: Upload Artifacts
