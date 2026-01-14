@@ -61,6 +61,7 @@ struct WindowOptions {
     bool useSavedState = true;
     bool injectGlobals = false;
     bool injectClientLibrary = false;
+    bool useLogicalPixels = false;
     bool skipTaskbar = false;
     string webviewArgs = "";
     string title = "Neutralinojs";
