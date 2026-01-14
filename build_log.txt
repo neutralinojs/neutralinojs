@@ -1,0 +1,9 @@
+ninja: Entering directory `build'
+[1/85] Building CXX object CMakeFiles/NeutralinoJS.dir/lib/efsw/src/efsw/FileInfo.cpp.o
+[2/85] Building CXX object CMakeFiles/NeutralinoJS.dir/lib/efsw/src/efsw/FileWatcher.cpp.o
+[3/85] Building CXX object CMakeFiles/NeutralinoJS.dir/lib/efsw/src/efsw/FileWatcherCWrapper.cpp.o
+[4/85] Building CXX object CMakeFiles/NeutralinoJS.dir/lib/efsw/src/efsw/FileWatcherFSEvents.cpp.o
+[5/85] Building CXX object CMakeFiles/NeutralinoJS.dir/auth/authbasic.cpp.o
+[6/85] Building CXX object CMakeFiles/NeutralinoJS.dir/lib/efsw/src/efsw/FileWatcherGeneric.cpp.o
+[7/85] Building CXX object CMakeFiles/NeutralinoJS.dir/lib/efsw/src/efsw/FileWatcherImpl.cpp.o
+[8/85] Building CXX object CMakeFiles/NeutralinoJS.dir/lib/efsw/src/efsw/FileWatcherKqueue.cpp.o
