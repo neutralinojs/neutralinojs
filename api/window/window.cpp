@@ -755,14 +755,7 @@ static void __initDropClass() {
 
         int width = windowProps.sizeOptions.width;
         int height = windowProps.sizeOptions.height;
-        if (windowProps.useLogicalPixels)
-        {
-            double scale = __getScaleFactor();
-            if (width > 0)
-                width = (int)(width * scale);
-            if (height > 0)
-                height = (int)(height * scale);
-        }
+        
 
         nativeWindow->set_size(
             width,
@@ -1208,12 +1201,6 @@ static void __initDropClass() {
             height = winPos.bottom - winPos.top;
         }
 #endif
-        if (windowProps.useLogicalPixels)
-        {
-            double scale = __getScaleFactor();
-            width = (int)(width / scale);
-            height = (int)(height / scale);
-        }
 
         windowProps.sizeOptions.width = width;
         windowProps.sizeOptions.height = height;
@@ -1454,12 +1441,6 @@ static void __initDropClass() {
 
         if (helpers::hasField(windowOptions, "x"))
             windowProps.x = windowOptions["x"].get<int>();
-
-        if (helpers::hasField(windowOptions, "pixelUnits"))
-        {
-            string units = windowOptions["pixelUnits"].get<string>();
-            windowProps.useLogicalPixels = (units == "logical");
-        }
 
         if (helpers::hasField(windowOptions, "y"))
             windowProps.y = windowOptions["y"].get<int>();
@@ -1742,14 +1723,6 @@ static void __initDropClass() {
             int width = windowProps.sizeOptions.width;
             int height = windowProps.sizeOptions.height;
 
-            if (windowProps.useLogicalPixels)
-            {
-                double scale = __getScaleFactor();
-                if (width > 0)
-                    width = (int)(width * scale);
-                if (height > 0)
-                    height = (int)(height * scale);
-            }
 
             nativeWindow->set_size(
                 width,
