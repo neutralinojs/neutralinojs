@@ -66,6 +66,7 @@ long createWatcher(const string &path);
 bool removeWatcher(long watcherId);
 fs::FileStats getStats(const string &path);
 fs::DirReaderResult readDirectory(const string &path, bool recursive = false);
+string applyPathConstants(const string &path);
 
 namespace controllers {
 

@@ -2,7 +2,6 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
-#include <regex>
 #include <vector>
 
 #include "extensions_loader.h"
@@ -10,6 +9,7 @@
 #include "helpers.h"
 #include "auth/authbasic.h"
 #include "api/os/os.h"
+#include "api/fs/fs.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -46,7 +46,7 @@ void init() {
         if(helpers::hasField(extension, "command") || helpers::hasField(extension, commandKeyForOs)) {
             string command = helpers::hasField(extension, commandKeyForOs) ? extension[commandKeyForOs].get<string>()
                                 : extension["command"].get<string>();
-            command = regex_replace(command, regex("\\$\\{NL_PATH\\}"), settings::getAppPath());
+            command = fs::applyPathConstants(command);
 
             os::ChildProcessOptions processOptions;
             processOptions.events = false;

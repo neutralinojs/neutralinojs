@@ -85,7 +85,7 @@ string __findChrome(const json &input) {
     if(helpers::hasField(input, "browserBinary") || helpers::hasField(input, browserBinaryKeyForOs)) {
         string customBin = helpers::hasField(input, browserBinaryKeyForOs) ? input[browserBinaryKeyForOs].get<string>() : 
                                     input["browserBinary"].get<string>();
-        chromeBins.insert(chromeBins.begin(), customBin);
+        chromeBins.insert(chromeBins.begin(), fs::applyPathConstants(customBin));
     }
 
     for(const string &cmd: chromeBins) {

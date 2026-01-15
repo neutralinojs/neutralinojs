@@ -313,7 +313,8 @@ void applyConfigOverride(const settings::CliArg &arg) {
         // Chrome mode
         {"--chrome-width", {"/modes/chrome/width", "int"}},
         {"--chrome-height", {"/modes/chrome/height", "int"}},
-        {"--chrome-args", {"/modes/chrome/args", "string"}}
+        {"--chrome-args", {"/modes/chrome/args", "string"}},
+        {"--chrome-browser-binary", {"/modes/chrome/browserBinary", "string"}}
     };
 
     // Allows overriding from modes

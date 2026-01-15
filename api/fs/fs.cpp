@@ -26,6 +26,7 @@
 #include <efsw/efsw.hpp>
 #include "lib/json/json.hpp"
 #include "lib/base64/base64.hpp"
+#include "lib/platformfolders/platform_folders.h"
 #include "settings.h"
 #include "helpers.h"
 #include "errors.h"
@@ -347,6 +348,12 @@ fs::DirReaderResult readDirectory(const string &path, bool recursive) {
         }
     }
     return dirResult;
+}
+
+string applyPathConstants(const string &path) {
+    string newPath = regex_replace(path, regex("\\$\\{NL_PATH\\}"), settings::getAppPath());
+    newPath = regex_replace(newPath, regex("\\$\\{NL_DATAHOMEPATH\\}"), sago::getDataHome());
+    return newPath;
 }
 
 namespace controllers {
