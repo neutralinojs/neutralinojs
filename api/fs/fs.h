@@ -43,6 +43,7 @@ struct FileStats {
     fs::EntryType entryType = fs::EntryTypeOther;
     long long createdAt;
     long long modifiedAt;
+    long long lastWriteTime;
 };
 
 struct DirReaderEntry {
