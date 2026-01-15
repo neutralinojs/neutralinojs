@@ -12,7 +12,7 @@
 
 #elif defined(__APPLE__)
 #include <objc/objc-runtime.h>
-#include <CoreFoundation/Corefoundation.h>
+#include <CoreFoundation/CoreFoundation.h>
 #include <CoreGraphics/CGDisplayConfiguration.h>
 #include <CoreGraphics/CGWindow.h>
 
@@ -254,6 +254,7 @@ namespace window
 
     void __undoFakeHidden()
     {
+        #if defined(_WIN32)
         int x = windowProps.x;
         int y = windowProps.y;
         if (!window::isSavedStateLoaded() && windowProps.center)
@@ -267,6 +268,7 @@ namespace window
         SetWindowPos(windowHandle, nullptr,
                      x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
         ShowWindow(windowHandle, SW_SHOW);
+        #endif
     }
 #if defined(_WIN32)
     bool __getEncoderClsid(const WCHAR *format, CLSID *pClsid)
