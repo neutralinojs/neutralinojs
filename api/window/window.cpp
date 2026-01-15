@@ -15,6 +15,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreGraphics/CGDisplayConfiguration.h>
 #include <CoreGraphics/CGWindow.h>
+#include <dlfcn.h>
 
 #if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 120300
 #import <ScreenCaptureKit/ScreenCaptureKit.h>
@@ -24,7 +25,7 @@
 #define NSFloatingWindowLevel 5
 #define NSWindowStyleMaskFullScreen 16384
 #define NSPNGFileType 4
-
+#define NSWindowStyleMaskTitled 1
 #define kCGWindowListOptionIncludingWindow 8
 #define kCGWindowImageBoundsIgnoreFraming 1
 
