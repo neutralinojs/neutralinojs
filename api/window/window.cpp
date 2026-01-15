@@ -254,7 +254,7 @@ namespace window
 
     void __undoFakeHidden()
     {
-        #if defined(_WIN32)
+#if defined(_WIN32)
         int x = windowProps.x;
         int y = windowProps.y;
         if (!window::isSavedStateLoaded() && windowProps.center)
@@ -268,7 +268,7 @@ namespace window
         SetWindowPos(windowHandle, nullptr,
                      x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
         ShowWindow(windowHandle, SW_SHOW);
-        #endif
+#endif
     }
 #if defined(_WIN32)
     bool __getEncoderClsid(const WCHAR *format, CLSID *pClsid)
@@ -698,43 +698,45 @@ namespace window
         }
     }
 #if defined(__APPLE__)
-static Class dropCls = nullptr;
-static void __initDropClass() {
-    if (dropCls) return;
-    dropCls = objc_allocateClassPair(objc_getClass("NSView"), "NeutralinoDropView", 0);
-    class_addMethod(
-        dropCls,
-        sel_registerName("performDragOperation:"),
-        (IMP)+[](id, SEL, id sender) -> BOOL {
-            json payload;
-            payload["paths"] = json::array();
-            id pb = ((id (*)(id, SEL))objc_msgSend)(sender, sel_registerName("draggingPasteboard"));
-            id files = ((id (*)(id, SEL, id))objc_msgSend)(
-                pb,
-                sel_registerName("propertyListForType:"),
-                ((id (*)(id, SEL, const char*))objc_msgSend)(
-                    "NSString"_cls,
-                    sel_registerName("stringWithUTF8String:"),
-                    "NSFilenamesPboardType"
-                )
-            );
-            if (files) {
-                NSUInteger count = ((NSUInteger (*)(id, SEL))objc_msgSend)(files, sel_registerName("count"));
-                for (NSUInteger i = 0; i < count; ++i) {
-                    id path = ((id (*)(id, SEL, NSUInteger))objc_msgSend)(
-                        files, sel_registerName("objectAtIndex:"), i);
-                    const char* cpath =
-                        ((const char* (*)(id, SEL))objc_msgSend)(path, sel_registerName("UTF8String"));
-                    payload["paths"].push_back(cpath);
+    static Class dropCls = nullptr;
+    static void __initDropClass()
+    {
+        if (dropCls)
+            return;
+        dropCls = objc_allocateClassPair(objc_getClass("NSView"), "NeutralinoDropView", 0);
+        class_addMethod(
+            dropCls,
+            sel_registerName("performDragOperation:"),
+            (IMP) + [](id, SEL, id sender) -> BOOL
+            {
+                json payload;
+                payload["paths"] = json::array();
+                id pb = ((id (*)(id, SEL))objc_msgSend)(sender, sel_registerName("draggingPasteboard"));
+                id files = ((id (*)(id, SEL, id))objc_msgSend)(
+                    pb,
+                    sel_registerName("propertyListForType:"),
+                    ((id (*)(id, SEL, const char *))objc_msgSend)(
+                        "NSString"_cls,
+                        sel_registerName("stringWithUTF8String:"),
+                        "NSFilenamesPboardType"));
+                if (files)
+                {
+                    NSUInteger count = ((NSUInteger (*)(id, SEL))objc_msgSend)(files, sel_registerName("count"));
+                    for (NSUInteger i = 0; i < count; ++i)
+                    {
+                        id path = ((id (*)(id, SEL, NSUInteger))objc_msgSend)(
+                            files, sel_registerName("objectAtIndex:"), i);
+                        const char *cpath =
+                            ((const char *(*)(id, SEL))objc_msgSend)(path, sel_registerName("UTF8String"));
+                        payload["paths"].push_back(cpath);
+                    }
                 }
-            }
-            events::dispatch("fileDrop", payload);
-            return YES;
-        },
-        "B@:@"
-    );
-    objc_registerClassPair(dropCls);
-}
+                events::dispatch("fileDrop", payload);
+                return YES;
+            },
+            "B@:@");
+        objc_registerClassPair(dropCls);
+    }
 #endif
 
     bool __createWindow()
@@ -757,7 +759,6 @@ static void __initDropClass() {
 
         int width = windowProps.sizeOptions.width;
         int height = windowProps.sizeOptions.height;
-        
 
         nativeWindow->set_size(
             width,
@@ -780,66 +781,68 @@ static void __initDropClass() {
             __injectScript();
 
 #if defined(__linux__) || defined(__FreeBSD__)
-    windowHandle = (GtkWidget*) nativeWindow->window();
+        windowHandle = (GtkWidget *)nativeWindow->window();
 
-    GtkTargetEntry targets[] = {
-        {(gchar*)"text/uri-list", 0, 0}
-    };
+        GtkTargetEntry targets[] = {
+            {(gchar *)"text/uri-list", 0, 0}};
 
-    gtk_drag_dest_set(windowHandle,
-        GTK_DEST_DEFAULT_ALL,
-        targets, 1,
-        GDK_ACTION_COPY);
+        gtk_drag_dest_set(windowHandle,
+                          GTK_DEST_DEFAULT_ALL,
+                          targets, 1,
+                          GDK_ACTION_COPY);
 
-    g_signal_connect(windowHandle, "drag-data-received",
-        G_CALLBACK(+[](GtkWidget*,
-                       GdkDragContext*,
-                       gint, gint,
-                       GtkSelectionData* data,
-                       guint, guint,
-                       gpointer) {
+        g_signal_connect(windowHandle, "drag-data-received",
+                         G_CALLBACK(+[](GtkWidget *,
+                                        GdkDragContext *,
+                                        gint, gint,
+                                        GtkSelectionData *data,
+                                        guint, guint,
+                                        gpointer)
+                                    {
+                                        json payload;
+                                        payload["paths"] = json::array();
 
-            json payload;
-            payload["paths"] = json::array();
+                                        if (data && gtk_selection_data_get_length(data) > 0)
+                                        {
+                                            gchar **uris = gtk_selection_data_get_uris(data);
+                                            if (uris)
+                                            {
+                                                for (int i = 0; uris[i] != nullptr; ++i)
+                                                {
+                                                    gchar *path = g_filename_from_uri(uris[i], nullptr, nullptr);
+                                                    if (path)
+                                                    {
+                                                        payload["paths"].push_back(path);
+                                                        g_free(path);
+                                                    }
+                                                }
+                                                g_strfreev(uris);
+                                            }
+                                        }
 
-            if (data && gtk_selection_data_get_length(data) > 0) {
-                gchar** uris = gtk_selection_data_get_uris(data);
-                if (uris) {
-                    for (int i = 0; uris[i] != nullptr; ++i) {
-                        gchar* path = g_filename_from_uri(uris[i], nullptr, nullptr);
-                        if (path) {
-                            payload["paths"].push_back(path);
-                            g_free(path);
-                        }
-                    }
-                    g_strfreev(uris);
-                }
-            }
-
-            events::dispatch("fileDrop", payload);
-        }),
-        nullptr);
+                                        events::dispatch("fileDrop", payload);
+                                    }),
+                         nullptr);
 
 #elif defined(__APPLE__)
-    __initDropClass();
+        __initDropClass();
 
-    windowHandle = (id)nativeWindow->window();
+        windowHandle = (id)nativeWindow->window();
 
-    id contentView = ((id (*)(id, SEL))objc_msgSend)(windowHandle, sel_registerName("contentView"));
-    id dropView = ((id (*)(id, SEL))objc_msgSend)((id)dropCls, sel_registerName("new"));
+        id contentView = ((id (*)(id, SEL))objc_msgSend)(windowHandle, sel_registerName("contentView"));
+        id dropView = ((id (*)(id, SEL))objc_msgSend)((id)dropCls, sel_registerName("new"));
 
-    ((void (*)(id, SEL, id))objc_msgSend)(dropView,
-        sel_registerName("registerForDraggedTypes:"),
-        ((id (*)(id, SEL, id))objc_msgSend)(
-            "NSArray"_cls,
-            sel_registerName("arrayWithObject:"),
-            ((id (*)(id, SEL, const char *))objc_msgSend)(
-                "NSString"_cls,
-                sel_registerName("stringWithUTF8String:"),
-                "NSFilenamesPboardType")));
+        ((void (*)(id, SEL, id))objc_msgSend)(dropView,
+                                              sel_registerName("registerForDraggedTypes:"),
+                                              ((id (*)(id, SEL, id))objc_msgSend)(
+                                                  "NSArray"_cls,
+                                                  sel_registerName("arrayWithObject:"),
+                                                  ((id (*)(id, SEL, const char *))objc_msgSend)(
+                                                      "NSString"_cls,
+                                                      sel_registerName("stringWithUTF8String:"),
+                                                      "NSFilenamesPboardType")));
 
-    ((void (*)(id, SEL, id))objc_msgSend)(contentView, sel_registerName("addSubview:"), dropView);
-
+        ((void (*)(id, SEL, id))objc_msgSend)(contentView, sel_registerName("addSubview:"), dropView);
 
 #elif defined(_WIN32)
         windowHandle = (HWND)nativeWindow->window();
@@ -1312,71 +1315,87 @@ static void __initDropClass() {
         GdkPixbuf *screenshot = gdk_pixbuf_get_from_window(window, x, y, width, height);
         return gdk_pixbuf_save(screenshot, filename.c_str(), "png", nullptr, nullptr);
 
-
 #elif defined(__APPLE__)
-    CGRect frameRect = __getWindowRect();
-    CGRect clientRect =
-        ((CGRect (*)(id, SEL, CGRect))objc_msgSend)(windowHandle, "contentRectForFrameRect:"_sel, frameRect);
-    clientRect.origin.y += frameRect.size.height - clientRect.size.height;
+        CGRect frameRect = __getWindowRect();
+        CGRect clientRect =
+            ((CGRect (*)(id, SEL, CGRect))objc_msgSend)(windowHandle, "contentRectForFrameRect:"_sel, frameRect);
+        clientRect.origin.y += frameRect.size.height - clientRect.size.height;
 
-    long winId = ((long (*)(id, SEL))objc_msgSend)(windowHandle, "windowNumber"_sel);
+        long winId = ((long (*)(id, SEL))objc_msgSend)(windowHandle, "windowNumber"_sel);
 
-    CGImageRef imgRef = nil;
+        CGImageRef imgRef = nil;
 
-    Class SCWindowCls = objc_getClass("SCWindow");
-    if (SCWindowCls &&
-        class_respondsToSelector(object_getClass(SCWindowCls),
-                                 sel_registerName("windowWithWindowID:"))) {
+        Class SCWindowCls = objc_getClass("SCWindow");
+        if (SCWindowCls &&
+            class_respondsToSelector(object_getClass(SCWindowCls),
+                                     sel_registerName("windowWithWindowID:")))
+        {
 
-        __block CGImageRef screenshotImage = nil;
-        dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+            __block CGImageRef screenshotImage = nil;
+            dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
 
-        id scWindow =
-            ((id (*)(id, SEL, long))objc_msgSend)(SCWindowCls,
-                                                  sel_registerName("windowWithWindowID:"),
-                                                  winId);
+            id scWindow =
+                ((id (*)(id, SEL, long))objc_msgSend)(SCWindowCls,
+                                                      sel_registerName("windowWithWindowID:"),
+                                                      winId);
 
-        id filter =
-            ((id (*)(id, SEL, id))objc_msgSend)(
-                objc_getClass("SCContentFilter"),
-                sel_registerName("alloc"),
-                nil);
+            id filter =
+                ((id (*)(id, SEL, id))objc_msgSend)(
+                    objc_getClass("SCContentFilter"),
+                    sel_registerName("alloc"),
+                    nil);
 
-        filter =
-            ((id (*)(id, SEL, id))objc_msgSend)(
-                filter,
-                sel_registerName("initWithDesktopIndependentWindow:"),
-                scWindow);
+            filter =
+                ((id (*)(id, SEL, id))objc_msgSend)(
+                    filter,
+                    sel_registerName("initWithDesktopIndependentWindow:"),
+                    scWindow);
 
-        id config =
-            ((id (*)(id, SEL))objc_msgSend)(
-                objc_getClass("SCStreamConfiguration"),
-                sel_registerName("new"));
+            id config =
+                ((id (*)(id, SEL))objc_msgSend)(
+                    objc_getClass("SCStreamConfiguration"),
+                    sel_registerName("new"));
 
-        ((void (*)(id, SEL, bool))objc_msgSend)(config, sel_registerName("setScalesToFit:"), false);
+            ((void (*)(id, SEL, bool))objc_msgSend)(config, sel_registerName("setScalesToFit:"), false);
 
-        ((void (*)(id, SEL, id, id, void(^)(CGImageRef, NSError*)) )objc_msgSend)(
-            objc_getClass("SCScreenshotManager"),
-            sel_registerName("captureImageWithFilter:configuration:completionHandler:"),
-            filter, config,
-            ^(CGImageRef capturedImage, NSError *error) {
-                if (!error && capturedImage) {
-                    screenshotImage = CGImageCreateWithImageInRect(capturedImage, clientRect);
-                }
-                dispatch_semaphore_signal(semaphore);
-            });
+            ((void (*)(id, SEL, id, id, void (^)(CGImageRef, NSError *)))objc_msgSend)(
+                objc_getClass("SCScreenshotManager"),
+                sel_registerName("captureImageWithFilter:configuration:completionHandler:"),
+                filter, config,
+                ^(CGImageRef capturedImage, NSError *error) {
+                  if (!error && capturedImage)
+                  {
+                      screenshotImage = CGImageCreateWithImageInRect(capturedImage, clientRect);
+                  }
+                  dispatch_semaphore_signal(semaphore);
+                });
 
-        dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC));
-        imgRef = screenshotImage;
-    }
-    else {
-        // Calling for all older / incompatible macOS 
-        imgRef = CGWindowListCreateImage(
-            clientRect,
-            kCGWindowListOptionIncludingWindow,
-            winId,
-            kCGWindowImageBoundsIgnoreFraming);
-    }
+            dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC));
+            imgRef = screenshotImage;
+        }
+        else
+        {
+            // Calling for all older / incompatible macOS
+            typedef CGImageRef (*CGWindowListCreateImageFn)(
+                CGRect, CGWindowListOption, CGWindowID, CGWindowImageOption);
+
+            static CGWindowListCreateImageFn pCGWindowListCreateImage =
+                (CGWindowListCreateImageFn)dlsym(RTLD_DEFAULT, "CGWindowListCreateImage");
+
+            if (pCGWindowListCreateImage)
+            {
+                imgRef = pCGWindowListCreateImage(
+                    clientRect,
+                    kCGWindowListOptionIncludingWindow,
+                    winId,
+                    kCGWindowImageBoundsIgnoreFraming);
+            }
+        }
+        if (!imgRef)
+        {
+            return false;
+        }
+
         id screenshot =
             ((id (*)(id, SEL))objc_msgSend)("NSBitmapImageRep"_cls, "alloc"_sel);
         ((void (*)(id, SEL, CGImageRef))objc_msgSend)(screenshot, "initWithCGImage:"_sel, imgRef);
@@ -1749,7 +1768,6 @@ static void __initDropClass() {
 
             int width = windowProps.sizeOptions.width;
             int height = windowProps.sizeOptions.height;
-
 
             nativeWindow->set_size(
                 width,
