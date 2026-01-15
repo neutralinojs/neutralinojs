@@ -1312,46 +1312,71 @@ static void __initDropClass() {
         GdkPixbuf *screenshot = gdk_pixbuf_get_from_window(window, x, y, width, height);
         return gdk_pixbuf_save(screenshot, filename.c_str(), "png", nullptr, nullptr);
 
+
 #elif defined(__APPLE__)
-        CGRect frameRect = __getWindowRect();
-        CGRect clientRect =
-            ((CGRect (*)(id, SEL, CGRect))objc_msgSend)(windowHandle, "contentRectForFrameRect:"_sel, frameRect);
-        clientRect.origin.y += frameRect.size.height - clientRect.size.height;
+    CGRect frameRect = __getWindowRect();
+    CGRect clientRect =
+        ((CGRect (*)(id, SEL, CGRect))objc_msgSend)(windowHandle, "contentRectForFrameRect:"_sel, frameRect);
+    clientRect.origin.y += frameRect.size.height - clientRect.size.height;
 
-        long winId = ((long (*)(id, SEL))objc_msgSend)(windowHandle, "windowNumber"_sel);
+    long winId = ((long (*)(id, SEL))objc_msgSend)(windowHandle, "windowNumber"_sel);
 
-        CGImageRef imgRef = nil;
+    CGImageRef imgRef = nil;
 
-#if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 120300
-        // Modern ScreenCaptureKit API (macOS 12.3+)
+    Class SCWindowCls = objc_getClass("SCWindow");
+    if (SCWindowCls &&
+        class_respondsToSelector(object_getClass(SCWindowCls),
+                                 sel_registerName("windowWithWindowID:"))) {
+
         __block CGImageRef screenshotImage = nil;
         dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
 
-        SCContentFilter *filter = [[SCContentFilter alloc] initWithDesktopIndependentWindow:
-                                                               [SCWindow windowWithWindowID:winId]];
+        id scWindow =
+            ((id (*)(id, SEL, long))objc_msgSend)(SCWindowCls,
+                                                  sel_registerName("windowWithWindowID:"),
+                                                  winId);
 
-        SCStreamConfiguration *config = [[SCStreamConfiguration alloc] init];
-        config.scalesToFit = NO;
+        id filter =
+            ((id (*)(id, SEL, id))objc_msgSend)(
+                objc_getClass("SCContentFilter"),
+                sel_registerName("alloc"),
+                nil);
 
-        [SCScreenshotManager captureImageWithFilter:filter
-                                      configuration:config
-                                  completionHandler:^(CGImageRef capturedImage, NSError *error) {
-                                    if (error == nil && capturedImage != NULL)
-                                    {
+        filter =
+            ((id (*)(id, SEL, id))objc_msgSend)(
+                filter,
+                sel_registerName("initWithDesktopIndependentWindow:"),
+                scWindow);
 
-                                        screenshotImage = CGImageCreateWithImageInRect(capturedImage, clientRect);
-                                    }
-                                    dispatch_semaphore_signal(semaphore);
-                                  }];
+        id config =
+            ((id (*)(id, SEL))objc_msgSend)(
+                objc_getClass("SCStreamConfiguration"),
+                sel_registerName("new"));
+
+        ((void (*)(id, SEL, bool))objc_msgSend)(config, sel_registerName("setScalesToFit:"), false);
+
+        ((void (*)(id, SEL, id, id, void(^)(CGImageRef, NSError*)) )objc_msgSend)(
+            objc_getClass("SCScreenshotManager"),
+            sel_registerName("captureImageWithFilter:configuration:completionHandler:"),
+            filter, config,
+            ^(CGImageRef capturedImage, NSError *error) {
+                if (!error && capturedImage) {
+                    screenshotImage = CGImageCreateWithImageInRect(capturedImage, clientRect);
+                }
+                dispatch_semaphore_signal(semaphore);
+            });
 
         dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC));
         imgRef = screenshotImage;
-
-#else
-        // Fallback for macOS < 12.3
-        imgRef = CGWindowListCreateImage(clientRect, kCGWindowListOptionIncludingWindow, winId, kCGWindowImageBoundsIgnoreFraming);
-#endif
-
+    }
+    else {
+        // Calling for all older / incompatible macOS 
+        imgRef = CGWindowListCreateImage(
+            clientRect,
+            kCGWindowListOptionIncludingWindow,
+            winId,
+            kCGWindowImageBoundsIgnoreFraming);
+    }
         id screenshot =
             ((id (*)(id, SEL))objc_msgSend)("NSBitmapImageRep"_cls, "alloc"_sel);
         ((void (*)(id, SEL, CGImageRef))objc_msgSend)(screenshot, "initWithCGImage:"_sel, imgRef);
