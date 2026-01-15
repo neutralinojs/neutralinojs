@@ -353,7 +353,7 @@ fs::DirReaderResult readDirectory(const string &path, bool recursive) {
 string applyPathConstants(const string &path) {
     string newPath = regex_replace(path, regex("\\$\\{NL_PATH\\}"), settings::getAppPath());
     newPath = regex_replace(newPath, regex("\\$\\{NL_DATAHOMEPATH\\}"), sago::getDataHome());
-    return newPath;
+    return helpers::normalizePath(newPath);
 }
 
 namespace controllers {
