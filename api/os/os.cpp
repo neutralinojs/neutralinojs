@@ -281,7 +281,7 @@ vector<string> __extensionsToVector(const json &filters) {
 		const auto &exts = filter["extensions"];
         string extensions = "";
         for (auto i = 0; i < exts.size(); ++i) {
-            extensions += "*." + extension.get<string>();
+            extensions += "*." + exts[i].get<string>();
 			if (i + 1 < exts.size()) {
 				extensions += " ";
 			}
