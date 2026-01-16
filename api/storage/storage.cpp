@@ -3,6 +3,8 @@
 #include <fstream>
 #include <regex>
 #include <filesystem>
+#include <algorithm>
+#include <cctype>
 
 #include "lib/json/json.hpp"
 #include "lib/platformfolders/platform_folders.h"
@@ -24,6 +26,12 @@
 
 using namespace std;
 using json = nlohmann::json;
+
+string __normalizeStorageKey(string key) {
+    transform(key.begin(), key.end(), key.begin(),
+              [](unsigned char c){ return tolower(c); });
+    return key;
+}
 
 string storagePath;
 
@@ -51,7 +59,8 @@ json __validateStorageBucket(const string &key) {
 
 json __removeStorageBucket(const string &key) {
     json output;
-    string filename = storagePath + "/" + key + NEU_STORAGE_EXT;
+    string nkey = __normalizeStorageKey(key);
+    string filename = storagePath + "/" + nkey + NEU_STORAGE_EXT;
     if(!filesystem::remove(CONVSTR(filename))) {
         output["error"] = errors::makeErrorPayload(errors::NE_ST_STKEYRE, key);
         return output;
@@ -72,8 +81,9 @@ json getData(const json &input) {
     json errorPayload = __validateStorageBucket(key);
     if(!errorPayload.is_null())
         return errorPayload;
-
-    string filename = storagePath + "/" + key + NEU_STORAGE_EXT;
+    
+    string nkey = __normalizeStorageKey(key);
+    string filename = storagePath + "/" + nkey + NEU_STORAGE_EXT;
 
     fs::FileReaderResult fileReaderResult;
     fileReaderResult = fs::readFile(filename);
@@ -108,6 +118,7 @@ json setData(const json &input) {
     else {
         fs::FileWriterOptions fileWriterOptions;
         fileWriterOptions.data = input["data"].get<string>();
+        string nkey = __normalizeStorageKey(key);
         fileWriterOptions.filename = storagePath + "/" + key + NEU_STORAGE_EXT;;
 
         if(!fs::writeFile(fileWriterOptions)) {
