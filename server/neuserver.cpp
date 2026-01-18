@@ -6,6 +6,7 @@
 #include <thread>
 #include <chrono>
 #include <set>
+#include <fstream>
 
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
@@ -201,12 +202,48 @@ void handleHTTP(websocketpp::connection_hdl handler) {
     if(!documentRoot.empty()) {
         resource = documentRoot + resource;
     }
+    auto headers = con->get_request().get_headers();
+    auto rangeIt = headers.find("Range");
+    if(rangeIt != headers.end()){
+        string range = rangeIt->second;
+        long long start = 0;
+        long long end = -1;
+        if(sscanf(range.c_str(),"bytes=%lld-%lld",&start,&end)){
+            std::ifstream file(resource,std::ios::binary | std::ios::ate);
+            if(file){
+                long long fileSize = (long long)file.tellg();
+                if(start < 0) start = 0;
+                if(end < 0 || end >= fileSize)
+                    end = fileSize -1;
+                long long length = end - start + 1;
+                file.seekg(start, std::ios::beg);
+                std::string buffer;
+                buffer.resize((size_t)length);
+                file.read(&buffer[0],length);
+                std::streamsize byteRead = file.gcount();
+                buffer.resize((size_t)byteRead);
+                con->set_status(websocketpp::http::status_code::partial_content);
+                con->set_body(buffer);
+                con->replace_header("Accept-Ranges","bytes");
+                con->replace_header(
+                    "Content-Range",
+                    "bytes " + std::to_string(start) + "-" + std::to_string(start + byteRead - 1) + "/" + std::to_string(fileSize)
+                );
+                con->replace_header("Content-Length",std::to_string(byteRead));
+                con->replace_header("Content-Type","video/mp4");
+                if(applyConfigHeaders){
+                    __applyConfigHeaders(con);
+                }
+                return;
+            }
+        }
+    }
     router::Response routerResponse = router::serve(resource);
     con->set_status(routerResponse.status);
     con->set_body(routerResponse.data);
-    con->replace_header("Content-Type", routerResponse.contentType);
-
-    if(applyConfigHeaders) {
+    con->replace_header("Content-Type",routerResponse.contentType);
+    
+    if(applyConfigHeaders){
         __applyConfigHeaders(con);
     }
 }
