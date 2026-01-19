@@ -1057,7 +1057,7 @@ public:
               if (w->m_minsz.x > 0 && w->m_minsz.y > 0) {
                 lpmmi->ptMinTrackSize = w->m_minsz;
               }
-            } } break;
+            } break;
             default:
               if (msg == WM_TASKBAR_CREATED) {
                 tray_recreate();
