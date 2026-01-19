@@ -280,7 +280,7 @@ vector<string> __extensionsToVector(const json &filters) {
         filtersV.push_back(filter["name"].get<string>());
 		const auto &exts = filter["extensions"];
         string extensions = "";
-        for (auto i = 0; i < exts.size(); ++i) {
+        for (int i = 0; i < exts.size(); i++) {
             extensions += "*." + exts[i].get<string>();
 			if (i + 1 < exts.size()) {
 				extensions += " ";
