@@ -951,7 +951,7 @@ public:
       HICON icon = (HICON)LoadImage(
           hInstance, IDI_APPLICATION, IMAGE_ICON, GetSystemMetrics(SM_CXSMICON),
           GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
-
+      static UINT WM_TASKBAR_CREATED = RegisterWindowMessage(L"TaskbarCreated");
       WNDCLASSEX wc;
       ZeroMemory(&wc, sizeof(WNDCLASSEX));
       wc.cbSize = sizeof(WNDCLASSEX);
@@ -1057,8 +1057,11 @@ public:
               if (w->m_minsz.x > 0 && w->m_minsz.y > 0) {
                 lpmmi->ptMinTrackSize = w->m_minsz;
               }
-            } break;
+            } } break;
             default:
+              if (msg == WM_TASKBAR_CREATED) {
+                tray_recreate();
+              }
               return DefWindowProc(hwnd, msg, wp, lp);
             }
             return 0;

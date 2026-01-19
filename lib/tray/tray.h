@@ -405,6 +405,10 @@ static int tray_init(struct tray *tray) {
   return 0;
 }
 
+static void tray_recreate() {
+  Shell_NotifyIcon(NIM_ADD, &nid);
+}
+
 static int tray_loop(int blocking) {
   MSG msg;
   if (blocking) {
