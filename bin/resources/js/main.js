@@ -26,13 +26,13 @@ Neutralino.events.on("windowClose", () => {
     Neutralino.app.exit();
 });
 
-// // Close app with Ctrl+W keyboard shortcut
-// document.addEventListener("keydown", (event) => {
-//     if (event.ctrlKey && event.key === "w") {
-//         event.preventDefault();
-//         Neutralino.app.exit();
-//     }
-// });
+// Close app with Ctrl+W keyboard shortcut
+document.addEventListener("keydown", (event) => {
+    if (event.ctrlKey && event.key === "w") {
+        event.preventDefault();
+        Neutralino.app.exit();
+    }
+});
 
 Neutralino.events.on("eventFromExtension", (evt) => {
     console.log(`INFO: Test extension said: ${evt.detail}`);
