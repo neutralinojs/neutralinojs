@@ -1060,8 +1060,7 @@ public:
             } } break;
             default:
               if (msg == WM_TASKBAR_CREATED) {
-                // Windows Explorer restarted, re-add tray icon
-                tray_reregister();
+                tray_recreate();
               }
               return DefWindowProc(hwnd, msg, wp, lp);
             }
