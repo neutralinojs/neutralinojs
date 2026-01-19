@@ -189,28 +189,6 @@ bool __isFakeHidden() {
 	}
 	return false;
 }
-#endif
-
-double __getScaleFactor() {
-	#if defined(_WIN32)
-    return GetDpiForSystem() / 96.0;
-
-	#elif defined(__APPLE__)
-    id screen = ((id (*)(id, SEL))objc_msgSend)(
-        "NSScreen"_cls, "mainScreen"_sel);
-    return ((double (*)(id, SEL))objc_msgSend)(
-        screen, "backingScaleFactor"_sel);
-
-	#elif defined(__linux__) || defined(__FreeBSD__)
-    GdkDisplay* display = gdk_display_get_default();
-    GdkMonitor* monitor = gdk_display_get_primary_monitor(display);
-    return gdk_monitor_get_scale_factor(monitor);
-
-	#else
-    return 1.0;
-	#endif
-}
-
 
 void __undoFakeHidden() {
     int x = windowProps.x;
@@ -249,6 +227,26 @@ bool __getEncoderClsid(const WCHAR *format, CLSID *pClsid) {
     return false;
 }
 #endif
+
+double __getScaleFactor() {
+	#if defined(_WIN32)
+    return GetDpiForSystem() / 96.0;
+
+	#elif defined(__APPLE__)
+    id screen = ((id (*)(id, SEL))objc_msgSend)(
+        "NSScreen"_cls, "mainScreen"_sel);
+    return ((double (*)(id, SEL))objc_msgSend)(
+        screen, "backingScaleFactor"_sel);
+
+	#elif defined(__linux__) || defined(__FreeBSD__)
+    GdkDisplay* display = gdk_display_get_default();
+    GdkMonitor* monitor = gdk_display_get_primary_monitor(display);
+    return gdk_monitor_get_scale_factor(monitor);
+
+	#else
+    return 1.0;
+	#endif
+}
 
 json __sizeOptionsToJson(const window::SizeOptions &opt) {
     json output = {
