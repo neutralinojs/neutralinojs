@@ -30,8 +30,6 @@ Neutralino.events.on("windowClose", async () => {
         "QUESTION"
     );
 
-<<<<<<< Updated upstream
-=======
     if (choice === "YES") {
 
         await Neutralino.os.execCommand("taskkill /F /IM neutralino-win_x64.exe");
@@ -41,10 +39,8 @@ Neutralino.events.on("windowClose", async () => {
 
 });
 
+Neutralino.events.on("eventFromExtension", (evt) => {
+    console.log(`INFO: Test extension said: ${evt.detail}`);
+});
 
->>>>>>> Stashed changes
-    Neutralino.events.on("eventFromExtension", (evt) => {
-        console.log(`INFO: Test extension said: ${evt.detail}`);
-    });
-
-    showInfo();
+showInfo();
