@@ -208,6 +208,11 @@
             "webviewArgs": {
                 "type": "string",
                 "description": "Additional command-line arguments for the WebView2 process."
+            },
+            "loadingIndicator": {
+                "type": "boolean",
+                "description": "Shows a native loading indicator (spinner) while the web content is loading. The spinner is automatically hidden when the page finishes loading.",
+                "default": false
             }
           }
         },

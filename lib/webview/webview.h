@@ -158,8 +158,9 @@ static void *dlib = nullptr;
 
 class gtk_webkit_engine {
 public:
-  gtk_webkit_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string &args)
+  gtk_webkit_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string &args, bool showLoadingIndicator = false)
       : m_window(static_cast<GtkWidget *>(window)) {
+    (void)showLoadingIndicator;
         
     setlocale(LC_ALL, "");
 
@@ -433,7 +434,10 @@ id operator"" _str(const char *s, std::size_t) {
 
 class cocoa_wkwebview_engine {
 public:
-  cocoa_wkwebview_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string &args) {
+  cocoa_wkwebview_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string &args, bool showLoadingIndicator = false) {
+    m_showLoadingIndicator = showLoadingIndicator;
+    m_spinner = nullptr;
+    m_spinnerContainer = nullptr;
     // Application
     id app = ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls,
                                             "sharedApplication"_sel);
@@ -596,8 +600,58 @@ public:
           "drawsBackground"_str);
     }
 
-    ((void (*)(id, SEL, id))objc_msgSend)(m_window, "setContentView:"_sel,
-                                          m_webview);
+    if(m_showLoadingIndicator) {
+      CGRect contentRect = ((CGRect(*)(id, SEL))objc_msgSend)(m_window, "frame"_sel);
+
+      m_spinnerContainer = ((id(*)(id, SEL))objc_msgSend)("NSView"_cls, "alloc"_sel);
+      ((id(*)(id, SEL, CGRect))objc_msgSend)(m_spinnerContainer, "initWithFrame:"_sel,
+          CGRectMake(0, 0, contentRect.size.width, contentRect.size.height));
+      ((void(*)(id, SEL, unsigned long))objc_msgSend)(m_spinnerContainer, "setAutoresizingMask:"_sel, 18);
+
+      ((void(*)(id, SEL, CGRect))objc_msgSend)(m_webview, "setFrame:"_sel,
+          CGRectMake(0, 0, contentRect.size.width, contentRect.size.height));
+      ((void(*)(id, SEL, unsigned long))objc_msgSend)(m_webview, "setAutoresizingMask:"_sel, 18);
+
+      double spinnerSize = 32;
+      double spinnerX = (contentRect.size.width - spinnerSize) / 2;
+      double spinnerY = (contentRect.size.height - spinnerSize) / 2;
+      m_spinner = ((id(*)(id, SEL))objc_msgSend)("NSProgressIndicator"_cls, "alloc"_sel);
+      ((id(*)(id, SEL, CGRect))objc_msgSend)(m_spinner, "initWithFrame:"_sel,
+          CGRectMake(spinnerX, spinnerY, spinnerSize, spinnerSize));
+      ((void(*)(id, SEL, long))objc_msgSend)(m_spinner, "setStyle:"_sel, 1);
+      ((void(*)(id, SEL, BOOL))objc_msgSend)(m_spinner, "setIndeterminate:"_sel, YES);
+      ((void(*)(id, SEL, BOOL))objc_msgSend)(m_spinner, "setDisplayedWhenStopped:"_sel, NO);
+      ((void(*)(id, SEL, unsigned long))objc_msgSend)(m_spinner, "setAutoresizingMask:"_sel, 45);
+      ((void(*)(id, SEL, id))objc_msgSend)(m_spinner, "startAnimation:"_sel, nullptr);
+
+      ((void(*)(id, SEL, id))objc_msgSend)(m_spinnerContainer, "addSubview:"_sel, m_webview);
+      ((void(*)(id, SEL, id))objc_msgSend)(m_spinnerContainer, "addSubview:"_sel, m_spinner);
+      ((void (*)(id, SEL, id))objc_msgSend)(m_window, "setContentView:"_sel, m_spinnerContainer);
+
+      static bool navDelegateClassCreated = false;
+      if(!navDelegateClassCreated) {
+        Class navDelegateClass = objc_allocateClassPair(objc_getClass("NSObject"), "WebViewNavDelegate", 0);
+        class_addProtocol(navDelegateClass, objc_getProtocol("WKNavigationDelegate"));
+        class_addMethod(navDelegateClass, sel_registerName("webView:didFinishNavigation:"),
+          (IMP)(+[](id self, SEL cmd, id webView, id navigation) {
+            id spinner = objc_getAssociatedObject(self, "spinner");
+            if(spinner) {
+              ((void(*)(id, SEL, id))objc_msgSend)(spinner, sel_registerName("stopAnimation:"), nullptr);
+              ((void(*)(id, SEL, BOOL))objc_msgSend)(spinner, sel_registerName("setHidden:"), YES);
+            }
+          }), "v@:@@");
+        objc_registerClassPair(navDelegateClass);
+        navDelegateClassCreated = true;
+      }
+
+      id navDelegate = ((id(*)(id, SEL))objc_msgSend)((id)objc_getClass("WebViewNavDelegate"), "new"_sel);
+      objc_setAssociatedObject(navDelegate, "spinner", m_spinner, OBJC_ASSOCIATION_RETAIN);
+      ((void(*)(id, SEL, id))objc_msgSend)(m_webview, "setNavigationDelegate:"_sel, navDelegate);
+    }
+    else {
+      ((void (*)(id, SEL, id))objc_msgSend)(m_window, "setContentView:"_sel, m_webview);
+    }
+
     ((void (*)(id, SEL, id))objc_msgSend)(m_window, "makeKeyAndOrderFront:"_sel,
                                           nullptr);
   }
@@ -718,6 +772,9 @@ private:
   id m_window;
   id m_webview;
   id m_manager;
+  id m_spinner;
+  id m_spinnerContainer;
+  bool m_showLoadingIndicator;
 };
 
 using browser_engine = cocoa_wkwebview_engine;
@@ -941,7 +998,8 @@ private:
 
 class win32_edge_engine {
 public:
-  win32_edge_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string& args) {
+  win32_edge_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string& args, bool showLoadingIndicator = false) {
+    (void)showLoadingIndicator;
     if(args != "") {
         std::wstring wargs = str2wstr(args);
         SetEnvironmentVariableW(L"WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", wargs.c_str());
@@ -1250,8 +1308,8 @@ namespace webview {
 
 class webview : public browser_engine {
 public:
-  webview(bool debug = false, bool openInspector = true, void *wnd = nullptr, bool transparent = false, const std::string& args = "")
-      : browser_engine(debug, openInspector, wnd, transparent, args) {}
+  webview(bool debug = false, bool openInspector = true, void *wnd = nullptr, bool transparent = false, const std::string& args = "", bool showLoadingIndicator = false)
+      : browser_engine(debug, openInspector, wnd, transparent, args, showLoadingIndicator) {}
 
   void navigate(const std::string url) {
     browser_engine::navigate(url);
