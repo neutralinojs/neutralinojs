@@ -29,6 +29,8 @@
 #include "api/res/res.h"
 #include "api/server/server.h"
 #include "api/custom/custom.h"
+#include "api/input/input.h"
+
 
 #if defined(__APPLE__)
 #include <dispatch/dispatch.h>
@@ -164,6 +166,12 @@ map<string, router::NativeMethod> methodMap = {
     // Neutralino.custom
     {"custom.getMethods", custom::controllers::getMethods},
     // {"custom.add", custom::controllers::add} // Sample custom method
+    // Neutralino.input
+    {"input.setCursorPosition", input::controllers::setCursorPosition},
+    {"input.setCursorGrab", input::controllers::setCursorGrab},
+    {"input.sendKey", input::controllers::sendKey},
+    {"input.getCapabilities", input::controllers::getCapabilities},
+
 };
 
 map<string, router::NativeMethod> getMethodMap() {
@@ -206,6 +214,7 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
             // In macos, child threads cannot run UI logic
             if(nativeMethodId == "os.showMessageBox" ||
                 regex_match(nativeMethodId, regex("^window.*")) ||
+                regex_match(nativeMethodId, regex("^input.*")) ||
                 nativeMethodId == "os.setTray") {
                 dispatch_sync(dispatch_get_main_queue(), ^{
                     apiOutput = (*nativeMethod)(request.data);

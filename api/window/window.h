@@ -35,6 +35,8 @@ using namespace std;
 
 namespace window {
 
+extern NEU_W_HANDLE windowHandle;
+
 struct SizeOptions {
     int width = -1;
     int height = -1;
