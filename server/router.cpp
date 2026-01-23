@@ -29,7 +29,6 @@
 #include "api/res/res.h"
 #include "api/server/server.h"
 #include "api/custom/custom.h"
-#include "api/input/input.h"
 
 
 #if defined(__APPLE__)
@@ -87,6 +86,11 @@ map<string, router::NativeMethod> methodMap = {
     {"computer.getCPUInfo", computer::controllers::getCPUInfo},
     {"computer.getDisplays", computer::controllers::getDisplays},
     {"computer.getMousePosition", computer::controllers::getMousePosition},
+    {"computer.setCursorPosition", computer::controllers::setCursorPosition},
+    {"computer.setCursorGrab", computer::controllers::setCursorGrab},
+    {"computer.sendKey", computer::controllers::sendKey},
+    {"computer.getInputCapabilities", computer::controllers::getInputCapabilities},
+
     // Neutralino.debug
     {"debug.log", debug::controllers::log},
     // Neutralino.filesystem
@@ -166,11 +170,6 @@ map<string, router::NativeMethod> methodMap = {
     // Neutralino.custom
     {"custom.getMethods", custom::controllers::getMethods},
     // {"custom.add", custom::controllers::add} // Sample custom method
-    // Neutralino.input
-    {"input.setCursorPosition", input::controllers::setCursorPosition},
-    {"input.setCursorGrab", input::controllers::setCursorGrab},
-    {"input.sendKey", input::controllers::sendKey},
-    {"input.getCapabilities", input::controllers::getCapabilities},
 
 };
 
