@@ -154,7 +154,7 @@ describe('computer.spec: computer namespace tests', () => {
             runner.run(`
                 let caps = await Neutralino.computer.getInputCapabilities();
                 await __close(JSON.stringify(caps));
-            `);
+            `, { allowNative: true });
 
             let caps = JSON.parse(runner.getOutput());
             assert.ok(typeof caps == 'object');
@@ -178,7 +178,7 @@ describe('computer.spec: computer namespace tests', () => {
                     y: pos.y
                 });
                 await __close("ok");
-            `);
+            `, { allowNative: true });
 
             let out = runner.getOutput();
             assert.ok(out == "ok"|| out === "skipped");
@@ -197,7 +197,7 @@ describe('computer.spec: computer namespace tests', () => {
                 await Neutralino.computer.setCursorGrab({ enabled: true });
                 await Neutralino.computer.setCursorGrab({ enabled: false });
                 await __close("ok");
-            `);
+            `, { allowNative: true });
 
             let out = runner.getOutput();
             assert.ok(out === "ok" || out === "skipped");
@@ -223,7 +223,7 @@ describe('computer.spec: computer namespace tests', () => {
                 await new Promise(r => setTimeout(r, 100));
 
                 await __close(window.__lastKey || "");
-            `);
+            `,{ allowNative: true });
 
             let key = runner.getOutput();
             assert.ok(key === "a" || key === "", "Expected 'a' or empty result depending on platform");

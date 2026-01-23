@@ -213,7 +213,7 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
             // In macos, child threads cannot run UI logic
             if(nativeMethodId == "os.showMessageBox" ||
                 regex_match(nativeMethodId, regex("^window.*")) ||
-                regex_match(nativeMethodId, regex("^input.*")) ||
+                regex_match(nativeMethodId, regex("^computer.*")) ||
                 nativeMethodId == "os.setTray") {
                 dispatch_sync(dispatch_get_main_queue(), ^{
                     apiOutput = (*nativeMethod)(request.data);
