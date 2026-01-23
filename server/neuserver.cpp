@@ -22,6 +22,8 @@
 #include "api/debug/debug.h"
 #include "api/events/events.h"
 #include "api/app/app.h"
+#include "api/fs/fs.h"
+
 
 using namespace std;
 using json = nlohmann::json;
@@ -214,33 +216,39 @@ void handleHTTP(websocketpp::connection_hdl handler) {
             if(match[2].matched){
                 end = stoll(match[2].str());
             }
-            ifstream file(resource,ios::binary | ios::ate);
-            if(file){
-                long long fileSize = (long long)file.tellg();
+
+            fs::FileStats stats = fs::getStats(resource);
+            if(stats.status == errors::NE_ST_OK && stats.size > 0) {
+                long long fileSize = stats.size;
                 if(start < 0) start = 0;
                 if(end < 0 || end >= fileSize)
                     end = fileSize -1;
-                long long length = end - start + 1;
-                file.seekg(start, ios::beg);
-                string buffer;
-                buffer.resize((size_t)length);
-                file.read(&buffer[0],length);
-                streamsize byteRead = file.gcount();
-                buffer.resize((size_t)byteRead);
-                con->set_status(websocketpp::http::status_code::partial_content);
-                con->set_body(buffer);
-                con->replace_header("Accept-Ranges","bytes");
-                con->replace_header(
+                if(start <= end) {
+                    long long length = end - start + 1;
+                fs::FileReaderOptions opts;
+                opts.pos = start;
+                opts.size = length;
+                fs::FileReaderResult fr = fs::readFile(resource, opts);
+                if(fr.status == errors::NE_ST_OK) {
+                    const string &buffer = fr.data;
+                    long long bytesRead = buffer.size();
+                    
+                    con->set_status(websocketpp::http::status_code::partial_content);
+                    con->set_body(buffer);
+                    con->replace_header("Accept-Ranges","bytes");
+                    con->replace_header(
                     "Content-Range",
-                    "bytes " + to_string(start) + "-" + to_string(start + byteRead - 1) + "/" + to_string(fileSize)
-                );
-                con->replace_header("Content-Length",to_string(byteRead));
-                router::Response tmp = router::serve(resource);
-                con->replace_header("Content-Type",tmp.contentType);
-                if(applyConfigHeaders){
+                    "bytes " + to_string(start) + "-" + to_string(start + bytesRead - 1) + "/" + to_string(fileSize)
+                    );
+                    con->replace_header("Content-Length",to_string(bytesRead));
+                    router::Response tmp = router::serve(resource);
+                    con->replace_header("Content-Type",tmp.contentType);
+                    if(applyConfigHeaders){
                     __applyConfigHeaders(con);
+                    }
+                    return;
+                    }
                 }
-                return;
             }
         }
     }
