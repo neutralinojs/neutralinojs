@@ -34,7 +34,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ``` 
 
 ### Improvements/bugfixes
-- Fix file dialog filter extension issues on Linux
+- Fix issues with filter extension handling of the file dialogs API on Linux
 - Fix tray icon disappearing issue on Windows
 
 ## v6.4.0
