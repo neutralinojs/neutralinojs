@@ -1218,9 +1218,8 @@ bool init(const json &windowOptions) {
     if(helpers::hasField(windowOptions, "x"))
         windowProps.x = windowOptions["x"].get<int>();
     
-    if(helpers::hasField(windowOptions, "pixelUnits")) {
-       string units = windowOptions["pixelUnits"].get<string>();
-       windowProps.useLogicalPixels = (units == "logical");
+    if(helpers::hasField(windowOptions, "useLogicalPixels")) {
+        windowProps.useLogicalPixels = windowOptions["useLogicalPixels"].get<bool>();
     }
 
 
