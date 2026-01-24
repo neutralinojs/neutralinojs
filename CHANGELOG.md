@@ -18,14 +18,20 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 // cross-platform
 "browserBinary": "/path/to/chrome/bin"
 
-// cross-platform (with path variables)
-"browserBinary": "${NL_DATAHOMEPATH}/chrome/bin"
-
 // platform-specific path
 "browserBinaryLinux": "/usr/bin/google-chrome",
 "browserBinaryDarwin": "/Applications/Google Chrome.app",
 "browserBinaryWindows": "C:\\Programs\\Google Chrome\\chrome.exe"
-``` 
+
+// cross-platform (with path constants)
+"browserBinary": "${NL_OSDATAPATH}/chrome/bin"
+"browserBinaryWindows": "${NL_OSDOWNLOADSPATH}/chrome.exe"
+```
+- Add the `window.useLogicalPixels: true|false` option for the window mode to activate DPI-aware sizing based on the operating system's display scale factor.
+
+### Improvements/bugfixes
+- Fix file dialog filter extension issues on Linux
+- Fix tray icon disappearing issue on Windows
 
 ## v6.4.0
 
