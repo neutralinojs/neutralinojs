@@ -27,7 +27,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 "browserBinary": "${NL_OSDATAPATH}/chrome/bin"
 "browserBinaryWindows": "${NL_OSDOWNLOADSPATH}/chrome.exe"
 ```
-- Add the `window.useLogicalPixels: true|false` option for the window mode to activate DPI-aware sizing based on the operating system's display scale factor.
+- Add the `modes.window.useLogicalPixels: true|false` option to activate DPI-aware sizing based on the operating system's display scale factor.
 
 ### Improvements/bugfixes
 - Fix file dialog filter extension issues on Linux
