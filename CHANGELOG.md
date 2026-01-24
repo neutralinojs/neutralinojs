@@ -28,6 +28,10 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 "browserBinaryWindows": "${NL_OSDOWNLOADSPATH}/chrome.exe"
 ```
 - Add the `modes.window.useLogicalPixels: true|false` option to activate DPI-aware sizing based on the operating system's display scale factor.
+- Add extra path constants support (early versions only supported `${NL_PATH}`) for the extensions command: `${NL_OSDATAPATH}`, `${NL_OSCACHEPATH}`, ... All supported path constants use this format: `${NL_OS<name>PATH}` where `<name>` is any accepted parameter (uppercased) to the `os.getPath(name)` function:
+```js
+"commandLinux": "${NL_OSDOWNLOADSPATH}/extensionBinary --load"
+``` 
 
 ### Improvements/bugfixes
 - Fix file dialog filter extension issues on Linux
