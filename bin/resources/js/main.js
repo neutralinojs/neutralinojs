@@ -30,4 +30,13 @@ Neutralino.events.on("eventFromExtension", (evt) => {
     console.log(`INFO: Test extension said: ${evt.detail}`);
 });
 
+
+window.addEventListener('keydown', (e) => {
+    //check if ctrlkey is click with 'w' or 'W'
+    if (e.ctrlKey && (e.key === 'w' || e.key === 'W')) {         
+        e.preventDefault(); // it can prevent browser default behavior 
+        Neutralino.app.exit(); //this close application
+    }
+});
+
 showInfo();
