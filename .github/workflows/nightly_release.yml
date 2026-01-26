@@ -162,8 +162,7 @@ jobs:
       uses: dev-drprasad/delete-tag-and-release@v1.0
       with:
         tag_name: nightly
-      env:
-        GITHUB_TOKEN: ${{ secrets.COMMIT_TOKEN }}
+        github_token: ${{ secrets.COMMIT_TOKEN }}
         
     - name: Download Linux build artifacts 
       uses: actions/download-artifact@v4.1.7
