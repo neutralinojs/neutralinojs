@@ -106,17 +106,9 @@ jobs:
     steps:
     - name: Checkout 
       uses: actions/checkout@v3
-
-    - name: Setup MSVC
-      uses: ilammy/msvc-dev-cmd@v1
-
-    - name: Build    
+    - name: Build
+      run: python ./scripts/bz.py
       shell: cmd
-      run: |
-        mkdir build
-        cmake -DCMAKE_BUILD_TYPE=Release . -G "Ninja" -B build
-        ninja -C build -j %NUMBER_OF_PROCESSORS%
-
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4.4.0
       with:
