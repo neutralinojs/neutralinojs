@@ -11,6 +11,12 @@ jobs:
   build-linux:
     runs-on: ubuntu-22.04
 
+    container:
+      image: ubuntu:20.04
+      env:
+        DEBIAN_FRONTEND: noninteractive
+        GIT_DISCOVERY_ACROSS_FILESYSTEM: 1
+
     strategy:
       matrix:
         include:
@@ -31,10 +37,10 @@ jobs:
     - name: Setup cross-compile
       if: ${{ matrix.arch == 'arm64' || matrix.arch == 'armhf' }}
       run: |
-        sudo dpkg --add-architecture ${{ matrix.arch }}
-        sudo mv /etc/apt/sources.list /etc/apt/sources.list.amd64.bak
+        dpkg --add-architecture ${{ matrix.arch }}
+        mv /etc/apt/sources.list /etc/apt/sources.list.amd64.bak
 
-        sudo tee /etc/apt/sources.list <<'EOF'
+        tee /etc/apt/sources.list <<'EOF'
         deb [arch=amd64] http://archive.ubuntu.com/ubuntu jammy main universe multiverse restricted
         deb [arch=amd64] http://archive.ubuntu.com/ubuntu jammy-updates main universe multiverse restricted
         deb [arch=amd64] http://archive.ubuntu.com/ubuntu jammy-security main universe multiverse restricted
@@ -47,34 +53,39 @@ jobs:
     - name: Install amd64 dependencies
       if: ${{ matrix.arch == 'amd64' }}
       run: |
-        sudo apt-get update
-        sudo apt-get install -y -f \
+        apt-get update
+        apt-get install -y -f \
           g++ \
-          pkg-config \
-          git \
           libgtk-3-dev \
           libwebkit2gtk-4.0-dev
 
     - name: Install arm64 toolchains and dependencies
       if: ${{ matrix.arch == 'arm64' }}
       run: |
-        sudo apt-get clean
-        sudo apt-get update
-        sudo apt-get install -y \
+        apt-get clean
+        apt-get update
+        apt-get install -y \
           gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
-          pkg-config \
-          git \
           libgtk-3-dev:arm64 libwebkit2gtk-4.0-dev:arm64
 
     - name: Install arm64 toolchains and dependencies
       if: ${{ matrix.arch == 'armhf' }}
       run: |
-        sudo apt-get clean
-        sudo apt-get update
-        sudo apt-get install -y \
+        apt-get clean
+        apt-get update
+        apt-get install -y \
           gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
-          git \
           libgtk-3-dev:armhf libwebkit2gtk-4.0-dev:armhf
+
+
+    - name: Install common dependencies
+      run: |
+        apt-get update
+        apt-get install -y -f \
+          pkg-config \
+          git \
+          cmake \
+          ninja-build
 
     - name: Build ${{ matrix.arch }}
       run: |
