@@ -30,4 +30,15 @@ Neutralino.events.on("eventFromExtension", (evt) => {
     console.log(`INFO: Test extension said: ${evt.detail}`);
 });
 
+// Handle Ctrl+W (Windows/Linux) and Cmd+W (macOS) to close the application
+document.addEventListener("keydown", (evt) => {
+    const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+    const closeShortcut = isMac ? evt.metaKey : evt.ctrlKey;
+    
+    if (closeShortcut && evt.key === "w") {
+        evt.preventDefault();
+        Neutralino.app.exit();
+    }
+});
+
 showInfo();
