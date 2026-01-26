@@ -53,8 +53,6 @@ jobs:
         apt-get update
         apt-get install -y -f \
           g++ \
-          pkg-config \
-          git \
           libgtk-3-dev \
           libwebkit2gtk-4.0-dev
 
@@ -65,8 +63,6 @@ jobs:
         apt-get update
         apt-get install -y \
           gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
-          pkg-config \
-          git \
           libgtk-3-dev:arm64 libwebkit2gtk-4.0-dev:arm64
 
     - name: Install arm64 toolchains and dependencies
@@ -76,8 +72,16 @@ jobs:
         apt-get update
         apt-get install -y \
           gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
-          git \
           libgtk-3-dev:armhf libwebkit2gtk-4.0-dev:armhf
+
+    - name: Install common dependencies
+      run: |
+        apt-get update
+        apt-get install -y -f \
+          pkg-config \
+          git \
+          cmake \
+          ninja-build
     
     - name: Build ${{ matrix.arch }}
       run: |
