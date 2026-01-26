@@ -8,6 +8,12 @@ jobs:
   build-linux:
     runs-on: ubuntu-22.04
 
+    container:
+      image: ubuntu:20.04
+      env:
+        DEBIAN_FRONTEND: noninteractive
+        GIT_DISCOVERY_ACROSS_FILESYSTEM: 1
+
     strategy:
       matrix:
         include:
