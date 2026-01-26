@@ -102,7 +102,7 @@ jobs:
           bin/neutralino-linux_${{ matrix.neuarch }}
 
   build-windows:
-    runs-on: windows-2025
+    runs-on: windows-2022
     steps:
     - name: Checkout 
       uses: actions/checkout@v3
@@ -124,7 +124,7 @@ jobs:
         path: bin/neutralino-win_x64.exe
 
   build-darwin:
-    runs-on: macos-15
+    runs-on: macos-14
     steps:
     - name: Checkout
       uses: actions/checkout@v3
