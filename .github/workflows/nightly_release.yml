@@ -34,10 +34,10 @@ jobs:
     - name: Setup cross-compile
       if: ${{ matrix.arch == 'arm64' || matrix.arch == 'armhf' }}
       run: |
-        sudo dpkg --add-architecture ${{ matrix.arch }}
-        sudo mv /etc/apt/sources.list /etc/apt/sources.list.amd64.bak
+        dpkg --add-architecture ${{ matrix.arch }}
+        mv /etc/apt/sources.list /etc/apt/sources.list.amd64.bak
 
-        sudo tee /etc/apt/sources.list <<'EOF'
+        tee /etc/apt/sources.list <<'EOF'
         deb [arch=amd64] http://archive.ubuntu.com/ubuntu jammy main universe multiverse restricted
         deb [arch=amd64] http://archive.ubuntu.com/ubuntu jammy-updates main universe multiverse restricted
         deb [arch=amd64] http://archive.ubuntu.com/ubuntu jammy-security main universe multiverse restricted
