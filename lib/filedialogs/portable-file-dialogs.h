@@ -1132,7 +1132,7 @@ inline internal::file_dialog::file_dialog(type in_type,
         OPENFILENAMEW ofn;
         memset(&ofn, 0, sizeof(ofn));
         ofn.lStructSize = sizeof(OPENFILENAMEW);
-        ofn.hwndOwner = GetActiveWindow();
+        ofn.hwndOwner = GetForgroundWindow();
 
         ofn.lpstrFilter = wfilter_list.c_str();
 
@@ -1364,7 +1364,7 @@ inline std::string internal::file_dialog::string_result()
     auto ret = m_async->result();
     // Strip potential trailing newline (zenity). Also strip trailing slash
     // added by osascript for consistency with other backends.
-    while (!ret.empty() && (ret.back() == '\n' || ret.back() == '/'))
+     while (!ret.empty() && (ret.back() == '\n' || (ret.size() > 1 && ret.back() == '/')))
         ret.pop_back();
     return ret;
 #endif
@@ -1444,7 +1444,7 @@ inline std::string internal::file_dialog::select_folder_vista(IFileDialog *ifd, 
     ifd->SetOptions(FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM);
     ifd->SetTitle(m_wtitle.c_str());
 
-    hr = ifd->Show(GetActiveWindow());
+    hr = ifd->Show(GetForgroundWindow());
     if (SUCCEEDED(hr))
     {
         IShellItem* item;
@@ -1634,7 +1634,7 @@ inline message::message(std::string const &title,
         auto wtitle = internal::str2wstr(title);
         // Apply new visual style (required for all Windows versions)
         new_style_context ctx;
-        *exit_code = MessageBoxW(GetActiveWindow(), wtext.c_str(), wtitle.c_str(), style);
+        *exit_code = MessageBoxW(GetForgroundWindow(), wtext.c_str(), wtitle.c_str(), style);
         return "";
     });
 
