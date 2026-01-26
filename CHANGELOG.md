@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v6.5.0
+
 ### Core: events
 - New window events: `windowMinimize`, `windowRestore`, `windowMaximize`, `windowFullScreenEnter`, and `windowFullScreenExit`
 
