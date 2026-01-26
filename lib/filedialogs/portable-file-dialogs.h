@@ -1105,6 +1105,7 @@ inline internal::file_dialog::file_dialog(type in_type,
             BROWSEINFOW bi;
             memset(&bi, 0, sizeof(bi));
 
+            bi.hwndOwner = GetForegroundWindow();
             bi.lpfn = &bffcallback;
             bi.lParam = (LPARAM)this;
 
@@ -1497,10 +1498,30 @@ inline notify::notify(std::string const &title,
     // until the program has finished running.
     struct notify_icon_data : public NOTIFYICONDATAW
     {
-        ~notify_icon_data() { Shell_NotifyIconW(NIM_DELETE, this); }
+       ~notify_icon_data() { 
+            Shell_NotifyIconW(NIM_DELETE, this); 
+            if (this->hWnd)
+                DestroyWindow(this->hWnd);
+        }
     };
 
     static std::shared_ptr<notify_icon_data> nid;
+
+    // Create a temporary window to own the notification
+    WNDCLASSW wc = {0};
+    wc.lpfnWndProc = DefWindowProcW;
+    wc.hInstance = GetModuleHandle(nullptr);
+    wc.lpszClassName = L"PfdNotifyClass";
+    RegisterClassW(&wc);
+    
+    HWND hwnd = CreateWindowW(L"PfdNotifyClass", L"PfdNotifyWindow",
+                             0, 0, 0, 0, 0, nullptr, nullptr,
+                             GetModuleHandle(nullptr), nullptr);
+
+    if (!hwnd) {
+        // Fallback to null window handle if creation fails
+        hwnd = nullptr;
+    }
 
     // Release the previous notification icon, if any, and allocate a new
     // one. Note that std::make_shared() does value initialization, so there
@@ -1508,10 +1529,10 @@ inline notify::notify(std::string const &title,
     nid = nullptr;
     nid = std::make_shared<notify_icon_data>();
 
-    // For XP support
-    nid->cbSize = NOTIFYICONDATAW_V2_SIZE;
-    nid->hWnd = nullptr;
-    nid->uID = 0;
+    // Use full size for modern Windows
+    nid->cbSize = sizeof(NOTIFYICONDATAW);
+    nid->hWnd = hwnd;
+    nid->uID = 1;
 
     // Flag Description:
     // - NIF_ICON    The hIcon member is valid.
@@ -1520,7 +1541,9 @@ inline notify::notify(std::string const &title,
     // - NIF_STATE   The dwState and dwStateMask members are valid.
     // - NIF_INFO    Use a balloon ToolTip instead of a standard ToolTip. The szInfo, uTimeout, szInfoTitle, and dwInfoFlags members are valid.
     // - NIF_GUID    Reserved.
-    nid->uFlags = NIF_MESSAGE | NIF_ICON | NIF_INFO;
+    // NIF_SHOWTIP is required for Windows 8+ balloon notifications
+    nid->uFlags = NIF_MESSAGE | NIF_ICON | NIF_INFO | NIF_SHOWTIP;
+    nid->uVersion = NOTIFYICON_VERSION_4;  // Version 4 is required for modern Windows notification support
 
     // Flag Description
     // - NIIF_ERROR     An error icon.
@@ -1531,27 +1554,30 @@ inline notify::notify(std::string const &title,
     // - NIIF_NOSOUND   Version 6.0. Do not play the associated sound. Applies only to balloon ToolTips
     switch (_icon)
     {
-        case icon::warning: nid->dwInfoFlags = NIIF_WARNING; break;
-        case icon::error: nid->dwInfoFlags = NIIF_ERROR; break;
-        /* case icon::info: */ default: nid->dwInfoFlags = NIIF_INFO; break;
+        case icon::warning: 
+            nid->dwInfoFlags = NIIF_WARNING | NIIF_LARGE_ICON; 
+            nid->hIcon = LoadIcon(nullptr, IDI_WARNING);
+            break;
+        case icon::error: 
+            nid->dwInfoFlags = NIIF_ERROR | NIIF_LARGE_ICON; 
+            nid->hIcon = LoadIcon(nullptr, IDI_ERROR);
+            break;
+        default: 
+            nid->dwInfoFlags = NIIF_INFO | NIIF_LARGE_ICON; 
+            nid->hIcon = LoadIcon(nullptr, IDI_INFORMATION);
+            break;
     }
-
-    ENUMRESNAMEPROC icon_enum_callback = [](HMODULE, LPCTSTR, LPTSTR lpName, LONG_PTR lParam) -> BOOL
-    {
-        ((NOTIFYICONDATAW *)lParam)->hIcon = ::LoadIcon(GetModuleHandle(nullptr), lpName);
-        return false;
-    };
-
-    nid->hIcon = ::LoadIcon(nullptr, IDI_APPLICATION);
-    ::EnumResourceNames(nullptr, RT_GROUP_ICON, icon_enum_callback, (LONG_PTR)nid.get());
-
-    nid->uTimeout = 5000;
 
     StringCchCopyW(nid->szInfoTitle, ARRAYSIZE(nid->szInfoTitle), internal::str2wstr(title).c_str());
     StringCchCopyW(nid->szInfo, ARRAYSIZE(nid->szInfo), internal::str2wstr(message).c_str());
 
     // Display the new icon
-    Shell_NotifyIconW(NIM_ADD, nid.get());
+    if (!Shell_NotifyIconW(NIM_ADD, nid.get()))
+    {
+        Shell_NotifyIconW(NIM_MODIFY, nid.get());
+    }
+
+    Shell_NotifyIconW(NIM_SETVERSION, nid.get());
 #elif __EMSCRIPTEN__
     // FIXME: do something
     (void)title;
