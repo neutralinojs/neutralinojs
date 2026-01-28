@@ -30,4 +30,17 @@ Neutralino.events.on("eventFromExtension", (evt) => {
     console.log(`INFO: Test extension said: ${evt.detail}`);
 });
 
+//Ctrl+W combination to close the window
+document.addEventListener("keydown", (event) => {
+    if (
+        NL_MODE === "window" &&
+        (event.ctrlKey || event.metaKey) &&
+        event.key.toLowerCase() === "w"
+    ) {
+        event.preventDefault();
+        Neutralino.app.exit();
+    }
+});
+
+
 showInfo();
