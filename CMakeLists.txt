@@ -7,6 +7,11 @@ else()
   project(NeutralinoJS LANGUAGES C CXX)
 endif()
 
+# MSVC runtime (FIX for clean Windows)
+if (MSVC)
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
+
 execute_process(
   COMMAND git rev-parse HEAD
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
