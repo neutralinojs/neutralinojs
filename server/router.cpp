@@ -279,107 +279,76 @@ map<string, string> getMounts() {
     return mountedPaths;
 }
 
+fs::FileReaderResult resolveFileFromMounts(const string &path) {
+    fs::FileReaderResult fileReaderResult;
+    fileReaderResult.status = errors::NE_FS_NOPATHE;
+    if(mountedPaths.size() == 0) return fileReaderResult;
+
+    string pathname = path;
+    string documentRoot = neuserver::getDocumentRoot();
+    if(!documentRoot.empty()) {
+        pathname = path.substr(documentRoot.length());
+    }
+
+    for(const auto& [mountedPath, mountTarget] : mountedPaths) {
+        if(pathname.find(mountedPath) != 0) continue;
+        string adjustedPath = mountTarget + "/" + pathname.substr(mountedPath.length());
+        if(filesystem::exists(adjustedPath) && filesystem::is_directory(adjustedPath)) {
+            if(adjustedPath.back() != '/') adjustedPath += "/";
+            adjustedPath += "index.html";
+        }
+        return fs::readFile(adjustedPath);
+    }
+
+    return fileReaderResult;
+}
+
+fs::FileReaderResult resolveFileFromResources(string &path) {
+    if(resources::isDirectory(path)) {
+        if(path.back() != '/') path += "/";
+        path += "index.html";
+    }
+    return resources::getFile(path);
+}
+
+fs::FileReaderResult resolveSPAFile(const string &path) {
+    fs::FileReaderResult fileReaderResult;
+    fileReaderResult.status = errors::NE_FS_NOPATHE;
+    json jSpaServing = settings::getOptionForCurrentMode("singlePageServe");
+
+    if(!jSpaServing.is_null() && jSpaServing.get<bool>() && regex_match(path, regex(".*index.html$"))) {
+        json jDocumentRoot = settings::getOptionForCurrentMode("documentRoot");
+        string newPath;
+        if(!jDocumentRoot.is_null()) {
+            newPath = jDocumentRoot.get<string>() + "index.html";
+        }
+        else {
+            newPath = settings::getNavigationUrl();
+        }
+        if(newPath == path) return fileReaderResult;
+
+        fs::FileReaderResult mountResult = resolveFileFromMounts(newPath);
+        if(mountResult.status == errors::NE_ST_OK) {
+            return mountResult;
+        }
+
+        return resolveFileFromResources(newPath);
+    }
+
+    return fileReaderResult;
+}
+
 router::Response getAsset(string path, const string &prependData) {
     router::Response response;
-    vector<string> split = helpers::split(path, '.');
 
-    if(split.size() < 2) {
-        if(path.back() != '/')
-            path += "/";
-        return getAsset(path + "index.html", prependData);
+    fs::FileReaderResult fileReaderResult = resolveFileFromMounts(path);
+    if(fileReaderResult.status != errors::NE_ST_OK) {
+        fileReaderResult = resolveFileFromResources(path);
     }
-
-    string extension = split[split.size() - 1];
-    map<string, string> mimeTypes = {
-        // Plain text files
-        {"css", "text/css"},
-        {"csv", "text/csv"},
-        {"txt", "text/plain"},
-        {"vtt", "text/vtt"},
-        {"htm", "text/html"},
-        {"html", "text/html"},
-        // Image files
-        {"apng", "image/apng"},
-        {"avif", "image/avif"},
-        {"bmp", "image/bmp"},
-        {"gif", "image/gif"},
-        {"png", "image/png"},
-        {"svg", "image/svg+xml"},
-        {"webp", "image/webp"},
-        {"ico", "image/x-icon"},
-        {"tif", "image/tiff"},
-        {"tiff", "image/tiff"},
-        {"jpg", "image/jpeg"},
-        {"jpeg", "image/jpeg"},
-        // Video files
-        {"mp4", "video/mp4"},
-        {"mpeg", "video/mpeg"},
-        {"webm", "video/webm"},
-        // Audio files
-        {"mp3", "audio/mp3"},
-        {"mpga", "audio/mpeg"},
-        {"weba", "audio/webm"},
-        {"wav", "audio/wave"},
-        // Font files
-        {"otf", "font/otf"},
-        {"ttf", "font/ttf"},
-        {"woff", "font/woff"},
-        {"woff2", "font/woff2"},
-        // Application-type files
-        {"7z", "application/x-7z-compressed"},
-        {"atom", "application/atom+xml"},
-        {"pdf", "application/pdf"},
-        {"js", "application/javascript"},
-        {"mjs", "application/javascript"},
-        {"json", "application/json"},
-        {"rss", "application/rss+xml"},
-        {"tar", "application/x-tar"},
-        {"xht", "application/xhtml+xml"},
-        {"xhtml", "application/xhtml+xml"},
-        {"xslt", "application/xslt+xml"},
-        {"xml", "application/xml"},
-        {"gz", "application/gzip"},
-        {"zip", "application/zip"},
-        {"wasm", "application/wasm"}
-    };
-
-    fs::FileReaderResult fileReaderResult;
-    bool foundMountedPath = false;
-
-    if(mountedPaths.size() > 0) {
-        string pathname = path;
-        string documentRoot = neuserver::getDocumentRoot();
-        if(!documentRoot.empty()) {
-            pathname = path.substr(documentRoot.length());
-        }
-        for(const auto& [mountedPath, mountTarget] : mountedPaths) {
-            if(pathname.find(mountedPath) == 0) {
-                string adjustedPath = mountTarget + "/" + pathname.substr(mountedPath.length());
-                fileReaderResult = fs::readFile(adjustedPath);
-                foundMountedPath = true;
-                break;
-            }
-        }
-    }
-
-    if(!foundMountedPath) {
-        fileReaderResult = resources::getFile(path);
+    if(fileReaderResult.status != errors::NE_ST_OK) {
+        fileReaderResult = resolveSPAFile(path);
     }
     
-    if(fileReaderResult.status != errors::NE_ST_OK) {
-        json jSpaServing = settings::getOptionForCurrentMode("singlePageServe");
-        if(!jSpaServing.is_null() && jSpaServing.get<bool>() && regex_match(path, regex(".*index.html$"))) {
-            json jDocumentRoot = settings::getOptionForCurrentMode("documentRoot");
-            string newPath;
-            if(!jDocumentRoot.is_null()) {
-                newPath = jDocumentRoot.get<string>() + "index.html";
-            }
-            else {
-                newPath = settings::getNavigationUrl();
-            }
-            if(newPath != path) return getAsset(newPath, prependData);
-        }
-    }
     response.data = fileReaderResult.data;
     response.status = websocketpp::http::status_code::ok;
 
@@ -392,9 +361,8 @@ router::Response getAsset(string path, const string &prependData) {
     }
 
     // If MIME-type is not defined in neuserver, application/octet-stream will be used by default.
-    if(mimeTypes.find(extension) != mimeTypes.end()) {
-        response.contentType = mimeTypes[extension];
-    }
+    response.contentType = fs::detectMimeType(fileReaderResult, path);
+
     return response;
 }
 
