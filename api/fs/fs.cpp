@@ -176,6 +176,7 @@ fs::FileReaderResult readFile(const string &filename, const fs::FileReaderOption
     reader.close();
 
     fileReaderResult.data = result;
+    fileReaderResult.resolvedPath = filename;
     return fileReaderResult;
 }
 
@@ -451,7 +452,7 @@ magic_t initializeMagic() {
 }
 #endif
 
-string detectMimeType(const fs::FileReaderResult& result, const string& pathHint) {
+string detectMimeType(const fs::FileReaderResult& result) {
 #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
     magic_t magic = initializeMagic();
     if(magic != nullptr && !result.data.empty()) {
@@ -463,7 +464,7 @@ string detectMimeType(const fs::FileReaderResult& result, const string& pathHint
     }
 #endif
 
-    return detectMimeTypeFromExtension(pathHint);
+    return detectMimeTypeFromExtension(result.resolvedPath);
 }
 
 namespace controllers {

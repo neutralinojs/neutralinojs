@@ -15,6 +15,7 @@ namespace fs {
 struct FileReaderResult {
     errors::StatusCode status = errors::NE_ST_OK;
     string data;
+    string resolvedPath;
 };
 
 struct FileReaderOptions {
@@ -67,7 +68,7 @@ bool removeWatcher(long watcherId);
 fs::FileStats getStats(const string &path);
 fs::DirReaderResult readDirectory(const string &path, bool recursive = false);
 string applyPathConstants(const string &path);
-string detectMimeType(const fs::FileReaderResult& result, const string& pathHint);
+string detectMimeType(const fs::FileReaderResult& result);
 
 namespace controllers {
 

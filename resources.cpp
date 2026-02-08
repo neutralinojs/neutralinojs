@@ -83,6 +83,7 @@ fs::FileReaderResult __getFileFromBundle(const string &filename) {
         asarArchive.seekg(asarHeaderSize + uOffset);
         asarArchive.read(fileBuf.data(), size);
         string fileContent(fileBuf.begin(), fileBuf.end());
+        fileReaderResult.resolvedPath = filename;
         fileReaderResult.data = fileContent;
         asarArchive.close();
    }
@@ -113,6 +114,7 @@ fs::FileReaderResult __getFileFromEmbedded(const string &filename) {
         }
 
         string fileContent(fileBuf.begin(), fileBuf.end());
+        fileReaderResult.resolvedPath = filename;
         fileReaderResult.data = fileContent;
    }
    else {

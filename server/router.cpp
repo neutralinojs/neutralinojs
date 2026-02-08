@@ -361,7 +361,7 @@ router::Response getAsset(string path, const string &prependData) {
     }
 
     // If MIME-type is not defined in neuserver, application/octet-stream will be used by default.
-    response.contentType = fs::detectMimeType(fileReaderResult, path);
+    response.contentType = fs::detectMimeType(fileReaderResult);
 
     return response;
 }
