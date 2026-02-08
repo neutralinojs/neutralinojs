@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <libgen.h>
+#include <magic.h>
 
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
@@ -431,6 +432,24 @@ string detectMimeTypeFromExtension(const string& path) {
     }
     return "application/octet-stream";
 }
+
+#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+static magic_t magicHandle = nullptr;
+static bool magicInitialized = false;
+
+magic_t initializeMagic() {
+    if(magicInitialized) return magicHandle;
+    magicHandle = magic_open(MAGIC_MIME_TYPE);
+    if(magicHandle && magic_load(magicHandle, NULL) == 0) {
+        magicInitialized = true;
+    }
+    else {
+        if(magicHandle) magic_close(magicHandle);
+        magicHandle = nullptr;
+    }
+    return magicHandle;
+}
+#endif
 
 string detectMimeType(const fs::FileReaderResult& result, const string& pathHint) {
 #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)

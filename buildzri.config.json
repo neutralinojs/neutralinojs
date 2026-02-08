@@ -50,7 +50,7 @@
     },
     "options": {
         "linux": [
-            "$(pkg-config --cflags --libs gtk+-3.0 glib-2.0 xcb x11 xrandr)",
+            "$(pkg-config --cflags --libs gtk+-3.0 glib-2.0 xcb x11 xrandr libmagic)",
             "-pthread",
             "-lpng",
             "-lstdc++fs",

@@ -203,6 +203,13 @@ if(WIN32)
     )
 elseif(APPLE)
     # macOS
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(LIBMAGIC REQUIRED libmagic)
+
+    target_include_directories(${PROJECT_NAME} PRIVATE
+      ${LIBMAGIC_INCLUDE_DIRS}
+    )
+
     find_library(WebKit_FRAMEWORK WebKit)
     find_library(COCOA_FRAMEWORK Cocoa)
     find_library(SCREENCAPTUREKIT_FRAMEWORK ScreenCaptureKit)
@@ -210,6 +217,7 @@ elseif(APPLE)
       ${WebKit_FRAMEWORK}
       ${COCOA_FRAMEWORK}
       ${SCREENCAPTUREKIT_FRAMEWORK}
+      ${LIBMAGIC_LIBRARIES}
     )
     target_compile_options(${PROJECT_NAME} PRIVATE
       -Wno-deprecated-declarations
@@ -226,6 +234,7 @@ elseif(UNIX)
     pkg_check_modules(XCB REQUIRED xcb)
     pkg_check_modules(X11 REQUIRED x11)
     pkg_check_modules(XRANDR REQUIRED xrandr)
+    pkg_check_modules(LIBMAGIC REQUIRED libmagic)
     
     target_include_directories(${PROJECT_NAME} PRIVATE 
       ${GTK3_INCLUDE_DIRS}
@@ -233,6 +242,7 @@ elseif(UNIX)
       ${XCB_INCLUDE_DIRS}
       ${X11_INCLUDE_DIRS}
       ${XRANDR_INCLUDE_DIRS}
+      ${LIBMAGIC_INCLUDE_DIRS}
     )
     
     target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -241,6 +251,7 @@ elseif(UNIX)
       ${XCB_LIBRARIES}
       ${X11_LIBRARIES}
       ${XRANDR_LIBRARIES}
+      ${LIBMAGIC_LIBRARIES}
       pthread
       png
       stdc++fs
