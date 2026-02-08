@@ -217,7 +217,6 @@ elseif(APPLE)
       ${WebKit_FRAMEWORK}
       ${COCOA_FRAMEWORK}
       ${SCREENCAPTUREKIT_FRAMEWORK}
-      ${LIBMAGIC_LIBRARIES}
     )
     target_compile_options(${PROJECT_NAME} PRIVATE
       -Wno-deprecated-declarations
@@ -225,6 +224,7 @@ elseif(APPLE)
     )
     target_link_options(${PROJECT_NAME} PRIVATE
       -Wl,-dead_strip
+      ${LIBMAGIC_LDFLAGS}
     )
 elseif(UNIX)
     # Linux / otros UNIX
