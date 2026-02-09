@@ -175,27 +175,14 @@ describe('server.spec: server namespace tests', () => {
         it('detects PNG via libmagic without extension (non-Windows)', async () => {
             runner.run(`
                 const response = {};
-                const targetPath = NL_PATH + '/.tmp/test-no-ext-png';
-                await Neutralino.filesystem.createDirectory(targetPath);
-
-                const pngMagic = new Uint8Array([
-                    0x89, 0x50, 0x4E, 0x47,
-                    0x0D, 0x0A, 0x1A, 0x0A
-                ]);
-
-                await Neutralino.filesystem.writeBinaryFile(
-                    targetPath + '/image',
-                    pngMagic
-                );
-
-                await Neutralino.server.mount('/test', targetPath);
-
-                const res = await fetch('/test/image');
+                const res = await fetch('/images/1x1');
                 response.status = res.status;
                 response.contentType = res.headers.get('content-type');
 
                 await __close(JSON.stringify(response));
-            `);
+            `, { 
+                fixturesToInclude: ['images/1x1'] 
+            });
 
             const output = JSON.parse(runner.getOutput());
             assert.strictEqual(output.status, 200);
