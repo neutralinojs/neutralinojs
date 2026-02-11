@@ -1432,8 +1432,11 @@ json focus(const json &input) {
     #if defined(__linux__) || defined(__FreeBSD__)
     gtk_window_present(GTK_WINDOW(windowHandle));
     #elif defined(__APPLE__)
+    ((void (*)(id, SEL))objc_msgSend)(
+        ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls, "sharedApplication"_sel),
+        "activate"_sel);
     ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
-            "orderFront:"_sel, NULL);
+            "makeKeyAndOrderFront:"_sel, NULL);
     #elif defined(_WIN32)
     SetForegroundWindow(windowHandle);
     #endif
