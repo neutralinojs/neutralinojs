@@ -720,6 +720,10 @@ json setTray(const json &input) {
                     "dataWithBytes:length:"_sel, iconData, iconDataStr.length());
 
         ((void (*)(id, SEL, id))objc_msgSend)(tray.icon, "initWithData:"_sel, nsIconData);
+
+        if(helpers::hasField(input, "useTemplateIcon") && input["useTemplateIcon"].get<bool>()) {
+            ((void (*)(id, SEL, BOOL))objc_msgSend)(tray.icon, "setTemplate:"_sel, YES);
+        }
         #endif
     }
 
