@@ -445,6 +445,7 @@ public:
     auto cls =
         objc_allocateClassPair((Class) "NSResponder"_cls, "AppDelegate", 0);
     class_addProtocol(cls, objc_getProtocol("NSTouchBarProvider"));
+    class_addProtocol(cls, objc_getProtocol("NSApplicationDelegate"));
     class_addMethod(cls, "applicationShouldTerminateAfterLastWindowClosed:"_sel,
                     (IMP)(+[](id, SEL, id) -> BOOL { return 0; }), "c@:@");
     class_addMethod(cls, "applicationShouldHandleReopen:hasVisibleWindows:"_sel,
