@@ -117,12 +117,18 @@ jobs:
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
 
-    - name: Build    
+    - name: Build
       shell: cmd
       run: |
         mkdir build
         cmake -DCMAKE_BUILD_TYPE=Release . -G "Ninja" -B build
         ninja -C build -j %NUMBER_OF_PROCESSORS%
+
+    - name: Upload Windows artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: neutralino-win_x64
+        path: bin/neutralino-win_x64.exe
 
     - name: Setup Spec Requirements (Build client)
       shell: bash

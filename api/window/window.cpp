@@ -603,8 +603,8 @@ void __injectScript() {
 bool __createWindow() {
     savedState = windowProps.useSavedState && __loadSavedWindowProps();
 
-    nativeWindow = new webview::webview(windowProps.enableInspector, windowProps.openInspectorOnStartup, 
-        nullptr, windowProps.transparent, windowProps.webviewArgs);
+    nativeWindow = new webview::webview(windowProps.enableInspector, windowProps.openInspectorOnStartup,
+        nullptr, windowProps.transparent, windowProps.webviewArgs, windowProps.loadingIndicator);
     
     if(nativeWindow->get_init_code() == 1) {
         return false;
@@ -1288,6 +1288,9 @@ bool init(const json &windowOptions) {
 
     if(helpers::hasField(windowOptions, "skipTaskbar"))
         windowProps.skipTaskbar = windowOptions["skipTaskbar"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "loadingIndicator"))
+        windowProps.loadingIndicator = windowOptions["loadingIndicator"].get<bool>();
 
     if(!__createWindow()) {
         return false;
