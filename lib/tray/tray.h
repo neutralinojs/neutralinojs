@@ -176,6 +176,7 @@ static id pool;
 static id statusBar;
 static id statusItem;
 static id statusBarButton;
+static id trayDelegate;
 
 static id _tray_menu(struct tray_menu *m) {
   id menu = ((id (*)(id, SEL))objc_msgSend)(
@@ -209,6 +210,7 @@ static id _tray_menu(struct tray_menu *m) {
           sel_registerName("menuCallback:"),
           ((id (*)(id, SEL, const char *))objc_msgSend)((id)objc_getClass("NSString"), sel_registerName("stringWithUTF8String:"), ""));
 
+      ((id (*)(id, SEL, id))objc_msgSend)(menuItem, sel_registerName("setTarget:"), trayDelegate);
       ((id (*)(id, SEL, bool))objc_msgSend)(menuItem, sel_registerName("setEnabled:"), (m->disabled ? false : true));
       ((id (*)(id, SEL, bool))objc_msgSend)(menuItem, sel_registerName("setState:"), (m->checked ? 1 : 0));
 
@@ -252,22 +254,16 @@ static int tray_init(struct tray *tray) {
       sel_registerName("sharedApplication"));
 
   Class trayDelegateClass = objc_allocateClassPair(objc_getClass("NSObject"), "Tray", 0);
-  class_addProtocol(trayDelegateClass, objc_getProtocol("NSApplicationDelegate"));
   class_addMethod(trayDelegateClass, sel_registerName("menuCallback:"), (IMP)menu_callback, "v@:@");
   objc_registerClassPair(trayDelegateClass);
 
-  id trayDelegate = ((id (*)(id, SEL))objc_msgSend)(
+  trayDelegate = ((id (*)(id, SEL))objc_msgSend)(
       (id)trayDelegateClass,
       sel_registerName("new"));
 
   app = ((id (*)(id, SEL))objc_msgSend)(
       (id)objc_getClass("NSApplication"),
       sel_registerName("sharedApplication"));
-
-  ((id (*)(id, SEL, id))objc_msgSend)(
-      app,
-      sel_registerName("setDelegate:"),
-      trayDelegate);
 
   statusBar = ((id (*)(id, SEL))objc_msgSend)(
       (id)objc_getClass("NSStatusBar"),

@@ -40,6 +40,7 @@
 #define WEBVIEW_WINDOW_SHOW 7
 #define WEBVIEW_WINDOW_HIDE 8
 #define WEBVIEW_WINDOW_MAXIMIZE 9
+#define WEBVIEW_WINDOW_ACTIVATE 10
 #define WEBVIEW_WINDOW_UNDEFINED 100
 
 #ifndef WEBVIEW_HEADER
@@ -444,8 +445,15 @@ public:
     auto cls =
         objc_allocateClassPair((Class) "NSResponder"_cls, "AppDelegate", 0);
     class_addProtocol(cls, objc_getProtocol("NSTouchBarProvider"));
+    class_addProtocol(cls, objc_getProtocol("NSApplicationDelegate"));
     class_addMethod(cls, "applicationShouldTerminateAfterLastWindowClosed:"_sel,
                     (IMP)(+[](id, SEL, id) -> BOOL { return 0; }), "c@:@");
+    class_addMethod(cls, "applicationShouldHandleReopen:hasVisibleWindows:"_sel,
+                    (IMP)(+[](id, SEL, id, BOOL hasVisibleWindows) -> BOOL {
+                        if(windowStateChange)
+                            windowStateChange(WEBVIEW_WINDOW_ACTIVATE);
+                        return YES;
+                    }), "c@:@c");
     class_addMethod(cls, "menuCallback:"_sel,
       (IMP)(+[](id, SEL, id sender) -> void { 
       WindowMenuItem *m = ((WindowMenuItem *(*)(id, SEL))objc_msgSend)(
