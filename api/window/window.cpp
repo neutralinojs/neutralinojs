@@ -696,6 +696,16 @@ bool __createWindow() {
 
 void _close(int exitCode) {
     if(nativeWindow) {
+        #if defined(__APPLE__)
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            if(windowProps.useSavedState) {
+                __saveWindowProps();
+            }
+            nativeWindow->terminate(exitCode);
+            delete nativeWindow;
+            nativeWindow = nullptr;
+        });
+        #else   
         if(windowProps.useSavedState) {
             __saveWindowProps();
         }
@@ -704,6 +714,8 @@ void _close(int exitCode) {
         FreeConsole();
         #endif
         delete nativeWindow;
+        nativeWindow = nullptr;
+        #endif
     }
 }
 
