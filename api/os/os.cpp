@@ -24,8 +24,13 @@
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
 #include <unistd.h>
 extern char **environ;
+#endif
 
-#elif defined(_WIN32)
+#if defined(__APPLE__)
+#include <objc/objc-runtime.h>
+#endif
+
+#if defined(_WIN32)
 #define _WINSOCKAPI_
 #include <windows.h>
 #include <tchar.h>
@@ -560,12 +565,40 @@ json showNotification(const json &input) {
         {"QUESTION", pfd::icon::question}
     };
 
-    if(iconMap.find(icon) != iconMap.end()) {
-        pfd::notify(title, content, iconMap[icon]);
+    if(iconMap.find(icon) == iconMap.end()) {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_INVNOTA, icon);
+        return output;
+    }
+
+#if defined(__APPLE__)
+    // Check if running as App Bundle by checking bundleIdentifier
+    id bundle = ((id (*)(id, SEL))objc_msgSend)("NSBundle"_cls, "mainBundle"_sel);
+    id bundleId = ((id (*)(id, SEL))objc_msgSend)(bundle, "bundleIdentifier"_sel);
+
+    if (bundleId != nullptr) {
+        // App Bundle: Use native NSUserNotificationCenter
+        id notification = ((id (*)(id, SEL))objc_msgSend)("NSUserNotification"_cls, "new"_sel);
+
+        id nsTitle = ((id (*)(id, SEL, const char*))objc_msgSend)(
+            "NSString"_cls, "stringWithUTF8String:"_sel, title.c_str());
+        id nsContent = ((id (*)(id, SEL, const char*))objc_msgSend)(
+            "NSString"_cls, "stringWithUTF8String:"_sel, content.c_str());
+
+        ((void (*)(id, SEL, id))objc_msgSend)(notification, "setTitle:"_sel, nsTitle);
+        ((void (*)(id, SEL, id))objc_msgSend)(notification, "setInformativeText:"_sel, nsContent);
+
+        id notificationCenter = ((id (*)(id, SEL))objc_msgSend)(
+            "NSUserNotificationCenter"_cls, "defaultUserNotificationCenter"_sel);
+        ((void (*)(id, SEL, id))objc_msgSend)(
+            notificationCenter, "deliverNotification:"_sel, notification);
     }
     else {
-        output["error"] = errors::makeErrorPayload(errors::NE_OS_INVNOTA, icon);
+        // Not App Bundle: Fall back to osascript via pfd::notify
+        pfd::notify(title, content, iconMap[icon]);
     }
+#else
+    pfd::notify(title, content, iconMap[icon]);
+#endif
     output["success"] = true;
     return output;
 }
