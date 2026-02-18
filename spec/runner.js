@@ -38,9 +38,22 @@ async function __init() {
 const TMP_DIR = '../bin/.tmp';
 const OUTPUT_FILE = '../bin/.tmp/output.txt';
 const SOURCE_FILE = '../bin/resources/js/main_spec.js';
+const FIXTURES_SRC_DIR = path.join(__dirname, 'fixtures');
+const FIXTURES_DST_DIR = '../bin/resources/fixtures';
+
+function prepareFixtures(fixtures = []) {
+    for (const fixture of fixtures) {
+        const src = path.join(FIXTURES_SRC_DIR, fixture);
+        const dst = path.join(FIXTURES_DST_DIR, fixture);
+
+        fs.mkdirSync(path.dirname(dst), { recursive: true });
+        fs.copyFileSync(src, dst);
+    }
+}
 
 function run(code, options = {}) {
     cleanup();
+    prepareFixtures(options.fixturesToInclude);
     if(options.debug) {
         console.log('INFO: Preparing app source...');
     }
@@ -105,6 +118,7 @@ function cleanup() {
     try {
         fs.rmSync(TMP_DIR, { recursive: true });
         fs.unlinkSync(SOURCE_FILE);
+        fs.rmSync(FIXTURES_DST_DIR, { recursive: true });
     }
     catch(err) {
         // ignore

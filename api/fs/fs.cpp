@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <libgen.h>
+#include <magic.h>
 
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
@@ -175,6 +176,7 @@ fs::FileReaderResult readFile(const string &filename, const fs::FileReaderOption
     reader.close();
 
     fileReaderResult.data = result;
+    fileReaderResult.resolvedPath = filename;
     return fileReaderResult;
 }
 
@@ -364,6 +366,105 @@ string applyPathConstants(const string &path) {
         newPath = regex_replace(newPath, regex("\\$\\{NL_OS" + varSegment + "PATH\\}"), os::getPath(pathName));
     }
     return newPath;
+}
+
+map<string, string> mimeTypes = {
+    // Plain text files
+    {"css", "text/css"},
+    {"csv", "text/csv"},
+    {"txt", "text/plain"},
+    {"vtt", "text/vtt"},
+    {"htm", "text/html"},
+    {"html", "text/html"},
+    // Image files
+    {"apng", "image/apng"},
+    {"avif", "image/avif"},
+    {"bmp", "image/bmp"},
+    {"gif", "image/gif"},
+    {"png", "image/png"},
+    {"svg", "image/svg+xml"},
+    {"webp", "image/webp"},
+    {"ico", "image/x-icon"},
+    {"tif", "image/tiff"},
+    {"tiff", "image/tiff"},
+    {"jpg", "image/jpeg"},
+    {"jpeg", "image/jpeg"},
+    // Video files
+    {"mp4", "video/mp4"},
+    {"mpeg", "video/mpeg"},
+    {"webm", "video/webm"},
+    // Audio files
+    {"mp3", "audio/mp3"},
+    {"mpga", "audio/mpeg"},
+    {"weba", "audio/webm"},
+    {"wav", "audio/wave"},
+    // Font files
+    {"otf", "font/otf"},
+    {"ttf", "font/ttf"},
+    {"woff", "font/woff"},
+    {"woff2", "font/woff2"},
+    // Application-type files
+    {"7z", "application/x-7z-compressed"},
+    {"atom", "application/atom+xml"},
+    {"pdf", "application/pdf"},
+    {"js", "application/javascript"},
+    {"mjs", "application/javascript"},
+    {"json", "application/json"},
+    {"rss", "application/rss+xml"},
+    {"tar", "application/x-tar"},
+    {"xht", "application/xhtml+xml"},
+    {"xhtml", "application/xhtml+xml"},
+    {"xslt", "application/xslt+xml"},
+    {"xml", "application/xml"},
+    {"gz", "application/gzip"},
+    {"zip", "application/zip"},
+    {"wasm", "application/wasm"}
+};
+
+string detectMimeTypeFromExtension(const string& path) {
+    size_t slashIndex = path.find_last_of('/');
+    string filename = (slashIndex == string::npos) ? path : path.substr(slashIndex + 1);
+    size_t dotIndex = filename.find_last_of('.');
+    if(dotIndex == string::npos) return "application/octet-stream";
+    string extension = filename.substr(dotIndex + 1);
+    transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+    if(mimeTypes.find(extension) != mimeTypes.end()) {
+        return mimeTypes[extension];
+    }
+    return "application/octet-stream";
+}
+
+#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+static magic_t magicHandle = nullptr;
+static bool magicInitialized = false;
+
+magic_t initializeMagic() {
+    if(magicInitialized) return magicHandle;
+    magicHandle = magic_open(MAGIC_MIME_TYPE);
+    if(magicHandle && magic_load(magicHandle, NULL) == 0) {
+        magicInitialized = true;
+    }
+    else {
+        if(magicHandle) magic_close(magicHandle);
+        magicHandle = nullptr;
+    }
+    return magicHandle;
+}
+#endif
+
+string detectMimeType(const fs::FileReaderResult& result) {
+#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+    magic_t magic = initializeMagic();
+    if(magic != nullptr && !result.data.empty()) {
+        const char* mime = magic_buffer(magic, result.data.data(), result.data.size());
+        if(mime) {
+            string out(mime);
+            return out;
+        }
+    }
+#endif
+
+    return detectMimeTypeFromExtension(result.resolvedPath);
 }
 
 namespace controllers {

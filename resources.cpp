@@ -28,6 +28,20 @@ json fileTree = nullptr;
 unsigned int asarHeaderSize;
 resources::ResourceMode mode = resources::ResourceModeEmbedded;
 
+json __getTreeNode(const string &path) {
+    vector<string> segments = helpers::split(path, '/');
+    json node = fileTree;
+
+    for(const auto &seg : segments) {
+        if(seg.empty()) continue;
+        if(node.is_null() || node["files"].is_null()) {
+            return nullptr;
+        }
+        node = node["files"][seg];
+    }
+    return node;
+}
+
 pair<unsigned long, string> __seekFilePos(const string &path, json node) {
     vector<string> pathSegments = helpers::split(path, '/');
     json json = node;
@@ -69,6 +83,7 @@ fs::FileReaderResult __getFileFromBundle(const string &filename) {
         asarArchive.seekg(asarHeaderSize + uOffset);
         asarArchive.read(fileBuf.data(), size);
         string fileContent(fileBuf.begin(), fileBuf.end());
+        fileReaderResult.resolvedPath = filename;
         fileReaderResult.data = fileContent;
         asarArchive.close();
    }
@@ -99,6 +114,7 @@ fs::FileReaderResult __getFileFromEmbedded(const string &filename) {
         }
 
         string fileContent(fileBuf.begin(), fileBuf.end());
+        fileReaderResult.resolvedPath = filename;
         fileReaderResult.data = fileContent;
    }
    else {
@@ -194,6 +210,16 @@ fs::FileReaderResult getFile(const string &filename) {
         return __getFileFromBundle(filename);
     }
     return fs::readFile(settings::joinAppPath(filename));
+}
+
+bool isDirectory(const string &path) {
+    if(resources::isDirMode()) {
+        auto fsPath = filesystem::path(CONVSTR(settings::joinAppPath(path)));
+        return filesystem::exists(fsPath) && filesystem::is_directory(fsPath);
+    }
+
+    json node = __getTreeNode(path);
+    return !node.is_null() && !node["files"].is_null();
 }
 
 void init() {
