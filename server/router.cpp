@@ -353,13 +353,14 @@ router::Response getAsset(string path, const string &prependData) {
             pathname = path.substr(documentRoot.length());
         }
         for(const auto& [mountedPath, mountTarget] : mountedPaths) {
-            if(pathname.find(mountedPath) == 0) {
-                string adjustedPath = mountTarget + "/" + pathname.substr(mountedPath.length());
-                fileReaderResult = fs::readFile(adjustedPath);
-                foundMountedPath = true;
-                break;
-            }
-        }
+    if(pathname.find(mountedPath) == 0 &&
+       (pathname.length() == mountedPath.length() || pathname[mountedPath.length()] == '/')) {
+        string adjustedPath = mountTarget + "/" + pathname.substr(mountedPath.length());
+        fileReaderResult = fs::readFile(adjustedPath);
+        foundMountedPath = true;
+        break;
+    }
+}
     }
 
     if(!foundMountedPath) {

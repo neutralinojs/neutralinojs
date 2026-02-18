@@ -71,6 +71,33 @@ describe('server.spec: server namespace tests', () => {
             assert.ok(typeof output === 'object', 'Expected output is an object');
             assert.ok(output.fetch1 === 200, 'The file request to a mounted directory succeeds');
         });
+
+        it('handles similar prefix mount paths correctly', async () => {
+            runner.run(`
+                const response = {};
+                const testPath = NL_PATH + '/.tmp/test';
+                const testingPath = NL_PATH + '/.tmp/testing';
+                
+                await Neutralino.filesystem.createDirectory(testPath);
+                await Neutralino.filesystem.createDirectory(testingPath);
+                await Neutralino.filesystem.writeFile(testPath + '/file.txt', 'From /test');
+                await Neutralino.filesystem.writeFile(testingPath + '/file.txt', 'From /testing');
+                
+                await Neutralino.server.mount('/test', testPath);
+                await Neutralino.server.mount('/testing', testingPath);
+                
+                const fetch1 = await fetch('/test/file.txt');
+                const fetch2 = await fetch('/testing/file.txt');
+                
+                response.testContent = await fetch1.text();
+                response.testingContent = await fetch2.text();
+                
+                await __close(JSON.stringify(response));
+            `);
+            const output = JSON.parse(runner.getOutput());
+            assert.ok(output.testContent === 'From /test', 'Expected /test to serve from correct directory');
+            assert.ok(output.testingContent === 'From /testing', 'Expected /testing to serve from correct directory (not /test)');
+        });
     });
 
 });
