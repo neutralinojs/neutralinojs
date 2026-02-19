@@ -6,6 +6,7 @@
 #include <thread>
 #include <chrono>
 #include <set>
+#include <fstream>
 
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
@@ -21,6 +22,8 @@
 #include "api/debug/debug.h"
 #include "api/events/events.h"
 #include "api/app/app.h"
+#include "api/fs/fs.h"
+
 
 using namespace std;
 using json = nlohmann::json;
@@ -74,7 +77,7 @@ string __getConnectTokenFromUrl(const string &url) {
 
 void __exitProcessIfIdle() {
     thread exitCheckThread([=]() {
-        std::this_thread::sleep_for(10s);
+        this_thread::sleep_for(10s);
         if(appConnections.size() == 0) {
             app::exit();
         }
@@ -134,7 +137,7 @@ string init() {
         settings::setPort(port);
     }
 
-    string navigationUrl = "http://127.0.0.1:" + std::to_string(port);
+    string navigationUrl = "http://127.0.0.1:" + to_string(port);
     json jUrl = settings::getOptionForCurrentMode("url");
 
     if(!jUrl.is_null()) {
@@ -201,12 +204,60 @@ void handleHTTP(websocketpp::connection_hdl handler) {
     if(!documentRoot.empty()) {
         resource = documentRoot + resource;
     }
+    auto headers = con->get_request().get_headers();
+    auto rangeIt = headers.find("Range");
+    if(rangeIt != headers.end()){
+        string range = rangeIt->second;
+        long long start = 0;
+        long long end = -1;
+        smatch match;
+        if(regex_match(range,match,regex(R"(bytes=(\d+)-(\d*)?)"))){
+            start = stoll(match[1].str());
+            if(match[2].matched){
+                end = stoll(match[2].str());
+            }
+
+            fs::FileStats stats = fs::getStats(resource);
+            if(stats.status == errors::NE_ST_OK && stats.size > 0) {
+                long long fileSize = stats.size;
+                if(start < 0) start = 0;
+                if(end < 0 || end >= fileSize)
+                    end = fileSize -1;
+                if(start <= end) {
+                    long long length = end - start + 1;
+                fs::FileReaderOptions opts;
+                opts.pos = start;
+                opts.size = length;
+                fs::FileReaderResult fr = fs::readFile(resource, opts);
+                if(fr.status == errors::NE_ST_OK) {
+                    const string &buffer = fr.data;
+                    long long bytesRead = buffer.size();
+                    
+                    con->set_status(websocketpp::http::status_code::partial_content);
+                    con->set_body(buffer);
+                    con->replace_header("Accept-Ranges","bytes");
+                    con->replace_header(
+                    "Content-Range",
+                    "bytes " + to_string(start) + "-" + to_string(start + bytesRead - 1) + "/" + to_string(fileSize)
+                    );
+                    con->replace_header("Content-Length",to_string(bytesRead));
+                    router::Response tmp = router::serve(resource);
+                    con->replace_header("Content-Type",tmp.contentType);
+                    if(applyConfigHeaders){
+                    __applyConfigHeaders(con);
+                    }
+                    return;
+                    }
+                }
+            }
+        }
+    }
     router::Response routerResponse = router::serve(resource);
     con->set_status(routerResponse.status);
     con->set_body(routerResponse.data);
-    con->replace_header("Content-Type", routerResponse.contentType);
-
-    if(applyConfigHeaders) {
+    con->replace_header("Content-Type",routerResponse.contentType);
+    
+    if(applyConfigHeaders){
         __applyConfigHeaders(con);
     }
 }
