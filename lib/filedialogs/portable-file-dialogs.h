@@ -788,6 +788,12 @@ inline void internal::executor::start_process(std::vector<std::string> const &co
         dup2(fd, STDERR_FILENO);
         close(fd);
 
+        // Disable GTK portal usage to prevent file dialogs from hanging on systems
+        // with xdg-desktop-portal installed (common on modern Arch Linux with GTK4).
+        // This ensures direct GTK file chooser dialogs are used instead of the
+        // potentially misconfigured or unresponsive portal system.
+        setenv("GTK_USE_PORTAL", "0", 1);
+
         std::vector<char *> args;
         std::transform(command.cbegin(), command.cend(), std::back_inserter(args),
                        [](std::string const &s) { return const_cast<char *>(s.c_str()); });

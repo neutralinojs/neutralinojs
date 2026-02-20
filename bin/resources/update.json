@@ -1,7 +1,0 @@
-{
-    "applicationId": "js.neutralino.sample",
-    "version": "0.0.2",
-    "resourcesURL": "http://localhost:8080/updater_test/update_res.neu",
-    "data": {
-    }
-}
