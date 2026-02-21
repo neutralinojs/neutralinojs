@@ -745,12 +745,14 @@ using browser_engine = cocoa_wkwebview_engine;
 
 #define WIN32_LEAN_AND_MEAN
 #include <Shlwapi.h>
+#include <shellapi.h>
 #include <codecvt>
 #include <stdlib.h>
 #include <windows.h>
 
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "Shlwapi.lib")
+#pragma comment(lib, "Shell32.lib")
 
 // Edge/Chromium headers and libs
 #include "webview2.h"
@@ -888,7 +890,8 @@ private:
       : public ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler,
         public ICoreWebView2CreateCoreWebView2ControllerCompletedHandler,
         public ICoreWebView2WebMessageReceivedEventHandler,
-        public ICoreWebView2PermissionRequestedEventHandler {
+        public ICoreWebView2PermissionRequestedEventHandler,
+        public ICoreWebView2NewWindowRequestedEventHandler {
     using webview2_com_handler_cb_t =
         std::function<void(ICoreWebView2Controller *)>;
 
@@ -915,6 +918,7 @@ private:
       controller->get_CoreWebView2(&webview);
       webview->add_WebMessageReceived(this, &token);
       webview->add_PermissionRequested(this, &token);
+      webview->add_NewWindowRequested(this, &token);
 
       m_cb(controller);
       return S_OK;
@@ -938,6 +942,17 @@ private:
       if (kind == COREWEBVIEW2_PERMISSION_KIND_CLIPBOARD_READ) {
         args->put_State(COREWEBVIEW2_PERMISSION_STATE_ALLOW);
       }
+      return S_OK;
+    }
+    HRESULT STDMETHODCALLTYPE Invoke(
+        ICoreWebView2 *sender,
+        ICoreWebView2NewWindowRequestedEventArgs *args) {
+      LPWSTR uri = nullptr;
+      if (SUCCEEDED(args->get_Uri(&uri)) && uri && *uri) {
+        ShellExecuteW(nullptr, L"open", uri, nullptr, nullptr, SW_SHOW);
+        CoTaskMemFree(uri);
+      }
+      args->put_Handled(TRUE);
       return S_OK;
     }
 
