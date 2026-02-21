@@ -1094,57 +1094,83 @@ bool snapshot(const string &filename) {
     return gdk_pixbuf_save(screenshot, filename.c_str(), "png", nullptr, nullptr);
 
     #elif defined(__APPLE__)
-    CGRect frameRect = __getWindowRect();
-    CGRect clientRect =
-            ((CGRect (*)(id, SEL, CGRect))objc_msgSend)(windowHandle, "contentRectForFrameRect:"_sel, frameRect);
-    clientRect.origin.y +=  frameRect.size.height - clientRect.size.height;
 
-    long winId = ((long(*)(id, SEL))objc_msgSend)(windowHandle, "windowNumber"_sel);
-    
-CGImageRef imgRef = nil;
+    if (@available(macOS 12.3, *)) {
 
-#if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 120300
-    // Modern ScreenCaptureKit API (macOS 12.3+)
-    __block CGImageRef screenshotImage = nil;
-    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-    
-    SCContentFilter *filter = [[SCContentFilter alloc] initWithDesktopIndependentWindow:
-        [SCWindow windowWithWindowID:winId]];
-    
-    SCStreamConfiguration *config = [[SCStreamConfiguration alloc] init];
-    config.scalesToFit = NO;
-    
-    [SCScreenshotManager captureImageWithFilter:filter
-                                  configuration:config
-                              completionHandler:^(CGImageRef capturedImage, NSError *error) {
-        if (error == nil && capturedImage != NULL) {
-            
-            screenshotImage = CGImageCreateWithImageInRect(capturedImage, clientRect);
+        long winId =
+            ((long(*)(id, SEL))objc_msgSend)(
+                windowHandle,
+                "windowNumber"_sel);
+
+        __block CGImageRef resultImage = NULL;
+        dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+
+        [SCShareableContent getShareableContentWithCompletionHandler:
+            ^(SCShareableContent *content, NSError *error) {
+
+            if (error) {
+                dispatch_semaphore_signal(sem);
+                return;
+            }
+
+            SCWindow *targetWindow = nil;
+            for (SCWindow *window in content.windows) {
+                if (window.windowID == winId) {
+                    targetWindow = window;
+                    break;
+                }
+            }
+
+        if (!targetWindow) {
+            dispatch_semaphore_signal(sem);
+            return;
         }
-        dispatch_semaphore_signal(semaphore);  
+
+        SCContentFilter *filter =
+            [[SCContentFilter alloc] initWithDesktopIndependentWindow:targetWindow];
+
+        SCStreamConfiguration *config =
+            [[SCStreamConfiguration alloc] init];
+
+        config.scalesToFit = NO;
+
+        [SCScreenshotManager captureImageWithFilter:filter
+                                  configuration:config
+                                  completionHandler:^(CGImageRef image,
+                                  NSError *err) {
+
+            if (!err && image) {
+                resultImage = CGImageCreateCopy(image);
+            }
+
+            dispatch_semaphore_signal(sem);
+        }];
     }];
-    
-    dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC));
-    imgRef = screenshotImage;
 
-#else
-    // Fallback for macOS < 12.3
-    imgRef = CGWindowListCreateImage(clientRect, kCGWindowListOptionIncludingWindow, winId, kCGWindowImageBoundsIgnoreFraming);
-#endif
+    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
 
-      
-    id screenshot =
-        ((id (*)(id, SEL))objc_msgSend)("NSBitmapImageRep"_cls, "alloc"_sel);
-    ((void (*)(id, SEL, CGImageRef))objc_msgSend)(screenshot, "initWithCGImage:"_sel, imgRef);
-    id screenshotData =
-        ((id (*)(id, SEL, int, id))objc_msgSend)(screenshot, "representationUsingType:properties:"_sel, NSPNGFileType, nullptr);
-    bool status = ((bool (*)(id, SEL, id, bool))objc_msgSend)(screenshotData, "writeToFile:atomically:"_sel, 
-            ((id(*)(id, SEL, const char *))objc_msgSend)("NSString"_cls, "stringWithUTF8String:"_sel, filename.c_str())
-    , true);
-    
-    return status;
-   
+    if (!resultImage)
+        return false;
 
+    id bitmap =
+        [[NSBitmapImageRep alloc] initWithCGImage:resultImage];
+
+    NSData *data =
+        [bitmap representationUsingType:NSBitmapImageFileTypePNG
+                              properties:@{}];
+
+        BOOL status =
+            [data writeToFile:
+                [NSString stringWithUTF8String:filename.c_str()]
+                  atomically:YES];
+
+        CGImageRelease(resultImage);
+
+        return status;
+
+    } else {
+        return false;
+    }
     #elif defined(_WIN32)
     GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;
@@ -1220,7 +1246,7 @@ bool init(const json &windowOptions) {
 
     if(helpers::hasField(windowOptions, "x"))
         windowProps.x = windowOptions["x"].get<int>();
-    
+
     if(helpers::hasField(windowOptions, "useLogicalPixels")) {
         windowProps.useLogicalPixels = windowOptions["useLogicalPixels"].get<bool>();
     }
@@ -1579,7 +1605,7 @@ json setMainMenu(const json &input) {
 
 json beginDrag(const json &input) {
     json output;
-    
+
     #if defined(_WIN32)
     nativeWindow->dispatch([&]() { beginDragNative(); });
     #elif defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
@@ -1597,10 +1623,10 @@ json print(const json &input) {
     void *dlib = nativeWindow->dl();
     webkit_print_operation_new_func webkit_print_operation_new = (webkit_print_operation_new_func)(dlsym(dlib, "webkit_print_operation_new"));
     webkit_print_operation_run_dialog_func webkit_print_operation_run_dialog = (webkit_print_operation_run_dialog_func)(dlsym(dlib, "webkit_print_operation_run_dialog"));
-    
+
     WebKitPrintOperation *printOp = webkit_print_operation_new((WebKitWebView*)(nativeWindow->wv()));
     webkit_print_operation_run_dialog((WebKitPrintOperation*)printOp, GTK_WINDOW(windowHandle));
-    
+
     #elif defined(__APPLE__)
     id sharedPrintInfo = ((id(*)(id, SEL))objc_msgSend)("NSPrintInfo"_cls,
                                             "sharedPrintInfo"_sel);
