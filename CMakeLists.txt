@@ -231,6 +231,7 @@ elseif(UNIX)
     pkg_check_modules(XCB REQUIRED xcb)
     pkg_check_modules(X11 REQUIRED x11)
     pkg_check_modules(XRANDR REQUIRED xrandr)
+    pkg_check_modules(XTST REQUIRED xtst)
     
     target_include_directories(${PROJECT_NAME} PRIVATE 
       ${GTK3_INCLUDE_DIRS}
@@ -238,6 +239,7 @@ elseif(UNIX)
       ${XCB_INCLUDE_DIRS}
       ${X11_INCLUDE_DIRS}
       ${XRANDR_INCLUDE_DIRS}
+      ${XTST_INCLUDE_DIRS}
     )
     
     target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -246,6 +248,7 @@ elseif(UNIX)
       ${XCB_LIBRARIES}
       ${X11_LIBRARIES}
       ${XRANDR_LIBRARIES}
+      ${XTST_LIBRARIES}
       pthread
       png
       stdc++fs

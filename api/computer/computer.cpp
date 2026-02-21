@@ -1,26 +1,39 @@
 #include <stdint.h>
 #include <string>
+#include "helpers.h"
+#include "errors.h"
 
 #if defined(__linux__)
 #include <sys/sysinfo.h>
 #include <gdk/gdk.h>
+#include <X11/Xlib.h>
+#include <X11/extensions/XTest.h>
+#include <cstdlib>
 
-#elif defined(__APPLE__) || defined(__FreeBSD__)
+#elif defined(__FreeBSD__)
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/sysctl.h>
-#if defined(__APPLE__)
+#include <X11/Xlib.h>
+#include <X11/extensions/XTest.h>
+#include <cstdlib>
+
+#elif defined(__APPLE__)
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
 #include <CoreGraphics/CGEvent.h>
-#endif
 
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
 #include <windows.h>
 #endif
 
+
 #include <infoware/system.hpp>
 #include <infoware/cpu.hpp>
 #include "api/computer/computer.h"
+#include "api/window/window.h"
 #include "lib/json/json.hpp"
 
 using namespace std;
@@ -70,6 +83,168 @@ pair<int, int> getMousePosition() {
     #endif
 
     return make_pair(x, y);
+}
+
+static bool isWayland() {
+#if defined(__linux__) || defined(__FreeBSD__)
+    return getenv("WAYLAND_DISPLAY") != nullptr;
+#else
+    return false;
+#endif
+}
+
+bool setCursorPosition(int x, int y, CoordSpace space) {
+#if defined(_WIN32)
+    POINT p{ x, y };
+    if(space == CoordSpace::Window) {
+        HWND hwnd = (HWND)window::windowHandle;
+        ClientToScreen(hwnd, &p);
+    }
+    return SetCursorPos(p.x, p.y) == TRUE;
+
+#elif defined(__APPLE__)
+    CGPoint pt;
+    if(space == CoordSpace::Window) {
+        CGRect main = CGDisplayBounds(CGMainDisplayID());
+        pt = CGPointMake(x, main.size.height - y);
+    }
+    else pt = CGPointMake(x, y);
+
+    CGWarpMouseCursorPosition(pt);
+    CGAssociateMouseAndMouseCursorPosition(true);
+    return true;
+
+#elif defined(__linux__) || defined(__FreeBSD__)
+    if(isWayland()) return false;
+
+    Display *d = XOpenDisplay(nullptr);
+    if(!d) return false;
+
+    XWarpPointer(d, None, DefaultRootWindow(d), 0, 0, 0, 0, x, y);
+    XFlush(d);
+    XCloseDisplay(d);
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool setCursorGrab(bool enabled) {
+#if defined(_WIN32)
+    HWND hwnd = (HWND)window::windowHandle;
+
+    if(enabled) {
+        RECT r;
+        GetClientRect(hwnd, &r);
+        POINT tl{r.left, r.top}, br{r.right, r.bottom};
+        ClientToScreen(hwnd, &tl);
+        ClientToScreen(hwnd, &br);
+        RECT clip{tl.x, tl.y, br.x, br.y};
+        return ClipCursor(&clip) == TRUE;
+    }
+    return ClipCursor(nullptr) == TRUE;
+
+#elif defined(__APPLE__)
+    if(enabled) CGDisplayHideCursor(kCGDirectMainDisplay);
+    else CGDisplayShowCursor(kCGDirectMainDisplay);
+    return true;
+
+#elif defined(__linux__) || defined(__FreeBSD__)
+    if(isWayland()) return false;
+
+    Display *d = XOpenDisplay(nullptr);
+    if(!d) return false;
+
+    if(enabled) {
+        XGrabPointer(d, DefaultRootWindow(d), True,
+            ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+            GrabModeAsync, GrabModeAsync,
+            DefaultRootWindow(d), None, CurrentTime);
+    }
+    else {
+        XUngrabPointer(d, CurrentTime);
+    }
+
+    XFlush(d);
+    XCloseDisplay(d);
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool sendKey(const string &key,
+             const vector<string> &mods,
+             const string &state) {
+#if defined(_WIN32)
+    if(key.size() != 1) return false;
+
+    bool down = state != "up";
+    WORD vk = VkKeyScanA(key[0]) & 0xFF;
+
+    INPUT in{};
+    in.type = INPUT_KEYBOARD;
+    in.ki.wVk = vk;
+    if(!down) in.ki.dwFlags = KEYEVENTF_KEYUP;
+
+    SendInput(1, &in, sizeof(INPUT));
+
+    if(state == "tap") {
+        in.ki.dwFlags = KEYEVENTF_KEYUP;
+        SendInput(1, &in, sizeof(INPUT));
+    }
+    return true;
+
+#elif defined(__APPLE__)
+    if(key.size() != 1) return false;
+
+    CGKeyCode code = (CGKeyCode)toupper(key[0]);
+    bool down = state != "up";
+
+    CGEventRef ev = CGEventCreateKeyboardEvent(nullptr, code, down);
+    CGEventPost(kCGHIDEventTap, ev);
+    CFRelease(ev);
+
+    if(state == "tap") {
+        ev = CGEventCreateKeyboardEvent(nullptr, code, false);
+        CGEventPost(kCGHIDEventTap, ev);
+        CFRelease(ev);
+    }
+    return true;
+
+#elif defined(__linux__) || defined(__FreeBSD__)
+    if(isWayland()) return false;
+    if(key.size() != 1) return false;
+
+    Display *d = XOpenDisplay(nullptr);
+    if(!d) return false;
+
+    KeyCode kc = XKeysymToKeycode(d, XStringToKeysym(key.c_str()));
+    bool down = state != "up";
+
+    XTestFakeKeyEvent(d, kc, down, CurrentTime);
+    if(state == "tap")
+        XTestFakeKeyEvent(d, kc, False, CurrentTime);
+
+    XFlush(d);
+    XCloseDisplay(d);
+    return true;
+#else
+    return false;
+#endif
+}
+
+InputCapabilities getInputCapabilities() {
+    InputCapabilities caps;
+#if defined(_WIN32) || defined(__APPLE__)
+    caps = {true, true, true};
+#elif defined(__linux__) || defined(__FreeBSD__)
+    if(isWayland())
+        caps = {false, true, false};
+    else
+        caps = {true, true, true};
+#endif
+    return caps;
 }
 
 namespace controllers {
@@ -195,6 +370,91 @@ json getMousePosition(const json &input) {
     output["success"] = true;
     return output;
 }
+json setCursorPosition(const json &input) {
+    json output;
 
+    const auto missing = helpers::missingRequiredField(input, {"x", "y"});
+    if(missing) {
+        output["error"] = errors::makeMissingArgErrorPayload(missing.value());
+        return output;
+    }
+
+    int x = input["x"].get<int>();
+    int y = input["y"].get<int>();
+
+    string spaceStr = "window";
+    if(helpers::hasField(input, "space"))
+        spaceStr = input["space"].get<string>();
+
+    CoordSpace space =
+        (spaceStr == "screen") ? CoordSpace::Screen : CoordSpace::Window;
+
+    if(!computer::setCursorPosition(x, y, space)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_RT_NATRTER);
+        return output;
+    }
+
+    output["success"] = true;
+    return output;
+}
+
+json setCursorGrab(const json &input) {
+    json output;
+
+    bool enabled = true;
+    if(helpers::hasField(input, "enabled"))
+        enabled = input["enabled"].get<bool>();
+
+    if(!computer::setCursorGrab(enabled)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_RT_NATRTER);
+        return output;
+    }
+
+    output["success"] = true;
+    return output;
+}
+
+json sendKey(const json &input) {
+    json output;
+
+    const auto missing = helpers::missingRequiredField(input, {"key"});
+    if(missing) {
+        output["error"] = errors::makeMissingArgErrorPayload(missing.value());
+        return output;
+    }
+
+    string key = input["key"].get<string>();
+    vector<string> mods;
+    string state = "tap";
+
+    if(helpers::hasField(input, "modifiers"))
+        mods = input["modifiers"].get<vector<string>>();
+
+    if(helpers::hasField(input, "state"))
+        state = input["state"].get<string>();
+
+    if(!computer::sendKey(key, mods, state)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_RT_NATRTER);
+        return output;
+    }
+
+    output["success"] = true;
+    return output;
+}
+
+json getInputCapabilities(const json &) {
+    json output;
+
+    InputCapabilities caps = computer::getInputCapabilities();
+    json ret = {
+        {"warp", caps.warp},
+        {"grab", caps.grab},
+        {"syntheticKeys", caps.syntheticKeys}
+    };
+
+    output["returnValue"] = ret;
+    output["success"] = true;
+    return output;
+}
 } // namespace controllers
 } // namespace computer
