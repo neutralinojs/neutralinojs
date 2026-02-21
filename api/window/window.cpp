@@ -1093,33 +1093,33 @@ bool snapshot(const string &filename) {
     GdkPixbuf *screenshot = gdk_pixbuf_get_from_window(window, x, y, width, height);
     return gdk_pixbuf_save(screenshot, filename.c_str(), "png", nullptr, nullptr);
 
-#elif defined(__APPLE__)
+    #elif defined(__APPLE__)
 
-if (@available(macOS 12.3, *)) {
+    if (@available(macOS 12.3, *)) {
 
-    long winId =
-        ((long(*)(id, SEL))objc_msgSend)(
-            windowHandle,
-            "windowNumber"_sel);
+        long winId =
+            ((long(*)(id, SEL))objc_msgSend)(
+                windowHandle,
+                "windowNumber"_sel);
 
-    __block CGImageRef resultImage = NULL;
-    dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+        __block CGImageRef resultImage = NULL;
+        dispatch_semaphore_t sem = dispatch_semaphore_create(0);
 
-    [SCShareableContent getShareableContentWithCompletionHandler:
-        ^(SCShareableContent *content, NSError *error) {
+        [SCShareableContent getShareableContentWithCompletionHandler:
+            ^(SCShareableContent *content, NSError *error) {
 
-        if (error) {
-            dispatch_semaphore_signal(sem);
-            return;
-        }
-
-        SCWindow *targetWindow = nil;
-        for (SCWindow *window in content.windows) {
-            if (window.windowID == winId) {
-                targetWindow = window;
-                break;
+            if (error) {
+                dispatch_semaphore_signal(sem);
+                return;
             }
-        }
+
+            SCWindow *targetWindow = nil;
+            for (SCWindow *window in content.windows) {
+                if (window.windowID == winId) {
+                    targetWindow = window;
+                    break;
+                }
+            }
 
         if (!targetWindow) {
             dispatch_semaphore_signal(sem);
@@ -1135,9 +1135,9 @@ if (@available(macOS 12.3, *)) {
         config.scalesToFit = NO;
 
         [SCScreenshotManager captureImageWithFilter:filter
-                                      configuration:config
+                                  configuration:config
                                   completionHandler:^(CGImageRef image,
-                                                      NSError *err) {
+                                  NSError *err) {
 
             if (!err && image) {
                 resultImage = CGImageCreateCopy(image);
@@ -1159,18 +1159,18 @@ if (@available(macOS 12.3, *)) {
         [bitmap representationUsingType:NSBitmapImageFileTypePNG
                               properties:@{}];
 
-    BOOL status =
-        [data writeToFile:
-            [NSString stringWithUTF8String:filename.c_str()]
-              atomically:YES];
+        BOOL status =
+            [data writeToFile:
+                [NSString stringWithUTF8String:filename.c_str()]
+                  atomically:YES];
 
-    CGImageRelease(resultImage);
+        CGImageRelease(resultImage);
 
-    return status;
+        return status;
 
-} else {
-    return false;
-}
+    } else {
+        return false;
+    }
     #elif defined(_WIN32)
     GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;
@@ -1203,449 +1203,3 @@ if (@available(macOS 12.3, *)) {
     return status;
     #endif
 }
-
-void setMainMenu(const json &menu) {
-    #if defined(_WIN32)
-    SendMessage(windowHandle, WM_WINDOW_DELETE_MENU_REFS, 0, 0);
-    HMENU prevMenu = windowMenu;
-    windowMenuItemId = ID_MENU_FIRST;
-    windowMenu = __createMenu(menu, true);
-    SetMenu(windowHandle, windowMenu);
-
-    if(prevMenu) {
-        DestroyMenu(prevMenu);
-    }
-
-    #elif defined(__APPLE__)
-    id app = ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls,
-                                            "sharedApplication"_sel);
-    ((void (*)(id, SEL, id))objc_msgSend)(app, "mainMenu"_sel, nullptr);
-    ((void (*)(id, SEL, id))objc_msgSend)(app, "setMainMenu:"_sel, __createMenu(menu));
-
-    #elif defined(__linux__) || defined(__FreeBSD__)
-    if(menuContainer) {
-        gtk_widget_destroy(menuContainer);
-    }
-
-    menuContainer = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-    GtkMenuShell *windowMenu = __createMenu(menu, true);
-    GtkWidget *parentContainer = gtk_bin_get_child(GTK_BIN(windowHandle));
-
-    gtk_box_pack_start(GTK_BOX(parentContainer), menuContainer, false, false, 0);
-    gtk_box_reorder_child(GTK_BOX(parentContainer), menuContainer, 0);
-    gtk_box_pack_start(GTK_BOX(menuContainer), GTK_WIDGET(windowMenu), false, false, 0);
-    gtk_widget_show_all(menuContainer);
-
-    #endif
-}
-
-bool init(const json &windowOptions) {
-    json output;
-
-    windowProps.sizeOptions = __jsonToSizeOptions(windowOptions, true);
-
-    if(helpers::hasField(windowOptions, "x"))
-        windowProps.x = windowOptions["x"].get<int>();
-    
-    if(helpers::hasField(windowOptions, "useLogicalPixels")) {
-        windowProps.useLogicalPixels = windowOptions["useLogicalPixels"].get<bool>();
-    }
-
-
-    if(helpers::hasField(windowOptions, "y"))
-        windowProps.y = windowOptions["y"].get<int>();
-
-    if(helpers::hasField(windowOptions, "fullScreen"))
-        windowProps.fullScreen = windowOptions["fullScreen"].get<bool>();
-
-    if(helpers::hasField(windowOptions, "alwaysOnTop"))
-        windowProps.alwaysOnTop = windowOptions["alwaysOnTop"].get<bool>();
-
-    if(helpers::hasField(windowOptions, "title"))
-        windowProps.title = windowOptions["title"].get<string>();
-
-    if(helpers::hasField(windowOptions, "url"))
-        windowProps.url = windowOptions["url"].get<string>();
-
-    if(helpers::hasField(windowOptions, "icon"))
-        windowProps.icon = windowOptions["icon"].get<string>();
-
-    if(helpers::hasField(windowOptions, "extendUserAgentWith"))
-        windowProps.extendUserAgentWith = windowOptions["extendUserAgentWith"].get<string>();
-
-    if(helpers::hasField(windowOptions, "injectScript"))
-        windowProps.injectScript = windowOptions["injectScript"].get<string>();
-
-    if(helpers::hasField(windowOptions, "enableInspector"))
-        windowProps.enableInspector = windowOptions["enableInspector"].get<bool>();
-
-    if(helpers::hasField(windowOptions, "openInspectorOnStartup"))
-        windowProps.openInspectorOnStartup = windowOptions["openInspectorOnStartup"].get<bool>();
-
-    if(helpers::hasField(windowOptions, "borderless"))
-        windowProps.borderless = windowOptions["borderless"].get<bool>();
-
-    if(helpers::hasField(windowOptions, "maximize"))
-        windowProps.maximize = windowOptions["maximize"].get<bool>();
-
-    if(helpers::hasField(windowOptions, "hidden"))
-        windowProps.hidden = windowOptions["hidden"].get<bool>();
-
-    if(helpers::hasField(windowOptions, "center"))
-        windowProps.center = windowOptions["center"].get<bool>();
-
-    if(helpers::hasField(windowOptions, "transparent"))
-        windowProps.transparent = windowOptions["transparent"].get<bool>();
-
-    if(helpers::hasField(windowOptions, "exitProcessOnClose"))
-        windowProps.exitProcessOnClose = windowOptions["exitProcessOnClose"].get<bool>();
-
-    if(helpers::hasField(windowOptions, "useSavedState"))
-        windowProps.useSavedState = windowOptions["useSavedState"].get<bool>();
-
-    if(helpers::hasField(windowOptions, "injectGlobals"))
-        windowProps.injectGlobals = windowOptions["injectGlobals"].get<bool>();
-
-    if(helpers::hasField(windowOptions, "injectClientLibrary"))
-        windowProps.injectClientLibrary = windowOptions["injectClientLibrary"].get<bool>();
-
-    if(helpers::hasField(windowOptions, "webviewArgs"))
-        windowProps.webviewArgs = windowOptions["webviewArgs"].get<string>();
-
-    if(helpers::hasField(windowOptions, "skipTaskbar"))
-        windowProps.skipTaskbar = windowOptions["skipTaskbar"].get<bool>();
-
-    if(!__createWindow()) {
-        return false;
-    }
-
-    nativeWindow->run();
-    return true;
-}
-
-namespace controllers {
-
-json setTitle(const json &input) {
-    json output;
-    string title = "";
-    if(helpers::hasField(input, "title")) {
-        title = input["title"].get<string>();
-    }
-    nativeWindow->set_title(title);
-    output["success"] = true;
-    return output;
-}
-
-json getTitle(const json &input) {
-    json output;
-    output["returnValue"] = nativeWindow->get_title();
-    output["success"] = true;
-    return output;
-}
-
-json maximize(const json &input) {
-    json output;
-    window::maximize();
-    output["success"] = true;
-    return output;
-}
-
-json unmaximize(const json &input) {
-    json output;
-    window::unmaximize();
-    output["success"] = true;
-    return output;
-}
-
-json isMaximized(const json &input) {
-    json output;
-    output["returnValue"] = window::isMaximized();
-    output["success"] = true;
-    return output;
-}
-
-json minimize(const json &input) {
-    json output;
-    #if defined(__linux__) || defined(__FreeBSD__)
-    gtk_window_iconify(GTK_WINDOW(windowHandle));
-    #elif defined(_WIN32)
-    ShowWindow(windowHandle, SW_MINIMIZE);
-    #elif defined(__APPLE__)
-    ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
-        "miniaturize:"_sel, NULL);
-    #endif
-    output["success"] = true;
-    return output;
-}
-
-json unminimize(const json &input) {
-    json output;
-    #if defined(__linux__) || defined(__FreeBSD__)
-    gtk_window_present(GTK_WINDOW(windowHandle));
-    #elif defined(_WIN32)
-    ShowWindow(windowHandle, SW_RESTORE);
-    #elif defined(__APPLE__)
-    ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
-        "deminiaturize:"_sel, NULL);
-    #endif
-    output["success"] = true;
-    return output;
-}
-
-json isMinimized(const json &input) {
-    json output;
-    bool minimized = false;
-    #if defined(__linux__) || defined(__FreeBSD__)
-    minimized = isGtkWindowMinimized;
-    #elif defined(_WIN32)
-    minimized = IsIconic(windowHandle) == 1;
-    #elif defined(__APPLE__)
-    minimized = ((bool (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
-        "isMiniaturized"_sel, NULL);
-    #endif
-    output["returnValue"] = minimized;
-    output["success"] = true;
-    return output;
-}
-
-json show(const json &input) {
-    json output;
-    #if defined(__linux__) || defined(__FreeBSD__)
-    nativeWindow->dispatch([&]() {
-        window::show();
-    });
-    #else
-    window::show();
-    #endif
-    output["success"] = true;
-    return output;
-}
-
-json hide(const json &input) {
-    json output;
-    window::hide();
-    output["success"] = true;
-    return output;
-}
-
-json isVisible(const json &input) {
-    json output;
-    output["returnValue"] = window::isVisible();
-    output["success"] = true;
-    return output;
-}
-
-json setFullScreen(const json &input) {
-    json output;
-    window::setFullScreen();
-    output["success"] = true;
-    return output;
-}
-
-json exitFullScreen(const json &input) {
-    json output;
-    window::exitFullScreen();
-    output["success"] = true;
-    return output;
-}
-
-json isFullScreen(const json &input) {
-    json output;
-    output["returnValue"] = window::isFullScreen();
-    output["success"] = true;
-    return output;
-}
-
-json focus(const json &input) {
-    json output;
-    #if defined(__linux__) || defined(__FreeBSD__)
-    gtk_window_present(GTK_WINDOW(windowHandle));
-    #elif defined(__APPLE__)
-    ((void (*)(id, SEL))objc_msgSend)(
-        ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls, "sharedApplication"_sel),
-        "activate"_sel);
-    ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
-            "makeKeyAndOrderFront:"_sel, NULL);
-    #elif defined(_WIN32)
-    SetForegroundWindow(windowHandle);
-    #endif
-    output["success"] = true;
-    return output;
-}
-
-json setIcon(const json &input) {
-    json output;
-    if(!helpers::hasRequiredFields(input, {"icon"})) {
-        output["error"] = errors::makeMissingArgErrorPayload("icon");
-        return output;
-    }
-    string icon = input["icon"].get<string>();
-    window::setIcon(icon);
-    output["success"] = true;
-    return output;
-}
-
-json move(const json &input) {
-    json output;
-    const auto missingRequiredField = helpers::missingRequiredField(input, {"x", "y"});
-    if(missingRequiredField) {
-        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
-        return output;
-    }
-    int x = input["x"].get<int>();
-    int y = input["y"].get<int>();
-    window::move(x, y);
-    output["success"] = true;
-    return output;
-}
-
-json center(const json &input) {
-    json output;
-    window::center();
-    output["success"] = true;
-    return output;
-}
-
-json setSize(const json &input) {
-    json output;
-    windowProps.sizeOptions = __jsonToSizeOptions(input);
-
-    int width = windowProps.sizeOptions.width;
-    int height = windowProps.sizeOptions.height;
-
-    if(windowProps.useLogicalPixels) {
-        double scale = __getScaleFactor();
-        if(width > 0)  width  = (int)(width  * scale);
-        if(height > 0) height = (int)(height * scale);
-    }
-
-    nativeWindow->set_size(
-        width,
-        height,
-        windowProps.sizeOptions.minWidth,
-        windowProps.sizeOptions.minHeight,
-        windowProps.sizeOptions.maxWidth,
-        windowProps.sizeOptions.maxHeight,
-        windowProps.sizeOptions.resizable
-    );
-
-    output["success"] = true;
-    return output;
-}
-
-
-json getSize(const json &input) {
-    json output;
-    windowProps.sizeOptions = window::getSize();
-
-    output["returnValue"] = __sizeOptionsToJson(windowProps.sizeOptions);
-    output["success"] = true;
-    return output;
-}
-
-json setAlwaysOnTop(const json &input) {
-    json output;
-    bool onTop = true;
-    if(helpers::hasField(input, "onTop")) {
-        onTop = input["onTop"].get<bool>();
-    }
-    window::setAlwaysOnTop(onTop);
-    output["success"] = true;
-    return output;
-}
-
-json setBorderless(const json &input) {
-    json output;
-    bool borderless = true;
-    if(helpers::hasField(input, "borderless")) {
-        borderless = input["borderless"].get<bool>();
-    }
-    window::setBorderless(borderless);
-    output["success"] = true;
-    return output;
-}
-
-json getPosition(const json &input) {
-    json output;
-    json posRes;
-    pair<int, int> pos = window::getPosition();
-    posRes["x"] = pos.first;
-    posRes["y"] = pos.second;
-    output["returnValue"] = posRes;
-    output["success"] = true;
-    return output;
-}
-
-json snapshot(const json &input) {
-    json output;
-    if (!helpers::hasRequiredFields(input, {"path"})) {
-        output["error"] = errors::makeMissingArgErrorPayload("path");
-        return output;
-    }
-
-    string imageFile = input["path"].get<string>();
-    if(window::snapshot(imageFile)) {
-        output["success"] = true;
-    }
-    else {
-        output["error"] = errors::makeErrorPayload(errors::NE_WI_UNBSWSR, imageFile);
-    }
-    return output;
-}
-
-json setMainMenu(const json &input) {
-    json output;
-
-    window::setMainMenu(input);
-
-    output["success"] = true;
-    return output;
-}
-
-
-json beginDrag(const json &input) {
-    json output;
-    
-    #if defined(_WIN32)
-    nativeWindow->dispatch([&]() { beginDragNative(); });
-    #elif defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
-    window::beginDragNative();
-    #endif
-
-    output["success"] = true;
-    return output;
-}
-
-json print(const json &input) {
-    json output;
-
-    #if defined(__linux__) || defined(__FreeBSD__)
-    void *dlib = nativeWindow->dl();
-    webkit_print_operation_new_func webkit_print_operation_new = (webkit_print_operation_new_func)(dlsym(dlib, "webkit_print_operation_new"));
-    webkit_print_operation_run_dialog_func webkit_print_operation_run_dialog = (webkit_print_operation_run_dialog_func)(dlsym(dlib, "webkit_print_operation_run_dialog"));
-    
-    WebKitPrintOperation *printOp = webkit_print_operation_new((WebKitWebView*)(nativeWindow->wv()));
-    webkit_print_operation_run_dialog((WebKitPrintOperation*)printOp, GTK_WINDOW(windowHandle));
-    
-    #elif defined(__APPLE__)
-    id sharedPrintInfo = ((id(*)(id, SEL))objc_msgSend)("NSPrintInfo"_cls,
-                                            "sharedPrintInfo"_sel);
-    id printInfo = ((id(*)(id, SEL, id))objc_msgSend)((id)nativeWindow->wv(),
-                                            "printOperationWithPrintInfo:"_sel, sharedPrintInfo);
-    ((void(*)(id, SEL, id, id, SEL, void(*)))objc_msgSend)(printInfo,
-        "runOperationModalForWindow:delegate:didRunSelector:contextInfo:"_sel, windowHandle, nullptr, nullptr, nullptr);  
-    #elif defined(_WIN32)
-    ICoreWebView2 *webview = (ICoreWebView2*)nativeWindow->wv();
-    nativeWindow->dispatch([=] {
-        webview->ExecuteScript(L"window.print()", nullptr);
-    });
-
-    #endif
-    output["success"] = true;
-    return output;
-}
-
-
-} // namespace controllers
-
-} // namespace window
