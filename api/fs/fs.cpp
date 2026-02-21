@@ -1,5 +1,6 @@
 #include <map>
 #include <mutex>
+#include <atomic>
 #include <iostream>
 #include <fstream>
 #include <regex>
@@ -41,6 +42,7 @@ using json = nlohmann::json;
 
 map<int, ifstream*> openedFiles;
 mutex openedFilesLock;
+atomic<int> nextFileId(0);
 efsw::FileWatcher* fileWatcher;
 map<efsw::WatchID, pair<efsw::FileWatchListener*, string>> watchListeners;
 mutex watcherLock;
@@ -195,7 +197,7 @@ bool writeFile(const fs::FileWriterOptions &fileWriterOptions) {
 }
 
 int openFile(const string &filename) {
-    int virtualFileId = openedFiles.size();
+    int virtualFileId = nextFileId++;
     ifstream *reader = new ifstream(CONVSTR(filename), ios::binary);
     if(!reader->is_open()) {
         delete reader;
