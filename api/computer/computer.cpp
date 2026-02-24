@@ -168,7 +168,7 @@ bool sendKey(unsigned int keyCode, bool up = true) {
     INPUT in {};
     in.type = INPUT_KEYBOARD;
     in.ki.wVk = vk;
-    in.ki.dwFlags = KEYEVENTF_KEYUP;
+    in.ki.dwFlags = 0;
 
     SendInput(1, &in, sizeof(INPUT));
 
