@@ -19,6 +19,7 @@
 #include "api/window/window.h"
 #include "api/os/os.h"
 #include "api/events/events.h"
+#include "extensions_loader.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -26,6 +27,7 @@ using json = nlohmann::json;
 namespace app {
 
 void exit(int code) {
+    extensions::cleanup();
     if(neuserver::isInitialized()) {
         neuserver::stop();
     }
