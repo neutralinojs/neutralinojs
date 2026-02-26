@@ -226,7 +226,7 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
             response.data = apiOutput;
             return response;
         }
-        catch(exception e){
+        catch(const exception& e){
             response.data["error"] = errors::makeErrorPayload(errors::NE_RT_NATRTER);
             return response;
         }

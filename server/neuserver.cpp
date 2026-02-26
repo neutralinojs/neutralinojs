@@ -189,7 +189,7 @@ void handleMessage(websocketpp::connection_hdl handler, websocketserver::message
             debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_SR_UNBSEND));
         }
     }
-    catch(exception e) {
+    catch(const exception& e) {
         debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_SR_UNBPARS));
     }
 }

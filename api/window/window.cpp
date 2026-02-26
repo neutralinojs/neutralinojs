@@ -313,7 +313,7 @@ bool __loadSavedWindowProps() {
         SetWindowPlacement(windowHandle, &wp);
         #endif
     }
-    catch(exception e) {
+    catch(const exception& e) {
         debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_CF_UNBLWCF, string(NEU_WIN_CONFIG_FILE)));
         return false;
     }

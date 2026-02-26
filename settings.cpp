@@ -72,7 +72,7 @@ bool init() {
             config = json::parse(fileReaderResult.data);
             options = config;
         }
-        catch(exception e) {
+        catch(const exception& e) {
             debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_CF_UNBPRCF, string(configFile)));
             return false;
         }
