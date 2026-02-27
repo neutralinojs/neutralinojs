@@ -1,6 +1,5 @@
 #include <map>
 #include <mutex>
-#include <iostream>
 #include <fstream>
 #include <regex>
 #include <algorithm>
@@ -28,7 +27,6 @@
 #include <efsw/efsw.hpp>
 #include "lib/json/json.hpp"
 #include "lib/base64/base64.hpp"
-#include "lib/platformfolders/platform_folders.h"
 #include "settings.h"
 #include "helpers.h"
 #include "errors.h"

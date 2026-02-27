@@ -1,15 +1,7 @@
-#include <iostream>
-#include <fstream>
 #include <stdlib.h>
-#include <cstdio>
-#include <iostream>
-#include <memory>
 #include <mutex>
-#include <stdexcept>
 #include <string>
-#include <array>
 #include <map>
-#include <cstring>
 #include <vector>
 #include <filesystem>
 #include <functional>
@@ -46,10 +38,8 @@ extern char **environ;
 #include "helpers.h"
 #include "errors.h"
 #include "settings.h"
-#include "resources.h"
 #include "api/events/events.h"
 #include "api/fs/fs.h"
-#include "api/debug/debug.h"
 #include "api/os/os.h"
 #include "api/window/window.h"
 
