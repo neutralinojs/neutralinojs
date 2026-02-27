@@ -13,12 +13,24 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <libgen.h>
+#endif
 
-#elif defined(_WIN32)
+#if defined(__linux__) || defined(__FreeBSD__)
+#include <sstream>
+#include <iomanip>
+#include <chrono>
+#endif
+
+#if defined(__APPLE__)
+#include <objc/objc-runtime.h>
+#endif
+
+#if defined(_WIN32)
 #define _WINSOCKAPI_
 #include <windows.h>
 #include <atlstr.h>
 #include <shlwapi.h>
+#include <shellapi.h>
 #include <winbase.h>
 
 #define NEU_WINDOWS_TICK 10000000
@@ -364,6 +376,101 @@ string applyPathConstants(const string &path) {
         newPath = regex_replace(newPath, regex("\\$\\{NL_OS" + varSegment + "PATH\\}"), os::getPath(pathName));
     }
     return newPath;
+}
+
+#if defined(__linux__) || defined(__FreeBSD__)
+string __percentEncode(const string &s) {
+    ostringstream encoded;
+    encoded.fill('0');
+    encoded << hex;
+    for(unsigned char c : s) {
+        if(isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~' || c == '/') {
+            encoded << c;
+        }
+        else {
+            encoded << '%' << uppercase << setw(2) << (int)c;
+        }
+    }
+    return encoded.str();
+}
+#endif
+
+bool __moveToTrash(const string &path) {
+#if defined(__linux__) || defined(__FreeBSD__)
+    string trashDir = sago::getDataHome() + "/Trash";
+    string trashFiles = trashDir + "/files";
+    string trashInfo = trashDir + "/info";
+
+    error_code ec;
+    filesystem::create_directories(CONVSTR(trashFiles), ec);
+    if(ec) return false;
+    filesystem::create_directories(CONVSTR(trashInfo), ec);
+    if(ec) return false;
+
+    string absPath = FS_CONVWSTR(filesystem::absolute(CONVSTR(path)));
+    string baseName = filesystem::path(CONVSTR(path)).filename().string();
+    string trashName = baseName;
+
+    // Handle name collisions
+    int counter = 1;
+    while(filesystem::exists(CONVSTR(trashFiles + "/" + trashName))) {
+        trashName = baseName + "." + to_string(counter);
+        counter++;
+    }
+
+    // Move file to trash
+    filesystem::rename(CONVSTR(path), CONVSTR(trashFiles + "/" + trashName), ec);
+    if(ec) return false;
+
+    // Write .trashinfo metadata
+    auto now = chrono::system_clock::now();
+    time_t nowTime = chrono::system_clock::to_time_t(now);
+    struct tm tmBuf;
+    localtime_r(&nowTime, &tmBuf);
+
+    ostringstream dateStr;
+    dateStr << put_time(&tmBuf, "%Y-%m-%dT%H:%M:%S");
+
+    string infoContent = "[Trash Info]\nPath=" + __percentEncode(absPath)
+        + "\nDeletionDate=" + dateStr.str() + "\n";
+
+    ofstream infoFile(trashInfo + "/" + trashName + ".trashinfo");
+    if(!infoFile.is_open()) return false;
+    infoFile << infoContent;
+    infoFile.close();
+
+    return true;
+
+#elif defined(__APPLE__)
+    id fileManager = ((id (*)(id, SEL))objc_msgSend)(
+        (id)objc_getClass("NSFileManager"), sel_registerName("defaultManager"));
+
+    id pathStr = ((id (*)(id, SEL, const char*))objc_msgSend)(
+        (id)objc_getClass("NSString"), sel_registerName("stringWithUTF8String:"),
+        path.c_str());
+
+    id fileURL = ((id (*)(id, SEL, id))objc_msgSend)(
+        (id)objc_getClass("NSURL"), sel_registerName("fileURLWithPath:"), pathStr);
+
+    id error = nullptr;
+    BOOL result = ((BOOL (*)(id, SEL, id, id, id*))objc_msgSend)(
+        fileManager, sel_registerName("trashItemAtURL:resultingItemURL:error:"),
+        fileURL, nullptr, &error);
+
+    return result && error == nullptr;
+
+#elif defined(_WIN32)
+    wstring widePath = helpers::str2wstr(path);
+    // SHFileOperation requires double null-terminated string
+    widePath.push_back(L'\0');
+
+    SHFILEOPSTRUCTW fileOp = {};
+    fileOp.wFunc = FO_DELETE;
+    fileOp.pFrom = widePath.c_str();
+    fileOp.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT;
+
+    return SHFileOperationW(&fileOp) == 0;
+#endif
 }
 
 namespace controllers {
@@ -951,9 +1058,32 @@ json getUnnormalizedPath(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
-    
+
     output["returnValue"] = helpers::unNormalizePath(path);
     output["success"] = true;
+    return output;
+}
+
+json moveToTrash(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload("path");
+        return output;
+    }
+    string path = input["path"].get<string>();
+
+    if(!filesystem::exists(CONVSTR(path))) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_TRSERR, path);
+        return output;
+    }
+
+    if(__moveToTrash(path)) {
+        output["success"] = true;
+        output["message"] = path + " was moved to trash";
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_TRSERR, path);
+    }
     return output;
 }
 

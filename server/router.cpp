@@ -118,6 +118,7 @@ map<string, router::NativeMethod> methodMap = {
     {"filesystem.getJoinedPath", fs::controllers::getJoinedPath},
     {"filesystem.getNormalizedPath", fs::controllers::getNormalizedPath},
     {"filesystem.getUnnormalizedPath", fs::controllers::getUnnormalizedPath},
+    {"filesystem.moveToTrash", fs::controllers::moveToTrash},
     // Neutralino.os
     {"os.execCommand", os::controllers::execCommand},
     {"os.spawnProcess", os::controllers::spawnProcess},
