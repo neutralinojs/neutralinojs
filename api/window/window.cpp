@@ -876,7 +876,20 @@ void exitFullScreen() {
 }
 
 void setIcon(const string &iconFile) {
-    fs::FileReaderResult fileReaderResult = resources::getFile(iconFile);
+    string normalizedIconFile = iconFile;
+    if(!normalizedIconFile.empty() && normalizedIconFile[0] != '/') {
+        if(normalizedIconFile.size() > 1 && normalizedIconFile[0] == '.' && normalizedIconFile[1] == '/') {
+            normalizedIconFile = normalizedIconFile.substr(1);
+        }
+        else {
+            normalizedIconFile = "/" + normalizedIconFile;
+        }
+    }
+    fs::FileReaderResult fileReaderResult = resources::getFile(normalizedIconFile);
+    if(fileReaderResult.status != errors::NE_ST_OK) {
+        debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_RS_NOPATHE, normalizedIconFile));
+        return;
+    }
     string iconDataStr = fileReaderResult.data;
     #if defined(__linux__) || defined(__FreeBSD__)
     GdkPixbuf *icon = nullptr;
