@@ -10,6 +10,7 @@
 #include "auth/authbasic.h"
 #include "api/os/os.h"
 #include "api/fs/fs.h"
+#include "api/debug/debug.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -70,6 +71,10 @@ void init() {
 }
 
 void loadOne(const string &extensionId, int virtualPid) {
+    if(extensions::isLoaded(extensionId)) {
+        debug::log(debug::LogTypeError, "Extension '" + extensionId + "' is already loaded");
+        return;
+    }
     loadedExtensions.push_back({extensionId, virtualPid});
 }
 

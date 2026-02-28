@@ -13,7 +13,7 @@ namespace extensions {
 
 struct LoadedExtension {
     string id;
-    int virtualPid;
+    int virtualPid = -1;
 };
 
 void init();
