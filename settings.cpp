@@ -91,8 +91,15 @@ bool init() {
         patch["path"] = cfgOverride.key;
 
         // String to actual types
-        if(cfgOverride.convertTo == "int") {
-            patch["value"] = stoi(cfgOverride.value);
+       if(cfgOverride.convertTo == "int") {
+         try {
+        patch["value"] = std::stoi(cfgOverride.value);
+         }
+        catch(const std::exception& e) {
+        debug::log(debug::LogTypeError,
+            errors::makeErrorMsg(errors::NE_CF_UNSUPMD, cfgOverride.value));
+        continue; // skip invalid override
+        }
         }
         else if(cfgOverride.convertTo == "bool") {
             patch["value"] = cfgOverride.value == "true";
