@@ -714,19 +714,29 @@ json setTray(const json &input) {
         #if defined(__linux__)
         string fullIconPath;
         if(resources::isDirMode()) {
-            fullIconPath = string(filesystem::absolute(settings::joinAppPath(iconPath)));
+            string fullPath = settings::joinAppPath(iconPath);
+            std::error_code ec;
+            if(!filesystem::exists(fullPath, ec) || ec) {
+                output["error"] = errors::makeErrorPayload(errors::NE_RS_NOPATHE, iconPath);
+                return output;
+            }
+            fullIconPath = string(filesystem::absolute(fullPath));
         }
         else {
             // Use alternating tempIconPath since tray_update()
             // doesn't update the icon if the path is the same as the previous one,
             // regardless whether the file contents changed or not.
-            useOtherTempTrayIcon = !useOtherTempTrayIcon;
+            // Compute the target path without committing the toggle yet, so a
+            // failed extraction doesn't corrupt the alternation state.
+            bool nextUseOther = !useOtherTempTrayIcon;
             string tempIconPath = settings::joinAppDataPath(
-                    useOtherTempTrayIcon ?  "/.tmp/tray_icon_linux_01.png" : "/.tmp/tray_icon_linux_02.png"
+                    nextUseOther ? "/.tmp/tray_icon_linux_01.png" : "/.tmp/tray_icon_linux_02.png"
             );
-
-            string tempDirPath = settings::joinAppDataPath("/.tmp");;
-            resources::extractFile(iconPath, tempIconPath);
+            if(!resources::extractFile(iconPath, tempIconPath)) {
+                output["error"] = errors::makeErrorPayload(errors::NE_RS_FILEXTF, iconPath);
+                return output;
+            }
+            useOtherTempTrayIcon = nextUseOther;
             fullIconPath = filesystem::absolute(tempIconPath);
         }
         delete[] tray.icon;
@@ -734,16 +744,42 @@ json setTray(const json &input) {
 
         #elif defined(_WIN32)
         fs::FileReaderResult fileReaderResult = resources::getFile(iconPath);
+        if(fileReaderResult.status != errors::NE_ST_OK) {
+            output["error"] = errors::makeErrorPayload(fileReaderResult.status, iconPath);
+            GdiplusShutdown(gdiplusToken);
+            return output;
+        }
         string iconDataStr = fileReaderResult.data;
         const char *iconData = iconDataStr.c_str();
         unsigned char *uiconData = reinterpret_cast<unsigned char*>(const_cast<char*>(iconData));
-        IStream *pStream = SHCreateMemStream((BYTE *) uiconData, iconDataStr.length());
+        IStream *pStream = SHCreateMemStream((BYTE *) uiconData, static_cast<UINT>(iconDataStr.length()));
+        if(!pStream) {
+            output["error"] = errors::makeErrorPayload(errors::NE_OS_TRAYIER);
+            GdiplusShutdown(gdiplusToken);
+            return output;
+        }
         Gdiplus::Bitmap* bitmap = Gdiplus::Bitmap::FromStream(pStream);
-        bitmap->GetHICON(&tray.icon);
         pStream->Release();
+        if(!bitmap || bitmap->GetLastStatus() != Gdiplus::Ok) {
+            delete bitmap;
+            output["error"] = errors::makeErrorPayload(errors::NE_OS_TRAYIER);
+            GdiplusShutdown(gdiplusToken);
+            return output;
+        }
+        Gdiplus::Status iconStatus = bitmap->GetHICON(&tray.icon);
+        delete bitmap;
+        if(iconStatus != Gdiplus::Ok || tray.icon == NULL) {
+            output["error"] = errors::makeErrorPayload(errors::NE_OS_TRAYIER);
+            GdiplusShutdown(gdiplusToken);
+            return output;
+        }
 
         #elif defined(__APPLE__)
         fs::FileReaderResult fileReaderResult = resources::getFile(iconPath);
+        if(fileReaderResult.status != errors::NE_ST_OK) {
+            output["error"] = errors::makeErrorPayload(fileReaderResult.status, iconPath);
+            return output;
+        }
         string iconDataStr = fileReaderResult.data;
         const char *iconData = iconDataStr.c_str();
         tray.icon =
@@ -752,7 +788,11 @@ json setTray(const json &input) {
         id nsIconData = ((id (*)(id, SEL, const char*, int))objc_msgSend)("NSData"_cls,
                     "dataWithBytes:length:"_sel, iconData, iconDataStr.length());
 
-        ((void (*)(id, SEL, id))objc_msgSend)(tray.icon, "initWithData:"_sel, nsIconData);
+        tray.icon = ((id (*)(id, SEL, id))objc_msgSend)(tray.icon, "initWithData:"_sel, nsIconData);
+        if(!tray.icon) {
+            output["error"] = errors::makeErrorPayload(errors::NE_OS_TRAYIER);
+            return output;
+        }
 
         if(helpers::hasField(input, "useTemplateIcon") && input["useTemplateIcon"].get<bool>()) {
             ((void (*)(id, SEL, BOOL))objc_msgSend)(tray.icon, "setTemplate:"_sel, YES);
