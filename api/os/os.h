@@ -59,6 +59,7 @@ json showMessageBox(const json &input);
 json setTray(const json &input);
 json open(const json &input);
 json getPath(const json &input);
+json getHostname(const json &input);
 
 } // namespace controllers
 

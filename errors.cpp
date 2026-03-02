@@ -25,6 +25,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_OS_INVMSGA: return "NE_OS_INVMSGA";
         case errors::NE_OS_TRAYIER: return "NE_OS_TRAYIER";
         case errors::NE_OS_INVKNPT: return "NE_OS_INVKNPT";
+        case errors::NE_OS_HSTNMR: return "NE_OS_HSTNMR";
         // extensions
         case errors::NE_EX_EXTNOTC: return "NE_EX_EXTNOTC";
         // filesystem
@@ -86,6 +87,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_OS_INVMSGA: return "Invalid message box style arguments: %1";
         case errors::NE_OS_TRAYIER: return "Unable to initialize the tray menu";
         case errors::NE_OS_INVKNPT: return "Invalid platform path name: %1";
+        case errors::NE_OS_HSTNMR: return "Unable to retrieve the system hostname";
         // extensions
         case errors::NE_EX_EXTNOTC: return "%1 is not connected yet";
         // filesystem

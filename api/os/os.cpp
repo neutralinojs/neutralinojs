@@ -766,5 +766,31 @@ json getPath(const json &input) {
     }
     return output;
 }
+
+json getHostname(const json &input) {
+    json output;
+    #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
+    char hostname[256];
+    if(gethostname(hostname, sizeof(hostname)) == 0) {
+        output["returnValue"] = string(hostname);
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_HSTNMR);
+    }
+    #elif defined(_WIN32)
+    char hostname[256];
+    DWORD size = sizeof(hostname);
+    if(GetComputerNameExA(ComputerNameDnsHostname, hostname, &size)) {
+        output["returnValue"] = string(hostname);
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_HSTNMR);
+    }
+    #endif
+    return output;
+}
+
 } // namespace controllers
 } // namespace os

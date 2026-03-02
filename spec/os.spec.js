@@ -572,4 +572,25 @@ describe('os.spec: os namespace tests', () => {
             assert.equal(runner.getOutput(), 'NE_OS_INVKNPT');
         });
     });
+
+    describe('os.getHostname', () => {
+        it('returns a non-empty string', async () => {
+            runner.run(`
+                let hostname = await Neutralino.os.getHostname();
+                await __close(hostname);
+            `);
+            let hostname = runner.getOutput();
+            assert.ok(typeof hostname == 'string');
+            assert.ok(hostname.length > 0);
+        });
+
+        it('returns a consistent value across calls', async () => {
+            runner.run(`
+                let h1 = await Neutralino.os.getHostname();
+                let h2 = await Neutralino.os.getHostname();
+                await __close(String(h1 === h2));
+            `);
+            assert.equal(runner.getOutput(), 'true');
+        });
+    });
 });
