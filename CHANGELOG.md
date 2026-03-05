@@ -6,6 +6,12 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### Improvements/bugfixes
+- Fix Chrome mode not persisting session data (cookies, login state) across app restarts by storing the browser user-data directory under the app data path instead of a `.tmp` subfolder next to the binary (#1413).
+
+### Breaking changes
+- **Chrome mode session data path changed.** The `--user-data-dir` for Chrome mode was previously `<appPath>/.tmp/chromedata`. It is now `<appDataPath>/chromedata`. Existing users will lose their current Chrome session on first run after upgrading. To ensure sessions persist when the binary directory is read-only or ephemeral (e.g. appified apps), set `dataLocation: "system"` in `neutralino.config.json`.
+
 ## v6.7.0
 
 ### API: Input device simulation and handling
