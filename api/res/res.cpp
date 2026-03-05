@@ -1,4 +1,3 @@
-#include <iostream>
 #include <string>
 #include <vector>
 #include <filesystem>
@@ -173,7 +172,22 @@ json extractFile(const json &input) {
     }
     string path = input["path"].get<string>();
     string destination = input["destination"].get<string>();
-    
+
+    error_code canonicalEc;
+    auto destParent = filesystem::path(CONVSTR(destination)).parent_path();
+    if(destParent.empty()) {
+        destParent = filesystem::current_path();
+    }
+    auto resolvedParent = filesystem::weakly_canonical(destParent, canonicalEc);
+    auto cwdPath = filesystem::current_path();
+    string resolvedStr = FS_CONVWSTR(resolvedParent);
+    string cwdStr = FS_CONVWSTR(cwdPath);
+
+    if(canonicalEc || resolvedStr.rfind(cwdStr, 0) != 0) {
+        output["error"] = errors::makeErrorPayload(errors::NE_RS_FILEXTF, destination);
+        return output;
+    }
+
     if(resources::isBundleMode() && resources::extractFile(path, destination)) {
         output["success"] = true;
     }
