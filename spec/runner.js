@@ -55,7 +55,7 @@ function run(code, options = {}) {
         if(options.debug) {
             console.log('INFO: Running command: ' + command);
         }
-        execSync(command);
+        execSync(command, { timeout: 35000 });
     }
     catch(err) {
         exitCode = err.status;
