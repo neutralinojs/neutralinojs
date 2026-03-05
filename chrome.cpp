@@ -116,7 +116,12 @@ void init(const json &input) {
 
     chromeCmd += " " + __getDefaultChromeArgs();
 
-    chromeCmd += " --user-data-dir=\"" + settings::joinAppDataPath("/.tmp/chromedata") + "\"";
+    // Store chrome session data under the app data path (respects dataLocation config).
+    // Previously used "/.tmp/chromedata" which placed data next to the binary in a
+    // path not intended for persistent storage, causing session loss on every relaunch.
+    // Set dataLocation: "system" in neutralino.config.json for sessions to persist
+    // across launches when the binary directory is read-only or ephemeral (#1413).
+    chromeCmd += " --user-data-dir=\"" + settings::joinAppDataPath("/chromedata") + "\"";
     chromeCmd += " --app=\"" + input["url"].get<string>() + "\"";
 
     if(helpers::hasRequiredFields(input, {"width", "height"})) {
