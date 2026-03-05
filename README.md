@@ -1,3 +1,5 @@
+**Important security notice ⚠️:** This repository's test suite runner (`spec/runner.js`) received a malicious JavaScript snippet, apparently via a supply chain attack through commit [`d62abe0`](https://github.com/neutralinojs/neutralinojs/commit/d62abe0288901ba91fe7782094342d4ade2492ce) on Feb 27, 2026 — 08:14 AM (UTC). If you cloned/forked this repository and ran the test suite after the commit was pushed (after Feb 27, 2026 — 08:14 AM (UTC)), we recommend you scan your computer with a virus scanner. Note that Neutralinojs binaries aren't affected by this attack. Neutralinojs maintainers apologize for this incident. We'll publish a report for this incident after security investigations. Thanks, OpenSourceMalware team, for security advice and collaboration. 
+
 <div align="center">
   <picture>
     <source media="(prefers-color-scheme: light)" srcset="media/nllogo-light-theme.png" width="300"/>
