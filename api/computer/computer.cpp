@@ -3,6 +3,7 @@
 
 #if defined(__linux__)
 #include <sys/sysinfo.h>
+#include <unistd.h>
 #include <gdk/gdk.h>
 
 #elif defined(__APPLE__) || defined(__FreeBSD__)
@@ -193,6 +194,33 @@ json getMousePosition(const json &input) {
     };
     output["returnValue"] = posRes;
     output["success"] = true;
+    return output;
+}
+
+json getHostname(const json &input) {
+    json output;
+    #if defined(_WIN32)
+    char hostname[MAX_COMPUTERNAME_LENGTH + 1];
+    DWORD size = sizeof(hostname);
+    if(GetComputerNameA(hostname, &size)) {
+        output["returnValue"] = string(hostname);
+        output["success"] = true;
+    }
+    else {
+        output["error"] = "Unable to retrieve hostname";
+        output["success"] = false;
+    }
+    #else
+    char hostname[256];
+    if(gethostname(hostname, sizeof(hostname)) == 0) {
+        output["returnValue"] = string(hostname);
+        output["success"] = true;
+    }
+    else {
+        output["error"] = "Unable to retrieve hostname";
+        output["success"] = false;
+    }
+    #endif
     return output;
 }
 

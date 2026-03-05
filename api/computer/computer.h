@@ -22,6 +22,7 @@ json getOSInfo(const json &input);
 json getCPUInfo(const json &input);
 json getDisplays(const json &input);
 json getMousePosition(const json &input);
+json getHostname(const json &input);
 
 } // namespace controllers
 

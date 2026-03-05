@@ -85,6 +85,7 @@ map<string, router::NativeMethod> methodMap = {
     {"computer.getCPUInfo", computer::controllers::getCPUInfo},
     {"computer.getDisplays", computer::controllers::getDisplays},
     {"computer.getMousePosition", computer::controllers::getMousePosition},
+    {"computer.getHostname", computer::controllers::getHostname},
     // Neutralino.debug
     {"debug.log", debug::controllers::log},
     // Neutralino.filesystem
