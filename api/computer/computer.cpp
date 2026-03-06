@@ -11,6 +11,10 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/XTest.h>
 #include <cstdlib>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <linux/if_packet.h>
 
 #elif defined(__FreeBSD__)
 #include <unistd.h>
@@ -18,6 +22,10 @@
 #include <sys/sysctl.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/XTest.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <net/if_dl.h>
 
 #elif defined(__APPLE__)
 #include <unistd.h>
@@ -25,11 +33,20 @@
 #include <sys/sysctl.h>
 #include <CoreGraphics/CoreGraphics.h>
 #include <CoreFoundation/CoreFoundation.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <net/if_dl.h>
 
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
 #include <windows.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <iphlpapi.h>
 #endif
+
+#include <cstdio>
 
 
 #include <infoware/system.hpp>
@@ -433,7 +450,7 @@ json setMouseGrabbing(const json &input) {
 
 json sendKey(const json &input) {
     json output;
-    
+
     const auto missingRequiredField = helpers::missingRequiredField(input, {"keyCode"});
     if(missingRequiredField) {
         output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
@@ -442,7 +459,7 @@ json sendKey(const json &input) {
 
     int keyCode = input["keyCode"].get<int>();
     computer::SendKeyState keyState = computer::SendKeyStatePress;
-    
+
     if(helpers::hasField(input, "keyState")) {
         string state = input["keyState"].get<string>();
         if(state == "press") keyState = computer::SendKeyStatePress;
@@ -454,6 +471,160 @@ json sendKey(const json &input) {
         output["error"] = errors::makeErrorPayload(errors::NE_RT_NATRTER);
         return output;
     }
+
+    output["success"] = true;
+    return output;
+}
+
+json getNetworkInterfaces(const json &input) {
+    json output;
+    output["returnValue"] = json::array();
+
+    bool excludeLoopback = false;
+    if(helpers::hasField(input, "excludeLoopback"))
+        excludeLoopback = input["excludeLoopback"].get<bool>();
+
+#if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
+    struct ifaddrs *ifap, *ifa;
+    if(getifaddrs(&ifap) == -1) {
+        output["error"] = errors::makeErrorPayload(errors::NE_CO_UNLTONI);
+        return output;
+    }
+
+    map<string, int> ifaceIndex;
+
+    for(ifa = ifap; ifa != nullptr; ifa = ifa->ifa_next) {
+        if(ifa->ifa_addr == nullptr) continue;
+
+        string ifName = ifa->ifa_name;
+        bool isLoopback = (ifa->ifa_flags & IFF_LOOPBACK) != 0;
+        bool isUp = (ifa->ifa_flags & IFF_UP) != 0;
+
+        if(excludeLoopback && isLoopback) continue;
+
+        if(ifaceIndex.find(ifName) == ifaceIndex.end()) {
+            json iface = {
+                {"name", ifName},
+                {"ipv4", json::array()},
+                {"ipv6", json::array()},
+                {"mac", ""},
+                {"isUp", isUp},
+                {"isLoopback", isLoopback}
+            };
+            ifaceIndex[ifName] = output["returnValue"].size();
+            output["returnValue"].push_back(iface);
+        }
+
+        int idx = ifaceIndex[ifName];
+
+        if(ifa->ifa_addr->sa_family == AF_INET) {
+            char addr[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, &((struct sockaddr_in *)ifa->ifa_addr)->sin_addr, addr, sizeof(addr));
+            output["returnValue"][idx]["ipv4"].push_back(string(addr));
+        }
+        else if(ifa->ifa_addr->sa_family == AF_INET6) {
+            char addr[INET6_ADDRSTRLEN];
+            inet_ntop(AF_INET6, &((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr, addr, sizeof(addr));
+            output["returnValue"][idx]["ipv6"].push_back(string(addr));
+        }
+        #if defined(__linux__)
+        else if(ifa->ifa_addr->sa_family == AF_PACKET) {
+            struct sockaddr_ll *sll = (struct sockaddr_ll *)ifa->ifa_addr;
+            if(sll->sll_halen == 6) {
+                char mac[18];
+                snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x",
+                    sll->sll_addr[0], sll->sll_addr[1], sll->sll_addr[2],
+                    sll->sll_addr[3], sll->sll_addr[4], sll->sll_addr[5]);
+                output["returnValue"][idx]["mac"] = string(mac);
+            }
+        }
+        #elif defined(__APPLE__) || defined(__FreeBSD__)
+        else if(ifa->ifa_addr->sa_family == AF_LINK) {
+            struct sockaddr_dl *sdl = (struct sockaddr_dl *)ifa->ifa_addr;
+            if(sdl->sdl_alen == 6) {
+                unsigned char *macPtr = (unsigned char *)LLADDR(sdl);
+                char mac[18];
+                snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x",
+                    macPtr[0], macPtr[1], macPtr[2],
+                    macPtr[3], macPtr[4], macPtr[5]);
+                output["returnValue"][idx]["mac"] = string(mac);
+            }
+        }
+        #endif
+    }
+
+    freeifaddrs(ifap);
+
+#elif defined(_WIN32)
+    ULONG bufLen = 15000;
+    ULONG ret;
+    PIP_ADAPTER_ADDRESSES pAddresses = nullptr;
+
+    do {
+        pAddresses = (PIP_ADAPTER_ADDRESSES)malloc(bufLen);
+        if(!pAddresses) {
+            output["error"] = errors::makeErrorPayload(errors::NE_CO_UNLTONI);
+            return output;
+        }
+        ret = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, nullptr, pAddresses, &bufLen);
+        if(ret == ERROR_BUFFER_OVERFLOW) {
+            free(pAddresses);
+            pAddresses = nullptr;
+        }
+    } while(ret == ERROR_BUFFER_OVERFLOW);
+
+    if(ret != NO_ERROR) {
+        if(pAddresses) free(pAddresses);
+        output["error"] = errors::makeErrorPayload(errors::NE_CO_UNLTONI);
+        return output;
+    }
+
+    for(PIP_ADAPTER_ADDRESSES pCurr = pAddresses; pCurr != nullptr; pCurr = pCurr->Next) {
+        bool isLoopback = (pCurr->IfType == IF_TYPE_SOFTWARE_LOOPBACK);
+        bool isUp = (pCurr->OperStatus == IfOperStatusUp);
+
+        if(excludeLoopback && isLoopback) continue;
+
+        char ifName[256];
+        WideCharToMultiByte(CP_UTF8, 0, pCurr->FriendlyName, -1, ifName, sizeof(ifName), nullptr, nullptr);
+
+        json iface = {
+            {"name", string(ifName)},
+            {"ipv4", json::array()},
+            {"ipv6", json::array()},
+            {"mac", ""},
+            {"isUp", isUp},
+            {"isLoopback", isLoopback}
+        };
+
+        if(pCurr->PhysicalAddressLength == 6) {
+            char mac[18];
+            snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x",
+                pCurr->PhysicalAddress[0], pCurr->PhysicalAddress[1],
+                pCurr->PhysicalAddress[2], pCurr->PhysicalAddress[3],
+                pCurr->PhysicalAddress[4], pCurr->PhysicalAddress[5]);
+            iface["mac"] = string(mac);
+        }
+
+        for(PIP_ADAPTER_UNICAST_ADDRESS pUnicast = pCurr->FirstUnicastAddress;
+                pUnicast != nullptr; pUnicast = pUnicast->Next) {
+            SOCKADDR *sa = pUnicast->Address.lpSockaddr;
+            char addr[INET6_ADDRSTRLEN];
+            if(sa->sa_family == AF_INET) {
+                inet_ntop(AF_INET, &((SOCKADDR_IN *)sa)->sin_addr, addr, sizeof(addr));
+                iface["ipv4"].push_back(string(addr));
+            }
+            else if(sa->sa_family == AF_INET6) {
+                inet_ntop(AF_INET6, &((SOCKADDR_IN6 *)sa)->sin6_addr, addr, sizeof(addr));
+                iface["ipv6"].push_back(string(addr));
+            }
+        }
+
+        output["returnValue"].push_back(iface);
+    }
+
+    free(pAddresses);
+#endif
 
     output["success"] = true;
     return output;
