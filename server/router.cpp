@@ -41,7 +41,7 @@ using json = nlohmann::json;
 
 namespace router {
 
-map<string, router::NativeMethod> methodMap = {
+static const map<string, router::NativeMethod> methodMap = {
     // Neutralino.app
     {"app.exit", app::controllers::exit},
     {"app.killProcess", app::controllers::killProcess},
@@ -171,7 +171,7 @@ map<string, router::NativeMethod> methodMap = {
 
 };
 
-map<string, router::NativeMethod> getMethodMap() {
+map<string, router::NativeMethod> &getMethodMap() {
     return methodMap;
 }
 
@@ -296,7 +296,7 @@ router::Response getAsset(string path, const string &prependData) {
     }
 
     string extension = split[split.size() - 1];
-    map<string, string> mimeTypes = {
+    static const map<string, string> mimeTypes = {
         // Plain text files
         {"css", "text/css"},
         {"csv", "text/csv"},
