@@ -1507,6 +1507,11 @@ json setSize(const json &input) {
         windowProps.sizeOptions.resizable
     );
 
+    // Re-apply borderless after resizing since set_size resets the window
+    // style mask on macOS, which removes the borderless/titleless state (#1350).
+    if(windowProps.borderless)
+        window::setBorderless(true);
+
     output["success"] = true;
     return output;
 }
