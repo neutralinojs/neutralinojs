@@ -171,7 +171,7 @@ static const map<string, router::NativeMethod> methodMap = {
 
 };
 
-map<string, router::NativeMethod> &getMethodMap() {
+const map<string, router::NativeMethod> &getMethodMap() {
     return methodMap;
 }
 
