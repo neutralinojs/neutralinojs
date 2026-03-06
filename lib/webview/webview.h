@@ -682,10 +682,14 @@ public:
 
   void set_size(int width, int height, int minWidth, int minHeight,
                 int maxWidth, int maxHeight, bool resizable) {
-    auto style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
-                 NSWindowStyleMaskMiniaturizable;
+    // Read the current style mask and only toggle NSWindowStyleMaskResizable,
+    // preserving all other flags (e.g. borderless removes NSWindowStyleMaskTitled).
+    auto style = ((unsigned long (*)(id, SEL))objc_msgSend)(
+        m_window, "styleMask"_sel);
     if (resizable) {
       style = style | NSWindowStyleMaskResizable;
+    } else {
+      style = style & ~NSWindowStyleMaskResizable;
     }
     ((void (*)(id, SEL, unsigned long))objc_msgSend)(
         m_window, "setStyleMask:"_sel, style);
