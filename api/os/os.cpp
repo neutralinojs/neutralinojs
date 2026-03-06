@@ -262,6 +262,8 @@ string getPath(const string &name) {
         path = sago::getSaveGamesFolder2();
     else if(name == "temp")
         path = FS_CONVWSTR(filesystem::temp_directory_path());
+    else if(name == "desktop")
+        path = sago::getDesktopFolder();
     return helpers::normalizePath(path);
 }
 
@@ -476,6 +478,7 @@ json showOpenDialog(const json &input) {
 
     if(helpers::hasField(input, "defaultPath")) {
         defaultPath = input["defaultPath"].get<string>();
+        defaultPath = helpers::unNormalizePath(defaultPath);
     }
 
     vector<string> selectedEntries = pfd::open_file(title, defaultPath, filters, option).result();
