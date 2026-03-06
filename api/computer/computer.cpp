@@ -481,8 +481,10 @@ json getNetworkInterfaces(const json &input) {
     output["returnValue"] = json::array();
 
     bool excludeLoopback = false;
-    if(helpers::hasField(input, "excludeLoopback"))
+    if(helpers::hasField(input,"data") &&
+        helpers::hasField(input, "excludeLoopback")){
         excludeLoopback = input["excludeLoopback"].get<bool>();
+    }
 
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
     struct ifaddrs *ifap, *ifa;
