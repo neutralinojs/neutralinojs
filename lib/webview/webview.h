@@ -604,6 +604,43 @@ public:
           "drawsBackground"_str);
     }
 
+    // UIDelegate for handling file input dialogs (<input type="file">)
+    auto uicls =
+        objc_allocateClassPair((Class) "NSObject"_cls, "WebViewUIDelegate", 0);
+    class_addProtocol(uicls, objc_getProtocol("WKUIDelegate"));
+    class_addMethod(uicls,
+        "webView:runOpenPanelWithParameters:initiatedByFrame:completionHandler:"_sel,
+        (IMP)(+[](id, SEL, id, id parameters, id, id completionHandler) {
+            id panel = ((id(*)(id, SEL))objc_msgSend)(
+                "NSOpenPanel"_cls, "openPanel"_sel);
+
+            BOOL allowsMultiple = ((BOOL(*)(id, SEL))objc_msgSend)(
+                parameters, "allowsMultipleSelection"_sel);
+            ((void(*)(id, SEL, BOOL))objc_msgSend)(
+                panel, "setAllowsMultipleSelection:"_sel, allowsMultiple);
+
+            long result = ((long(*)(id, SEL))objc_msgSend)(
+                panel, "runModal"_sel);
+
+            // Block layout (Apple ABI): isa(8) + flags(4) + reserved(4) + invoke(8)
+            auto invoke = *reinterpret_cast<void(**)(void*, id)>(
+                reinterpret_cast<char*>(completionHandler) + 16);
+
+            if (result == 1) { // NSModalResponseOK
+                id urls = ((id(*)(id, SEL))objc_msgSend)(panel, "URLs"_sel);
+                invoke(completionHandler, urls);
+            }
+            else {
+                invoke(completionHandler, nullptr);
+            }
+        }),
+        "v@:@@@@");
+    objc_registerClassPair(uicls);
+
+    auto uidelegate = ((id(*)(id, SEL))objc_msgSend)((id)uicls, "new"_sel);
+    ((void(*)(id, SEL, id))objc_msgSend)(
+        m_webview, "setUIDelegate:"_sel, uidelegate);
+
     ((void (*)(id, SEL, id))objc_msgSend)(m_window, "setContentView:"_sel,
                                           m_webview);
     ((void (*)(id, SEL, id))objc_msgSend)(m_window, "makeKeyAndOrderFront:"_sel,
