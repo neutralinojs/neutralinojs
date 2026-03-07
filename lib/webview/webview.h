@@ -255,6 +255,12 @@ public:
     }
 
     if(!dlib) {
+      fprintf(stderr, "ERROR: Unable to load WebKit2GTK library. "
+          "Please install libwebkit2gtk-4.0-37 or libwebkit2gtk-4.1-0.\n");
+      const char *err = dlerror();
+      if(err) {
+          fprintf(stderr, "dlopen error: %s\n", err);
+      }
       initCode = 1;
       return;
     }
@@ -823,6 +829,8 @@ public:
         }
     ));
     if (res != S_OK) {
+      fprintf(stderr, "ERROR: Unable to initialize WebView2. HRESULT: 0x%lx\n"
+          "Please install Microsoft Edge WebView2 runtime.\n", (unsigned long)res);
       CoUninitialize();
       return false;
     }

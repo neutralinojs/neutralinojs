@@ -51,12 +51,14 @@ void __startApp() {
             json windowOptions = options["modes"]["window"];
             windowOptions["url"] = navigationUrl;
             if(!window::init(windowOptions)) {
+                #if defined(_WIN32)
+                string errMsg = "Please install Microsoft Edge WebView2 runtime to run this application.";
+                #else
+                string errMsg = "Please install libwebkit2gtk-4.0-37 or libwebkit2gtk-4.1-0 library to run this application.";
+                #endif
+                fprintf(stderr, "ERROR: Unable to create a webview instance. %s\n", errMsg.c_str());
                 pfd::message("Unable to create a webview instance",
-                    #if defined(_WIN32)
-                    "Please install Microsoft Edge WebView2 runtime to run this application.",
-                    #else
-                    "Please install libwebkit2gtk-4.0-37 or libwebkit2gtk-4.1-0 library to run this application.",
-                    #endif
+                    errMsg,
                     pfd::choice::ok,
                     pfd::icon::error);
                 std::exit(1);
@@ -123,6 +125,7 @@ void __startServerAsync() {
             if(!jPort.is_null()) {
                 errorMsg += " on port: " + to_string(jPort.get<int>());
             }
+            fprintf(stderr, "ERROR: %s\n", errorMsg.c_str());
             pfd::message("Unable to start server",
                 errorMsg,
                 pfd::choice::ok,
@@ -138,6 +141,7 @@ void __initFramework(const json &args) {
     resources::init();
     bool settingsStatus = settings::init();
     if(!settingsStatus) {
+        fprintf(stderr, "ERROR: The application configuration file cannot be loaded due to a JSON parsing error.\n");
         pfd::message("Unable to load configuration",
             "The application configuration file cannot be loaded due to a JSON parsing error.",
             pfd::choice::ok,
