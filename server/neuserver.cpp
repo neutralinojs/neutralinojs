@@ -39,11 +39,13 @@ bool initialized = false;
 bool applyConfigHeaders = false;
 
 bool __isExtensionEndpoint(const string &url) {
-    return regex_match(url, regex(".*extensionId=.*"));
+    static const regex pattern(".*extensionId=.*");
+    return regex_match(url,pattern);
 }
 
 bool __hasConnectToken(const string &url) {
-    return regex_match(url, regex(".*connectToken=.*"));
+    static const regex pattern(".*connectToken=.*");
+    return regex_match(url,pattern);
 }
 
 void __applyConfigHeaders(websocketserver::connection_ptr con) {
@@ -139,7 +141,8 @@ string init() {
 
     if(!jUrl.is_null()) {
         string url = jUrl.get<string>();
-        if (regex_match(url, regex("^/.*")))
+        static const regex urlPattern("^/.*");
+        if (regex_match(url, urlPattern))
             navigationUrl += url;
         else
             navigationUrl = url;
