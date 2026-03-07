@@ -61,7 +61,16 @@ json broadcast(const json &input) {
 json getStats(const json &input) {
     json output;
     json stats;
-    stats["loaded"] = extensions::getLoaded();
+    json loaded = json::array();
+    for(const auto &ext : extensions::getLoadedExtensions()) {
+        json extInfo;
+        extInfo["id"] = ext.id;
+        if(ext.virtualPid >= 0) {
+            extInfo["pid"] = ext.virtualPid;
+        }
+        loaded.push_back(extInfo);
+    }
+    stats["loaded"] = loaded;
     stats["connected"] = neuserver::getConnectedExtensions();
 
     output["returnValue"] = stats;

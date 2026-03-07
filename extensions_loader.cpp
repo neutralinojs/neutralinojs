@@ -10,13 +10,14 @@
 #include "auth/authbasic.h"
 #include "api/os/os.h"
 #include "api/fs/fs.h"
+#include "api/debug/debug.h"
 
 using namespace std;
 using json = nlohmann::json;
 
 namespace extensions {
 
-vector<string> loadedExtensions;
+vector<LoadedExtension> loadedExtensions;
 bool initialized = false;
 
 json __buildExtensionProcessInput(const string &extensionId) {
@@ -60,29 +61,52 @@ void init() {
             auto process = os::spawnProcess(command, processOptions);
             os::updateSpawnedProcess({process.first, "stdIn", helpers::jsonToString(__buildExtensionProcessInput(extensionId))});
             os::updateSpawnedProcess({process.first, "stdInEnd"});
-            
+            extensions::loadOne(extensionId, process.first);
         }
-
-        extensions::loadOne(extensionId);
+        else {
+            extensions::loadOne(extensionId);
+        }
     }
     initialized = true;
 }
 
-void loadOne(const string &extensionId) {
-    loadedExtensions.push_back(extensionId);
+void loadOne(const string &extensionId, int virtualPid) {
+    if(extensions::isLoaded(extensionId)) {
+        debug::log(debug::LogTypeError, "Extension '" + extensionId + "' is already loaded");
+        return;
+    }
+    loadedExtensions.push_back({extensionId, virtualPid});
 }
 
 vector<string> getLoaded() {
+    vector<string> ids;
+    for(const auto &ext : loadedExtensions) {
+        ids.push_back(ext.id);
+    }
+    return ids;
+}
+
+vector<LoadedExtension> getLoadedExtensions() {
     return loadedExtensions;
 }
 
 bool isLoaded(const string &extensionId) {
-    return find(loadedExtensions.begin(), loadedExtensions.end(), extensionId)
+    return find_if(loadedExtensions.begin(), loadedExtensions.end(),
+            [&](const LoadedExtension &ext){ return ext.id == extensionId; })
             != loadedExtensions.end();
 }
 
 bool isInitialized() {
     return initialized;
+}
+
+void cleanup() {
+    for(const auto &ext : loadedExtensions) {
+        if(ext.virtualPid >= 0) {
+            os::updateSpawnedProcess({ext.virtualPid, "exit"});
+        }
+    }
+    loadedExtensions.clear();
 }
 
 } // namespace extensions
