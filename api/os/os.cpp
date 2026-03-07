@@ -88,6 +88,7 @@ bool isTrayInitialized() {
 void cleanupTray() {
     if(os::isTrayInitialized()) {
         tray_exit();
+        trayInitialized = false;
     }
 }
 
