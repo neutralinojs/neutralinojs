@@ -1,6 +1,5 @@
 #include <string>
 #include <filesystem>
-#include <vector>
 
 #include "helpers.h"
 #include "settings.h"

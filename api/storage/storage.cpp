@@ -1,11 +1,8 @@
 #include <string>
-#include <iostream>
-#include <fstream>
 #include <regex>
 #include <filesystem>
 
 #include "lib/json/json.hpp"
-#include "lib/platformfolders/platform_folders.h"
 
 #include "settings.h"
 #include "helpers.h"
