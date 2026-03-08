@@ -96,6 +96,7 @@ json setPermissions(const json &input);
 json getJoinedPath(const json &input);
 json getNormalizedPath(const json &input);
 json getUnnormalizedPath(const json &input);
+json moveToTrash(const json &input);
 
 } // namespace controllers
 

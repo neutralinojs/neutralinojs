@@ -6,8 +6,11 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: filesystem
+- Implement `filesystem.moveToTrash(path)` to move files and directories to the system trash/recycle bin instead of permanently deleting them. Supports platform-specific implementations: XDG Trash spec on Linux/FreeBSD, `NSFileManager` on macOS, and `SHFileOperationW` on Windows.
+
 ### API: computer
-- Implement `computer.getMousePosition(x, y)` to update the current mouse cursor position.
+- Implement `computer.setMousePosition(x, y)` to update the current mouse cursor position.
 - Implement `computer.setMouseGrabbing(grabbing; boolean)` to activate/deactivate confining the mouse cursor within the native app window. If `grabbing` is set to `true`, the mouse cursor always stays within the window boundaries, so this feature helps create interactive games and similar apps operated using the mouse.
 - Implement `computer.sendKey(keyCode, keyState)` to simulate keyboard events. App developers can use a platform-specific key code and states (`press`, `down`, and `up`) to simulate from simple single key strokes to complex key combinations:
 ```js
