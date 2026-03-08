@@ -20,6 +20,7 @@
 #include <atlstr.h>
 #include <shlwapi.h>
 #include <winbase.h>
+#include <io.h>
 
 #define NEU_WINDOWS_TICK 10000000
 #define NEU_SEC_TO_UNIX_EPOCH 11644473600LL
@@ -910,6 +911,84 @@ json setPermissions(const json &input) {
     else {
         output["error"] = errors::makeErrorPayload(errors::NE_FS_UNLSTPR, path);
     }
+    return output;
+}
+
+json access(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload("path");
+        return output;
+    }
+    string path = input["path"].get<string>();
+
+    // Mode defaults to F_OK (0) if not provided.
+    int mode = 0;
+    if(helpers::hasField(input, "mode")) {
+        mode = input["mode"].get<int>();
+    }
+
+    #if defined(_WIN32)
+    int result = _waccess(helpers::str2wstr(path).c_str(), mode);
+    #else
+    int result = ::access(path.c_str(), mode);
+    #endif
+
+    if(result == 0) {
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_ACCERR, path);
+    }
+    return output;
+}
+
+json chmod(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path", "mode"})) {
+        output["error"] = errors::makeMissingArgErrorPayload("path, mode");
+        return output;
+    }
+    string path = input["path"].get<string>();
+    int mode = input["mode"].get<int>();
+
+    #if defined(_WIN32)
+    int result = _wchmod(helpers::str2wstr(path).c_str(), mode);
+    #else
+    int result = ::chmod(path.c_str(), mode);
+    #endif
+
+    if(result == 0) {
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_CHMDERR, path);
+    }
+    return output;
+}
+
+json chown(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path", "uid", "gid"})) {
+        output["error"] = errors::makeMissingArgErrorPayload("path, uid, gid");
+        return output;
+    }
+    string path = input["path"].get<string>();
+    int uid = input["uid"].get<int>();
+    int gid = input["gid"].get<int>();
+
+    #if defined(_WIN32)
+    // chown is not available on Windows, standard is to fail or ignore. Node.js largely ignores.
+    output["success"] = true;
+    #else
+    int result = ::chown(path.c_str(), uid, gid);
+    if(result == 0) {
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_CHWNERR, path);
+    }
+    #endif
     return output;
 }
 
