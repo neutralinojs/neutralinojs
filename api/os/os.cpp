@@ -216,6 +216,7 @@ pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &optio
 }
 
 bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt) {
+    lock_guard<mutex> guard(spawnedProcessesLock);
     if(spawnedProcesses.find(evt.id) == spawnedProcesses.end()) {
         return false;
     }
