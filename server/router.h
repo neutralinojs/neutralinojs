@@ -31,7 +31,7 @@ struct NativeMessage {
 router::Response serve(string path);
 router::NativeMessage executeNativeMethod(const router::NativeMessage &request);
 router::Response getAsset(string path, const string &prependData = "");
-map<string, router::NativeMethod> getMethodMap();
+const map<string, router::NativeMethod> &getMethodMap();
 errors::StatusCode mountPath(string &path, string &target);
 bool isMounted(const string &path);
 bool unmountPath(string &path);
