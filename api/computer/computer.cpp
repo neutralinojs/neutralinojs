@@ -442,6 +442,7 @@ json getStorageInfo(const json &input) {
     return output;
 }
 
+
 json getDisplays(const json &input) {
     json output;
     output["returnValue"] = json::array();
