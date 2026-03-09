@@ -2,6 +2,9 @@
 #include <string>
 #include "helpers.h"
 #include "errors.h"
+#include <filesystem>
+#include <fstream>
+#include <vector>
 
 #if defined(__linux__)
 #include <sys/sysinfo.h>
@@ -11,6 +14,8 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/XTest.h>
 #include <cstdlib>
+#include <filesystem>
+
 
 #elif defined(__FreeBSD__)
 #include <unistd.h>
@@ -353,6 +358,87 @@ json getCPUInfo(const json &input) {
         { "physicalUnits", quantities.packages }
     };
     output["success"] = true;
+    return output;
+}
+json getStorageInfo(const json &input) {
+
+    json output;
+    json drives = json::array();
+
+#ifdef _WIN32
+
+    DWORD driveMask = GetLogicalDrives();
+
+    for(char letter = 'A'; letter <= 'Z'; letter++) {
+
+        if(driveMask & (1 << (letter - 'A'))) {
+
+            std::string root = std::string(1, letter) + ":\\";
+
+            try {
+                auto space = std::filesystem::space(root);
+
+                json drive;
+                drive["name"] = std::string(1, letter) + ":";
+                drive["total"] = space.capacity;
+                drive["available"] = space.available;
+
+                drives.push_back(drive);
+            }
+            catch(...) {}
+        }
+    }
+
+#elif __APPLE__
+
+    std::vector<std::string> mounts;
+    mounts.push_back("/");
+
+    for(const auto &entry : std::filesystem::directory_iterator("/Volumes")) {
+        mounts.push_back(entry.path().string());
+    }
+
+    for(const auto &mount : mounts) {
+        try {
+            auto space = std::filesystem::space(mount);
+
+            json drive;
+            drive["name"] = mount;
+            drive["total"] = space.capacity;
+            drive["available"] = space.available;
+
+            drives.push_back(drive);
+        }
+        catch(...) {}
+    }
+
+#else   // Linux
+
+    std::ifstream mounts("/proc/mounts");
+    std::string device, mountpoint, type;
+
+    while(mounts >> device >> mountpoint >> type) {
+
+        try {
+            auto space = std::filesystem::space(mountpoint);
+
+            json drive;
+            drive["name"] = mountpoint;
+            drive["total"] = space.capacity;
+            drive["available"] = space.available;
+
+            drives.push_back(drive);
+        }
+        catch(...) {}
+
+        std::getline(mounts, device);
+    }
+
+#endif
+
+    output["returnValue"] = drives;
+    output["success"] = true;
+
     return output;
 }
 
