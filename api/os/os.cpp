@@ -682,6 +682,15 @@ json setTray(const json &input) {
 
     if(helpers::hasField(input, "menuItems")) {
         int menuCount = input["menuItems"].size();
+
+        // Free any previously allocated menu items beyond the new count
+        for(int j = menuCount; j < NEU_MAX_TRAY_MENU_ITEMS; j++) {
+            if(menus[j].id == nullptr && menus[j].text == nullptr) break;
+            delete[] menus[j].id;
+            delete[] menus[j].text;
+            menus[j] = { nullptr, nullptr, 0, 0, nullptr, nullptr };
+        }
+
         menus[menuCount - 1] = { nullptr, nullptr, 0, 0, nullptr, nullptr };
 
         int i = 0;
@@ -733,6 +742,10 @@ json setTray(const json &input) {
         tray.icon = helpers::cStrCopy(fullIconPath);
 
         #elif defined(_WIN32)
+        if(tray.icon) {
+            DestroyIcon(tray.icon);
+            tray.icon = nullptr;
+        }
         fs::FileReaderResult fileReaderResult = resources::getFile(iconPath);
         string iconDataStr = fileReaderResult.data;
         const char *iconData = iconDataStr.c_str();
@@ -740,6 +753,7 @@ json setTray(const json &input) {
         IStream *pStream = SHCreateMemStream((BYTE *) uiconData, iconDataStr.length());
         Gdiplus::Bitmap* bitmap = Gdiplus::Bitmap::FromStream(pStream);
         bitmap->GetHICON(&tray.icon);
+        delete bitmap;
         pStream->Release();
 
         #elif defined(__APPLE__)
