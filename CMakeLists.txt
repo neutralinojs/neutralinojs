@@ -148,22 +148,20 @@ if(WIN32)
     _UNICODE
   )
 elseif(APPLE)
-    # macOS
-    find_library(WebKit_FRAMEWORK WebKit)
-    find_library(COCOA_FRAMEWORK Cocoa)
-    find_library(SCREENCAPTUREKIT_FRAMEWORK ScreenCaptureKit)
-    find_library(IOKIT_FRAMEWORK IOKit)
-    target_link_libraries(${PROJECT_NAME} PRIVATE
-      ${WebKit_FRAMEWORK}
-      ${COCOA_FRAMEWORK}
-      ${IOKIT_FRAMEWORK}
-    )
-    if(SCREENCAPTUREKIT_FRAMEWORK)
-      target_link_libraries(${PROJECT_NAME} PRIVATE
-        ${SCREENCAPTUREKIT_FRAMEWORK}
-      )
-    endif()
-    
+  target_compile_definitions(${PROJECT_NAME} PRIVATE 
+    WEBVIEW_COCOA=1
+    TRAY_APPKIT=1
+    MACOSX_DEPLOYMENT_TARGET=10.7
+  )
+elseif(UNIX)
+  target_compile_definitions(${PROJECT_NAME} PRIVATE 
+    HAVE_XCB_XLIB_H
+    WEBVIEW_GTK=1
+    TRAY_APPINDICATOR=1
+    HAVE_PNG_H
+  )
+endif()
+
 # =========================
 # Include paths
 # =========================
@@ -213,9 +211,11 @@ elseif(APPLE)
     find_library(WebKit_FRAMEWORK WebKit)
     find_library(COCOA_FRAMEWORK Cocoa)
     find_library(SCREENCAPTUREKIT_FRAMEWORK ScreenCaptureKit)
+    find_library(IOKIT_FRAMEWORK IOKit)
     target_link_libraries(${PROJECT_NAME} PRIVATE
       ${WebKit_FRAMEWORK}
       ${COCOA_FRAMEWORK}
+      ${IOKIT_FRAMEWORK}
     )
     if(SCREENCAPTUREKIT_FRAMEWORK)
       target_link_libraries(${PROJECT_NAME} PRIVATE
