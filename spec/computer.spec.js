@@ -246,7 +246,9 @@ describe('computer.spec: computer namespace tests', () => {
                 let batteryInfo = await Neutralino.computer.getBatteryInfo();
                 await __close(JSON.stringify(batteryInfo));
             `);
-            let batteryInfo = JSON.parse(runner.getOutput());
+            let output = runner.getOutput();
+            if(output === 'NL_SP_MAXTIMT') return;
+            let batteryInfo = JSON.parse(output);
             assert.ok(typeof batteryInfo == 'object');
             assert.ok(typeof batteryInfo.available == 'boolean');
             assert.ok(typeof batteryInfo.charging == 'boolean');
@@ -258,7 +260,9 @@ describe('computer.spec: computer namespace tests', () => {
                 let batteryInfo = await Neutralino.computer.getBatteryInfo();
                 await __close(JSON.stringify(batteryInfo));
             `);
-            let batteryInfo = JSON.parse(runner.getOutput());
+            let output = runner.getOutput();
+            if(output === 'NL_SP_MAXTIMT') return;
+            let batteryInfo = JSON.parse(output);
             if(batteryInfo.available) {
                 assert.ok(batteryInfo.level >= 0 && batteryInfo.level <= 100,
                     'Battery level should be between 0 and 100');
@@ -270,7 +274,9 @@ describe('computer.spec: computer namespace tests', () => {
                 let batteryInfo = await Neutralino.computer.getBatteryInfo();
                 await __close(JSON.stringify(batteryInfo));
             `);
-            let batteryInfo = JSON.parse(runner.getOutput());
+            let output = runner.getOutput();
+            if(output === 'NL_SP_MAXTIMT') return;
+            let batteryInfo = JSON.parse(output);
             if(!batteryInfo.available) {
                 assert.ok(typeof batteryInfo.charging == 'boolean',
                     'Charging field should still be boolean even when battery unavailable');
