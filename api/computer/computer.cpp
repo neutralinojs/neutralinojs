@@ -478,65 +478,60 @@ json getBatteryInfo(const json &input) {
     }
 
     #elif defined(__linux__)
-    // Linux: read from /sys/class/power_supply/
-    string capacityPath = "/sys/class/power_supply/BAT0/capacity";
-    string statusPath   = "/sys/class/power_supply/BAT0/status";
-    string presentPath  = "/sys/class/power_supply/BAT0/present";
+// Linux: scan /sys/class/power_supply/ for any battery
+string batteryPath = "";
+const vector<string> possibleNames = {
+    "BAT0", "BAT1", "BAT2", "CMB0", "CMB1", "BATT"
+};
 
-    // Try BAT0, fall back to BAT1
-    ifstream presentFile(presentPath);
-    if(!presentFile.is_open()) {
-        capacityPath = "/sys/class/power_supply/BAT1/capacity";
-        statusPath   = "/sys/class/power_supply/BAT1/status";
-        presentPath  = "/sys/class/power_supply/BAT1/present";
-        presentFile.open(presentPath);
-    }
-
-    if(presentFile.is_open()) {
+for(const auto &name : possibleNames) {
+    ifstream testFile("/sys/class/power_supply/" + name + "/present");
+    if(testFile.is_open()) {
         int present = 0;
-        presentFile >> present;
-        presentFile.close();
-
+        testFile >> present;
+        testFile.close();
         if(present == 1) {
-            batteryInfo["available"] = true;
-
-            ifstream capacityFile(capacityPath);
-            if(capacityFile.is_open()) {
-                int level = -1;
-                capacityFile >> level;
-                batteryInfo["level"] = level;
-                capacityFile.close();
-            } else {
-                batteryInfo["level"] = -1;
-            }
-
-            ifstream statusFile(statusPath);
-            if(statusFile.is_open()) {
-                string status;
-                statusFile >> status;
-                batteryInfo["charging"] = (status == "Charging");
-                statusFile.close();
-            } else {
-                batteryInfo["charging"] = false;
-            }
-        } else {
-            batteryInfo["available"] = false;
-            batteryInfo["charging"] = false;
-            batteryInfo["level"] = -1;
+            batteryPath = "/sys/class/power_supply/" + name;
+            break;
         }
-    } else {
-        // No battery found (e.g. desktop)
-        batteryInfo["available"] = false;
-        batteryInfo["charging"] = false;
-        batteryInfo["level"] = -1;
     }
+}
+
+if(batteryPath.empty()) {
+    // No battery found (e.g. desktop/server)
+    batteryInfo["available"] = false;
+    batteryInfo["charging"] = false;
+    batteryInfo["level"] = -1;
+} else {
+    batteryInfo["available"] = true;
+
+    // Read battery level
+    ifstream capacityFile(batteryPath + "/capacity");
+    int level = -1;
+    if(capacityFile.is_open()) {
+        capacityFile >> level;
+        capacityFile.close();
+    }
+    batteryInfo["level"] = level;
+
+    // Read charging status
+    ifstream statusFile(batteryPath + "/status");
+    string status = "Unknown";
+    if(statusFile.is_open()) {
+        statusFile >> status;
+        statusFile.close();
+    }
+    batteryInfo["charging"] = (status == "Charging");
+}
 
     #elif defined(__APPLE__)
     // macOS: use IOKit to query battery
     CFTypeRef powerSourcesInfo = IOPSCopyPowerSourcesInfo();
-    CFArrayRef powerSources = IOPSCopyPowerSourcesList(powerSourcesInfo);
+    CFArrayRef powerSources = nullptr;
+    if(powerSourcesInfo)
+        powerSources = IOPSCopyPowerSourcesList(powerSourcesInfo);
 
-    if(powerSources && CFArrayGetCount(powerSources) > 0) {
+    if(powerSourcesInfo && powerSources && CFArrayGetCount(powerSources) > 0) {
         CFDictionaryRef source = IOPSGetPowerSourceDescription(
             powerSourcesInfo,
             CFArrayGetValueAtIndex(powerSources, 0)
@@ -552,13 +547,13 @@ json getBatteryInfo(const json &input) {
             batteryInfo["level"] = level;
 
             // Get charging state
-            CFStringRef stateRef = (CFStringRef)CFDictionaryGetValue(source, CFSTR(kIOPSPowerSourceStateKey));
+            // Get charging state using kIOPSIsChargingKey
+            CFBooleanRef chargingRef = (CFBooleanRef)CFDictionaryGetValue(source, CFSTR(kIOPSIsChargingKey));
             bool charging = false;
-            if(stateRef) {
-                charging = (CFStringCompare(stateRef, CFSTR(kIOPSACPowerValue), 0) == kCFCompareEqualTo);
-            }
+            if(chargingRef)
+                charging = CFBooleanGetValue(chargingRef);
             batteryInfo["charging"] = charging;
-        } else {
+            } else {
             batteryInfo["available"] = false;
             batteryInfo["charging"] = false;
             batteryInfo["level"] = -1;
