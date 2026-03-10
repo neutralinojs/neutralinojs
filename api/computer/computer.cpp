@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include "helpers.h"
 #include "errors.h"
@@ -11,6 +11,7 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/XTest.h>
 #include <cstdlib>
+#include <fstream>
 
 #elif defined(__FreeBSD__)
 #include <unistd.h>
@@ -25,6 +26,8 @@
 #include <sys/sysctl.h>
 #include <CoreGraphics/CoreGraphics.h>
 #include <CoreFoundation/CoreFoundation.h>
+#include <IOKit/ps/IOPowerSources.h>
+#include <IOKit/ps/IOPSKeys.h>
 
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
@@ -458,7 +461,127 @@ json sendKey(const json &input) {
     output["success"] = true;
     return output;
 }
+json getBatteryInfo(const json &input) {
+    json output;
+    json batteryInfo;
 
+    #if defined(_WIN32)
+    SYSTEM_POWER_STATUS status;
+    if(GetSystemPowerStatus(&status)) {
+        batteryInfo["available"] = true;
+        batteryInfo["charging"] = (status.ACLineStatus == 1);
+        batteryInfo["level"] = (status.BatteryLifePercent == 255) ? -1 : (int)status.BatteryLifePercent;
+    } else {
+        batteryInfo["available"] = false;
+        batteryInfo["charging"] = false;
+        batteryInfo["level"] = -1;
+    }
+
+    #elif defined(__linux__)
+    // Linux: read from /sys/class/power_supply/
+    string capacityPath = "/sys/class/power_supply/BAT0/capacity";
+    string statusPath   = "/sys/class/power_supply/BAT0/status";
+    string presentPath  = "/sys/class/power_supply/BAT0/present";
+
+    // Try BAT0, fall back to BAT1
+    ifstream presentFile(presentPath);
+    if(!presentFile.is_open()) {
+        capacityPath = "/sys/class/power_supply/BAT1/capacity";
+        statusPath   = "/sys/class/power_supply/BAT1/status";
+        presentPath  = "/sys/class/power_supply/BAT1/present";
+        presentFile.open(presentPath);
+    }
+
+    if(presentFile.is_open()) {
+        int present = 0;
+        presentFile >> present;
+        presentFile.close();
+
+        if(present == 1) {
+            batteryInfo["available"] = true;
+
+            ifstream capacityFile(capacityPath);
+            if(capacityFile.is_open()) {
+                int level = -1;
+                capacityFile >> level;
+                batteryInfo["level"] = level;
+                capacityFile.close();
+            } else {
+                batteryInfo["level"] = -1;
+            }
+
+            ifstream statusFile(statusPath);
+            if(statusFile.is_open()) {
+                string status;
+                statusFile >> status;
+                batteryInfo["charging"] = (status == "Charging");
+                statusFile.close();
+            } else {
+                batteryInfo["charging"] = false;
+            }
+        } else {
+            batteryInfo["available"] = false;
+            batteryInfo["charging"] = false;
+            batteryInfo["level"] = -1;
+        }
+    } else {
+        // No battery found (e.g. desktop)
+        batteryInfo["available"] = false;
+        batteryInfo["charging"] = false;
+        batteryInfo["level"] = -1;
+    }
+
+    #elif defined(__APPLE__)
+    // macOS: use IOKit to query battery
+    CFTypeRef powerSourcesInfo = IOPSCopyPowerSourcesInfo();
+    CFArrayRef powerSources = IOPSCopyPowerSourcesList(powerSourcesInfo);
+
+    if(powerSources && CFArrayGetCount(powerSources) > 0) {
+        CFDictionaryRef source = IOPSGetPowerSourceDescription(
+            powerSourcesInfo,
+            CFArrayGetValueAtIndex(powerSources, 0)
+        );
+
+        if(source) {
+            batteryInfo["available"] = true;
+
+            // Get battery level
+            CFNumberRef levelRef = (CFNumberRef)CFDictionaryGetValue(source, CFSTR(kIOPSCurrentCapacityKey));
+            int level = -1;
+            if(levelRef) CFNumberGetValue(levelRef, kCFNumberIntType, &level);
+            batteryInfo["level"] = level;
+
+            // Get charging state
+            CFStringRef stateRef = (CFStringRef)CFDictionaryGetValue(source, CFSTR(kIOPSPowerSourceStateKey));
+            bool charging = false;
+            if(stateRef) {
+                charging = (CFStringCompare(stateRef, CFSTR(kIOPSACPowerValue), 0) == kCFCompareEqualTo);
+            }
+            batteryInfo["charging"] = charging;
+        } else {
+            batteryInfo["available"] = false;
+            batteryInfo["charging"] = false;
+            batteryInfo["level"] = -1;
+        }
+    } else {
+        batteryInfo["available"] = false;
+        batteryInfo["charging"] = false;
+        batteryInfo["level"] = -1;
+    }
+
+    if(powerSources) CFRelease(powerSources);
+    if(powerSourcesInfo) CFRelease(powerSourcesInfo);
+
+    #else
+    batteryInfo["available"] = false;
+    batteryInfo["charging"] = false;
+    batteryInfo["level"] = -1;
+    #endif
+
+    output["returnValue"] = batteryInfo;
+    output["success"] = true;
+    return output;
+}
 
 } // namespace controllers
 } // namespace computer
