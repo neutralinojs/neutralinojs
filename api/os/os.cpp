@@ -23,6 +23,7 @@
 
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
 #include <unistd.h>
+#include <pwd.h>
 extern char **environ;
 #endif
 
@@ -275,6 +276,27 @@ string getEnv(const string &key) {
     value = getenv(key.c_str());
     return value == nullptr ? "" : string(value);
     #endif
+}
+
+json getUserInfo() {
+    json info;
+    #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
+    struct passwd *pw = getpwuid(getuid());
+    if(pw) {
+        info["username"] = string(pw->pw_name);
+        info["homeDir"] = string(pw->pw_dir);
+        info["shell"] = string(pw->pw_shell);
+    }
+    #elif defined(_WIN32)
+    wchar_t username[256];
+    DWORD usernameSize = 256;
+    if(GetUserName(username, &usernameSize)) {
+        info["username"] = helpers::wstr2str(username);
+    }
+    info["homeDir"] = os::getEnv("USERPROFILE");
+    info["shell"] = os::getEnv("ComSpec");
+    #endif
+    return info;
 }
 
 namespace controllers {
@@ -821,5 +843,18 @@ json getPath(const json &input) {
     }
     return output;
 }
+json getUserInfo(const json &input) {
+    json output;
+    json info = os::getUserInfo();
+    if(!info.empty()) {
+        output["returnValue"] = info;
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_INVKNPT, "getUserInfo");
+    }
+    return output;
+}
+
 } // namespace controllers
 } // namespace os
