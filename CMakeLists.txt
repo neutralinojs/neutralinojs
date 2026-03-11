@@ -205,15 +205,18 @@ if(WIN32)
       wbemuuid
       ntdll
       dwmapi
+      advapi32
     )
 elseif(APPLE)
     # macOS
     find_library(WebKit_FRAMEWORK WebKit)
     find_library(COCOA_FRAMEWORK Cocoa)
     find_library(SCREENCAPTUREKIT_FRAMEWORK ScreenCaptureKit)
+    find_library(SECURITY_FRAMEWORK Security)
     target_link_libraries(${PROJECT_NAME} PRIVATE
       ${WebKit_FRAMEWORK}
       ${COCOA_FRAMEWORK}
+      ${SECURITY_FRAMEWORK}
     )
     if(SCREENCAPTUREKIT_FRAMEWORK)
       target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -236,6 +239,7 @@ elseif(UNIX)
     pkg_check_modules(X11 REQUIRED x11)
     pkg_check_modules(XRANDR REQUIRED xrandr)
     pkg_check_modules(XTST REQUIRED xtst)
+    pkg_check_modules(LIBSECRET REQUIRED libsecret-1)
     
     target_include_directories(${PROJECT_NAME} PRIVATE 
       ${GTK3_INCLUDE_DIRS}
@@ -244,6 +248,7 @@ elseif(UNIX)
       ${X11_INCLUDE_DIRS}
       ${XRANDR_INCLUDE_DIRS}
       ${XTST_INCLUDE_DIRS}
+      ${LIBSECRET_INCLUDE_DIRS}
     )
     
     target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -253,6 +258,7 @@ elseif(UNIX)
       ${X11_LIBRARIES}
       ${XRANDR_LIBRARIES}
       ${XTST_LIBRARIES}
+      ${LIBSECRET_LIBRARIES}
       pthread
       png
       stdc++fs
