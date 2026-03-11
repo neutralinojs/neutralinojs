@@ -498,7 +498,6 @@ json getBatteryInfo(const json &input) {
         batteryInfo["available"] = false;
         batteryInfo["charging"] = false;
         batteryInfo["level"] = -1;
-        return batteryInfo;
     } else {
         batteryInfo["available"] = true;
 
