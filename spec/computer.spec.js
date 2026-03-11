@@ -240,5 +240,66 @@ describe('computer.spec: computer namespace tests', () => {
             assert.ok(key === "a" || key === "skipped", "Expected 'a' or skipped depending on platform");
         });
     });
+    describe('computer.getBatteryInfo', () => {
+        it('returns battery info object with correct types', async function() {
+            runner.run(`
+                let batteryInfo;
+                try {
+                    batteryInfo = await Neutralino.computer.getBatteryInfo();
+                } catch(e) {
+                    await __close("skipped");
+                    return;
+                }
+                await __close(JSON.stringify(batteryInfo));
+            `);
+            let output = runner.getOutput();
+            if(output === 'skipped' || output === 'NL_SP_MAXTIMT' || output === '') return;
+            let batteryInfo = JSON.parse(output);
+            assert.ok(typeof batteryInfo == 'object');
+            assert.ok(typeof batteryInfo.available == 'boolean');
+            assert.ok(typeof batteryInfo.charging == 'boolean');
+            assert.ok(typeof batteryInfo.level == 'number');
+        });
+
+        it('returns valid battery level range', async function() {
+            runner.run(`
+                let batteryInfo;
+                try {
+                    batteryInfo = await Neutralino.computer.getBatteryInfo();
+                } catch(e) {
+                    await __close("skipped");
+                    return;
+                }
+                await __close(JSON.stringify(batteryInfo));
+            `);
+            let output = runner.getOutput();
+            if(output === 'skipped' || output === 'NL_SP_MAXTIMT' || output === '') return;
+            let batteryInfo = JSON.parse(output);
+            if(batteryInfo.available) {
+                assert.ok(batteryInfo.level >= 0 && batteryInfo.level <= 100,
+                    'Battery level should be between 0 and 100');
+            }
+        });
+
+        it('returns consistent charging state when battery unavailable', async function() {
+            runner.run(`
+                let batteryInfo;
+                try {
+                    batteryInfo = await Neutralino.computer.getBatteryInfo();
+                } catch(e) {
+                    await __close("skipped");
+                    return;
+                }
+                await __close(JSON.stringify(batteryInfo));
+            `);
+            let output = runner.getOutput();
+            if(output === 'skipped' || output === 'NL_SP_MAXTIMT' || output === '') return;
+            let batteryInfo = JSON.parse(output);
+            if(!batteryInfo.available) {
+                assert.ok(typeof batteryInfo.charging == 'boolean',
+                    'Charging field should still be boolean even when battery unavailable');
+            }
+        });
+    });
 
 });

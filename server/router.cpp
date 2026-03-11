@@ -82,6 +82,7 @@ map<string, router::NativeMethod> methodMap = {
     {"computer.getMemoryInfo", computer::controllers::getMemoryInfo},
     {"computer.getArch", computer::controllers::getArch},
     {"computer.getKernelInfo", computer::controllers::getKernelInfo},
+    {"computer.getBatteryInfo", computer::controllers::getBatteryInfo},
     {"computer.getOSInfo", computer::controllers::getOSInfo},
     {"computer.getCPUInfo", computer::controllers::getCPUInfo},
     {"computer.getDisplays", computer::controllers::getDisplays},
