@@ -682,7 +682,6 @@ json setTray(const json &input) {
 
     if(helpers::hasField(input, "menuItems")) {
         int menuCount = input["menuItems"].size();
-        menus[menuCount - 1] = { nullptr, nullptr, 0, 0, nullptr, nullptr };
 
         int i = 0;
         for (const auto &menuItem: input["menuItems"]) {
@@ -705,6 +704,8 @@ json setTray(const json &input) {
             menus[i] = { id, text, disabled, checked, __handleTrayMenuItem, nullptr };
             i++;
         }
+        
+        menus[menuCount] = { nullptr, nullptr, 0, 0, nullptr, nullptr };
     }
 
     tray.menu = menus;
