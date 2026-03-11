@@ -12,6 +12,7 @@
 #include <X11/extensions/XTest.h>
 #include <cstdlib>
 #include <fstream>
+#include <filesystem>
 
 #elif defined(__FreeBSD__)
 #include <unistd.h>
@@ -478,51 +479,50 @@ json getBatteryInfo(const json &input) {
     }
 
     #elif defined(__linux__)
-// Linux: scan /sys/class/power_supply/ for any battery
-string batteryPath = "";
-const vector<string> possibleNames = {
-    "BAT0", "BAT1", "BAT2", "CMB0", "CMB1", "BATT"
-};
-
-for(const auto &name : possibleNames) {
-    ifstream testFile("/sys/class/power_supply/" + name + "/present");
-    if(testFile.is_open()) {
-        int present = 0;
-        testFile >> present;
-        testFile.close();
-        if(present == 1) {
-            batteryPath = "/sys/class/power_supply/" + name;
-            break;
+    // Linux: scan /sys/class/power_supply/ for any battery
+    string batteryPath = "";
+    
+    try {
+        for(const auto& entry : std::filesystem::directory_iterator("/sys/class/power_supply")) {
+            string name = entry.path().filename().string();
+            if(name.rfind("BAT", 0) == 0 || name.rfind("CMB", 0) == 0) {
+                batteryPath = entry.path().string();
+                break;
+            }
         }
+    } catch(...) {
+        
     }
-}
 
-if(batteryPath.empty()) {
-    // No battery found (e.g. desktop/server)
-    batteryInfo["available"] = false;
-    batteryInfo["charging"] = false;
-    batteryInfo["level"] = -1;
-} else {
-    batteryInfo["available"] = true;
+    if(batteryPath.empty()) {
+        batteryInfo["available"] = false;
+        batteryInfo["charging"] = false;
+        batteryInfo["level"] = -1;
+        return batteryInfo;
+    } else {
+        batteryInfo["available"] = true;
 
-    // Read battery level
-    ifstream capacityFile(batteryPath + "/capacity");
-    int level = -1;
-    if(capacityFile.is_open()) {
-        capacityFile >> level;
-        capacityFile.close();
+        // Read battery level
+        ifstream capacityFile(batteryPath + "/capacity");
+        int level = -1;
+        if(capacityFile.is_open()) {
+            capacityFile >> level;
+            capacityFile.close();
+        }
+        if(level < 0 || level > 100)
+            level = -1;
+
+        batteryInfo["level"] = level;
+
+        // Read charging status
+        ifstream statusFile(batteryPath + "/status");
+        string status = "Unknown";
+        if(statusFile.is_open()) {
+            statusFile >> status;
+            statusFile.close();
+        }
+        batteryInfo["charging"] = (status == "Charging");
     }
-    batteryInfo["level"] = level;
-
-    // Read charging status
-    ifstream statusFile(batteryPath + "/status");
-    string status = "Unknown";
-    if(statusFile.is_open()) {
-        statusFile >> status;
-        statusFile.close();
-    }
-    batteryInfo["charging"] = (status == "Charging");
-}
 
     #elif defined(__APPLE__)
     // macOS: use IOKit to query battery
