@@ -240,5 +240,41 @@ describe('computer.spec: computer namespace tests', () => {
             assert.ok(key === "a" || key === "skipped", "Expected 'a' or skipped depending on platform");
         });
     });
+    describe('computer.getCPUUsage', () => {
+        it('returns CPU usage object with correct types', async function() {
+            runner.run(`
+                let cpuUsage;
+                try {
+                    cpuUsage = await Neutralino.computer.getCPUUsage();
+                } catch(e) {
+                    await __close("skipped");
+                    return;
+                }
+                await __close(JSON.stringify(cpuUsage));
+            `);
+            let output = runner.getOutput();
+            if(output === 'skipped' || output === 'NL_SP_MAXTIMT' || output === '') return;
+            let cpuUsage = JSON.parse(output);
+            assert.ok(typeof cpuUsage == 'object');
+            assert.ok(typeof cpuUsage.usage == 'number');
+        });
 
+        it('returns valid CPU usage range', async function() {
+            runner.run(`
+                let cpuUsage;
+                try {
+                    cpuUsage = await Neutralino.computer.getCPUUsage();
+                } catch(e) {
+                    await __close("skipped");
+                    return;
+                }
+                await __close(JSON.stringify(cpuUsage));
+            `);
+            let output = runner.getOutput();
+            if(output === 'skipped' || output === 'NL_SP_MAXTIMT' || output === '') return;
+            let cpuUsage = JSON.parse(output);
+            assert.ok(cpuUsage.usage >= 0 && cpuUsage.usage <= 100,
+                'CPU usage should be between 0 and 100');
+        });
+    });
 });
