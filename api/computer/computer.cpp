@@ -1,4 +1,4 @@
-#include <cstdint.h>
+#include <cstdint>
 #include <string>
 #include "helpers.h"
 #include "errors.h"
