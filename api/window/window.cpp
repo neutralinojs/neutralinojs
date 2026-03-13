@@ -941,22 +941,24 @@ void move(int x, int y) {
 }
 
 void beginDragNative() {
-
-    #if defined(__linux__) || defined(__FreeBSD__)
+#if defined(__linux__) || defined(__FreeBSD__)
     auto mousePos = computer::getMousePosition();
     gtk_window_begin_move_drag(GTK_WINDOW(windowHandle), 1, mousePos.first, mousePos.second, GDK_CURRENT_TIME);
 
-    #elif defined(_WIN32)
-    ReleaseCapture();
-    SendMessage(windowHandle, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, 0);
+#elif defined(_WIN32)
+    POINT startPos;
+    if (GetCursorPos(&startPos)) {
+        ReleaseCapture();
+        PostMessage(windowHandle, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, 0);
+    }
 
-    #elif defined(__APPLE__)
+#elif defined(__APPLE__)
     ((void (*)(id, SEL, id))objc_msgSend)(windowHandle,
         "performWindowDragWithEvent:"_sel, 
         ((id (*)(id, SEL))objc_msgSend)(windowHandle,
         "currentEvent"_sel)
         );
-    #endif
+#endif
 }
 
 window::SizeOptions getSize() {
