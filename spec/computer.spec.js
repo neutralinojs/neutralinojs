@@ -104,7 +104,6 @@ describe('computer.spec: computer namespace tests', () => {
                         await __close(JSON.stringify(drives));
                     `);
             let drives = JSON.parse(runner.getOutput());
-            console.log("\n\n Output:",drives)
             assert.ok(Array.isArray(drives));
 
                 if(drives.length > 0) {
