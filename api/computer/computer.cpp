@@ -368,52 +368,66 @@ json getStorageInfo(const json &input) {
 
 #ifdef _WIN32
     DWORD driveMask = GetLogicalDrives();
-    for(char letter = 'A'; letter <= 'Z'; letter++) {
-        if(driveMask & (1 << (letter - 'A'))) {
+
+    for (char letter = 'A'; letter <= 'Z'; letter++) {
+        if (driveMask & (1 << (letter - 'A'))) {
             string root = string(1, letter) + ":\\";
+
             try {
                 auto space = filesystem::space(root);
+
                 json drive;
                 drive["name"] = string(1, letter) + ":";
                 drive["total"] = space.capacity;
                 drive["available"] = space.available;
+
                 drives.push_back(drive);
             }
-            catch(...) {}
+            catch (...) {}
         }
     }
+
 #elif __APPLE__
 
     vector<string> mounts;
     mounts.push_back("/");
-    for(const auto &entry : filesystem::directory_iterator("/Volumes")) {
+
+    for (const auto &entry : filesystem::directory_iterator("/Volumes")) {
         mounts.push_back(entry.path().string());
     }
-    for(const auto &mount : mounts) {
+
+    for (const auto &mount : mounts) {
         try {
             auto space = filesystem::space(mount);
+
             json drive;
             drive["name"] = mount;
             drive["total"] = space.capacity;
             drive["available"] = space.available;
+
             drives.push_back(drive);
         }
-        catch(...) {}
+        catch (...) {}
     }
 
 #else   // Linux
+
     ifstream mounts("/proc/mounts");
     string device, mountpoint, type;
-    while(mounts >> device >> mountpoint >> type) {
+
+    while (mounts >> device >> mountpoint >> type) {
         try {
             auto space = filesystem::space(mountpoint);
+
             json drive;
             drive["name"] = mountpoint;
             drive["total"] = space.capacity;
             drive["available"] = space.available;
+
             drives.push_back(drive);
         }
-        catch(...) {}
+        catch (...) {}
+
         getline(mounts, device);
     }
 
@@ -421,8 +435,10 @@ json getStorageInfo(const json &input) {
 
     output["returnValue"] = drives;
     output["success"] = true;
+
     return output;
 }
+
 
 json getDisplays(const json &input) {
     json output;
