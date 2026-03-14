@@ -179,12 +179,12 @@ void handleMessage(websocketpp::connection_hdl handler, websocketserver::message
         });
 
         try {
-            json nativeMessage;
-            nativeMessage["id"] = nativeResponse.id;
-            nativeMessage["method"] = nativeResponse.method;
-            nativeMessage["data"] = nativeResponse.data;
+            json responseMessage;
+            responseMessage["id"] = nativeResponse.id;
+            responseMessage["method"] = nativeResponse.method;
+            responseMessage["data"] = nativeResponse.data;
 
-            server->send(handler, helpers::jsonToString(nativeMessage), msg->get_opcode());
+            server->send(handler, helpers::jsonToString(responseMessage), msg->get_opcode());
         } catch (websocketpp::exception const & e) {
             debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_SR_UNBSEND));
         }
