@@ -98,6 +98,54 @@ describe('computer.spec: computer namespace tests', () => {
         });
     });
 
+        describe('computer.getStorageInfo', () => {
+            it('returns an array of storage drives', async () => {
+            runner.run(`             let drives = await Neutralino.computer.getStorageInfo();
+                        await __close(JSON.stringify(drives));
+                    `);
+            let drives = JSON.parse(runner.getOutput());
+            assert.ok(Array.isArray(drives));
+
+                if(drives.length > 0) {
+                    let drive = drives[0];
+                    assert.ok(typeof drive == 'object');
+                    assert.ok(typeof drive.name == 'string');
+                    assert.ok(typeof drive.total == 'number');
+                    assert.ok(typeof drive.available == 'number');
+                }
+            });
+
+            it('excludes removable drives when excludeRemovable is true', async () => {
+                runner.run(`
+                    let drives = await Neutralino.computer.getStorageInfo({ excludeRemovable: true });
+                    await __close(JSON.stringify(drives));
+                `);
+                let drives = JSON.parse(runner.getOutput());
+                assert.ok(Array.isArray(drives));
+
+                drives.forEach(drive => {
+                    assert.ok(!drive.removable, 'Removable drive should be excluded');
+                });
+            });
+
+            it('includes removable drives by default', async () => {
+                runner.run(`
+                    let all = await Neutralino.computer.getStorageInfo();
+                    let noRemovable = await Neutralino.computer.getStorageInfo({ excludeRemovable: true });
+                    await __close(JSON.stringify({ all: all.length, noRemovable: noRemovable.length }));
+                `);
+
+                let result = JSON.parse(runner.getOutput());
+                assert.ok(
+                    result.all >= result.noRemovable,
+                    'Default call should return at least as many drives as excludeRemovable:true'
+                );
+            });
+
+        });
+
+
+
     describe('computer.getDisplays', () => {
         it('returns available displays', async () => {
             runner.run(`
