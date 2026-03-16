@@ -92,7 +92,15 @@ bool init() {
 
         // String to actual types
         if(cfgOverride.convertTo == "int") {
-            patch["value"] = stoi(cfgOverride.value);
+            try {
+                patch["value"] = stoi(cfgOverride.value);
+            }
+            catch(const exception& e) {
+                debug::log(debug::LogTypeError,
+                    "Invalid integer value for config key '" + cfgOverride.key +
+                    "': \"" + cfgOverride.value + "\". Skipping override.");
+                continue;
+            }
         }
         else if(cfgOverride.convertTo == "bool") {
             patch["value"] = cfgOverride.value == "true";
