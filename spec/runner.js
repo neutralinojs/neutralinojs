@@ -1,6 +1,6 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
-const path = require('path');
+const path = require('path'); 
 
 const SOURCE_TEMPLATE = `
 {BEFORE_INIT_CODE}
