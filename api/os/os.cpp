@@ -2,7 +2,6 @@
 #include <fstream>
 #include <stdlib.h>
 #include <cstdio>
-#include <iostream>
 #include <memory>
 #include <mutex>
 #include <stdexcept>
@@ -16,7 +15,6 @@
 #include <atomic>
 #include <climits>
 
-#include "resources.h"
 #include "lib/tinyprocess/process.hpp"
 #include "lib/platformfolders/platform_folders.h"
 #include "lib/filedialogs/portable-file-dialogs.h"
