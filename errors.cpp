@@ -91,7 +91,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_OS_INVKNPT: return "Invalid platform path name: %1";
         // computer
         case errors::NE_CO_UNLTOSC: return "Unable to set mouse cursor";
-        case errors::NE_CO_UNLTOMG: return "Unable to set mouse grabbinng";
+        case errors::NE_CO_UNLTOMG: return "Unable to set mouse grabbing";
         // extensions
         case errors::NE_EX_EXTNOTC: return "%1 is not connected yet";
         // filesystem

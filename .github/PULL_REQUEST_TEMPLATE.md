@@ -6,7 +6,7 @@
 ## Changes proposed
 <!--
     List the changes you made, one or two bullets is ok, 3 or more is maybe
-    that you are doing more than neccessary.
+    that you are doing more than necessary.
 -->
 
  - Change 1
