@@ -180,6 +180,10 @@
               "type": "boolean",
               "description": "Activates the top-most mode."
             },
+            "darkMode": {
+              "type": "boolean",
+              "description": "Activates dark mode for the native window frame (Windows only)"
+            },
             "enableInspector": {
               "type": "boolean",
               "description": "Automatically opens the developer tools window."
