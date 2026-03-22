@@ -69,6 +69,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_CF_UNBPRCF: return "NE_CF_UNBPRCF";
         case errors::NE_CF_UNSUPMD: return "NE_CF_UNSUPMD";
         case errors::NE_CF_UNBLWCF: return "NE_CF_UNBLWCF";
+		default: return "NE_UNKNOWN";
     }
     return "NE_ST_NOTOK";
 }
