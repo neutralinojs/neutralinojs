@@ -126,7 +126,7 @@ os::CommandResult execCommand(string command, const os::ChildProcessOptions &opt
         commandResult.stdErr += string(bytes, n);
     };
 
-    if(!options.background && options.envs.empty()) { 
+    if(!options.background && options.envs.empty()) {
         childProcess = new TinyProcessLib::Process(CONVSTR(command), CONVSTR(options.cwd), stdOutHandler, stdErrHandler, !options.stdIn.empty());
     }
     else if(options.background && options.envs.empty()) {
@@ -138,7 +138,7 @@ os::CommandResult execCommand(string command, const os::ChildProcessOptions &opt
     else {
         childProcess = new TinyProcessLib::Process(CONVSTR(command), CONVSTR(options.cwd), processEnv, nullptr, nullptr, !options.stdIn.empty());
     }
-    
+
     commandResult.pid = childProcess->get_id();
 
     if(!options.stdIn.empty()) {
@@ -201,11 +201,11 @@ pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &optio
 
     thread processThread([=](){
         int exitCode = childProcess->get_exit_status(); // sync wait
-        
+
         if(options.events) {
             __dispatchSpawnedProcessEvt(virtualPid, "exit", exitCode);
         }
-        
+
         lock_guard<mutex> guard(spawnedProcessesLock);
         spawnedProcesses.erase(virtualPid);
         delete childProcess;
@@ -216,6 +216,7 @@ pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &optio
 }
 
 bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt) {
+	lock_guard<mutex> guard(spawnedProcessesLock);
     if(spawnedProcesses.find(evt.id) == spawnedProcesses.end()) {
         return false;
     }
@@ -268,7 +269,7 @@ string getPath(const string &name) {
 string getEnv(const string &key) {
     #if defined(_WIN32)
     wchar_t value[_MAX_ENV];
-    return GetEnvironmentVariable(CONVSTR(key).c_str(), value, _MAX_ENV) > 0 ? 
+    return GetEnvironmentVariable(CONVSTR(key).c_str(), value, _MAX_ENV) > 0 ?
             helpers::wstr2str(value) : "";
     #else
     char *value;
@@ -341,10 +342,10 @@ json spawnProcess(const json &input) {
         output["error"] = errors::makeMissingArgErrorPayload("command");
         return output;
     }
-    
+
     string command = input["command"].get<string>();
     os::ChildProcessOptions processOptions;
-    
+
     if(helpers::hasField(input, "cwd")) {
         processOptions.cwd = input["cwd"].get<string>();
     }
