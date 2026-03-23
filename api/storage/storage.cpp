@@ -1,3 +1,4 @@
+#include <mutex>
 #include <string>
 #include <iostream>
 #include <fstream>
@@ -26,6 +27,7 @@ using namespace std;
 using json = nlohmann::json;
 
 string storagePath;
+std::mutex storageMutex;
 
 namespace storage {
 
@@ -35,7 +37,7 @@ void init() {
     if(!jLoc.is_null()) {
         storageLoc = jLoc.get<string>();
     }
-    
+
     storagePath = storageLoc == "system" ? settings::joinSystemDataPath(NEU_STORAGE_DIR) : settings::joinAppPath(NEU_STORAGE_DIR);
 }
 
@@ -56,7 +58,7 @@ json __removeStorageBucket(const string &key) {
         output["error"] = errors::makeErrorPayload(errors::NE_ST_STKEYRE, key);
         return output;
     }
-    
+
     output["success"] = true;
     output["message"] = "Storage key " + key + " was removed";
     return output;
@@ -64,23 +66,27 @@ json __removeStorageBucket(const string &key) {
 
 json getData(const json &input) {
     json output;
+
     if(!helpers::hasRequiredFields(input, {"key"})) {
         output["error"] = errors::makeMissingArgErrorPayload("key");
         return output;
     }
+
     string key = input["key"].get<string>();
     json errorPayload = __validateStorageBucket(key);
     if(!errorPayload.is_null())
         return errorPayload;
 
-    string filename = storagePath + "/" + key + NEU_STORAGE_EXT;
+    std::lock_guard<std::mutex> lock(storageMutex);
 
-    fs::FileReaderResult fileReaderResult;
-    fileReaderResult = fs::readFile(filename);
+    string filename = storagePath + "/" + key + NEU_STORAGE_EXT;
+    fs::FileReaderResult fileReaderResult = fs::readFile(filename);
+
     if(fileReaderResult.status != errors::NE_ST_OK) {
         output["error"] = errors::makeErrorPayload(errors::NE_ST_NOSTKEX, key);
         return output;
     }
+
     output["returnValue"] = fileReaderResult.data;
     output["success"] = true;
     return output;
@@ -88,33 +94,36 @@ json getData(const json &input) {
 
 json setData(const json &input) {
     json output;
+
     if(!helpers::hasRequiredFields(input, {"key"})) {
         output["error"] = errors::makeMissingArgErrorPayload("key");
         return output;
     }
+
     string key = input["key"].get<string>();
     json errorPayload = __validateStorageBucket(key);
     if(!errorPayload.is_null())
         return errorPayload;
-
+    std::lock_guard<std::mutex> lock(storageMutex);
     filesystem::create_directories(CONVSTR(storagePath));
+
     #if defined(_WIN32)
     SetFileAttributesA(storagePath.c_str(), FILE_ATTRIBUTE_HIDDEN);
     #endif
-
     if(!helpers::hasField(input, "data")) {
         return __removeStorageBucket(key);
     }
     else {
         fs::FileWriterOptions fileWriterOptions;
         fileWriterOptions.data = input["data"].get<string>();
-        fileWriterOptions.filename = storagePath + "/" + key + NEU_STORAGE_EXT;;
+        fileWriterOptions.filename = storagePath + "/" + key + NEU_STORAGE_EXT;
 
         if(!fs::writeFile(fileWriterOptions)) {
             output["error"] = errors::makeErrorPayload(errors::NE_ST_STKEYWE, key);
             return output;
         }
     }
+
     output["success"] = true;
     return output;
 }
@@ -125,20 +134,23 @@ json removeData(const json &input) {
         output["error"] = errors::makeMissingArgErrorPayload("key");
         return output;
     }
+
     string key = input["key"].get<string>();
     json errorPayload = __validateStorageBucket(key);
     if(!errorPayload.is_null())
         return errorPayload;
 
+    std::lock_guard<std::mutex> lock(storageMutex);
     return __removeStorageBucket(key);
 }
 
 json getKeys(const json &input) {
     json output;
     output["returnValue"] = json::array();
+    std::lock_guard<std::mutex> lock(storageMutex);
 
-    fs::DirReaderResult dirResult;
-    dirResult = fs::readDirectory(storagePath);
+    fs::DirReaderResult dirResult = fs::readDirectory(storagePath);
+
     if(dirResult.status != errors::NE_ST_OK) {
         output["error"] = errors::makeErrorPayload(errors::NE_ST_NOSTDIR, storagePath);
         return output;
@@ -149,20 +161,20 @@ json getKeys(const json &input) {
             output["returnValue"].push_back(regex_replace(entry.name, regex(NEU_STORAGE_EXT), ""));
         }
     }
+
     output["success"] = true;
     return output;
 }
 
 json clear(const json &input) {
     json output;
-
+    std::lock_guard<std::mutex> lock(storageMutex);
     filesystem::remove_all(CONVSTR(storagePath));
-    
+
     output["success"] = true;
     output["message"] = "Storage was cleared";
     return output;
 }
-
 
 } // namespace controllers
 
