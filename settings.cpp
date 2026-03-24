@@ -129,7 +129,7 @@ json getConfig() {
 string getAppId() {
     if(!options["applicationId"].is_null()) {
         string appId = options["applicationId"].get<string>();
-        appId = regex_replace(appId, regex("[^\\w.]"), "");
+        appId = regex_replace(appId, regex("[^\\w.-]"), "");
         return regex_replace(appId, regex("[.]{2,}"), ".");
     }
     return "js.neutralino.framework";
