@@ -241,7 +241,7 @@ bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt) {
 }
 
 static string __getHomePath() {
-    #if defined(__linux__) || defined(__APPLE__)
+    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         const char* home = getenv("HOME");
         if(getuid() != 0 && home)
             return string(home);
