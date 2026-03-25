@@ -119,7 +119,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_RT_NATNTIM: return "%1 is not implemented in the Neutralinojs server";
         // resources
         case errors::NE_RS_TREEGER: return "Resource file tree generation error. %1 is missing.";
-        case errors::NE_RS_UNBLDRE: return "Unable to load application resource file. Please ensure it exists in the resources directory.";
+        case errors::NE_RS_UNBLDRE: return "Error (NE_RS_UNBLDRE): Unable to load application resource file. Please ensure the required file exists in the resources directory, the path is correct, and resources are properly bundled during build.";
         case errors::NE_RS_NOPATHE: return "Path (%1) doesn't exist in resources";
         case errors::NE_RS_FILEXTF: return "Unable to extract the requested file to %1";
         case errors::NE_RS_DIREXTF: return "Unable to extract the requested directory to %1";
