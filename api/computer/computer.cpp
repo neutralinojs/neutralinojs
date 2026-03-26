@@ -36,12 +36,19 @@
 #include <infoware/cpu.hpp>
 #include "api/computer/computer.h"
 #include "api/window/window.h"
+#include "api/os/os.h"
 #include "lib/json/json.hpp"
 
 using namespace std;
 using json = nlohmann::json;
 
 namespace computer {
+
+#if defined(__linux__) || defined(__FreeBSD__)
+bool __isWayland() {
+    return os::getEnv("XDG_SESSION_TYPE") == "wayland";
+}
+#endif
 
 #if defined(__APPLE__)
 CFMachPortRef mouseTap = nullptr;
@@ -133,6 +140,8 @@ bool setMousePosition(int x, int y) {
     return true;
 
     #elif defined(__linux__) || defined(__FreeBSD__)
+    if(__isWayland()) return false;
+    
     Display *display = XOpenDisplay(nullptr);
     if(!display) return false;
 
@@ -193,26 +202,29 @@ bool setMouseGrabbing(bool grabbing = true) {
     return true;
 
     #elif defined(__linux__) || defined(__FreeBSD__)
-        GdkWindow *gdkWindow = gtk_widget_get_window(window::getHandle());
-        Display *xDisplay = gdk_x11_display_get_xdisplay(gdk_window_get_display(gdkWindow));
-        Window xWindow = gdk_x11_window_get_xid(gdkWindow);
-        if(grabbing) {
-            return XGrabPointer(
-                xDisplay,
-                xWindow,
-                True,
-                ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
-                GrabModeAsync,
-                GrabModeAsync,
-                xWindow,
-                None,
-                CurrentTime
-            ) == GrabSuccess;
-        }
-        else {
-            XUngrabPointer(xDisplay, CurrentTime);
-            return true;
-        }
+    if(__isWayland()) return false;
+    
+    GdkWindow *gdkWindow = gtk_widget_get_window(window::getHandle());
+    Display *xDisplay = gdk_x11_display_get_xdisplay(gdk_window_get_display(gdkWindow));
+    Window xWindow = gdk_x11_window_get_xid(gdkWindow);
+
+    if(grabbing) {
+        return XGrabPointer(
+            xDisplay,
+            xWindow,
+            True,
+            ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+            GrabModeAsync,
+            GrabModeAsync,
+            xWindow,
+            None,
+            CurrentTime
+        ) == GrabSuccess;
+    }
+    else {
+        XUngrabPointer(xDisplay, CurrentTime);
+        return true;
+    }
     #else
     return false;
     #endif
@@ -252,6 +264,8 @@ bool sendKey(unsigned int keyCode, computer::SendKeyState keyState = computer::S
     return true;
 
     #elif defined(__linux__) || defined(__FreeBSD__)
+    if(__isWayland()) return false;
+    
     Display *display = XOpenDisplay(nullptr);
     if(!display) return false;
 
@@ -451,7 +465,7 @@ json sendKey(const json &input) {
     }
 
     if(!computer::sendKey(keyCode, keyState)) {
-        output["error"] = errors::makeErrorPayload(errors::NE_RT_NATRTER);
+        output["error"] = errors::makeErrorPayload(errors::NE_CO_UNLTOSK);
         return output;
     }
 

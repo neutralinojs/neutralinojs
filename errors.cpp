@@ -28,6 +28,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         // computer
         case errors::NE_CO_UNLTOSC: return "NE_CO_UNLTOSC";
         case errors::NE_CO_UNLTOMG: return "NE_CO_UNLTOMG";
+        case errors::NE_CO_UNLTOSK: return "NE_CO_UNLTOSK";
         // extensions
         case errors::NE_EX_EXTNOTC: return "NE_EX_EXTNOTC";
         // filesystem
@@ -92,6 +93,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         // computer
         case errors::NE_CO_UNLTOSC: return "Unable to set mouse cursor";
         case errors::NE_CO_UNLTOMG: return "Unable to set mouse grabbinng";
+        case errors::NE_CO_UNLTOSK: return "Unable to send keys";
         // extensions
         case errors::NE_EX_EXTNOTC: return "%1 is not connected yet";
         // filesystem
