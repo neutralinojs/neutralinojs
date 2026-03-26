@@ -24,12 +24,10 @@ await Neutralino.computer.sendKey(105, 'up')      // Release right control
 ### API: os
 - Add `useTemplateIcon: bool` option to `os.setTray(options)` for activating adaptive tray icon with the current color-scheme.
 
-### Core: events
-- Dispatch the `windowActivate` event on macOS when the user reopens the app from the dock.
-
 ### Improvements/bugfixes
 - Display app icon properly with the `os.showNotification()` function when the app is launched from a Mac app bundle.
 - Fix the window-ordering issue with `window.focus()` on macOS.
+- Auto-focus the app window when the Mac dock app icon was clicked.
 - Write full C++ exceptions to the terminal to improve the framework bug-reporting experience.
 
 ## v6.5.0
