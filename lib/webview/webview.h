@@ -320,7 +320,7 @@ public:
             const char* uri = webkit_uri_request_get_uri(request);
             if(uri) {
                 std::string uriStr(uri);
-                if(uriStr.find("http://localhost") != 0 && newWindowHandler) {
+                if(uriStr.find("http://localhost") != 0 && uriStr.find("http://127.0.0.1") != 0 &&newWindowHandler) {
                     newWindowHandler(uriStr);
                 }
             }
@@ -645,7 +645,7 @@ public:
             const char* uri = ((const char*(*)(id,SEL))objc_msgSend)(urlStr, "UTF8String"_sel);
             if(uri) {
                 std::string uriStr(uri);
-                if(uriStr.find("http://localhost") != 0 && newWindowHandler) {
+                if(uriStr.find("http://localhost") != 0 && uriStr.find("http://127.0.0.1") != 0 && newWindowHandler) {
                     newWindowHandler(uriStr);
                 }
             }
@@ -970,7 +970,7 @@ private:
                 args->get_Uri(&uri);
                 std::wstring ws(uri);
                 std::string url(ws.begin(), ws.end());
-                if(url.find("http://localhost") != 0 && newWindowHandler) {
+                if(url.find("http://localhost") != 0 && url.find("https://127.0.0.1") != 0 && newWindowHandler) {
                     newWindowHandler(url);
                 }
                 args->put_Handled(TRUE);
