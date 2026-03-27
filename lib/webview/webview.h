@@ -970,7 +970,7 @@ private:
                 args->get_Uri(&uri);
                 std::wstring ws(uri);
                 std::string url(ws.begin(), ws.end());
-                if(url.find("http://localhost") != 0 && url.find("https://127.0.0.1") != 0 && newWindowHandler) {
+                if(url.find("http://localhost") != 0 && url.find("http://127.0.0.1") != 0 && newWindowHandler) {
                     newWindowHandler(url);
                 }
                 args->put_Handled(TRUE);
