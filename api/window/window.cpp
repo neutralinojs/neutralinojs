@@ -54,6 +54,7 @@
 #include "api/fs/fs.h"
 #include "api/debug/debug.h"
 #include "api/computer/computer.h"
+#include "api/os/os.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -634,6 +635,10 @@ bool __createWindow() {
 );
 
     nativeWindow->setEventHandler(&window::handlers::windowStateChange);
+
+    nativeWindow->setNewWindowHandler([](const std::string& url) {
+        os::open(url);
+    });
 
     if(windowProps.injectGlobals) 
         nativeWindow->init(settings::getGlobalVars() + "var NL_GINJECTED = true;");
