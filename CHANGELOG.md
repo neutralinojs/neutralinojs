@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v6.7.4
+
 ### API: computer
 - Implement `computer.getMousePosition(x, y)` to update the current mouse cursor position.
 - Implement `computer.setMouseGrabbing(grabbing; boolean)` to activate/deactivate confining the mouse cursor within the native app window. If `grabbing` is set to `true`, the mouse cursor always stays within the window boundaries, so this feature helps create interactive games and similar apps operated using the mouse.
