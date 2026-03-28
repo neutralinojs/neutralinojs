@@ -216,16 +216,16 @@ jobs:
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git checkout -b ${{vars.VERSION_WITH_V}}
-        git push origin ${{vars.VERSION_WITH_V}}
+        git checkout -b $VERSION_WITH_V
+        git push origin $VERSION_WITH_V
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Create the new release
       run: |
-          gh release create ${{env.VERSION_WITH_V}} \
-          ./bin/neutralinojs-${{env.VERSION_WITH_V}}.zip \
-          --title "Neutralinojs ${{env.VERSION_WITH_V}} released!" \
+          gh release create $VERSION_WITH_V \
+          ./bin/neutralinojs-${VERSION_WITH_V}.zip \
+          --title "Neutralinojs $VERSION_WITH_V released!" \
           --notes-file .tmprz/release_notes.md \
           --prerelease
       env:
@@ -233,13 +233,13 @@ jobs:
 
     - name: Send a pull request for the modified changelog
       run: |
-        branch=changelog-update-${{vars.VERSION_WITH_V}}
+        branch=changelog-update-$VERSION_WITH_V
         git checkout -b $branch
         git add CHANGELOG.md
-        git commit -m "Update changelog after ${{env.VERSION_WITH_V}}"
+        git commit -m "Update changelog after $VERSION_WITH_V"
         git push origin $branch
         gh pr create \
-        --title "Update changelog after ${{vars.VERSION_WITH_V}} release"
+        --title "Update changelog after $VERSION_WITH_V release"
         --body "This pull request updates CHANGELOG.md file after the recent release."
         --assignee "${{github.actor}}"
       env:
@@ -256,5 +256,5 @@ jobs:
       uses: Ilshidur/action-discord@master
       with:
         args: |
-          Neutralinojs ${{env.VERSION_WITH_V}} released 🚀
-          Changelog: https://github.com/neutralinojs/neutralinojs/releases/tag/${{env.VERSION_WITH_V}}
+          Neutralinojs ${{ env.VERSION_WITH_V }} released 🚀
+          Changelog: https://github.com/neutralinojs/neutralinojs/releases/tag/${{ env.VERSION_WITH_V }}
