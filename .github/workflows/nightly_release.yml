@@ -200,14 +200,8 @@ jobs:
       working-directory: ./bin
       run: |
         ls
-        zip neutralinojs-nightly.zip \ 
-        neutralino-linux_x64 \ 
-        neutralino-linux_arm64 \
-        neutralino-linux_armhf \
-        neutralino-win_x64.exe \
-        neutralino-mac_x64 \
-        neutralino-mac_arm64 \
-        neutralino-mac_universal
+        zip neutralinojs-nightly.zip neutralino-linux_x64 
+
         
     - name: Create Release Notes
       run: |
