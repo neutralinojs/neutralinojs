@@ -219,7 +219,7 @@ jobs:
           ./bin/neutralinojs-nightly.zip \
           --title "Neutralinojs nightly release" \
           --notes-file .tmprz/release_notes.md \
-          --prerelease \
+          --prerelease
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
