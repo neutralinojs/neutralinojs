@@ -200,7 +200,7 @@ jobs:
       working-directory: ./bin
       run: |
         ls
-        zip neutralinojs-nightly.zip \ 
+        zip neutralinojs-nightly.zip \
         neutralino-linux_x64 
 
         
