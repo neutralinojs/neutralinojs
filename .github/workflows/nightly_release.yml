@@ -160,7 +160,11 @@ jobs:
       
     - name: Delete nightly tag
       run: |
-        gh release delete nightly --cleanup-tag --yes
+        if gh release view nightly &> /dev/null; then
+          gh release delete nightly --cleanup-tag --yes
+        fi
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
     - name: Download Linux build artifacts 
       uses: actions/download-artifact@v8
@@ -181,7 +185,7 @@ jobs:
         path: ./bin
 
     - name: Download Windows build artifacts
-      uses: actions/download-artifact@v4.1.7
+      uses: actions/download-artifact@v8
       with:
         name: win_binary
         path: ./bin
@@ -195,8 +199,8 @@ jobs:
     - name: Create Release zip
       working-directory: ./bin
       run: |
-        zip neutralinojs-nightly.zip \ 
-        neutralino-linux_x64 \ 
+        zip neutralinojs-nightly.zip \
+        neutralino-linux_x64 \
         neutralino-linux_arm64 \
         neutralino-linux_armhf \
         neutralino-win_x64.exe \
@@ -207,17 +211,19 @@ jobs:
     - name: Create Release Notes
       run: |
         chmod +x ./scripts/rz.py
-        ./scripts/rz.py create nightly --no-changes --top=":warning: **Nightly build**: This nightly-release may contain experimental features and breaking changes."
+        ./scripts/rz.py create nightly \
+        --no-changes \
+        --top=":warning: **Nightly build**: This nightly-release may contain experimental features and breaking changes."
         
     - name: Update nightly GitHub release
-      uses: ncipollo/release-action@v1
-      with:
-          name: Neutralinojs nightly release
-          bodyFile: ./.tmprz/release_notes.md
-          artifacts: ./bin/neutralinojs-nightly.zip
-          prerelease: true
-          allowUpdates: true
-          tag: nightly
+      run: |
+          gh release create nightly \
+          ./bin/neutralinojs-nightly.zip \
+          --title "Neutralinojs nightly release" \
+          --notes-file .tmprz/release_notes.md \
+          --prerelease
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
     - name: Clean Release Notes
       run: |
