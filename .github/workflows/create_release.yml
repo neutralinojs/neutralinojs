@@ -255,5 +255,5 @@ jobs:
       uses: Ilshidur/action-discord@master
       with:
         args: |
-          Neutralinojs ${{env.VERSION_WITH_V} released 🚀
+          Neutralinojs ${{env.VERSION_WITH_V}} released 🚀
           Changelog: https://github.com/neutralinojs/neutralinojs/releases/tag/${{env.VERSION_WITH_V}}
