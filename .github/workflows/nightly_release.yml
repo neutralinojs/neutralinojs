@@ -29,7 +29,7 @@ jobs:
 
     steps:
     - name: Checkout 
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
 
     - name: Setup cross-compile
       if: ${{ matrix.arch == 'arm64' || matrix.arch == 'armhf' }}
@@ -91,7 +91,7 @@ jobs:
         ninja -C build -j$(nproc)
       
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v4.4.0
+      uses: actions/upload-artifact@v6
       with:
         name: linux_${{ matrix.neuarch }}_binary
         path: |
@@ -101,7 +101,7 @@ jobs:
     runs-on: windows-2022
     steps:
     - name: Checkout 
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
       
     - name: Setup MSVC
       uses: ilammy/msvc-dev-cmd@v1
@@ -114,7 +114,7 @@ jobs:
         ninja -C build -j %NUMBER_OF_PROCESSORS%
       
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v4.4.0
+      uses: actions/upload-artifact@v6
       with:
         name: win_binary
         path: bin/neutralino-win_x64.exe
@@ -123,7 +123,7 @@ jobs:
     runs-on: macos-14
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
 
     - name: Build arm64
       run: |
@@ -143,7 +143,7 @@ jobs:
         lipo bin/neutralino-mac_x64 bin/neutralino-mac_arm64 -create -output bin/neutralino-mac_universal
 
     - name: Upload Artifacts
-      uses: actions/upload-artifact@v4.4.0
+      uses: actions/upload-artifact@v6
       with:
         name: darwin_binary
         path: |
@@ -156,28 +156,26 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout 
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
       
     - name: Delete nightly tag
-      uses: dev-drprasad/delete-tag-and-release@v1.0
-      with:
-        tag_name: nightly
-        github_token: ${{ secrets.COMMIT_TOKEN }}
+      run: |
+        gh release delete nightly --cleanup-tag --yes
         
     - name: Download Linux build artifacts 
-      uses: actions/download-artifact@v4.1.7
+      uses: actions/download-artifact@v8
       with:
         name: linux_x64_binary
         path: ./bin
         
     - name: Download Linux build artifacts 
-      uses: actions/download-artifact@v4.1.7
+      uses: actions/download-artifact@v8
       with:
         name: linux_arm64_binary
         path: ./bin
         
     - name: Download Linux build artifacts 
-      uses: actions/download-artifact@v4.1.7
+      uses: actions/download-artifact@v8
       with:
         name: linux_armhf_binary
         path: ./bin
@@ -189,21 +187,27 @@ jobs:
         path: ./bin
         
     - name: Download Darwin build artifacts 
-      uses: actions/download-artifact@v4.1.7
+      uses: actions/download-artifact@v8
       with:
         name: darwin_binary
         path: ./bin
         
     - name: Create Release zip
-      uses: vimtor/action-zip@v1
-      with:
-        files: ./bin/neutralino-linux_x64 ./bin/neutralino-linux_arm64 ./bin/neutralino-linux_armhf ./bin/neutralino-win_x64.exe ./bin/neutralino-mac_x64 ./bin/neutralino-mac_arm64 ./bin/neutralino-mac_universal ./bin/WebView2Loader.dll
-        dest: './bin/neutralinojs-nightly.zip'
+      working-directory: ./bin
+      run: |
+        zip neutralinojs-nightly.zip \ 
+        neutralino-linux_x64 \ 
+        neutralino-linux_arm64 \
+        neutralino-linux_armhf \
+        neutralino-win_x64.exe \
+        neutralino-mac_x64 \
+        neutralino-mac_arm64 \
+        neutralino-mac_universal
         
     - name: Create Release Notes
       run: |
         chmod +x ./scripts/rz.py
-        ./scripts/rz.py create nightly --no-changes --top=":warning: **Nightly build**: This nighly-release may contain experimental features and breaking changes."
+        ./scripts/rz.py create nightly --no-changes --top=":warning: **Nightly build**: This nightly-release may contain experimental features and breaking changes."
         
     - name: Update nightly GitHub release
       uses: ncipollo/release-action@v1
