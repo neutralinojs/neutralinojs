@@ -236,7 +236,7 @@ jobs:
         branch=changelog-update-$VERSION_WITH_V
         git checkout -b $branch
         git add CHANGELOG.md
-        git commit -m "Update changelog after $VERSION_WITH_V"
+        git commit -m "Update changelog for $VERSION_WITH_V"
         git push origin $branch
         gh pr create \
         --title "Update changelog after $VERSION_WITH_V release" \
