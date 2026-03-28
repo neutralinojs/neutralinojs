@@ -6,7 +6,7 @@ on:
         type: string
         description: 'Version number Eg: 4.2.0' 
 env:
-  VERSION: ${{github.event.inputs.version}}
+  VERSION: 6.6.0
   VERSION_WITH_V: v${{github.event.inputs.version}}
 
 jobs:
