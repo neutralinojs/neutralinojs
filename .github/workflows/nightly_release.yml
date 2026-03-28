@@ -160,7 +160,9 @@ jobs:
       
     - name: Delete nightly tag
       run: |
-        gh release delete nightly --cleanup-tag --yes
+        if gh release view nightly &> /dev/null; then
+          gh release delete nightly --cleanup-tag --yes
+        fi
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
@@ -213,12 +215,11 @@ jobs:
         
     - name: Update nightly GitHub release
       run: |
-        gh release view nightly
-        gh release create nightly
-        ./bin/neutralinojs-nightly.zip
-        --title "Neutralinojs nightly release"
-        --notes-file .tmprz/release_notes.md
-        --prerelease
+          gh release create nightly \
+          ./bin/neutralinojs-nightly.zip \
+          --title "Neutralinojs nightly release" \
+          --notes-file .tmprz/release_notes.md \
+          --prerelease \
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
