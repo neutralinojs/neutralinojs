@@ -212,7 +212,9 @@ jobs:
     - name: Create Release Notes
       run: |
         chmod +x ./scripts/rz.py
-        ./scripts/rz.py create nightly --no-changes --top=":warning: **Nightly build**: This nightly-release may contain experimental features and breaking changes."
+        ./scripts/rz.py create nightly \
+        --no-changes \
+        --top=":warning: **Nightly build**: This nightly-release may contain experimental features and breaking changes."
         
     - name: Update nightly GitHub release
       run: |
