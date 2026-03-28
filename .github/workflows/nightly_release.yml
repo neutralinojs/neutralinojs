@@ -213,6 +213,7 @@ jobs:
         
     - name: Update nightly GitHub release
       run: |
+        gh release view nightly
         gh release create nightly
         ./bin/neutralinojs-nightly.zip
         --title "Neutralinojs nightly release"
