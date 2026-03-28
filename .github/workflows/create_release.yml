@@ -197,7 +197,7 @@ jobs:
     - name: Create release zip
       working-directory: ./bin
       run: |
-        zip neutralinojs-${{ vars.VERSION_WITH_V }}.zip \
+        zip neutralinojs-$VERSION_WITH_V.zip \
         neutralino-linux_x64 \
         neutralino-linux_arm64 \
         neutralino-linux_armhf \
