@@ -161,6 +161,8 @@ jobs:
     - name: Delete nightly tag
       run: |
         gh release delete nightly --cleanup-tag --yes
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
     - name: Download Linux build artifacts 
       uses: actions/download-artifact@v8
@@ -210,14 +212,14 @@ jobs:
         ./scripts/rz.py create nightly --no-changes --top=":warning: **Nightly build**: This nightly-release may contain experimental features and breaking changes."
         
     - name: Update nightly GitHub release
-      uses: ncipollo/release-action@v1
-      with:
-          name: Neutralinojs nightly release
-          bodyFile: ./.tmprz/release_notes.md
-          artifacts: ./bin/neutralinojs-nightly.zip
-          prerelease: true
-          allowUpdates: true
-          tag: nightly
+      run: |
+        gh release create nightly
+        ./bin/neutralinojs-nightly.zip
+        --title "Neutralinojs nightly release"
+        --notes-file .tmprz/release_notes.md
+        --prerelease
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
     - name: Clean Release Notes
       run: |
