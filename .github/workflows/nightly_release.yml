@@ -185,7 +185,7 @@ jobs:
         path: ./bin
 
     - name: Download Windows build artifacts
-      uses: actions/download-artifact@v4.1.7
+      uses: actions/download-artifact@v8
       with:
         name: win_binary
         path: ./bin
@@ -201,8 +201,13 @@ jobs:
       run: |
         ls
         zip neutralinojs-nightly.zip \
-        neutralino-linux_x64 
-
+        neutralino-linux_x64 \
+        neutralino-linux_arm64 \
+        neutralino-linux_armhf \
+        neutralino-win_x64.exe \
+        neutralino-mac_x64 \
+        neutralino-mac_arm64 \
+        neutralino-mac_universal
         
     - name: Create Release Notes
       run: |
