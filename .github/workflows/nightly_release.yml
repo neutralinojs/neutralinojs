@@ -199,6 +199,7 @@ jobs:
     - name: Create Release zip
       working-directory: ./bin
       run: |
+        ls
         zip neutralinojs-nightly.zip \ 
         neutralino-linux_x64 \ 
         neutralino-linux_arm64 \
