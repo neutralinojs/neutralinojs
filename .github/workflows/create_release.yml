@@ -6,8 +6,8 @@ on:
         type: string
         description: 'Version number Eg: 4.2.0' 
 env:
-  VERSION: 6.6.0
-  VERSION_WITH_V: v6.6.0
+  VERSION: ${{inputs.version}}
+  VERSION_WITH_V: "v${{inputs.version}}"
 
 jobs:
   build-linux:
@@ -210,7 +210,7 @@ jobs:
     - name: Create release notes
       run: |
         chmod +x ./scripts/rz.py
-        ./scripts/rz.py create ${{vars.VERSION}}
+        ./scripts/rz.py create $VERSION
 
     - name: Create branch for release
       run: |
