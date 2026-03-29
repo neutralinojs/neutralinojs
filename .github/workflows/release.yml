@@ -256,9 +256,11 @@ jobs:
           git push origin -d $VERSION_WITH_V
           echo "Deleted_remote"
         fi
+        echo "New_branch"
         git checkout -b $VERSION_WITH_V
+        echo "Push_it"
         git push origin $VERSION_WITH_V
-        echo 2
+        echo "Done"
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
