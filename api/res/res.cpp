@@ -175,14 +175,19 @@ json extractFile(const json &input) {
     string path = input["path"].get<string>();
     string destination = input["destination"].get<string>();
     
+    if (destination.find('\0') != std::string::npos) {
+        output["error"] = errors::makeErrorPayload(errors::NE_RS_FILEXTF, destination);
+        return output;
+    }
+
     error_code canonicalEc;
     auto resolvedDest = filesystem::weakly_canonical(filesystem::path(CONVSTR(destination)), canonicalEc);
-    auto basePath = filesystem::current_path(); 
+    auto basePath = filesystem::canonical(filesystem::current_path()); 
 
     auto mismatch = std::mismatch(basePath.begin(), basePath.end(), resolvedDest.begin(), resolvedDest.end());
     
     if(canonicalEc || mismatch.first != basePath.end()) {
-        output["error"] = errors::makeErrorPayload(errors::NE_RS_DIREXTF, destination);
+        output["error"] = errors::makeErrorPayload(errors::NE_RS_FILEXTF, destination);
         return output;
     }
     
@@ -224,9 +229,14 @@ json extractDirectory(const json &input) {
     string path = input["path"].get<string>();
     string destination = input["destination"].get<string>();
 
+    if (destination.find('\0') != std::string::npos) {
+        output["error"] = errors::makeErrorPayload(errors::NE_RS_DIREXTF, destination);
+        return output;
+    }
+
     error_code canonicalEc;
     auto resolvedDest = filesystem::weakly_canonical(filesystem::path(CONVSTR(destination)), canonicalEc);
-    auto basePath = filesystem::current_path(); 
+    auto basePath = filesystem::canonical(filesystem::current_path());
 
     auto mismatch = std::mismatch(basePath.begin(), basePath.end(), resolvedDest.begin(), resolvedDest.end());
     
