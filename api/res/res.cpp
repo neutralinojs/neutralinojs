@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <algorithm>
 
 #include "lib/json/json.hpp"
 #include "settings.h"
@@ -174,6 +175,17 @@ json extractFile(const json &input) {
     string path = input["path"].get<string>();
     string destination = input["destination"].get<string>();
     
+    error_code canonicalEc;
+    auto resolvedDest = filesystem::weakly_canonical(filesystem::path(CONVSTR(destination)), canonicalEc);
+    auto basePath = filesystem::current_path(); 
+
+    auto mismatch = std::mismatch(basePath.begin(), basePath.end(), resolvedDest.begin(), resolvedDest.end());
+    
+    if(canonicalEc || mismatch.first != basePath.end()) {
+        output["error"] = errors::makeErrorPayload(errors::NE_RS_DIREXTF, destination);
+        return output;
+    }
+    
     if(resources::isBundleMode() && resources::extractFile(path, destination)) {
         output["success"] = true;
     }
@@ -211,6 +223,17 @@ json extractDirectory(const json &input) {
     }
     string path = input["path"].get<string>();
     string destination = input["destination"].get<string>();
+
+    error_code canonicalEc;
+    auto resolvedDest = filesystem::weakly_canonical(filesystem::path(CONVSTR(destination)), canonicalEc);
+    auto basePath = filesystem::current_path(); 
+
+    auto mismatch = std::mismatch(basePath.begin(), basePath.end(), resolvedDest.begin(), resolvedDest.end());
+    
+    if(canonicalEc || mismatch.first != basePath.end()) {
+        output["error"] = errors::makeErrorPayload(errors::NE_RS_DIREXTF, destination);
+        return output;
+    }
 
     if(resources::isBundleMode() || resources::isEmbeddedMode()) {
         auto resPaths = __getFiles(path);
