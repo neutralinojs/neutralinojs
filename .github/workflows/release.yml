@@ -22,7 +22,7 @@ jobs:
   release-info:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout 
+    - name: Release info 
       run: |
         echo "VERSION: $VERSION"
         echo "VERSION_WITH_V: $VERSION_WITH_V"
