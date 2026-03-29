@@ -306,4 +306,4 @@ jobs:
       with:
         args: |
           Neutralinojs ${{ env.VERSION_WITH_V }} released 🚀
-          Changelog: https://github.com/neutralinojs/neutralinojs-cli/releases/tag/${{ env.VERSION_WITH_V }}
+          Changelog: https://github.com/neutralinojs/neutralinojs/releases/tag/${{ env.VERSION_WITH_V }}
