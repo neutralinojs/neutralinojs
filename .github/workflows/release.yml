@@ -250,17 +250,13 @@ jobs:
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
         if git show-ref --quiet refs/heads/$VERSION_WITH_V; then
-          echo "Found_start_deleting"
           git branch -D $VERSION_WITH_V
-          echo "Deleted_local"
-          git push origin -d $VERSION_WITH_V
-          echo "Deleted_remote"
         fi
-        echo "New_branch"
+        if git ls-remote --exit-code --heads origin $VERSION_WITH_V; then
+          git push origin -d $VERSION_WITH_V
+        fi
         git checkout -b $VERSION_WITH_V
-        echo "Push_it"
         git push origin $VERSION_WITH_V
-        echo "Done"
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
