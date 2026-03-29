@@ -293,11 +293,11 @@ jobs:
     - name: Clean release notes
       run: |
           ./scripts/rz.py cleanup
-
-    - name: Stop
-      run: | 
-        exit 1
         
+  announcement:
+    needs: [create-release]
+    runs-on: ubuntu-latest
+    steps:
     - name: Send a Discord message
       if: ${{ env.VERSION != 'nightly' }}
       env:
@@ -306,4 +306,4 @@ jobs:
       with:
         args: |
           Neutralinojs ${{ env.VERSION_WITH_V }} released 🚀
-          Changelog: https://github.com/neutralinojs/neutralinojs/releases/tag/${{ env.VERSION_WITH_V }}
+          Changelog: https://github.com/neutralinojs/neutralinojs-cli/releases/tag/${{ env.VERSION_WITH_V }}
