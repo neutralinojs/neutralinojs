@@ -7,7 +7,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ## Unreleased
 
 ### API: computer
-- Implement `computer.getMousePosition(x, y)` to update the current mouse cursor position.
+- Implement `computer.setMousePosition(x, y)` to update the current mouse cursor position.
 - Implement `computer.setMouseGrabbing(grabbing; boolean)` to activate/deactivate confining the mouse cursor within the native app window. If `grabbing` is set to `true`, the mouse cursor always stays within the window boundaries, so this feature helps create interactive games and similar apps operated using the mouse.
 - Implement `computer.sendKey(keyCode, keyState)` to simulate keyboard events. App developers can use a platform-specific key code and states (`press`, `down`, and `up`) to simulate from simple single key strokes to complex key combinations:
 ```js
