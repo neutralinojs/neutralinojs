@@ -1,11 +1,29 @@
-name: Nightly release
+name: Create release
 on: 
   workflow_dispatch:
+    inputs: 
+      version: 
+        type: string
+        required: false
+        description: "Version number Eg: 4.2.0"
   schedule:
     - cron: 0 0 * * *
 
+env:
+  VERSION: ${{inputs.version != '' && inputs.version || 'nightly'}}
+  VERSION_WITH_V: ${{inputs.version != '' && format('v{0}', inputs.version) || 'nightly'}}
+
 jobs:
+  release-info:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout 
+      run: |
+        echo "VERSION: $VERSION"
+        echo "VERSION_WITH_V: $VERSION_WITH_V"
+      
   build-linux:
+    needs: [release-info]
     runs-on: ubuntu-22.04
 
     container:
@@ -74,6 +92,7 @@ jobs:
           gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
           libgtk-3-dev:armhf libwebkit2gtk-4.0-dev:armhf
 
+
     - name: Install common dependencies
       run: |
         apt-get update
@@ -82,15 +101,15 @@ jobs:
           git \
           cmake \
           ninja-build
-    
+
     - name: Build ${{ matrix.arch }}
       run: |
         git config --global --add safe.directory $GITHUB_WORKSPACE
         mkdir -p build
         cmake -DCMAKE_BUILD_TYPE=Release . -G Ninja -B build ${{ matrix.toolchain }}
         ninja -C build -j$(nproc)
-      
-    - name: Upload Artifacts
+
+    - name: Upload artifacts
       uses: actions/upload-artifact@v6
       with:
         name: linux_${{ matrix.neuarch }}_binary
@@ -98,6 +117,7 @@ jobs:
           bin/neutralino-linux_${{ matrix.neuarch }}
 
   build-windows:
+    needs: [release-info]
     runs-on: windows-2022
     steps:
     - name: Checkout 
@@ -112,14 +132,15 @@ jobs:
         mkdir build
         cmake -DCMAKE_BUILD_TYPE=Release . -G "Ninja" -B build
         ninja -C build -j %NUMBER_OF_PROCESSORS%
-      
-    - name: Upload Artifacts
+        
+    - name: Upload artifacts
       uses: actions/upload-artifact@v6
       with:
         name: win_binary
         path: bin/neutralino-win_x64.exe
 
   build-darwin:
+    needs: [release-info]
     runs-on: macos-14
     steps:
     - name: Checkout
@@ -128,21 +149,21 @@ jobs:
     - name: Build arm64
       run: |
         mkdir -p build
-        cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_OSX_ARCHITECTURES=arm64 . -G Ninja -B build
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64 . -G Ninja -B build
         ninja -C build
 
     - name: Build x64
       run: |
         rm -fr build
         mkdir -p build
-        cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_OSX_ARCHITECTURES=x86_64 . -G Ninja -B build
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=x86_64 . -G Ninja -B build
         ninja -C build
-    
+
     - name: Merge universal
       run: |
         lipo bin/neutralino-mac_x64 bin/neutralino-mac_arm64 -create -output bin/neutralino-mac_universal
 
-    - name: Upload Artifacts
+    - name: Upload artifacts
       uses: actions/upload-artifact@v6
       with:
         name: darwin_binary
@@ -151,20 +172,12 @@ jobs:
           bin/neutralino-mac_arm64
           bin/neutralino-mac_universal
         
-  update-nightly-release:
+  create-release:
     needs: [build-linux, build-windows, build-darwin]
     runs-on: ubuntu-latest
     steps:
     - name: Checkout 
       uses: actions/checkout@v6
-      
-    - name: Delete nightly tag
-      run: |
-        if gh release view nightly &> /dev/null; then
-          gh release delete nightly --cleanup-tag --yes
-        fi
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
     - name: Download Linux build artifacts 
       uses: actions/download-artifact@v8
@@ -196,10 +209,10 @@ jobs:
         name: darwin_binary
         path: ./bin
         
-    - name: Create Release zip
+    - name: Create release ZIP
       working-directory: ./bin
       run: |
-        zip neutralinojs-nightly.zip \
+        zip neutralinojs-${VERSION_WITH_V}.zip \
         neutralino-linux_x64 \
         neutralino-linux_arm64 \
         neutralino-linux_armhf \
@@ -208,23 +221,85 @@ jobs:
         neutralino-mac_arm64 \
         neutralino-mac_universal
         
-    - name: Create Release Notes
+    - name: Create release notes
       run: |
         chmod +x ./scripts/rz.py
-        ./scripts/rz.py create nightly \
-        --no-changes \
-        --top=":warning: **Nightly build**: This nightly-release may contain experimental features and breaking changes."
-        
-    - name: Update nightly GitHub release
+        if [[ "$VERSION" != "nightly" ]]; then
+            ./scripts/rz.py create $VERSION
+        else
+          ./scripts/rz.py create nightly \
+            --no-changes \
+            --top=":warning: **Nightly build**: This nightly-release may contain experimental features and breaking changes."
+        fi
+
+    - name: Delete release tag
       run: |
-          gh release create nightly \
-          ./bin/neutralinojs-nightly.zip \
-          --title "Neutralinojs nightly release" \
-          --notes-file .tmprz/release_notes.md \
-          --prerelease
+        if gh release view $VERSION_WITH_V &> /dev/null; then
+          gh release delete $VERSION_WITH_V --cleanup-tag --yes
+        fi
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create a new branch for the release
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        if git show-ref --quiet refs/heads/$VERSION_WITH_V; then
+          git branch -D $VERSION_WITH_V
+          git push origin -d $VERSION_WITH_V
+        else
+          git checkout -b $VERSION_WITH_V
+          git push origin $VERSION_WITH_V
+        fi
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create the new release
+      run: |
+          if [[ "$VERSION" != "nightly" ]]; then
+            gh release create $VERSION_WITH_V \
+              ./bin/neutralinojs-${VERSION_WITH_V}.zip \
+              --title "Neutralinojs $VERSION_WITH_V released!" \
+              --notes-file .tmprz/release_notes.md
+          else
+            gh release create nightly \
+              ./bin/neutralinojs-nightly.zip \
+              --title "Neutralinojs nightly release" \
+              --notes-file .tmprz/release_notes.md \
+              --prerelease
+          fi
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Send a pull request for the modified changelog
+      if: ${{ env.VERSION != 'nightly' }}
+      run: |
+        branch=changelog-update-$VERSION_WITH_V
+        git checkout -b $branch
+        git add CHANGELOG.md
+        git commit -m "Update changelog for $VERSION_WITH_V"
+        git push origin $branch
+        gh pr create \
+          --title "Update changelog after $VERSION_WITH_V release" \
+          --body "This pull request updates CHANGELOG.md file after the recent release." \
+          --assignee "${{github.actor}}"
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
-    - name: Clean Release Notes
+    - name: Clean release notes
       run: |
-        ./scripts/rz.py cleanup
+          ./scripts/rz.py cleanup
+
+    - name: Stop
+      run: | 
+        exit 1
+        
+    - name: Send a Discord message
+      if: ${{ env.VERSION != 'nightly' }}
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+      uses: Ilshidur/action-discord@master
+      with:
+        args: |
+          Neutralinojs ${{ env.VERSION_WITH_V }} released 🚀
+          Changelog: https://github.com/neutralinojs/neutralinojs/releases/tag/${{ env.VERSION_WITH_V }}
