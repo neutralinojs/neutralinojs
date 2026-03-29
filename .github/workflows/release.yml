@@ -247,10 +247,9 @@ jobs:
         if git show-ref --quiet refs/heads/$VERSION_WITH_V; then
           git branch -D $VERSION_WITH_V
           git push origin -d $VERSION_WITH_V
-        else
-          git checkout -b $VERSION_WITH_V
-          git push origin $VERSION_WITH_V
         fi
+        git checkout -b $VERSION_WITH_V
+        git push origin $VERSION_WITH_V
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
