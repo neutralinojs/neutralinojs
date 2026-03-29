@@ -23,6 +23,10 @@
 
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
 #include <unistd.h>
+#include <ifaddrs.h>
+#include <net/if.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
 extern char **environ;
 #endif
 
@@ -36,9 +40,14 @@ extern char **environ;
 #include <tchar.h>
 #include <gdiplus.h>
 #include <shlwapi.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <iphlpapi.h>
 
 #pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "Gdiplus.lib")
+#pragma comment(lib, "Ws2_32.lib")
+#pragma comment(lib, "Iphlpapi.lib")
 #endif
 
 #include "lib/json/json.hpp"
@@ -277,6 +286,75 @@ string getEnv(const string &key) {
     #endif
 }
 
+string getIP() {
+    #if defined(_WIN32)
+    ULONG family = AF_INET;
+    ULONG flags = GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST | GAA_FLAG_SKIP_DNS_SERVER;
+    ULONG bufferSize = 0;
+
+    DWORD ret = GetAdaptersAddresses(family, flags, nullptr, nullptr, &bufferSize);
+    if(ret != ERROR_BUFFER_OVERFLOW) {
+        return "";
+    }
+
+    vector<unsigned char> buffer(bufferSize);
+    IP_ADAPTER_ADDRESSES *addresses =
+        reinterpret_cast<IP_ADAPTER_ADDRESSES*>(buffer.data());
+
+    ret = GetAdaptersAddresses(family, flags, nullptr, addresses, &bufferSize);
+    if(ret != NO_ERROR) {
+        return "";
+    }
+
+    for(IP_ADAPTER_ADDRESSES *adapter = addresses; adapter != nullptr; adapter = adapter->Next) {
+        if(adapter->OperStatus != IfOperStatusUp || adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK) {
+            continue;
+        }
+
+        for(IP_ADAPTER_UNICAST_ADDRESS *ua = adapter->FirstUnicastAddress; ua != nullptr; ua = ua->Next) {
+            if(ua->Address.lpSockaddr == nullptr || ua->Address.lpSockaddr->sa_family != AF_INET) {
+                continue;
+            }
+
+            char ipAddress[INET_ADDRSTRLEN] = {};
+            sockaddr_in *addr = reinterpret_cast<sockaddr_in*>(ua->Address.lpSockaddr);
+            if(inet_ntop(AF_INET, &(addr->sin_addr), ipAddress, sizeof(ipAddress)) != nullptr) {
+                string ip = ipAddress;
+                if(ip != "127.0.0.1") {
+                    return ip;
+                }
+            }
+        }
+    }
+    #elif defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
+    struct ifaddrs *ifaddr = nullptr;
+    if(getifaddrs(&ifaddr) == -1) {
+        return "";
+    }
+
+    string selectedIp = "";
+    for(struct ifaddrs *ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+        if(ifa->ifa_addr == nullptr || ifa->ifa_addr->sa_family != AF_INET) {
+            continue;
+        }
+        if((ifa->ifa_flags & IFF_UP) == 0 || (ifa->ifa_flags & IFF_LOOPBACK) != 0) {
+            continue;
+        }
+
+        char host[INET_ADDRSTRLEN] = {};
+        auto *addr = reinterpret_cast<sockaddr_in*>(ifa->ifa_addr);
+        if(inet_ntop(AF_INET, &(addr->sin_addr), host, sizeof(host)) != nullptr) {
+            selectedIp = host;
+            break;
+        }
+    }
+    freeifaddrs(ifaddr);
+    return selectedIp;
+    #endif
+
+    return "";
+}
+
 namespace controllers {
 
 vector<string> __extensionsToVector(const json &filters) {
@@ -450,6 +528,13 @@ json getEnvs(const json &input) {
     }
     FreeEnvironmentStrings((LPWCH) envsO);
     #endif
+    output["success"] = true;
+    return output;
+}
+
+json getIP(const json &input) {
+    json output;
+    output["returnValue"] = os::getIP();
     output["success"] = true;
     return output;
 }

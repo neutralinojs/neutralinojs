@@ -125,6 +125,7 @@ map<string, router::NativeMethod> methodMap = {
     {"os.getSpawnedProcesses", os::controllers::getSpawnedProcesses},
     {"os.getEnv", os::controllers::getEnv},
     {"os.getEnvs", os::controllers::getEnvs},
+    {"os.getIP", os::controllers::getIP},
     {"os.showOpenDialog", os::controllers::showOpenDialog},
     {"os.showFolderDialog", os::controllers::showFolderDialog},
     {"os.showSaveDialog", os::controllers::showSaveDialog},
