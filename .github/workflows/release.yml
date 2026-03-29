@@ -249,9 +249,10 @@ jobs:
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git pull
         if git show-ref --quiet refs/heads/$VERSION_WITH_V; then
           git branch -D $VERSION_WITH_V
+        fi
+        if git ls-remote --exit-code --heads origin $VERSION_WITH_V; then
           git push origin -d $VERSION_WITH_V
         fi
         git checkout -b $VERSION_WITH_V
