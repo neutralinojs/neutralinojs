@@ -111,7 +111,7 @@ function cleanup() {
     }
 }
 
-module.exports={
+module.exports ={
     run,
     getOutput
-};
+}
