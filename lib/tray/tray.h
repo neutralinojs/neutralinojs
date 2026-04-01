@@ -428,7 +428,7 @@ static void tray_update(struct tray *tray) {
   // because WM_TRAY_CALLBACK_MESSAGE needs it
   SendMessage(hwnd, WM_TRAY_PASS_MENU_REF, (WPARAM)hmenu, 0);
   SendMessage(hwnd, WM_INITMENUPOPUP, (WPARAM)hmenu, 0);
-  if (nid.hIcon) {
+  if (nid.hIcon && nid.hIcon != tray->icon) {
     DestroyIcon(nid.hIcon);
   }
   nid.hIcon = tray->icon;
