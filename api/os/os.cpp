@@ -703,7 +703,16 @@ json setTray(const json &input) {
     json output;
 
     if(helpers::hasField(input, "menuItems")) {
-        int menuCount = input["menuItems"].size();
+       int menuCount = input["menuItems"].size();
+
+    if (menuCount == 0) {
+        output["success"] = true;
+    return output;
+        }
+
+    if (menuCount > NEU_MAX_TRAY_MENU_ITEMS) {
+    menuCount = NEU_MAX_TRAY_MENU_ITEMS;
+        }
 
         // Free any previously allocated menu items beyond the new count
         for(int j = menuCount; j < NEU_MAX_TRAY_MENU_ITEMS; j++) {
@@ -715,8 +724,9 @@ json setTray(const json &input) {
 
         menus[menuCount - 1] = { nullptr, nullptr, 0, 0, nullptr, nullptr };
 
-        int i = 0;
+            int i = 0;
         for (const auto &menuItem: input["menuItems"]) {
+            if (i >= menuCount) break;
             char *id = nullptr;
             char *text = helpers::cStrCopy(menuItem["text"].get<string>());
             int disabled = 0;
