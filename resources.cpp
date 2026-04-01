@@ -63,8 +63,14 @@ fs::FileReaderResult __getFileFromBundle(const string &filename) {
             return fileReaderResult;
         }
         unsigned long size = p.first;
-        unsigned long uOffset = stoi(p.second);
-
+        unsigned long uOffset = 0;
+        try {
+        uOffset = std::stoul(p.second);
+        }
+        catch(const std::exception&) {
+        fileReaderResult.status = errors::NE_RS_TREEGER;
+        return fileReaderResult;
+   }
         vector<char>fileBuf ( size );
         asarArchive.seekg(asarHeaderSize + uOffset);
         asarArchive.read(fileBuf.data(), size);
@@ -91,8 +97,14 @@ fs::FileReaderResult __getFileFromEmbedded(const string &filename) {
 
         const unsigned char* bytes = (const unsigned char*)resource_ptr;
         unsigned long size = p.first;
-        unsigned long uOffset = stoi(p.second);
-
+       unsigned long uOffset = 0;
+       try {
+       uOffset = std::stoul(p.second);
+       }
+       catch(const std::exception&) {
+          fileReaderResult.status = errors::NE_RS_TREEGER;
+        return fileReaderResult;
+    }
         vector<char>fileBuf ( size );
         for (size_t i = asarHeaderSize + uOffset; i < asarHeaderSize + uOffset + size; i++) {
           fileBuf[i - (asarHeaderSize + uOffset)] = bytes[i];
