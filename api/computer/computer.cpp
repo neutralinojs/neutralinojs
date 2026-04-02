@@ -448,23 +448,23 @@ json setMouseGrabbing(const json &input) {
 json sendKey(const json &input) {
     json output;
     
-    const auto missingRequiredField = helpers::missingRequiredField(input, {"keyCode"});
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"key"});
     if(missingRequiredField) {
         output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
 
-    int keyCode = input["keyCode"].get<int>();
-    computer::SendKeyState keyState = computer::SendKeyStatePress;
+    int key = input["key"].get<int>();
+    computer::SendKeyState state = computer::SendKeyStatePress;
     
-    if(helpers::hasField(input, "keyState")) {
-        string state = input["keyState"].get<string>();
-        if(state == "press") keyState = computer::SendKeyStatePress;
-        if(state == "down") keyState = computer::SendKeyStateDown;
-        if(state == "up") keyState = computer::SendKeyStateUp;
+    if(helpers::hasField(input, "state")) {
+        string st = input["state"].get<string>();
+        if(st == "press") state = computer::SendKeyStatePress;
+        if(st == "down") state = computer::SendKeyStateDown;
+        if(st == "up") state = computer::SendKeyStateUp;
     }
 
-    if(!computer::sendKey(keyCode, keyState)) {
+    if(!computer::sendKey(key, state)) {
         output["error"] = errors::makeErrorPayload(errors::NE_CO_UNLTOSK);
         return output;
     }
