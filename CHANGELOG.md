@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v6.7.0
+
 ### API: Input device simulation and handling
 New functions were added to the `computer` namespace to update the mouse position, confine the mouse cursor within the window, and simulate keyboard events. These functions work on Windows and macOS, but only work under the X windowing system on Linux (or FreeBSD). On Wayland, these functions will throw `NE_CO_UNLTOSC`, `NE_CO_UNLTOMG`, or `NE_CO_UNLTOSK` error messages.
 
