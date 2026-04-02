@@ -6,8 +6,6 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
-## v6.6.0
-
 ### API: Input device simulation and handling
 New functions were added to the `computer` namespace to update the mouse position, confine the mouse cursor within the window, and simulate keyboard events. These functions work on Windows and macOS, but only work under the X windowing system on Linux (or FreeBSD). On Wayland, these functions will throw `NE_CO_UNLTOSC`, `NE_CO_UNLTOMG`, or `NE_CO_UNLTOSK` error messages.
 
@@ -20,8 +18,8 @@ await Neutralino.computer.sendKey(38)
 
 // Simulate Ctrl + V keyboard shortcut on GNU/Linux:
 await Neutralino.computer.sendKey(105, 'down')    // Hold right control
-await Neutralino.computer.sendKey(47, 'down')     // Hold letter 'v' 
-await Neutralino.computer.sendKey(47, 'up')       // Release letter 'v'
+await Neutralino.computer.sendKey(55, 'down')     // Hold letter 'v' 
+await Neutralino.computer.sendKey(55, 'up')       // Release letter 'v'
 await Neutralino.computer.sendKey(105, 'up')      // Release right control
 ```
 
