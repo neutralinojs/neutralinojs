@@ -681,11 +681,15 @@ json setTray(const json &input) {
     json output;
 
     if(helpers::hasField(input, "menuItems")) {
-        int menuCount = input["menuItems"].size();
-        menus[menuCount - 1] = { nullptr, nullptr, 0, 0, nullptr, nullptr };
+        int menuCount = static_cast<int>(input["menuItems"].size());
+        if(menuCount > NEU_MAX_TRAY_MENU_ITEMS){
+            menuCount = NEU_MAX_TRAY_MENU_ITEMS;
+        }
+        
 
         int i = 0;
         for (const auto &menuItem: input["menuItems"]) {
+            if(i >= menuCount) break;
             char *id = nullptr;
             char *text = helpers::cStrCopy(menuItem["text"].get<string>());
             int disabled = 0;
@@ -704,6 +708,9 @@ json setTray(const json &input) {
             delete[] menus[i].text;
             menus[i] = { id, text, disabled, checked, __handleTrayMenuItem, nullptr };
             i++;
+        }
+        if(menuCount < NEU_MAX_TRAY_MENU_ITEMS){
+            menus[menuCount] = { nullptr, nullptr, 0, 0, nullptr,nullptr};
         }
     }
 
