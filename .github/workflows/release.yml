@@ -10,12 +10,12 @@ on:
       version: 
         type: string
         required: false
-        description: "Version number Eg: 4.2.0"
+        description: "Version number e.g., 4.2.0"
   schedule:
     - cron: 0 0 * * *
 
 env:
-  VERSION: ${{inputs.version != '' && inputs.version || 'nightly'}}
+  VERSION: ${{inputs.version || 'nightly'}}
   VERSION_WITH_V: ${{inputs.version != '' && format('v{0}', inputs.version) || 'nightly'}}
 
 jobs:
@@ -247,11 +247,6 @@ jobs:
 
     - name: Create a new branch for the release
       run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        if git show-ref --quiet refs/heads/$VERSION_WITH_V; then
-          git branch -D $VERSION_WITH_V
-        fi
         if git ls-remote --exit-code --heads origin $VERSION_WITH_V; then
           git push origin -d $VERSION_WITH_V
         fi
@@ -283,6 +278,8 @@ jobs:
         branch=changelog-update-$VERSION_WITH_V
         git checkout -b $branch
         git add CHANGELOG.md
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git commit -m "Update changelog for $VERSION_WITH_V"
         git push origin $branch
         gh pr create \
