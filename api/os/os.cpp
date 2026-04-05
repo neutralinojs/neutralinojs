@@ -216,11 +216,18 @@ pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &optio
 }
 
 bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt) {
-    if(spawnedProcesses.find(evt.id) == spawnedProcesses.end()) {
-        return false;
+    std::lock_guard<std::mutex> guard(spawnedProcessesLock);
+
+    auto it = spawnedProcesses.find(evt.id);
+    if(it == spawnedProcesses.end()) {
+    return false;
     }
 
-    TinyProcessLib::Process *childProcess = spawnedProcesses[evt.id];
+    TinyProcessLib::Process *childProcess = it->second;
+
+    if(childProcess == nullptr) {
+    return false;
+    }
 
     if(evt.type == "exit") {
         childProcess->kill();
