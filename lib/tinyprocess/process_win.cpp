@@ -298,7 +298,7 @@ void Process::kill(bool /*force*/) noexcept {
   std::lock_guard<std::mutex> lock(close_mutex);
   if(data.id > 0 && !closed) {
     HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if(snapshot) {
+    if(snapshot != INVALID_HANDLE_VALUE) {
       PROCESSENTRY32 process;
       ZeroMemory(&process, sizeof(process));
       process.dwSize = sizeof(process);
@@ -325,7 +325,7 @@ void Process::kill(id_type id, bool /*force*/) noexcept {
     return;
 
   HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-  if(snapshot) {
+  if(snapshot != INVALID_HANDLE_VALUE) {
     PROCESSENTRY32 process;
     ZeroMemory(&process, sizeof(process));
     process.dwSize = sizeof(process);

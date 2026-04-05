@@ -92,7 +92,13 @@ bool init() {
 
         // String to actual types
         if(cfgOverride.convertTo == "int") {
-            patch["value"] = stoi(cfgOverride.value);
+            try {
+                patch["value"] = stoi(cfgOverride.value);
+            }
+            catch(const exception &e) {
+                debug::log(debug::LogTypeError, e.what());
+                continue;
+            }
         }
         else if(cfgOverride.convertTo == "bool") {
             patch["value"] = cfgOverride.value == "true";
