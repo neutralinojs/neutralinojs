@@ -74,6 +74,8 @@ struct WindowOptions {
     string injectScript = "";
     int x = 0;
     int y = 0;
+    string startupLoaderType = "system";
+    string startupLoaderImage = "";
 };
 
 struct WindowMenuItem {

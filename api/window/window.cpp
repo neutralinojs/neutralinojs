@@ -1330,6 +1330,9 @@ bool init(const json &windowOptions) {
     if(helpers::hasField(windowOptions, "skipTaskbar"))
         windowProps.skipTaskbar = windowOptions["skipTaskbar"].get<bool>();
 
+        windowProps.startupLoaderType = settings::getStartupLoaderType();
+        windowProps.startupLoaderImage = settings::getStartupLoaderImage();
+
     if(!__createWindow()) {
         return false;
     }

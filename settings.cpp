@@ -377,4 +377,25 @@ json getOptionForCurrentMode(const string &key) {
     return value;
 }
 
+string getStartupLoaderType() {
+    json loader = settings::getOptionForCurrentMode("startupLoader");
+    
+    if(!loader.is_null() && loader.contains("type")) {
+        string type = loader["type"];
+        if(type == "none" || type == "system" || type == "image") {
+            return type;
+        }
+    }
+    return "system"; // default
+}
+
+string getStartupLoaderImage() {
+    json loader = settings::getOptionForCurrentMode("startupLoader");
+
+    if(!loader.is_null() && loader.contains("image")) {
+        return loader["image"];
+    }
+    return "";
+}
+
 } // namespace settings
