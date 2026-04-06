@@ -63,7 +63,18 @@ fs::FileReaderResult __getFileFromBundle(const string &filename) {
             return fileReaderResult;
         }
         unsigned long size = p.first;
-        unsigned long uOffset = stoi(p.second);
+        unsigned long uOffset = 0;
+        try {
+            uOffset = stoi(p.second);
+        }
+        catch(const exception& e) {
+            debug::log(debug::LogTypeError,
+                "Invalid resource offset in bundle for file: " + filename +
+                ". Value: \"" + p.second + "\"");
+            fileReaderResult.status = errors::NE_RS_TREEGER;
+            asarArchive.close();
+            return fileReaderResult;
+        }
 
         vector<char>fileBuf ( size );
         asarArchive.seekg(asarHeaderSize + uOffset);
@@ -91,7 +102,17 @@ fs::FileReaderResult __getFileFromEmbedded(const string &filename) {
 
         const unsigned char* bytes = (const unsigned char*)resource_ptr;
         unsigned long size = p.first;
-        unsigned long uOffset = stoi(p.second);
+        unsigned long uOffset = 0;
+        try {
+            uOffset = stoi(p.second);
+        }
+        catch(const exception& e) {
+            debug::log(debug::LogTypeError,
+                "Invalid resource offset in embedded binary for file: " + filename +
+                ". Value: \"" + p.second + "\"");
+            fileReaderResult.status = errors::NE_RS_TREEGER;
+            return fileReaderResult;
+        }
 
         vector<char>fileBuf ( size );
         for (size_t i = asarHeaderSize + uOffset; i < asarHeaderSize + uOffset + size; i++) {
