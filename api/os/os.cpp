@@ -88,6 +88,20 @@ bool isTrayInitialized() {
 void cleanupTray() {
     if(os::isTrayInitialized()) {
         tray_exit();
+#if defined(_WIN32)
+        if (tray.icon) {
+            DestroyIcon(tray.icon);
+            tray.icon = nullptr;
+        }
+#elif defined(__APPLE__)
+        if (tray.icon) {
+            ((void (*)(id, SEL))objc_msgSend)(tray.icon, sel_registerName("release"));
+            tray.icon = nullptr;
+        }
+#elif defined(__linux__) || defined(__FreeBSD__)
+        delete[] tray.icon;
+        tray.icon = nullptr;
+#endif
     }
 }
 
@@ -733,6 +747,9 @@ json setTray(const json &input) {
         tray.icon = helpers::cStrCopy(fullIconPath);
 
         #elif defined(_WIN32)
+        if (tray.icon) {
+            DestroyIcon(tray.icon);
+        }
         fs::FileReaderResult fileReaderResult = resources::getFile(iconPath);
         string iconDataStr = fileReaderResult.data;
         const char *iconData = iconDataStr.c_str();
@@ -743,6 +760,9 @@ json setTray(const json &input) {
         pStream->Release();
 
         #elif defined(__APPLE__)
+        if (tray.icon) {
+            ((void (*)(id, SEL))objc_msgSend)(tray.icon, sel_registerName("release"));
+        }
         fs::FileReaderResult fileReaderResult = resources::getFile(iconPath);
         string iconDataStr = fileReaderResult.data;
         const char *iconData = iconDataStr.c_str();
