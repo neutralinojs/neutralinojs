@@ -426,7 +426,7 @@ The Neutralinojs framework typically loads the application configuration content
 - Add a way to set current working directory for process creation functions: `os.execCommand(command, options)` now supports `cwd` via the options object and `os.spawnProcess(command, cwd)` accepts currently working directory via the second string parameter.
 
 ### Improvements/bugfixes
-- Fix Unicode charactor issues in the tray menu on Windows.
+- Fix Unicode character issues in the tray menu on Windows.
 - Avoid including null bytes to file reader events initiated by the `filesystem.openFile` function.
 - Discard `window` method executions on non-window modes.
 
@@ -540,7 +540,7 @@ To solve this issue, we offer an event-based file stream API with the following 
 
 #### Functions
 
-- `filesystem.openFile`: Creates a file stream by openning a file.
+- `filesystem.openFile`: Creates a file stream by opening a file.
 - `filesystem.updateOpenedFile`: Triggers a file `read`/`readAll` event or sets the file cursor.
 - `filesystem.getOpenedFileInfo`: Returns (awaited) information about the file stream (Props: `id`, `eof`, `pos`, and `lastRead`)
 
@@ -560,7 +560,7 @@ To solve this issue, we offer an event-based file stream API with the following 
 Added the `storage.getKeys` function to get an array of Neutralinojs storage keys. Now, developers don't need to write their own functions to retrieve storage keys with the filesystem API.
 
 ### API: computer.getMousePosition
-Returns the current mouse cursor position via a JavaScript object that has `x` and `y` props. This function is helpful for develping interactive desktop widgets on all supported platforms.
+Returns the current mouse cursor position via a JavaScript object that has `x` and `y` props. This function is helpful for developing interactive desktop widgets on all supported platforms.
 
 ### Bugfixes/improvements
 - Replaced string error codes with enums in the C++ source code.
@@ -749,7 +749,7 @@ Use `exportAuthInfo` to write auth details to `${NL_PATH}/.tmp/auth_info.json`. 
 ### Events
 - `appClientConnect` and `appClientDisconnect`: Occurs when a new app instance is launched and closed respectively.
 - `extClientConnect` and `extClientDisconnect`: Occurs when a new extension is connected and disconnected respectively.
-- `extensionReady` can be used to implement immediate extension calls. This is implemented from the client-side with `extensions.getStats` and `extClientConnect`. This event gurantees that it will be triggered regardless of the extension's start time.
+- `extensionReady` can be used to implement immediate extension calls. This is implemented from the client-side with `extensions.getStats` and `extClientConnect`. This event guarantees that it will be triggered regardless of the extension's start time.
 
 ### Error codes
 - `NE_EX_EXTNOTC`: Thrown by `extensions.dispatch` if the target extension is not connected.
