@@ -606,9 +606,39 @@ public:
 
     ((void (*)(id, SEL, id))objc_msgSend)(m_window, "setContentView:"_sel,
                                           m_webview);
-    ((void (*)(id, SEL, id))objc_msgSend)(m_window, "makeKeyAndOrderFront:"_sel,
-                                          nullptr);
-  }
+   ((void (*)(id, SEL, id))objc_msgSend)(m_window, "makeKeyAndOrderFront:"_sel,
+                                      nullptr);
+
+// ---- FIX: macOS Inspector Handling ----
+// Prevents NSWindow warning and ensures proper inspector behavior
+if (m_webview) {
+
+    SEL respondsSel = sel_registerName("respondsToSelector:");
+    SEL setInspectableSel = sel_registerName("_setInspectable:");
+    SEL inspectorSel = sel_registerName("_inspector");
+    SEL showSel = sel_registerName("show");
+
+    // Enable inspectable (required for macOS 13.3+)
+    if (((BOOL (*)(id, SEL, SEL))objc_msgSend)(
+            m_webview, respondsSel, setInspectableSel)) {
+
+        ((void (*)(id, SEL, BOOL))objc_msgSend)(
+            m_webview, setInspectableSel, (BOOL)1);
+    }
+
+    // Open inspector only in debug mode and when requested
+    if (debug && openInspector &&
+        ((BOOL (*)(id, SEL, SEL))objc_msgSend)(
+            m_webview, respondsSel, inspectorSel)) {
+
+        id inspector = ((id (*)(id, SEL))objc_msgSend)(
+            m_webview, inspectorSel);
+
+        if (inspector) {
+            ((void (*)(id, SEL))objc_msgSend)(inspector, showSel);
+        }
+    }
+}
   ~cocoa_wkwebview_engine() { close(); }
   void *window() { return (void *)m_window; }
   void *wv() { return (void *)m_webview; }

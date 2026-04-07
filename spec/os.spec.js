@@ -532,7 +532,7 @@ describe('os.spec: os namespace tests', () => {
                 try {
                     await Neutralino.os.open(12345);
                 } catch (error) {
-                    __close(error.code);
+                    await __close(error.code);
                 }
             `);
             assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
