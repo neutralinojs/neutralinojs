@@ -165,6 +165,8 @@ void startAsync() {
 
 void stop() {
     server->stop_listening();
+    delete server;
+    server = nullptr;
 }
 
 void handleMessage(websocketpp::connection_hdl handler, websocketserver::message_ptr msg) {
