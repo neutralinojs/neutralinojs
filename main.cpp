@@ -26,6 +26,7 @@
 #define NEU_APP_LOG_FILE "/neutralinojs.log"
 #define NEU_APP_LOG_FORMAT "%level %datetime %msg %loc %user@%host"
 #define ELPP_THREAD_SAFE
+#define NEU_APP_WAIT_INTERVAL_MS 20000
 
 INITIALIZE_EASYLOGGINGPP
 
@@ -36,7 +37,7 @@ string navigationUrl = "";
 
 void __wait() {
     while(true) {
-        this_thread::sleep_for(20000ms);
+        this_thread::sleep_for(chrono::milliseconds(NEU_APP_WAIT_INTERVAL_MS));
     }
 }
 
@@ -172,7 +173,7 @@ void __initExtra() {
 #if defined(_WIN32)
 void __attachConsole() {
     FILE* fp;
-    if(AttachConsole(ATTACH_PARENT_PROCESS)) { 
+    if(AttachConsole(ATTACH_PARENT_PROCESS)) {
         freopen_s(&fp, "CONIN$", "r", stdin);
         freopen_s(&fp, "CONOUT$", "w", stdout);
         freopen_s(&fp, "CONOUT$", "w", stderr);
