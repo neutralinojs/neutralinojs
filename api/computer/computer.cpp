@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include <cstdint>
 #include <string>
 #include "helpers.h"
 #include "errors.h"
@@ -11,6 +11,9 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/XTest.h>
 #include <cstdlib>
+#include <fstream>
+#include <sstream>
+#include <unistd.h>
 
 #elif defined(__FreeBSD__)
 #include <unistd.h>
@@ -25,6 +28,7 @@
 #include <sys/sysctl.h>
 #include <CoreGraphics/CoreGraphics.h>
 #include <CoreFoundation/CoreFoundation.h>
+#include <mach/mach.h>
 
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
@@ -472,7 +476,91 @@ json sendKey(const json &input) {
     output["success"] = true;
     return output;
 }
+json getCPUUsage(const json &input) {
+    json output;
+    double usage = -1.0;
 
+    #if defined(_WIN32)
+    FILETIME idleTime1, kernelTime1, userTime1;
+    FILETIME idleTime2, kernelTime2, userTime2;
+
+    if(GetSystemTimes(&idleTime1, &kernelTime1, &userTime1)) {
+        Sleep(100);
+        if(GetSystemTimes(&idleTime2, &kernelTime2, &userTime2)) {
+            auto fileTimeToUint64 = [](const FILETIME &ft) -> uint64_t {
+                return ((uint64_t)ft.dwHighDateTime << 32) | ft.dwLowDateTime;
+            };
+
+            uint64_t idle   = fileTimeToUint64(idleTime2)   - fileTimeToUint64(idleTime1);
+            uint64_t kernel = fileTimeToUint64(kernelTime2) - fileTimeToUint64(kernelTime1);
+            uint64_t user   = fileTimeToUint64(userTime2)   - fileTimeToUint64(userTime1);
+            uint64_t total  = kernel + user;
+
+            if(total > 0)
+                usage = 100.0 * (1.0 - (double)idle / (double)total);
+        }
+    }
+
+    #elif defined(__linux__)
+    auto readCPUStat = []() -> vector<uint64_t> {
+        ifstream file("/proc/stat");
+        string line;
+        getline(file, line);
+        istringstream ss(line.substr(5));
+        vector<uint64_t> times;
+        uint64_t val;
+        while(ss >> val) times.push_back(val);
+        return times;
+    };
+
+    auto times1 = readCPUStat();
+    usleep(100000);
+    auto times2 = readCPUStat();
+
+    if(!times1.empty() && !times2.empty()) {
+        uint64_t idle1 = times1[3], idle2 = times2[3];
+        uint64_t total1 = 0, total2 = 0;
+        for(auto t : times1) total1 += t;
+        for(auto t : times2) total2 += t;
+
+        uint64_t totalDiff = total2 - total1;
+        uint64_t idleDiff  = idle2  - idle1;
+
+        if(totalDiff > 0)
+            usage = 100.0 * (1.0 - (double)idleDiff / (double)totalDiff);
+    }
+
+    #elif defined(__APPLE__)
+    auto getCPUTicks = [](uint64_t &total, uint64_t &idle) {
+        host_cpu_load_info_data_t cpuInfo;
+        mach_msg_type_number_t count = HOST_CPU_LOAD_INFO_COUNT;
+        if(host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO,
+            (host_info_t)&cpuInfo, &count) == KERN_SUCCESS) {
+            total = 0;
+            for(int i = 0; i < CPU_STATE_MAX; i++)
+                total += cpuInfo.cpu_ticks[i];
+            idle = cpuInfo.cpu_ticks[CPU_STATE_IDLE];
+            return true;
+        }
+        return false;
+    };
+
+    uint64_t total1, idle1, total2, idle2;
+    if(getCPUTicks(total1, idle1)) {
+        usleep(100000);
+        if(getCPUTicks(total2, idle2)) {
+            uint64_t totalDiff = total2 - total1;
+            uint64_t idleDiff  = idle2  - idle1;
+            if(totalDiff > 0)
+                usage = 100.0 * (1.0 - (double)idleDiff / (double)totalDiff);
+        }
+    }
+    #endif
+
+    output["returnValue"]["usage"] = usage;
+    output["success"] = true;
+    return output;
+}
 
 } // namespace controllers
 } // namespace computer
