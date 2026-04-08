@@ -11,11 +11,18 @@ using json = nlohmann::json;
 
 namespace extensions {
 
+struct LoadedExtension {
+    string id;
+    int virtualPid = -1;
+};
+
 void init();
-void loadOne(const string &extensionId);
+void loadOne(const string &extensionId, int virtualPid = -1);
 vector<string> getLoaded();
+vector<LoadedExtension> getLoadedExtensions();
 bool isLoaded(const string &extensionId);
 bool isInitialized();
+void cleanup();
 
 } // namesapce extensions
 
