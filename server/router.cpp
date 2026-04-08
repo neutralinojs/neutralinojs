@@ -287,15 +287,14 @@ map<string, string> getMounts() {
 
 router::Response getAsset(string path, const string &prependData) {
     router::Response response;
-    vector<string> split = helpers::split(path, '.');
-
-    if(split.size() < 2) {
-        if(path.back() != '/')
-            path += "/";
-        return getAsset(path + "index.html", prependData);
+    string extension = "";
+    size_t slashPos = path.find_last_of('/');
+    string fileName = slashPos == string::npos ? path : path.substr(slashPos + 1);
+    bool hasExtension = !fileName.empty() && fileName.find('.') != string::npos;
+    if(hasExtension) {
+        size_t dotPos = fileName.find_last_of('.');
+        extension = fileName.substr(dotPos + 1);
     }
-
-    string extension = split[split.size() - 1];
     map<string, string> mimeTypes = {
         // Plain text files
         {"css", "text/css"},
@@ -370,6 +369,16 @@ router::Response getAsset(string path, const string &prependData) {
 
     if(!foundMountedPath) {
         fileReaderResult = resources::getFile(path);
+    }
+
+    // If the requested path has no extension and cannot be resolved,
+    // treat it as a directory request and fallback to /index.html.
+    if(fileReaderResult.status != errors::NE_ST_OK && !hasExtension) {
+        string indexPath = path;
+        if(indexPath.back() != '/') {
+            indexPath += "/";
+        }
+        return getAsset(indexPath + "index.html", prependData);
     }
     
     if(fileReaderResult.status != errors::NE_ST_OK) {

@@ -71,6 +71,28 @@ describe('server.spec: server namespace tests', () => {
             assert.ok(typeof output === 'object', 'Expected output is an object');
             assert.ok(output.fetch1 === 200, 'The file request to a mounted directory succeeds');
         });
+
+        it('serves mounted files with no extension', async () => {
+            runner.run(`
+                const response = {};
+                const targetPath = NL_PATH + '/.tmp/test-mount-noext';
+                await Neutralino.filesystem.createDirectory(targetPath);
+                await Neutralino.filesystem.writeFile(targetPath + '/Beast', 'Hello');
+
+                await Neutralino.server.mount('/project/cards', targetPath);
+
+                const fileResponse = await fetch('/project/cards/Beast');
+                response.status = fileResponse.status;
+                response.body = await fileResponse.text();
+
+                await Neutralino.server.unmount('/project/cards');
+                await __close(JSON.stringify(response));
+            `);
+            const output = JSON.parse(runner.getOutput());
+            assert.ok(typeof output === 'object', 'Expected output is an object');
+            assert.ok(output.status === 200, 'Expected extensionless mounted file request to succeed');
+            assert.ok(output.body === 'Hello', 'Expected extensionless file content to be served correctly');
+        });
     });
 
 });
