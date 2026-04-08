@@ -55,6 +55,7 @@
 #include "api/debug/debug.h"
 #include "api/computer/computer.h"
 
+
 using namespace std;
 using json = nlohmann::json;
 #if defined(_WIN32)
@@ -677,6 +678,9 @@ bool __createWindow() {
     if(windowProps.fullScreen)
         window::setFullScreen();
 
+    if(windowProps.darkMode)
+        window::setDarkMode(windowProps.darkMode);
+
     if(windowProps.icon != "")
         window::setIcon(windowProps.icon);
 
@@ -1104,6 +1108,15 @@ void setBorderless(bool borderless) {
     #endif
 }
 
+
+void setDarkMode(bool useDarkMode) {
+    #if defined(__linux__) || defined(__FreeBSD__)
+    #elif defined(__APPLE__)
+    #elif defined(_WIN32)
+		TrySetWindowTheme(windowHandle, useDarkMode);
+    #endif	
+}
+
 void setSkipTaskbar(bool skip) {
     #if defined(__linux__) || defined(__FreeBSD__)
     gdk_window_set_skip_taskbar_hint(gtk_widget_get_window(windowHandle), skip);
@@ -1299,6 +1312,9 @@ bool init(const json &windowOptions) {
 
     if(helpers::hasField(windowOptions, "borderless"))
         windowProps.borderless = windowOptions["borderless"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "darkMode"))
+        windowProps.darkMode = windowOptions["darkMode"].get<bool>();
 
     if(helpers::hasField(windowOptions, "maximize"))
         windowProps.maximize = windowOptions["maximize"].get<bool>();
@@ -1543,6 +1559,17 @@ json setAlwaysOnTop(const json &input) {
         onTop = input["onTop"].get<bool>();
     }
     window::setAlwaysOnTop(onTop);
+    output["success"] = true;
+    return output;
+}
+
+json setDarkMode(const json &input) {
+    json output;
+    bool darkMode = true;
+    if(helpers::hasField(input, "darkMode")) {
+        darkMode = input["darkMode"].get<bool>();
+    }
+    window::setDarkMode(darkMode);
     output["success"] = true;
     return output;
 }

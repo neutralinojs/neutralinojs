@@ -293,6 +293,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
         {"--window-y", {"/modes/window/y", "int"}},
         {"--window-full-screen", {"/modes/window/fullScreen", "bool"}},
         {"--window-always-on-top", {"/modes/window/alwaysOnTop", "bool"}},
+        {"--window-dark-mode", {"/modes/window/darkMode", "bool"}},
         {"--window-enable-inspector", {"/modes/window/enableInspector", "bool"}},
         {"--window-open-inspector-on-startup", {"/modes/window/openInspectorOnStartup", "bool"}},
         {"--window-borderless", {"/modes/window/borderless", "bool"}},
