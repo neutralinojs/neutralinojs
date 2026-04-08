@@ -355,13 +355,16 @@ fs::DirReaderResult readDirectory(const string &path, bool recursive) {
 string applyPathConstants(const string &path) {
     string newPath = regex_replace(path, regex("\\$\\{NL_PATH\\}"), settings::getAppPath());
 
-    vector<string> pathNames = {"data", "cache", "documents", 
+    vector<string> pathNames = {"data", "cache", "documents",
                     "pictures", "music", "video", "downloads",
                     "saveGames1", "saveGames2", "temp"};
     for(const string &pathName: pathNames) {
         string varSegment = pathName;
-        transform(varSegment.begin(), varSegment.end(), varSegment.begin(), ::toupper); 
-        newPath = regex_replace(newPath, regex("\\$\\{NL_OS" + varSegment + "PATH\\}"), os::getPath(pathName));
+        transform(varSegment.begin(), varSegment.end(), varSegment.begin(), ::toupper);
+        string resolvedPath = os::getPath(pathName);
+        if(!resolvedPath.empty()) {
+            newPath = regex_replace(newPath, regex("\\$\\{NL_OS" + varSegment + "PATH\\}"), resolvedPath);
+        }
     }
     return newPath;
 }
@@ -788,7 +791,7 @@ json getRelativePath(const json &input) {
     if(helpers::hasField(input, "base")) {
         base = input["base"].get<string>();
     }
-    
+
     string relPath = FS_CONVWSTRN(filesystem::relative(CONVSTR(path), CONVSTR(base)));
     output["returnValue"] = relPath;
     output["success"] = true;
@@ -803,7 +806,7 @@ json getPathParts(const json &input) {
     }
     string path = input["path"].get<string>();
     auto pathObj = filesystem::path(CONVSTR(path));
-    
+
     json pathParts = {
         {"rootName", FS_CONVWSTRN(pathObj.root_name())},
         {"rootDirectory", FS_CONVWSTRN(pathObj.root_directory())},
@@ -826,14 +829,14 @@ json getPermissions(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
-    
+
     fs::FileStats fileStats = fs::getStats(path);
     if(fileStats.status != errors::NE_ST_OK) {
         output["error"] = errors::makeErrorPayload(fileStats.status, path);
         return output;
     }
     auto perms = filesystem::status(CONVSTR(path)).permissions();
-    
+
     json permissions = {
         {"all", filesystem::perms::all == (perms & filesystem::perms::all)},
         {"ownerAll", filesystem::perms::owner_all == (perms & filesystem::perms::owner_all)},
@@ -849,7 +852,7 @@ json getPermissions(const json &input) {
         {"othersWrite", filesystem::perms::none != (perms & filesystem::perms::others_write)},
         {"othersExec", filesystem::perms::none != (perms & filesystem::perms::others_exec)}
     };
-    
+
     output["returnValue"] = permissions;
     output["success"] = true;
     return output;
@@ -862,7 +865,7 @@ json setPermissions(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
-    
+
     error_code ec;
     filesystem::perms permissions = filesystem::perms::none;
     filesystem::perm_options permMode = filesystem::perm_options::replace;
@@ -900,10 +903,10 @@ json setPermissions(const json &input) {
         if(mode == "REPLACE") permMode = filesystem::perm_options::replace;
         if(mode == "REMOVE") permMode = filesystem::perm_options::remove;
     }
-    
+
     filesystem::permissions(CONVSTR(path), permissions, permMode, ec);
 
-    if(!ec) { 
+    if(!ec) {
         output["returnValue"] = permissions;
         output["success"] = true;
     }
@@ -925,7 +928,7 @@ json getJoinedPath(const json &input) {
     for(const string &path: paths) {
         joinedPath /= filesystem::path(CONVSTR(path));
     }
-    
+
     output["returnValue"] = FS_CONVWSTRN(filesystem::weakly_canonical(joinedPath));
     output["success"] = true;
     return output;
@@ -938,7 +941,7 @@ json getNormalizedPath(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
-    
+
     output["returnValue"] = helpers::normalizePath(path);
     output["success"] = true;
     return output;
@@ -951,7 +954,7 @@ json getUnnormalizedPath(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
-    
+
     output["returnValue"] = helpers::unNormalizePath(path);
     output["success"] = true;
     return output;
