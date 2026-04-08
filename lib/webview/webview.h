@@ -863,6 +863,13 @@ public:
     m_controller->put_Bounds(bounds);
   }
 
+  void focus(){
+    if(m_controller == nullptr){
+      return;
+    }
+    m_controller->MoveFocus(COREWEBVIEW2_MOVE_FOCUS_REASON_PROGRAMMATIC);
+  }
+
   void navigate(const std::string url) {
     auto wurl = to_lpwstr(url);
     m_webview->Navigate(wurl);
@@ -991,8 +998,10 @@ public:
               if(!windowStateChange) break;
               if(LOWORD(wp) == WA_INACTIVE)
                 windowStateChange(WEBVIEW_WINDOW_BLUR);
-              else
+              else{
                 windowStateChange(WEBVIEW_WINDOW_FOCUS);
+                w->m_browser->focus();
+              }
               break;
             case WM_DESTROY:
               PostQuitMessage(processExitCode);
