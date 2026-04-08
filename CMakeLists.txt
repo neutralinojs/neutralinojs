@@ -189,6 +189,7 @@ if(WIN32)
       /EHsc
       /Os
       /Gy
+      $<IF:$<CONFIG:Debug>,/MTd,/MT>  # Static MSVC runtime (no VC redistributable required)
     )
     target_link_options(${PROJECT_NAME} PRIVATE
       /OPT:REF
