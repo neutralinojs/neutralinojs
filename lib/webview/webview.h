@@ -73,6 +73,7 @@ using eventHandler_t = std::function<void(int)>;
 
 static eventHandler_t windowStateChange;
 static int processExitCode = 0;
+static std::function<void(const std::string&)> newWindowHandler;
 
 struct WindowMenuItem {
   std::string id;
@@ -107,6 +108,7 @@ struct WindowMenuItem {
 
 // webkit2gtk definitions
 using WebKitWebView = struct _WebKitWebView;
+using WebKitNavigationAction = struct _WebKitNavigationAction;
 using WebKitSettings = struct _WebKitSettings;
 using WebKitWebInspector = struct _WebKitWebInspector;
 using WebKitUserContentManager = struct _WebKitUserContentManager;
@@ -303,6 +305,29 @@ public:
     }
 
     gtk_widget_show_all(m_window);
+
+    g_signal_connect(G_OBJECT(m_webview), "create",
+    G_CALLBACK(+[](WebKitWebView*, WebKitNavigationAction* action,
+                   gpointer) -> GtkWidget* {
+        using get_request_fn = std::add_pointer<void*(void*)>::type;
+        using get_uri_fn = std::add_pointer<const char*(void*)>::type;
+
+        auto webkit_navigation_action_get_request = (get_request_fn)dlsym(dlib, "webkit_navigation_action_get_request");
+        auto webkit_uri_request_get_uri = (get_uri_fn)dlsym(dlib, "webkit_uri_request_get_uri");
+
+        if(webkit_navigation_action_get_request && webkit_uri_request_get_uri) {
+            void* request = webkit_navigation_action_get_request(action);
+            const char* uri = webkit_uri_request_get_uri(request);
+            if(uri) {
+                std::string uriStr(uri);
+                if(uriStr.find("http://localhost") != 0 && uriStr.find("http://127.0.0.1") != 0 &&newWindowHandler) {
+                    newWindowHandler(uriStr);
+                }
+            }
+        }
+        return nullptr;
+    }),
+    nullptr);
   }
   void *window() { return (void *)m_window; }
   void *wv() { return (void *)m_webview; }
@@ -608,6 +633,27 @@ public:
                                           m_webview);
     ((void (*)(id, SEL, id))objc_msgSend)(m_window, "makeKeyAndOrderFront:"_sel,
                                           nullptr);
+
+    auto uicls = objc_allocateClassPair((Class)"NSResponder"_cls, "WebViewUIDelegate", 0);
+    class_addProtocol(uicls, objc_getProtocol("WKUIDelegate"));
+    class_addMethod(uicls,
+        "webView:createWebViewWithConfiguration:forNavigationAction:windowFeatures:"_sel,
+        (IMP)(+[](id, SEL, id, id, id action, id) -> id {
+            id request = ((id(*)(id,SEL))objc_msgSend)(action, "request"_sel);
+            id nsurl  = ((id(*)(id,SEL))objc_msgSend)(request, "URL"_sel);
+            id urlStr = ((id(*)(id,SEL))objc_msgSend)(nsurl, "absoluteString"_sel);
+            const char* uri = ((const char*(*)(id,SEL))objc_msgSend)(urlStr, "UTF8String"_sel);
+            if(uri) {
+                std::string uriStr(uri);
+                if(uriStr.find("http://localhost") != 0 && uriStr.find("http://127.0.0.1") != 0 && newWindowHandler) {
+                    newWindowHandler(uriStr);
+                }
+            }
+            return nullptr;
+        }), "@@:@@@@");
+    objc_registerClassPair(uicls);
+    auto uidelegate = ((id(*)(id,SEL))objc_msgSend)((id)uicls, "new"_sel);
+    ((void(*)(id,SEL,id))objc_msgSend)(m_webview, "setUIDelegate:"_sel, uidelegate);
   }
   ~cocoa_wkwebview_engine() { close(); }
   void *window() { return (void *)m_window; }
@@ -915,6 +961,22 @@ private:
       controller->get_CoreWebView2(&webview);
       webview->add_WebMessageReceived(this, &token);
       webview->add_PermissionRequested(this, &token);
+      
+      webview->add_NewWindowRequested(
+        Callback<ICoreWebView2NewWindowRequestedEventHandler>(
+            [](ICoreWebView2* sender,
+              ICoreWebView2NewWindowRequestedEventArgs* args) -> HRESULT {
+                LPWSTR uri;
+                args->get_Uri(&uri);
+                std::wstring ws(uri);
+                std::string url(ws.begin(), ws.end());
+                if(url.find("http://localhost") != 0 && url.find("http://127.0.0.1") != 0 && newWindowHandler) {
+                    newWindowHandler(url);
+                }
+                args->put_Handled(TRUE);
+                CoTaskMemFree(uri);
+                return S_OK;
+            }).Get(), &token);
 
       m_cb(controller);
       return S_OK;
@@ -1267,6 +1329,10 @@ public:
 
   void setEventHandler(eventHandler_t handler) {
     windowStateChange = handler;
+  }
+  
+  void setNewWindowHandler(std::function<void(const std::string&)> handler) {
+    newWindowHandler = handler;
   }
 
   int get_init_code() {
