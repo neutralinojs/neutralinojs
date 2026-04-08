@@ -23,6 +23,8 @@
 
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
 #include <unistd.h>
+#include <pwd.h>
+#include <sys/types.h>
 extern char **environ;
 #endif
 
@@ -36,6 +38,7 @@ extern char **environ;
 #include <tchar.h>
 #include <gdiplus.h>
 #include <shlwapi.h>
+#include <shlobj.h>
 
 #pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "Gdiplus.lib")
@@ -238,6 +241,23 @@ bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt) {
     return true;
 }
 
+static string __getHomePath() {
+    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+        const char* home = getenv("HOME");
+        if(getuid() != 0 && home)
+            return string(home);
+        return string(getpwuid(getuid())->pw_dir);
+    #elif defined(_WIN32)
+        PWSTR homePath = nullptr;
+        if(SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Profile, 0, nullptr, &homePath))) {
+            string path = FS_CONVWSTR(homePath);
+            CoTaskMemFree(homePath);
+            return path;
+        }
+    #endif
+    return "";
+}
+
 string getPath(const string &name) {
     string path = "";
     if(name == "config")
@@ -262,6 +282,10 @@ string getPath(const string &name) {
         path = sago::getSaveGamesFolder2();
     else if(name == "temp")
         path = FS_CONVWSTR(filesystem::temp_directory_path());
+    else if(name == "desktop")
+        path = sago::getDesktopFolder();
+    else if(name == "home")
+        path = __getHomePath();
     return helpers::normalizePath(path);
 }
 
