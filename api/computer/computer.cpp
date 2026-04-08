@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <string>
-#include "helpers.h"
-#include "errors.h"
+#include <map>
 
 #if defined(__linux__)
 #include <sys/sysinfo.h>
@@ -11,6 +10,11 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/XTest.h>
 #include <cstdlib>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <netpacket/packet.h>
 
 #elif defined(__FreeBSD__)
 #include <unistd.h>
@@ -18,6 +22,11 @@
 #include <sys/sysctl.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/XTest.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <net/if_dl.h>
 
 #elif defined(__APPLE__)
 #include <unistd.h>
@@ -25,11 +34,23 @@
 #include <sys/sysctl.h>
 #include <CoreGraphics/CoreGraphics.h>
 #include <CoreFoundation/CoreFoundation.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <net/if_dl.h>
 
 #elif defined(_WIN32)
-#define _WINSOCKAPI_
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#define _HAS_STD_BYTE 0
+#include <winsock2.h>
 #include <windows.h>
+#include <ws2tcpip.h>
+#include <iphlpapi.h>
 #endif
+
+#include "helpers.h"
+#include "errors.h"
 
 
 #include <infoware/system.hpp>
@@ -284,6 +305,122 @@ bool sendKey(unsigned int keyCode, computer::SendKeyState keyState = computer::S
     #endif
 }
 
+json getNetworkInterfaces() {
+    json interfaces = json::array();
+#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+    struct ifaddrs *ifaddr, *ifa;
+    if (getifaddrs(&ifaddr) == -1) {
+        return interfaces;
+    }
+    std::map<std::string, json> ifaceMap;
+
+    for (ifa = ifaddr; ifa != nullptr; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr == nullptr) continue;
+        
+        std::string name = ifa->ifa_name;
+        if (ifaceMap.find(name) == ifaceMap.end()) {
+            ifaceMap[name] = {{"name", name}, {"ipv4", ""}, {"ipv6", ""}, {"mac", ""}};
+        }
+
+        int family = ifa->ifa_addr->sa_family;
+        if (family == AF_INET) {
+            char ip[INET_ADDRSTRLEN];
+            if (inet_ntop(AF_INET, &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr, ip, INET_ADDRSTRLEN)) {
+                ifaceMap[name]["ipv4"] = string(ip);
+            }
+        } else if (family == AF_INET6) {
+            char ip[INET6_ADDRSTRLEN];
+            if (inet_ntop(AF_INET6, &((struct sockaddr_in6*)ifa->ifa_addr)->sin6_addr, ip, INET6_ADDRSTRLEN)) {
+                ifaceMap[name]["ipv6"] = string(ip);
+            }
+        }
+#if defined(__linux__)
+        else if (family == AF_PACKET) {
+            struct sockaddr_ll *s = (struct sockaddr_ll*)ifa->ifa_addr;
+            if (s->sll_halen == 6) {
+                char mac[18];
+                snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x",
+                    s->sll_addr[0], s->sll_addr[1], s->sll_addr[2],
+                    s->sll_addr[3], s->sll_addr[4], s->sll_addr[5]);
+                ifaceMap[name]["mac"] = string(mac);
+            }
+        }
+#elif defined(__APPLE__) || defined(__FreeBSD__)
+        else if (family == AF_LINK) {
+            struct sockaddr_dl *sdl = (struct sockaddr_dl *)ifa->ifa_addr;
+            if (sdl->sdl_alen == 6) {
+                unsigned char *mac_ptr = (unsigned char *)LLADDR(sdl);
+                char mac[18];
+                snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x",
+                    mac_ptr[0], mac_ptr[1], mac_ptr[2],
+                    mac_ptr[3], mac_ptr[4], mac_ptr[5]);
+                ifaceMap[name]["mac"] = string(mac);
+            }
+        }
+#endif
+    }
+    freeifaddrs(ifaddr);
+
+    for (const auto& kv : ifaceMap) {
+        interfaces.push_back(kv.second);
+    }
+#elif defined(_WIN32)
+    ULONG outBufLen = 15000;
+    PIP_ADAPTER_ADDRESSES pAddresses = (IP_ADAPTER_ADDRESSES *)malloc(outBufLen);
+    if (!pAddresses) return interfaces;
+
+    DWORD dwRetVal = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, nullptr, pAddresses, &outBufLen);
+    if (dwRetVal == ERROR_BUFFER_OVERFLOW) {
+        free(pAddresses);
+        pAddresses = (IP_ADAPTER_ADDRESSES *)malloc(outBufLen);
+        if (!pAddresses) return interfaces;
+        dwRetVal = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, nullptr, pAddresses, &outBufLen);
+    }
+
+    if (dwRetVal == NO_ERROR) {
+        PIP_ADAPTER_ADDRESSES pCurrAddresses = pAddresses;
+        while (pCurrAddresses) {
+            json iface = {
+                {"name", helpers::wcstr2str(pCurrAddresses->FriendlyName)},
+                {"ipv4", ""},
+                {"ipv6", ""},
+                {"mac", ""}
+            };
+
+            PIP_ADAPTER_UNICAST_ADDRESS pUnicast = pCurrAddresses->FirstUnicastAddress;
+            while (pUnicast != nullptr) {
+                if (pUnicast->Address.lpSockaddr->sa_family == AF_INET) {
+                    char ip[INET_ADDRSTRLEN];
+                    if (inet_ntop(AF_INET, &((struct sockaddr_in*)pUnicast->Address.lpSockaddr)->sin_addr, ip, INET_ADDRSTRLEN)) {
+                        iface["ipv4"] = string(ip);
+                    }
+                } else if (pUnicast->Address.lpSockaddr->sa_family == AF_INET6) {
+                    char ip[INET6_ADDRSTRLEN];
+                    if (inet_ntop(AF_INET6, &((struct sockaddr_in6*)pUnicast->Address.lpSockaddr)->sin6_addr, ip, INET6_ADDRSTRLEN)) {
+                        iface["ipv6"] = string(ip);
+                    }
+                }
+                pUnicast = pUnicast->Next;
+            }
+
+            if (pCurrAddresses->PhysicalAddressLength == 6) {
+                char mac[18];
+                snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x",
+                    pCurrAddresses->PhysicalAddress[0], pCurrAddresses->PhysicalAddress[1],
+                    pCurrAddresses->PhysicalAddress[2], pCurrAddresses->PhysicalAddress[3],
+                    pCurrAddresses->PhysicalAddress[4], pCurrAddresses->PhysicalAddress[5]);
+                iface["mac"] = string(mac);
+            }
+
+            interfaces.push_back(iface);
+            pCurrAddresses = pCurrAddresses->Next;
+        }
+    }
+    free(pAddresses);
+#endif
+    return interfaces;
+}
+
 namespace controllers {
 
 string __getKernelVariant(const iware::system::kernel_t &variant) {
@@ -391,6 +528,13 @@ json getDisplays(const json &input) {
         output["returnValue"].push_back(displayInfo);
         displayId++;
     }
+    output["success"] = true;
+    return output;
+}
+
+json getNetworkInterfaces(const json &input) {
+    json output;
+    output["returnValue"] = computer::getNetworkInterfaces();
     output["success"] = true;
     return output;
 }

@@ -85,6 +85,7 @@ map<string, router::NativeMethod> methodMap = {
     {"computer.getOSInfo", computer::controllers::getOSInfo},
     {"computer.getCPUInfo", computer::controllers::getCPUInfo},
     {"computer.getDisplays", computer::controllers::getDisplays},
+    {"computer.getNetworkInterfaces", computer::controllers::getNetworkInterfaces},
     {"computer.getMousePosition", computer::controllers::getMousePosition},
     {"computer.setMousePosition", computer::controllers::setMousePosition},
     {"computer.setMouseGrabbing", computer::controllers::setMouseGrabbing},
