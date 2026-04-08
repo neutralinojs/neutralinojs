@@ -23,6 +23,8 @@
 
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
 #include <unistd.h>
+#include <pwd.h>
+#include <sys/types.h>
 extern char **environ;
 #endif
 
@@ -36,6 +38,7 @@ extern char **environ;
 #include <tchar.h>
 #include <gdiplus.h>
 #include <shlwapi.h>
+#include <shlobj.h>
 
 #pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "Gdiplus.lib")
@@ -262,6 +265,22 @@ string getPath(const string &name) {
         path = sago::getSaveGamesFolder2();
     else if(name == "temp")
         path = FS_CONVWSTR(filesystem::temp_directory_path());
+    else if(name == "desktop")
+        path = sago::getDesktopFolder();
+    else if(name == "home") {
+        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+        struct passwd *pw = getpwuid(getuid());
+        if(pw != nullptr) {
+            path = string(pw->pw_dir);
+        }
+        #elif defined(_WIN32)
+        PWSTR homePath = nullptr;
+        if(SHGetKnownFolderPath(FOLDERID_Profile, 0, nullptr, &homePath) == S_OK) {
+            path = helpers::wstr2str(wstring(homePath));
+            CoTaskMemFree(homePath);
+        }
+        #endif
+    }
     return helpers::normalizePath(path);
 }
 
