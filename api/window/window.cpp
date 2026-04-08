@@ -166,10 +166,13 @@ pair<int, int> __getCenterPos(bool useConfigSizes = false) {
     x = (CGDisplayPixelsWide(displayId) - width) / 2;
     y = (CGDisplayPixelsHigh(displayId) - height) / 2;
     #elif defined(_WIN32)
-	RECT screen;
-	GetWindowRect(GetDesktopWindow(), &screen);
-    x = ((screen.right - screen.left) - width) / 2;
-    y = ((screen.bottom - screen.top) - height) / 2;
+    // Use the primary monitor's work area (excludes taskbar) for correct
+    // centering at any DPI zoom level.
+    HMONITOR hMon = MonitorFromPoint({0, 0}, MONITOR_DEFAULTTOPRIMARY);
+    MONITORINFO mi = { sizeof(MONITORINFO) };
+    GetMonitorInfo(hMon, &mi);
+    x = ((mi.rcWork.right  - mi.rcWork.left) - width)  / 2 + mi.rcWork.left;
+    y = ((mi.rcWork.bottom - mi.rcWork.top)  - height) / 2 + mi.rcWork.top;
     #endif
     return make_pair(x, y);
 }
@@ -233,7 +236,12 @@ bool __getEncoderClsid(const WCHAR *format, CLSID *pClsid) {
 
 double __getScaleFactor() {
 	#if defined(_WIN32)
-    return GetDpiForSystem() / 96.0;
+    // Use per-window DPI when available (correct on multi-monitor / mixed zoom setups).
+    // Fall back to system DPI only before the window handle has been created.
+    UINT dpi = (windowHandle != nullptr)
+        ? GetDpiForWindow(windowHandle)
+        : GetDpiForSystem();
+    return dpi / 96.0;
 
 	#elif defined(__APPLE__)
     id screen = ((id (*)(id, SEL))objc_msgSend)(
@@ -617,11 +625,22 @@ bool __createWindow() {
 
     int width = windowProps.sizeOptions.width;
     int height = windowProps.sizeOptions.height;
-    if(windowProps.useLogicalPixels) {
+    #if defined(_WIN32)
+    // On Windows, neutralino.config.json dimensions are logical pixels but
+    // WebView2/Win32 always works in physical pixels. Always scale here so the
+    // window respects the display zoom level (e.g. 125%, 150%).
+    {
         double scale = __getScaleFactor();
-        if(width > 0)  width  = (int)(width  * scale);
+        if(width  > 0) width  = (int)(width  * scale);
         if(height > 0) height = (int)(height * scale);
     }
+    #else
+    if(windowProps.useLogicalPixels) {
+        double scale = __getScaleFactor();
+        if(width  > 0) width  = (int)(width  * scale);
+        if(height > 0) height = (int)(height * scale);
+    }
+    #endif
 
     nativeWindow->set_size(
     width,
@@ -1025,11 +1044,19 @@ window::SizeOptions getSize() {
         height = winPos.bottom - winPos.top;
     }
     #endif
+    #if defined(_WIN32)
+    {
+        double scale = __getScaleFactor();
+        width = (int)(width / scale);
+        height = (int)(height / scale);
+    }
+    #else
     if(windowProps.useLogicalPixels) {
         double scale = __getScaleFactor();
         width = (int)(width / scale);
         height = (int)(height / scale);
    }
+   #endif
 
     windowProps.sizeOptions.width = width;
     windowProps.sizeOptions.height = height;
@@ -1506,11 +1533,19 @@ json setSize(const json &input) {
     int width = windowProps.sizeOptions.width;
     int height = windowProps.sizeOptions.height;
 
+    #if defined(_WIN32)
+    {
+        double scale = __getScaleFactor();
+        if(width > 0)  width  = (int)(width  * scale);
+        if(height > 0) height = (int)(height * scale);
+    }
+    #else
     if(windowProps.useLogicalPixels) {
         double scale = __getScaleFactor();
         if(width > 0)  width  = (int)(width  * scale);
         if(height > 0) height = (int)(height * scale);
     }
+    #endif
 
     nativeWindow->set_size(
         width,

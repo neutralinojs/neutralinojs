@@ -954,6 +954,8 @@ public:
         std::wstring wargs = str2wstr(args);
         SetEnvironmentVariableW(L"WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", wargs.c_str());
     }
+    // Set DPI awareness before window creation so CreateWindow uses physical pixels
+    setDpi();
     if (window == nullptr) {
       HINSTANCE hInstance = GetModuleHandle(nullptr);
       HICON icon = (HICON)LoadImage(
@@ -1084,8 +1086,6 @@ public:
     } else {
       m_window = *(static_cast<HWND *>(window));
     }
-
-    setDpi();
 
     if (transparent) {
       SetWindowLong(m_window, GWL_EXSTYLE, GetWindowLong(m_window, GWL_EXSTYLE) | WS_EX_LAYERED);
@@ -1222,7 +1222,7 @@ private:
       GetProcAddress(user32, "SetProcessDpiAwarenessContext"));
     if (func_win10) {
         // Windows 10+
-        func_win10(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
+        func_win10(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     }
   }
 
