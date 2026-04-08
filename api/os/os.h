@@ -42,6 +42,7 @@ pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &optio
 bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt);
 string getPath(const string &name);
 string getEnv(const string &key);
+string getIP();
 
 namespace controllers {
 
@@ -51,6 +52,7 @@ json updateSpawnedProcess(const json &input);
 json getSpawnedProcesses(const json &input);
 json getEnv(const json &input);
 json getEnvs(const json &input);
+json getIP(const json &input);
 json showOpenDialog(const json &input);
 json showFolderDialog(const json &input);
 json showSaveDialog(const json &input);
