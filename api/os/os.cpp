@@ -26,6 +26,10 @@
 extern char **environ;
 #endif
 
+#if defined(__linux__) || defined(__FreeBSD__)
+#include <cstdlib> // setenv, unsetenv
+#endif
+
 #if defined(__APPLE__)
 #include <objc/objc-runtime.h>
 #endif
@@ -279,6 +283,35 @@ string getEnv(const string &key) {
 
 namespace controllers {
 
+// On Linux, modern GTK4-based zenity routes file dialogs through xdg-desktop-portal
+// by default, which can fail silently on systems without a properly configured portal
+// (e.g., minimal window managers on Arch Linux). Setting GDK_DEBUG=no-portals
+// forces GTK4 to bypass the portal and use the native file chooser directly.
+// See: https://github.com/neutralinojs/neutralinojs/issues/1470
+#if defined(__linux__) || defined(__FreeBSD__)
+void __disableGtkPortal(string &previousGdkDebug) {
+    const char *currentVal = std::getenv("GDK_DEBUG");
+    previousGdkDebug = currentVal ? string(currentVal) : "";
+    string newGdkDebug;
+    if (previousGdkDebug.empty()) {
+        newGdkDebug = "no-portals";
+    } else if (previousGdkDebug.find("no-portals") == string::npos) {
+        newGdkDebug = previousGdkDebug + ",no-portals";
+    } else {
+        return; // no-portals already set, nothing to do
+    }
+    setenv("GDK_DEBUG", newGdkDebug.c_str(), 1);
+}
+
+void __restoreGdkDebug(const string &previousGdkDebug) {
+    if (previousGdkDebug.empty()) {
+        unsetenv("GDK_DEBUG");
+    } else {
+        setenv("GDK_DEBUG", previousGdkDebug.c_str(), 1);
+    }
+}
+#endif
+
 vector<string> __extensionsToVector(const json &filters) {
     vector<string> filtersV = {};
     for (auto &filter: filters) {
@@ -478,7 +511,14 @@ json showOpenDialog(const json &input) {
         defaultPath = input["defaultPath"].get<string>();
     }
 
+#if defined(__linux__) || defined(__FreeBSD__)
+    string previousGdkDebug;
+    __disableGtkPortal(previousGdkDebug);
+#endif
     vector<string> selectedEntries = pfd::open_file(title, defaultPath, filters, option).result();
+#if defined(__linux__) || defined(__FreeBSD__)
+    __restoreGdkDebug(previousGdkDebug);
+#endif
 
     for(string &entry: selectedEntries) {
         entry = helpers::normalizePath(entry);
@@ -503,7 +543,14 @@ json showFolderDialog(const json &input) {
         defaultPath = helpers::unNormalizePath(defaultPath);
     }
 
+#if defined(__linux__) || defined(__FreeBSD__)
+    string previousGdkDebug;
+    __disableGtkPortal(previousGdkDebug);
+#endif
     string selectedEntry = pfd::select_folder(title, defaultPath, pfd::opt::none).result();
+#if defined(__linux__) || defined(__FreeBSD__)
+    __restoreGdkDebug(previousGdkDebug);
+#endif
 
     output["returnValue"] = helpers::normalizePath(selectedEntry);
     output["success"] = true;
@@ -536,7 +583,14 @@ json showSaveDialog(const json &input) {
         defaultPath = helpers::unNormalizePath(defaultPath);
     }
 
+#if defined(__linux__) || defined(__FreeBSD__)
+    string previousGdkDebug;
+    __disableGtkPortal(previousGdkDebug);
+#endif
     string selectedEntry = pfd::save_file(title, defaultPath, filters, option).result();
+#if defined(__linux__) || defined(__FreeBSD__)
+    __restoreGdkDebug(previousGdkDebug);
+#endif
 
     output["returnValue"] = helpers::normalizePath(selectedEntry);
     output["success"] = true;
