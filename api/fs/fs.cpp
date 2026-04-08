@@ -256,6 +256,10 @@ long createWatcher(const string &path) {
 
     __WatcherListener* listener = new __WatcherListener();
     efsw::WatchID watcherId = fileWatcher->addWatch(path, listener, true);
+    if(watcherId < 0) {
+        delete listener;
+        return (long)watcherId;
+    }
     watchListeners[watcherId] = make_pair(listener, path);
     fileWatcher->watch();
     return (long)watcherId;
