@@ -31,6 +31,7 @@
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
 #include <windows.h>
+#include <tlhelp32.h>
 #include <gdiplus.h>
 #include <winuser.h>
 #pragma comment(lib, "Gdiplus.lib")
@@ -42,6 +43,7 @@
 
 #include "lib/json/json.hpp"
 #include "lib/webview/webview.h"
+#include "lib/filedialogs/portable-file-dialogs.h"
 #include "settings.h"
 #include "resources.h"
 #include "helpers.h"
@@ -77,6 +79,80 @@ DWORD savedStyleX;
 RECT savedRect;
 HMENU windowMenu;
 int windowMenuItemId = ID_MENU_FIRST;
+
+wstring __getCurrentExecutableName() {
+    wchar_t exePath[MAX_PATH] = {0};
+    if(GetModuleFileNameW(nullptr, exePath, MAX_PATH) == 0) {
+        return L"";
+    }
+
+    wstring fullPath = exePath;
+    size_t pos = fullPath.find_last_of(L"\\/");
+    return pos == wstring::npos ? fullPath : fullPath.substr(pos + 1);
+}
+
+int __getRunningInstanceCount() {
+    wstring executableName = __getCurrentExecutableName();
+    if(executableName.empty()) {
+        return 1;
+    }
+
+    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if(snapshot == INVALID_HANDLE_VALUE) {
+        return 1;
+    }
+
+    int count = 0;
+    PROCESSENTRY32W processEntry;
+    processEntry.dwSize = sizeof(PROCESSENTRY32W);
+
+    if(Process32FirstW(snapshot, &processEntry)) {
+        do {
+            if(_wcsicmp(processEntry.szExeFile, executableName.c_str()) == 0) {
+                count++;
+            }
+        } while(Process32NextW(snapshot, &processEntry));
+    }
+
+    CloseHandle(snapshot);
+    return count > 0 ? count : 1;
+}
+
+void __closeAllRunningInstances() {
+    wstring executableName = __getCurrentExecutableName();
+    if(executableName.empty()) {
+        app::exit();
+        return;
+    }
+
+    HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if(snapshot == INVALID_HANDLE_VALUE) {
+        app::exit();
+        return;
+    }
+
+    DWORD currentPid = GetCurrentProcessId();
+    PROCESSENTRY32W processEntry;
+    processEntry.dwSize = sizeof(PROCESSENTRY32W);
+
+    if(Process32FirstW(snapshot, &processEntry)) {
+        do {
+            if(_wcsicmp(processEntry.szExeFile, executableName.c_str()) != 0
+                    || processEntry.th32ProcessID == currentPid) {
+                continue;
+            }
+
+            HANDLE process = OpenProcess(PROCESS_TERMINATE, FALSE, processEntry.th32ProcessID);
+            if(process != nullptr) {
+                TerminateProcess(process, 0);
+                CloseHandle(process);
+            }
+        } while(Process32NextW(snapshot, &processEntry));
+    }
+
+    CloseHandle(snapshot);
+    app::exit();
+}
 #endif
 
 window::WindowOptions windowProps;
@@ -90,7 +166,28 @@ void windowStateChange(int state) {
         case WEBVIEW_WINDOW_CLOSE:
             if(windowProps.exitProcessOnClose ||
                 !neuserver::isInitialized() || !permission::hasAPIAccess()) {
+                #if defined(_WIN32)
+                if(__getRunningInstanceCount() > 1) {
+                    pfd::button selectedBtn = pfd::message(
+                        "Close Neutralinojs windows",
+                        "Do you want to close all open Neutralinojs windows?",
+                        pfd::choice::yes_no_cancel,
+                        pfd::icon::question
+                    ).result();
+
+                    if(selectedBtn == pfd::button::yes) {
+                        __closeAllRunningInstances();
+                    }
+                    else if(selectedBtn == pfd::button::no) {
+                        app::exit();
+                    }
+                }
+                else {
+                    app::exit();
+                }
+                #else
                 app::exit();
+                #endif
             }
             else {
                 events::dispatch("windowClose", nullptr);
