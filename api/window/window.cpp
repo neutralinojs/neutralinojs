@@ -1147,14 +1147,32 @@ CGImageRef imgRef = nil;
 #if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 120300
     // Modern ScreenCaptureKit API (macOS 12.3+)
     __block CGImageRef screenshotImage = nil;
-    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    __block SCWindow *targetWindow = nil;
     
-    SCContentFilter *filter = [[SCContentFilter alloc] initWithDesktopIndependentWindow:
-        [SCWindow windowWithWindowID:winId]];
+    dispatch_semaphore_t contentSemaphore = dispatch_semaphore_create(0);
+    [SCShareableContent getShareableContentWithExcludingDesktopWindows:YES onScreenWindowsOnly:NO completionHandler:^(SCShareableContent *content, NSError *error) {
+        if (content) {
+            for (SCWindow *window in content.windows) {
+                if (window.windowID == winId) {
+                    targetWindow = window;
+                    break;
+                }
+            }
+        }
+        dispatch_semaphore_signal(contentSemaphore);
+    }];
+    dispatch_semaphore_wait(contentSemaphore, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC));
+    
+    if (!targetWindow) {
+        return false;
+    }
+    
+    SCContentFilter *filter = [[SCContentFilter alloc] initWithDesktopIndependentWindow:targetWindow];
     
     SCStreamConfiguration *config = [[SCStreamConfiguration alloc] init];
     config.scalesToFit = NO;
     
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
     [SCScreenshotManager captureImageWithFilter:filter
                                   configuration:config
                               completionHandler:^(CGImageRef capturedImage, NSError *error) {
@@ -1165,7 +1183,7 @@ CGImageRef imgRef = nil;
         dispatch_semaphore_signal(semaphore);  
     }];
     
-    dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC));
+    dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, 2 * NSEC_PER_SEC));
     imgRef = screenshotImage;
 
 #else

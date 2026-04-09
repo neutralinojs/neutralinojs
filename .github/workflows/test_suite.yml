@@ -62,6 +62,8 @@ jobs:
       run: |
         sudo apt-get clean
         sudo apt-get update
+        sudo apt-get install -y --allow-downgrades --allow-remove-essential --allow-change-held-packages libstdc++6:arm64 libgcc-s1:arm64
+        sudo apt-get install -f
         sudo apt-get install -y \
           gcc-aarch64-linux-gnu g++-aarch64-linux-gnu \
           pkg-config \
