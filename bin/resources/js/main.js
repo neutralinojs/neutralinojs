@@ -11,6 +11,32 @@ function openInBrowser() {
     Neutralino.os.open(window.location.href);
 }
 
+function setupAutoScrollButton() {
+    const button = document.getElementById('scrollToBottomBtn');
+    if(!button) {
+        return;
+    }
+
+    const threshold = 24;
+    const isNearBottom = () =>
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - threshold;
+
+    const updateButtonVisibility = () => {
+        button.style.display = isNearBottom() ? 'none' : 'inline-flex';
+    };
+
+    button.addEventListener('click', () => {
+        window.scrollTo({
+            top: document.documentElement.scrollHeight,
+            behavior: 'smooth'
+        });
+    });
+
+    window.addEventListener('scroll', updateButtonVisibility, { passive: true });
+    window.addEventListener('resize', updateButtonVisibility);
+    updateButtonVisibility();
+}
+
 Neutralino.init();
 if(NL_MODE == "window") {
     Neutralino.window.setTitle("Test app"); // This request will be queued and processed when WS connects.
@@ -31,3 +57,4 @@ Neutralino.events.on("eventFromExtension", (evt) => {
 });
 
 showInfo();
+setupAutoScrollButton();
