@@ -534,6 +534,11 @@ json showSaveDialog(const json &input) {
     if(helpers::hasField(input, "defaultPath")) {
         defaultPath = input["defaultPath"].get<string>();
         defaultPath = helpers::unNormalizePath(defaultPath);
+        filesystem::path parentDir = filesystem::path(defaultPath).parent_path();
+        if(!parentDir.empty() && !filesystem::exists(parentDir)) {
+            output["error"] = errors::makeErrorPayload(errors::NE_OS_INVDPATH, defaultPath);
+            return output;
+        }
     }
 
     string selectedEntry = pfd::save_file(title, defaultPath, filters, option).result();
