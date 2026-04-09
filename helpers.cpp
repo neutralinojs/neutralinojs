@@ -12,7 +12,6 @@
 #include "lib/json/json.hpp"
 
 #if defined(_WIN32)
-#include <string>
 #include <windows.h>
 #endif
 
