@@ -41,7 +41,7 @@ using json = nlohmann::json;
 
 namespace router {
 
-map<string, router::NativeMethod> methodMap = {
+static const map<string, router::NativeMethod> methodMap = {
     // Neutralino.app
     {"app.exit", app::controllers::exit},
     {"app.killProcess", app::controllers::killProcess},
@@ -171,7 +171,7 @@ map<string, router::NativeMethod> methodMap = {
 
 };
 
-map<string, router::NativeMethod> getMethodMap() {
+const map<string, router::NativeMethod> &getMethodMap() {
     return methodMap;
 }
 
@@ -202,7 +202,7 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
                 response.data["message"] = "Discarded. "+ nativeMethodId + " works within the window mode only";
                 return response;
             }
-            router::NativeMethod nativeMethod = methodMap[nativeMethodId];
+            router::NativeMethod nativeMethod = methodMap.at(nativeMethodId);
             #if defined(__linux__) || defined(_WIN32) || defined(__FreeBSD__)
             json apiOutput;
             #endif
@@ -296,7 +296,7 @@ router::Response getAsset(string path, const string &prependData) {
     }
 
     string extension = split[split.size() - 1];
-    map<string, string> mimeTypes = {
+    static const map<string, string> mimeTypes = {
         // Plain text files
         {"css", "text/css"},
         {"csv", "text/csv"},
@@ -399,7 +399,9 @@ router::Response getAsset(string path, const string &prependData) {
 
     // If MIME-type is not defined in neuserver, application/octet-stream will be used by default.
     if(mimeTypes.find(extension) != mimeTypes.end()) {
-        response.contentType = mimeTypes[extension];
+        if(mimeTypes.find(extension) != mimeTypes.end()) {
+    response.contentType = mimeTypes.at(extension);
+}
     }
     return response;
 }
