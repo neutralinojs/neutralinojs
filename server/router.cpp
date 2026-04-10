@@ -29,6 +29,7 @@
 #include "api/res/res.h"
 #include "api/server/server.h"
 #include "api/custom/custom.h"
+#include "api/secureStorage/secureStorage.h"
 
 
 #if defined(__APPLE__)
@@ -139,6 +140,9 @@ map<string, router::NativeMethod> methodMap = {
     {"storage.removeData", storage::controllers::removeData},
     {"storage.getKeys", storage::controllers::getKeys},
     {"storage.clear", storage::controllers::clear},
+    // Neutralino.secureStorage
+    {"secureStorage.setData", secureStorage::controllers::setData},
+    {"secureStorage.getData", secureStorage::controllers::getData},
     // Neutralino.events
     {"events.broadcast", events::controllers::broadcast},
     // Neutralino.extensions
