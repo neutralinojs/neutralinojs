@@ -302,8 +302,11 @@ string getPath(const string &name) {
 string getEnv(const string &key) {
     #if defined(_WIN32)
     wchar_t value[_MAX_ENV];
-    return GetEnvironmentVariable(CONVSTR(key).c_str(), value, _MAX_ENV) > 0 ? 
-            helpers::wstr2str(value) : "";
+    DWORD result = GetEnvironmentVariable(CONVSTR(key).c_str(), value, _MAX_ENV);
+    if (result == 0) {
+        return "";
+    }
+    return helpers::wstr2str(value);
     #else
     char *value;
     value = getenv(key.c_str());
