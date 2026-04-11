@@ -74,6 +74,38 @@ map<int, TinyProcessLib::Process*> spawnedProcesses;
 mutex spawnedProcessesLock;
 atomic<int> nextVirtualPid(0);
 
+// Helper to detect if a string contains characters that allow command injection
+bool containsShellMetachar(const string &input) {
+    const string dangerousChars = "\"&;|$`<>|(){}[]\\^~!#%*?";
+    if (input.find("${") != string::npos || input.find("$(") != string::npos) {
+        return true;
+    }
+    for (char c : input) {
+        if (c == '\n' || c == '\r' || c == '\0') {
+            return true;
+        }
+    }
+    return input.find_first_of(dangerousChars) != string::npos;
+}
+
+// Helper to escape special characters for Windows cmd.exe
+string escapeWindowsCommand(const string &input) {
+    string escaped;
+    for(char c : input) {
+        if(c == '"') escaped += "\\\"";
+        else if(c == '\\') escaped += "\\\\";
+        else if(c == '%') escaped += "%%";
+        else if(c == '^') escaped += "^^";
+        else if(c == '&') escaped += "^&";
+        else if(c == '|') escaped += "^|";
+        else if(c == '<') escaped += "^<";
+        else if(c == '>') escaped += "^>";
+        else escaped += c;
+    }
+    return escaped;
+}
+
+
 void __dispatchSpawnedProcessEvt(int virtualPid, const string &action, const json &data) {
     json evt;
     evt["id"] = virtualPid;
@@ -112,7 +144,6 @@ os::CommandResult execCommand(string command, const os::ChildProcessOptions &opt
     #endif
 
     os::CommandResult commandResult;
-    TinyProcessLib::Process *childProcess;
     TinyProcessLib::Process::environment_type processEnv;
 
     for(const auto& [key, value]: options.envs) {
@@ -127,17 +158,20 @@ os::CommandResult execCommand(string command, const os::ChildProcessOptions &opt
         commandResult.stdErr += string(bytes, n);
     };
 
+    // Use unique_ptr for automatic cleanup 
+    std::unique_ptr<TinyProcessLib::Process> childProcess;
+
     if(!options.background && options.envs.empty()) { 
-        childProcess = new TinyProcessLib::Process(CONVSTR(command), CONVSTR(options.cwd), stdOutHandler, stdErrHandler, !options.stdIn.empty());
+        childProcess = std::make_unique<TinyProcessLib::Process>(CONVSTR(command), CONVSTR(options.cwd), stdOutHandler, stdErrHandler, !options.stdIn.empty());
     }
     else if(options.background && options.envs.empty()) {
-        childProcess = new TinyProcessLib::Process(CONVSTR(command), CONVSTR(options.cwd), nullptr, nullptr, !options.stdIn.empty());
+        childProcess = std::make_unique<TinyProcessLib::Process>(CONVSTR(command), CONVSTR(options.cwd), nullptr, nullptr, !options.stdIn.empty());
     }
     else if(!options.background && !options.envs.empty()) {
-        childProcess = new TinyProcessLib::Process(CONVSTR(command), CONVSTR(options.cwd), processEnv, stdOutHandler, stdErrHandler, !options.stdIn.empty());
+        childProcess = std::make_unique<TinyProcessLib::Process>(CONVSTR(command), CONVSTR(options.cwd), processEnv, stdOutHandler, stdErrHandler, !options.stdIn.empty());
     }
     else {
-        childProcess = new TinyProcessLib::Process(CONVSTR(command), CONVSTR(options.cwd), processEnv, nullptr, nullptr, !options.stdIn.empty());
+        childProcess = std::make_unique<TinyProcessLib::Process>(CONVSTR(command), CONVSTR(options.cwd), processEnv, nullptr, nullptr, !options.stdIn.empty());
     }
     
     commandResult.pid = childProcess->get_id();
@@ -148,13 +182,12 @@ os::CommandResult execCommand(string command, const os::ChildProcessOptions &opt
     }
 
     if(!options.background) {
-        commandResult.exitCode = childProcess->get_exit_status(); // sync wait
+        commandResult.exitCode = childProcess->get_exit_status();
     }
 
-    delete childProcess;
     return commandResult;
 }
-
+    
 pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &options) {
     #if defined(_WIN32)
     command = "cmd.exe /c \"" + command + "\"";
@@ -325,6 +358,12 @@ json execCommand(const json &input) {
         return output;
     }
     string command = input["command"].get<string>();
+
+if (os::containsShellMetachar(command)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_INVINPT, "Dangerous characters detected in command");
+        return output;
+    }
+
     os::ChildProcessOptions processOptions;
 
     if(helpers::hasField(input, "stdIn")) {
