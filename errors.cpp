@@ -25,6 +25,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_OS_INVMSGA: return "NE_OS_INVMSGA";
         case errors::NE_OS_TRAYIER: return "NE_OS_TRAYIER";
         case errors::NE_OS_INVKNPT: return "NE_OS_INVKNPT";
+        case errors::NE_OS_INVINPT: return "NE_OS_INVINPT";
         // computer
         case errors::NE_CO_UNLTOSC: return "NE_CO_UNLTOSC";
         case errors::NE_CO_UNLTOMG: return "NE_CO_UNLTOMG";
@@ -89,6 +90,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_OS_INVMSGA: return "Invalid message box style arguments: %1";
         case errors::NE_OS_TRAYIER: return "Unable to initialize the tray menu";
         case errors::NE_OS_INVKNPT: return "Invalid platform path name: %1";
+        case errors::NE_OS_INVINPT: return "Invalid input: dangerous characters detected";
         // computer
         case errors::NE_CO_UNLTOSC: return "Unable to set mouse cursor";
         case errors::NE_CO_UNLTOMG: return "Unable to set mouse grabbinng";
