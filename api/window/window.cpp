@@ -145,8 +145,8 @@ void windowStateChange(int state) {
 
 
 pair<int, int> __getCenterPos(bool useConfigSizes = false) {
-    int x, y = 0;
-    int width, height = 0;
+    int x = 0, y = 0;
+    int width = 0, height = 0;
     if(useConfigSizes) {
         width = windowProps.sizeOptions.width;
         height = windowProps.sizeOptions.height;
