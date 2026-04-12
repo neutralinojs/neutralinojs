@@ -23,6 +23,7 @@
 
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
 #include <unistd.h>
+#include <pwd.h>
 extern char **environ;
 #endif
 
@@ -73,6 +74,38 @@ map<int, TinyProcessLib::Process*> spawnedProcesses;
 mutex spawnedProcessesLock;
 atomic<int> nextVirtualPid(0);
 
+// Helper to detect if a string contains characters that allow command injection
+bool containsShellMetachar(const string &input) {
+    const string dangerousChars = "\"&;|$`<>|(){}[]\\^~!#%*?";
+    if (input.find("${") != string::npos || input.find("$(") != string::npos) {
+        return true;
+    }
+    for (char c : input) {
+        if (c == '\n' || c == '\r' || c == '\0') {
+            return true;
+        }
+    }
+    return input.find_first_of(dangerousChars) != string::npos;
+}
+
+// Helper to escape special characters for Windows cmd.exe
+string escapeWindowsCommand(const string &input) {
+    string escaped;
+    for(char c : input) {
+        if(c == '"') escaped += "\\\"";
+        else if(c == '\\') escaped += "\\\\";
+        else if(c == '%') escaped += "%%";
+        else if(c == '^') escaped += "^^";
+        else if(c == '&') escaped += "^&";
+        else if(c == '|') escaped += "^|";
+        else if(c == '<') escaped += "^<";
+        else if(c == '>') escaped += "^>";
+        else escaped += c;
+    }
+    return escaped;
+}
+
+
 void __dispatchSpawnedProcessEvt(int virtualPid, const string &action, const json &data) {
     json evt;
     evt["id"] = virtualPid;
@@ -111,7 +144,6 @@ os::CommandResult execCommand(string command, const os::ChildProcessOptions &opt
     #endif
 
     os::CommandResult commandResult;
-    TinyProcessLib::Process *childProcess;
     TinyProcessLib::Process::environment_type processEnv;
 
     for(const auto& [key, value]: options.envs) {
@@ -126,17 +158,20 @@ os::CommandResult execCommand(string command, const os::ChildProcessOptions &opt
         commandResult.stdErr += string(bytes, n);
     };
 
+    // Use unique_ptr for automatic cleanup 
+    std::unique_ptr<TinyProcessLib::Process> childProcess;
+
     if(!options.background && options.envs.empty()) { 
-        childProcess = new TinyProcessLib::Process(CONVSTR(command), CONVSTR(options.cwd), stdOutHandler, stdErrHandler, !options.stdIn.empty());
+        childProcess = std::make_unique<TinyProcessLib::Process>(CONVSTR(command), CONVSTR(options.cwd), stdOutHandler, stdErrHandler, !options.stdIn.empty());
     }
     else if(options.background && options.envs.empty()) {
-        childProcess = new TinyProcessLib::Process(CONVSTR(command), CONVSTR(options.cwd), nullptr, nullptr, !options.stdIn.empty());
+        childProcess = std::make_unique<TinyProcessLib::Process>(CONVSTR(command), CONVSTR(options.cwd), nullptr, nullptr, !options.stdIn.empty());
     }
     else if(!options.background && !options.envs.empty()) {
-        childProcess = new TinyProcessLib::Process(CONVSTR(command), CONVSTR(options.cwd), processEnv, stdOutHandler, stdErrHandler, !options.stdIn.empty());
+        childProcess = std::make_unique<TinyProcessLib::Process>(CONVSTR(command), CONVSTR(options.cwd), processEnv, stdOutHandler, stdErrHandler, !options.stdIn.empty());
     }
     else {
-        childProcess = new TinyProcessLib::Process(CONVSTR(command), CONVSTR(options.cwd), processEnv, nullptr, nullptr, !options.stdIn.empty());
+        childProcess = std::make_unique<TinyProcessLib::Process>(CONVSTR(command), CONVSTR(options.cwd), processEnv, nullptr, nullptr, !options.stdIn.empty());
     }
     
     commandResult.pid = childProcess->get_id();
@@ -147,13 +182,12 @@ os::CommandResult execCommand(string command, const os::ChildProcessOptions &opt
     }
 
     if(!options.background) {
-        commandResult.exitCode = childProcess->get_exit_status(); // sync wait
+        commandResult.exitCode = childProcess->get_exit_status();
     }
 
-    delete childProcess;
     return commandResult;
 }
-
+    
 pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &options) {
     #if defined(_WIN32)
     command = "cmd.exe /c \"" + command + "\"";
@@ -268,13 +302,37 @@ string getPath(const string &name) {
 string getEnv(const string &key) {
     #if defined(_WIN32)
     wchar_t value[_MAX_ENV];
-    return GetEnvironmentVariable(CONVSTR(key).c_str(), value, _MAX_ENV) > 0 ? 
-            helpers::wstr2str(value) : "";
+    DWORD result = GetEnvironmentVariable(CONVSTR(key).c_str(), value, _MAX_ENV);
+    if (result == 0) {
+        return "";
+    }
+    return helpers::wstr2str(value);
     #else
     char *value;
     value = getenv(key.c_str());
     return value == nullptr ? "" : string(value);
     #endif
+}
+
+json getUserInfo() {
+    json info;
+    #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
+    struct passwd *pw = getpwuid(getuid());
+    if(pw) {
+        info["username"] = string(pw->pw_name);
+        info["homeDir"] = string(pw->pw_dir);
+        info["shell"] = string(pw->pw_shell);
+    }
+    #elif defined(_WIN32)
+    wchar_t username[256];
+    DWORD usernameSize = 256;
+    if(GetUserName(username, &usernameSize)) {
+        info["username"] = helpers::wstr2str(username);
+    }
+    info["homeDir"] = os::getEnv("USERPROFILE");
+    info["shell"] = os::getEnv("ComSpec");
+    #endif
+    return info;
 }
 
 namespace controllers {
@@ -303,6 +361,12 @@ json execCommand(const json &input) {
         return output;
     }
     string command = input["command"].get<string>();
+
+if (os::containsShellMetachar(command)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_INVINPT, "Dangerous characters detected in command");
+        return output;
+    }
+
     os::ChildProcessOptions processOptions;
 
     if(helpers::hasField(input, "stdIn")) {
@@ -681,11 +745,30 @@ json setTray(const json &input) {
     json output;
 
     if(helpers::hasField(input, "menuItems")) {
-        int menuCount = input["menuItems"].size();
+       int menuCount = input["menuItems"].size();
+
+    if (menuCount == 0) {
+        output["success"] = true;
+    return output;
+        }
+
+    if (menuCount > NEU_MAX_TRAY_MENU_ITEMS) {
+    menuCount = NEU_MAX_TRAY_MENU_ITEMS;
+        }
+
+        // Free any previously allocated menu items beyond the new count
+        for(int j = menuCount; j < NEU_MAX_TRAY_MENU_ITEMS; j++) {
+            if(menus[j].id == nullptr && menus[j].text == nullptr) break;
+            delete[] menus[j].id;
+            delete[] menus[j].text;
+            menus[j] = { nullptr, nullptr, 0, 0, nullptr, nullptr };
+        }
+
         menus[menuCount - 1] = { nullptr, nullptr, 0, 0, nullptr, nullptr };
 
-        int i = 0;
+            int i = 0;
         for (const auto &menuItem: input["menuItems"]) {
+            if (i >= menuCount) break;
             char *id = nullptr;
             char *text = helpers::cStrCopy(menuItem["text"].get<string>());
             int disabled = 0;
@@ -733,6 +816,10 @@ json setTray(const json &input) {
         tray.icon = helpers::cStrCopy(fullIconPath);
 
         #elif defined(_WIN32)
+        if(tray.icon) {
+            DestroyIcon(tray.icon);
+            tray.icon = nullptr;
+        }
         fs::FileReaderResult fileReaderResult = resources::getFile(iconPath);
         string iconDataStr = fileReaderResult.data;
         const char *iconData = iconDataStr.c_str();
@@ -740,6 +827,7 @@ json setTray(const json &input) {
         IStream *pStream = SHCreateMemStream((BYTE *) uiconData, iconDataStr.length());
         Gdiplus::Bitmap* bitmap = Gdiplus::Bitmap::FromStream(pStream);
         bitmap->GetHICON(&tray.icon);
+        delete bitmap;
         pStream->Release();
 
         #elif defined(__APPLE__)
@@ -807,5 +895,18 @@ json getPath(const json &input) {
     }
     return output;
 }
+json getUserInfo(const json &input) {
+    json output;
+    json info = os::getUserInfo();
+    if(!info.empty()) {
+        output["returnValue"] = info;
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_INVKNPT, "getUserInfo");
+    }
+    return output;
+}
+
 } // namespace controllers
 } // namespace os
