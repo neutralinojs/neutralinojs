@@ -6,6 +6,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: computer
 ## v6.7.0
 
 ### API: Input device simulation and handling
@@ -27,6 +28,7 @@ await Neutralino.computer.sendKey(105, 'up')      // Release right control
 
 ### API: os
 - Add `useTemplateIcon: bool` option to `os.setTray(options)` for activating adaptive tray icon with the current color-scheme on macOS.
+- Add `desktop` path support to `os.getPath()`
 
 ### Improvements/bugfixes
 - Display the app icon properly with the `os.showNotification()` function when the app is launched from a Mac app bundle.
