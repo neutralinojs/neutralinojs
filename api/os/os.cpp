@@ -476,6 +476,7 @@ json showOpenDialog(const json &input) {
 
     if(helpers::hasField(input, "defaultPath")) {
         defaultPath = input["defaultPath"].get<string>();
+        defaultPath = helpers::unNormalizePath(defaultPath);
     }
 
     vector<string> selectedEntries = pfd::open_file(title, defaultPath, filters, option).result();
