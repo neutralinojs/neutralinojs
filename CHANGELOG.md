@@ -6,6 +6,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: computer
 ## v6.7.0
 
 ### API: Input device simulation and handling
@@ -33,6 +34,10 @@ await Neutralino.computer.sendKey(105, 'up')      // Release right control
 - Fix the window-ordering issue with `window.focus()` on macOS.
 - Auto-focus the app window when the Mac dock app icon is clicked.
 - Write full C++ exception messages to the terminal to improve the framework-related bug-reporting experience.
+
+### Tests
+- Added missing test cases for os.getPath() 
+
 
 ## v6.5.0
 

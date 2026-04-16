@@ -571,5 +571,61 @@ describe('os.spec: os namespace tests', () => {
             `);
             assert.equal(runner.getOutput(), 'NE_OS_INVKNPT');
         });
+     it('returns a valid path for config directory', async () => {
+        runner.run(`
+            let configPath = await Neutralino.os.getPath('config');
+            await __close(configPath);
+        `);
+        assert.ok(typeof runner.getOutput() == 'string');
+    });
+
+    it('returns a valid path for data directory', async () => {
+        runner.run(`
+            let dataPath = await Neutralino.os.getPath('data');
+            await __close(dataPath);
+        `);
+        assert.ok(typeof runner.getOutput() == 'string');
+    });
+
+    it('returns a valid path for cache directory', async () => {
+        runner.run(`
+            let cachePath = await Neutralino.os.getPath('cache');
+            await __close(cachePath);
+        `);
+        assert.ok(typeof runner.getOutput() == 'string');
+    });
+
+    it('returns a valid path for pictures directory', async () => {
+        runner.run(`
+            let picturesPath = await Neutralino.os.getPath('pictures');
+            await __close(picturesPath);
+        `);
+        assert.ok(typeof runner.getOutput() == 'string');
+    });
+
+    it('returns a valid path for music directory', async () => {
+        runner.run(`
+            let musicPath = await Neutralino.os.getPath('music');
+            await __close(musicPath);
+        `);
+        assert.ok(typeof runner.getOutput() == 'string');
+    });
+
+    it('returns a valid path for video directory', async () => {
+        runner.run(`
+            let videoPath = await Neutralino.os.getPath('video');
+            await __close(videoPath);
+        `);
+        assert.ok(typeof runner.getOutput() == 'string');
+    });
+
+    it('returns a valid path for temp directory', async () => {
+        runner.run(`
+            let tempPath = await Neutralino.os.getPath('temp');
+            await __close(tempPath);
+        `);
+        assert.ok(typeof runner.getOutput() == 'string');
+    });
+  
     });
 });
