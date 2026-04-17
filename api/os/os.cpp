@@ -534,6 +534,22 @@ json showSaveDialog(const json &input) {
     if(helpers::hasField(input, "defaultPath")) {
         defaultPath = input["defaultPath"].get<string>();
         defaultPath = helpers::unNormalizePath(defaultPath);
+
+        std::error_code ec;
+        std::filesystem::path pathObj(CONVSTR(defaultPath));
+        std::filesystem::path dirToCheck = pathObj;
+
+        if (!std::filesystem::is_directory(pathObj, ec)) {
+            dirToCheck = pathObj.parent_path();
+        }
+
+        if (!dirToCheck.empty() && !std::filesystem::exists(dirToCheck, ec)) {
+            std::filesystem::path fallbackPath(CONVSTR(sago::getDocumentsFolder()));
+            if (pathObj.has_filename() && pathObj.filename() != ".") {
+                fallbackPath /= pathObj.filename();
+            }
+            defaultPath = FS_CONVWSTR(fallbackPath);
+        }
     }
 
     string selectedEntry = pfd::save_file(title, defaultPath, filters, option).result();
