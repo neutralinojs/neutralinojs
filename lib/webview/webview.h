@@ -984,8 +984,11 @@ public:
               if(!windowStateChange) break;
               if(LOWORD(wp) == WA_INACTIVE)
                 windowStateChange(WEBVIEW_WINDOW_BLUR);
-              else
+              else{
                 windowStateChange(WEBVIEW_WINDOW_FOCUS);
+				if(m_controller) 
+                	m_controller->MoveFocus(COREWEBVIEW2_MOVE_FOCUS_REASON_PROGRAMMATIC);
+              }
               break;
             case WM_DESTROY:
               PostQuitMessage(processExitCode);
