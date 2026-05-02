@@ -404,7 +404,7 @@ bool moveToTrash(const string &path) {
     fileOp.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT;
 
     return SHFileOperationW(&fileOp) == 0;
-#endif
+	#endif
 }
 
 namespace controllers {
@@ -1007,11 +1007,11 @@ json moveToTrash(const json &input) {
     string path = input["path"].get<string>();
 
     if(!filesystem::exists(CONVSTR(path))) {
-        output["error"] = errors::makeErrorPayload(errors::NE_FS_TRSERR, path);
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_NOPATHE, path);
         return output;
     }
 
-    if(__moveToTrash(path)) {
+    if(fs::moveToTrash(path)) {
         output["success"] = true;
         output["message"] = path + " was moved to trash";
     }
