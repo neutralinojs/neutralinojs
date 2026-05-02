@@ -28,6 +28,7 @@ enum StatusCode {
     // computer
     NE_CO_UNLTOSC,
     NE_CO_UNLTOMG,
+    NE_CO_UNLTOSK,
     // extensions
     NE_EX_EXTNOTC,
     // filesystem

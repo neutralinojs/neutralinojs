@@ -136,7 +136,7 @@ void windowStateChange(int state) {
             events::dispatch("windowMaximize", nullptr);
             break;
         case WEBVIEW_WINDOW_ACTIVATE:
-            events::dispatch("windowActivate", nullptr);
+            window::focus();
             break;
     }
 }
@@ -751,6 +751,28 @@ void unmaximize() {
     #endif
 }
 
+void unminimize() {
+    #if defined(__linux__) || defined(__FreeBSD__)
+    gtk_window_present(GTK_WINDOW(windowHandle));
+    #elif defined(_WIN32)
+    ShowWindow(windowHandle, SW_RESTORE);
+    #elif defined(__APPLE__)
+    ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
+        "deminiaturize:"_sel, NULL);
+    #endif
+}
+
+bool isMinimized() {
+    #if defined(__linux__) || defined(__FreeBSD__)
+    return isGtkWindowMinimized;
+    #elif defined(_WIN32)
+    return IsIconic(windowHandle) == 1;
+    #elif defined(__APPLE__)
+    return ((bool (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
+        "isMiniaturized"_sel, NULL);
+    #endif
+}
+
 bool isVisible() {
     #if defined(__linux__) || defined(__FreeBSD__)
     return gtk_widget_is_visible(windowHandle) == 1;
@@ -806,6 +828,25 @@ void hide() {
     #endif
 
     window::handlers::windowStateChange(WEBVIEW_WINDOW_HIDE);
+}
+
+void focus() {
+    #if defined(__linux__) || defined(__FreeBSD__)
+    gtk_window_present(GTK_WINDOW(windowHandle));
+    #elif defined(__APPLE__)
+    ((void (*)(id, SEL, BOOL))objc_msgSend)(
+        ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls, "sharedApplication"_sel),
+        "activateIgnoringOtherApps:"_sel, 1);
+    if(window::isMinimized()) {
+        window::unminimize();
+    }
+    else {
+        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
+                "makeKeyAndOrderFront:"_sel, NULL);
+    }
+    #elif defined(_WIN32)
+    SetForegroundWindow(windowHandle);
+    #endif
 }
 
 bool isFullScreen() {
@@ -1358,30 +1399,14 @@ json minimize(const json &input) {
 
 json unminimize(const json &input) {
     json output;
-    #if defined(__linux__) || defined(__FreeBSD__)
-    gtk_window_present(GTK_WINDOW(windowHandle));
-    #elif defined(_WIN32)
-    ShowWindow(windowHandle, SW_RESTORE);
-    #elif defined(__APPLE__)
-    ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
-        "deminiaturize:"_sel, NULL);
-    #endif
+    window::unminimize();
     output["success"] = true;
     return output;
 }
 
 json isMinimized(const json &input) {
     json output;
-    bool minimized = false;
-    #if defined(__linux__) || defined(__FreeBSD__)
-    minimized = isGtkWindowMinimized;
-    #elif defined(_WIN32)
-    minimized = IsIconic(windowHandle) == 1;
-    #elif defined(__APPLE__)
-    minimized = ((bool (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
-        "isMiniaturized"_sel, NULL);
-    #endif
-    output["returnValue"] = minimized;
+    output["returnValue"] = window::isMinimized();
     output["success"] = true;
     return output;
 }
@@ -1436,17 +1461,7 @@ json isFullScreen(const json &input) {
 
 json focus(const json &input) {
     json output;
-    #if defined(__linux__) || defined(__FreeBSD__)
-    gtk_window_present(GTK_WINDOW(windowHandle));
-    #elif defined(__APPLE__)
-    ((void (*)(id, SEL))objc_msgSend)(
-        ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls, "sharedApplication"_sel),
-        "activate"_sel);
-    ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
-            "makeKeyAndOrderFront:"_sel, NULL);
-    #elif defined(_WIN32)
-    SetForegroundWindow(windowHandle);
-    #endif
+    window::focus();
     output["success"] = true;
     return output;
 }
