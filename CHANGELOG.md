@@ -76,7 +76,7 @@ await Neutralino.computer.sendKey(105, 'up')      // Release right control
 - Fix the draggable region not working issue on Windows.
 - Replace deprecated macOS API with suitable modern APIs in the codebase.
 - Static file server enhancements.
-- Improve `window.getPositon()` in macOS.
+- Improve `window.getPosition()` in macOS.
 - Save the correct window size and position when a maximized/minimized window is being closed on Windows.
 - Fix the window disappearing issue while restoring the window on Windows
 
@@ -170,7 +170,7 @@ On GNU/Linux and Windows, the framework only displays the keyboard shortcut with
 ```json
 "definitions": {
     "*": [
-        "NEU_COMPILATION_DATA=\\\"build_number=${BZ_BUILDNUMBER};compiler_name=${BZ_CONPILERNAME}\\\"",
+        "NEU_COMPILATION_DATA=\\\"build_number=${BZ_BUILDNUMBER};compiler_name=${BZ_COMPILERNAME}\\\"",
 ```
 
 ## v6.0.0
@@ -389,7 +389,7 @@ The transparency mode can be activated using the `--window-transparent=<bool>` i
 ## v4.15.0
 
 ### Configuration: custom user agent string
-Developers sometimes use the user agent string to indentify the client in server-side and client-side source codes. Now, Neutralinojs lets app developers extend the default user agent string with a custom string via the `window.extendUserAgentWith` configuration property and the `--window-extend-user-agent-with=<string>` command-line option, as shown in the following example:
+Developers sometimes use the user agent string to identify the client in server-side and client-side source codes. Now, Neutralinojs lets app developers extend the default user agent string with a custom string via the `window.extendUserAgentWith` configuration property and the `--window-extend-user-agent-with=<string>` command-line option, as shown in the following example:
 ```js
 "window": {
   // ---
@@ -569,7 +569,7 @@ Returns the current mouse cursor position via a JavaScript object that has `x` a
 ## v4.7.0
 
 ### API: System information API
-Ealier, we had the `getMemoryInfo` function in the `computer` namespace to retrieve system memory statistics. Now, we have added more functions to get details about the CPU, operating system, kernel, and connected displays:
+Earlier, we had the `getMemoryInfo` function in the `computer` namespace to retrieve system memory statistics. Now, we have added more functions to get details about the CPU, operating system, kernel, and connected displays:
 
 - `computer.getArch`: Returns the CPU architecture. i.e, `x64`, `arm`, etc.
 - `computer.getKernelInfo`: Returns the operating system's kernel details.
@@ -591,7 +591,7 @@ Ealier, we had the `getMemoryInfo` function in the `computer` namespace to retri
 ## v4.6.0
 
 ### API: Process spawning API
-We have `os.execCommand` for launching processes, but it's synchronous, meaning, the developer has to wait unti process completion to receive `pid`, `stdOut` and `stdErr`. `execCommand` is not suitable for long-running processes. The new spawning API offers API functions for handling long-running processes in a multi-threaded way.
+We have `os.execCommand` for launching processes, but it's synchronous, meaning, the developer has to wait until process completion to receive `pid`, `stdOut` and `stdErr`. `execCommand` is not suitable for long-running processes. The new spawning API offers API functions for handling long-running processes in a multi-threaded way.
 
 - `os.spawnProcess(command)`: Spawns a process and returns `id` (A virtual Neutralino-scoped pid) and `pid` (Operating system-level pid).
 - `os.getSpawnedProcesses()`: Returns a list of spawned processes.
