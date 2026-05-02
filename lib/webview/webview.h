@@ -986,8 +986,8 @@ public:
                 windowStateChange(WEBVIEW_WINDOW_BLUR);
               else{
                 windowStateChange(WEBVIEW_WINDOW_FOCUS);
-				if(m_controller) 
-                	m_controller->MoveFocus(COREWEBVIEW2_MOVE_FOCUS_REASON_PROGRAMMATIC);
+				if(w->m_controller) 
+                	w->m_controller->MoveFocus(COREWEBVIEW2_MOVE_FOCUS_REASON_PROGRAMMATIC);
               }
               break;
             case WM_DESTROY:
