@@ -46,6 +46,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_FS_UNLCWAT: return "NE_FS_UNLCWAT";
         case errors::NE_FS_NOWATID: return "NE_FS_NOWATID";
         case errors::NE_FS_UNLSTPR: return "NE_FS_UNLSTPR";
+        case errors::NE_FS_TRSERR: return "NE_FS_TRSERR";
         // window
         case errors::NE_WI_UNBSWSR: return "NE_WI_UNBSWSR";
         // router
@@ -111,6 +112,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_FS_UNLCWAT: return "Unable to create watcher for path: %1";
         case errors::NE_FS_NOWATID: return "Unable to find watcher: %1";
         case errors::NE_FS_UNLSTPR: return "Unable to set file permissions for %1";
+        case errors::NE_FS_TRSERR: return "Cannot move to trash: %1";
         // window
         case errors::NE_WI_UNBSWSR: return "Unable to save window screenshot to %1";
         // router
