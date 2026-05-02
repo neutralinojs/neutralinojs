@@ -270,7 +270,7 @@ string getPath(const string &name) {
     else if(name == "home") {
         #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
         struct passwd *pw = getpwuid(getuid());
-        if(pw != nullptr) {
+        if(pw) {
             path = string(pw->pw_dir);
         }
         #elif defined(_WIN32)
