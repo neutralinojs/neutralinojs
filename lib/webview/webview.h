@@ -154,7 +154,6 @@ static webkit_settings_get_user_agent_func webkit_settings_get_user_agent = null
 static webkit_settings_set_user_agent_func webkit_settings_set_user_agent = nullptr;
 static webkit_web_view_load_uri_func webkit_web_view_load_uri = nullptr;
 
-static bool gtkSupportsAlpha = true;
 static void *dlib = nullptr;
 
 class gtk_webkit_engine {
