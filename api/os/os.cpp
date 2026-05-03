@@ -23,6 +23,7 @@
 
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
 #include <unistd.h>
+#include <pwd.h>
 extern char **environ;
 #endif
 
@@ -275,6 +276,27 @@ string getEnv(const string &key) {
     value = getenv(key.c_str());
     return value == nullptr ? "" : string(value);
     #endif
+}
+
+json getUserInfo() {
+    json info;
+    #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
+    struct passwd *pw = getpwuid(getuid());
+    if(pw) {
+        info["username"] = string(pw->pw_name);
+        info["homeDir"] = string(pw->pw_dir);
+        info["shell"] = string(pw->pw_shell);
+    }
+    #elif defined(_WIN32)
+    wchar_t username[256];
+    DWORD usernameSize = 256;
+    if(GetUserName(username, &usernameSize)) {
+        info["username"] = helpers::wstr2str(username);
+    }
+    info["homeDir"] = os::getEnv("USERPROFILE");
+    info["shell"] = os::getEnv("ComSpec");
+    #endif
+    return info;
 }
 
 namespace controllers {
@@ -681,11 +703,30 @@ json setTray(const json &input) {
     json output;
 
     if(helpers::hasField(input, "menuItems")) {
-        int menuCount = input["menuItems"].size();
+       int menuCount = input["menuItems"].size();
+
+    if (menuCount == 0) {
+        output["success"] = true;
+    return output;
+        }
+
+    if (menuCount > NEU_MAX_TRAY_MENU_ITEMS) {
+    menuCount = NEU_MAX_TRAY_MENU_ITEMS;
+        }
+
+        // Free any previously allocated menu items beyond the new count
+        for(int j = menuCount; j < NEU_MAX_TRAY_MENU_ITEMS; j++) {
+            if(menus[j].id == nullptr && menus[j].text == nullptr) break;
+            delete[] menus[j].id;
+            delete[] menus[j].text;
+            menus[j] = { nullptr, nullptr, 0, 0, nullptr, nullptr };
+        }
+
         menus[menuCount - 1] = { nullptr, nullptr, 0, 0, nullptr, nullptr };
 
-        int i = 0;
+            int i = 0;
         for (const auto &menuItem: input["menuItems"]) {
+            if (i >= menuCount) break;
             char *id = nullptr;
             char *text = helpers::cStrCopy(menuItem["text"].get<string>());
             int disabled = 0;
@@ -733,6 +774,10 @@ json setTray(const json &input) {
         tray.icon = helpers::cStrCopy(fullIconPath);
 
         #elif defined(_WIN32)
+        if(tray.icon) {
+            DestroyIcon(tray.icon);
+            tray.icon = nullptr;
+        }
         fs::FileReaderResult fileReaderResult = resources::getFile(iconPath);
         string iconDataStr = fileReaderResult.data;
         const char *iconData = iconDataStr.c_str();
@@ -740,6 +785,7 @@ json setTray(const json &input) {
         IStream *pStream = SHCreateMemStream((BYTE *) uiconData, iconDataStr.length());
         Gdiplus::Bitmap* bitmap = Gdiplus::Bitmap::FromStream(pStream);
         bitmap->GetHICON(&tray.icon);
+        delete bitmap;
         pStream->Release();
 
         #elif defined(__APPLE__)
@@ -807,5 +853,18 @@ json getPath(const json &input) {
     }
     return output;
 }
+json getUserInfo(const json &input) {
+    json output;
+    json info = os::getUserInfo();
+    if(!info.empty()) {
+        output["returnValue"] = info;
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_INVKNPT, "getUserInfo");
+    }
+    return output;
+}
+
 } // namespace controllers
 } // namespace os

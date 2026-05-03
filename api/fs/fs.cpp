@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
+#include <atomic>
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 #include <unistd.h>
@@ -44,6 +45,7 @@ mutex openedFilesLock;
 efsw::FileWatcher* fileWatcher;
 map<efsw::WatchID, pair<efsw::FileWatchListener*, string>> watchListeners;
 mutex watcherLock;
+std::atomic<int> nextVirtualFileId(0);
 
 #define NEU_DEFAULT_STREAM_BUF_SIZE 256
 
@@ -195,7 +197,7 @@ bool writeFile(const fs::FileWriterOptions &fileWriterOptions) {
 }
 
 int openFile(const string &filename) {
-    int virtualFileId = openedFiles.size();
+    int virtualFileId = nextVirtualFileId++;
     ifstream *reader = new ifstream(CONVSTR(filename), ios::binary);
     if(!reader->is_open()) {
         delete reader;
@@ -256,6 +258,10 @@ long createWatcher(const string &path) {
 
     __WatcherListener* listener = new __WatcherListener();
     efsw::WatchID watcherId = fileWatcher->addWatch(path, listener, true);
+    if (watcherId < 0) {
+        delete listener;
+        return (long)watcherId;
+    }
     watchListeners[watcherId] = make_pair(listener, path);
     fileWatcher->watch();
     return (long)watcherId;
