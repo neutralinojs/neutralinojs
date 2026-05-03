@@ -1,6 +1,3 @@
-#include <iostream>
-#include <fstream>
-
 #include "lib/json/json.hpp"
 #include "lib/easylogging/easylogging++.h"
 #include "helpers.h"

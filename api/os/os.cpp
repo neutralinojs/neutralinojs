@@ -23,6 +23,8 @@
 
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
 #include <unistd.h>
+#include <pwd.h>
+#include <sys/types.h>
 extern char **environ;
 #endif
 
@@ -36,6 +38,7 @@ extern char **environ;
 #include <tchar.h>
 #include <gdiplus.h>
 #include <shlwapi.h>
+#include <shlobj.h>
 
 #pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "Gdiplus.lib")
@@ -86,9 +89,22 @@ bool isTrayInitialized() {
 }
 
 void cleanupTray() {
-    if(os::isTrayInitialized()) {
+    if(!os::isTrayInitialized()) return;
         tray_exit();
+    #if defined(_WIN32)
+    if (tray.icon) {
+        DestroyIcon(tray.icon);
+        tray.icon = nullptr;
     }
+    #elif defined(__APPLE__)
+    if (tray.icon) {
+        ((void (*)(id, SEL))objc_msgSend)(tray.icon, sel_registerName("release"));
+        tray.icon = nullptr;
+    }
+    #elif defined(__linux__) || defined(__FreeBSD__)
+    delete[] tray.icon;
+    tray.icon = nullptr;
+    #endif
 }
 
 void open(const string &url) {
@@ -216,6 +232,7 @@ pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &optio
 }
 
 bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt) {
+    lock_guard<mutex> guard(spawnedProcessesLock);
     if(spawnedProcesses.find(evt.id) == spawnedProcesses.end()) {
         return false;
     }
@@ -262,6 +279,22 @@ string getPath(const string &name) {
         path = sago::getSaveGamesFolder2();
     else if(name == "temp")
         path = FS_CONVWSTR(filesystem::temp_directory_path());
+    else if(name == "desktop")
+        path = sago::getDesktopFolder();
+    else if(name == "home") {
+        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+        struct passwd *pw = getpwuid(getuid());
+        if(pw) {
+            path = string(pw->pw_dir);
+        }
+        #elif defined(_WIN32)
+        PWSTR homePath = nullptr;
+        if(SHGetKnownFolderPath(FOLDERID_Profile, 0, nullptr, &homePath) == S_OK) {
+            path = helpers::wstr2str(wstring(homePath));
+            CoTaskMemFree(homePath);
+        }
+        #endif
+    }
     return helpers::normalizePath(path);
 }
 
@@ -275,6 +308,27 @@ string getEnv(const string &key) {
     value = getenv(key.c_str());
     return value == nullptr ? "" : string(value);
     #endif
+}
+
+json getUserInfo() {
+    json info;
+    #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
+    struct passwd *pw = getpwuid(getuid());
+    if(pw) {
+        info["username"] = string(pw->pw_name);
+        info["homeDir"] = string(pw->pw_dir);
+        info["shell"] = string(pw->pw_shell);
+    }
+    #elif defined(_WIN32)
+    wchar_t username[256];
+    DWORD usernameSize = 256;
+    if(GetUserName(username, &usernameSize)) {
+        info["username"] = helpers::wstr2str(username);
+    }
+    info["homeDir"] = os::getEnv("USERPROFILE");
+    info["shell"] = os::getEnv("ComSpec");
+    #endif
+    return info;
 }
 
 namespace controllers {
@@ -681,11 +735,30 @@ json setTray(const json &input) {
     json output;
 
     if(helpers::hasField(input, "menuItems")) {
-        int menuCount = input["menuItems"].size();
+       int menuCount = input["menuItems"].size();
+
+    if (menuCount == 0) {
+        output["success"] = true;
+    return output;
+        }
+
+    if (menuCount > NEU_MAX_TRAY_MENU_ITEMS) {
+    menuCount = NEU_MAX_TRAY_MENU_ITEMS;
+        }
+
+        // Free any previously allocated menu items beyond the new count
+        for(int j = menuCount; j < NEU_MAX_TRAY_MENU_ITEMS; j++) {
+            if(menus[j].id == nullptr && menus[j].text == nullptr) break;
+            delete[] menus[j].id;
+            delete[] menus[j].text;
+            menus[j] = { nullptr, nullptr, 0, 0, nullptr, nullptr };
+        }
+
         menus[menuCount - 1] = { nullptr, nullptr, 0, 0, nullptr, nullptr };
 
-        int i = 0;
+            int i = 0;
         for (const auto &menuItem: input["menuItems"]) {
+            if (i >= menuCount) break;
             char *id = nullptr;
             char *text = helpers::cStrCopy(menuItem["text"].get<string>());
             int disabled = 0;
@@ -733,6 +806,9 @@ json setTray(const json &input) {
         tray.icon = helpers::cStrCopy(fullIconPath);
 
         #elif defined(_WIN32)
+        if(tray.icon) {
+            DestroyIcon(tray.icon);
+        }
         fs::FileReaderResult fileReaderResult = resources::getFile(iconPath);
         string iconDataStr = fileReaderResult.data;
         const char *iconData = iconDataStr.c_str();
@@ -740,9 +816,13 @@ json setTray(const json &input) {
         IStream *pStream = SHCreateMemStream((BYTE *) uiconData, iconDataStr.length());
         Gdiplus::Bitmap* bitmap = Gdiplus::Bitmap::FromStream(pStream);
         bitmap->GetHICON(&tray.icon);
+        delete bitmap;
         pStream->Release();
 
         #elif defined(__APPLE__)
+        if(tray.icon) {
+            ((void (*)(id, SEL))objc_msgSend)(tray.icon, sel_registerName("release"));
+        }
         fs::FileReaderResult fileReaderResult = resources::getFile(iconPath);
         string iconDataStr = fileReaderResult.data;
         const char *iconData = iconDataStr.c_str();
@@ -807,5 +887,18 @@ json getPath(const json &input) {
     }
     return output;
 }
+json getUserInfo(const json &input) {
+    json output;
+    json info = os::getUserInfo();
+    if(!info.empty()) {
+        output["returnValue"] = info;
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_INVKNPT, "getUserInfo");
+    }
+    return output;
+}
+
 } // namespace controllers
 } // namespace os
