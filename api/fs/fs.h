@@ -15,6 +15,7 @@ namespace fs {
 struct FileReaderResult {
     errors::StatusCode status = errors::NE_ST_OK;
     string data;
+    long long size = -1;
 };
 
 struct FileReaderOptions {

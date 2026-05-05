@@ -13,7 +13,7 @@ namespace resources {
 
 enum ResourceMode { ResourceModeDir, ResourceModeBundle, ResourceModeEmbedded };
 
-fs::FileReaderResult getFile(const string &filename);
+fs::FileReaderResult getFile(const string &filename, const fs::FileReaderOptions &fileReaderOptions = {});
 bool extractFile(const string &filename, const string &outputFilename);
 void init();
 void setMode(const resources::ResourceMode mode);

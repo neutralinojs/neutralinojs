@@ -49,6 +49,26 @@ bool __hasConnectToken(const string &url) {
     return regex_match(url, regex(".*connectToken=.*"));
 }
 
+fs::FileReaderOptions __getFileReaderOptionsFromHeaders(const websocketpp::http::parser::header_list &headers) {
+    fs::FileReaderOptions fileReaderOptions;
+    auto rangeIt = headers.find("Range");
+    if(rangeIt == headers.end()) {
+        return fileReaderOptions;
+    }
+
+    smatch match;
+    if(regex_match(rangeIt->second, match, regex(R"(bytes=(\d+)-(\d*)?)"))) {
+        fileReaderOptions.pos = stoll(match[1].str());
+        if(match[2].matched && match[2].str() != "") {
+            long long end = stoll(match[2].str());
+            if(end >= fileReaderOptions.pos) {
+                fileReaderOptions.size = end - fileReaderOptions.pos + 1;
+            }
+        }
+    }
+    return fileReaderOptions;
+}
+
 void __applyConfigHeaders(websocketserver::connection_ptr con) {
     json jHeaders = settings::getOptionForCurrentMode("serverHeaders");
     for(const auto &it: jHeaders.items()) {
@@ -204,58 +224,15 @@ void handleHTTP(websocketpp::connection_hdl handler) {
     if(!documentRoot.empty()) {
         resource = documentRoot + resource;
     }
-    auto headers = con->get_request().get_headers();
-    auto rangeIt = headers.find("Range");
-    if(rangeIt != headers.end()){
-        string range = rangeIt->second;
-        long long start = 0;
-        long long end = -1;
-        smatch match;
-        if(regex_match(range,match,regex(R"(bytes=(\d+)-(\d*)?)"))){
-            start = stoll(match[1].str());
-            if(match[2].matched){
-                end = stoll(match[2].str());
-            }
-
-            fs::FileStats stats = fs::getStats(resource);
-            if(stats.status == errors::NE_ST_OK && stats.size > 0) {
-                long long fileSize = stats.size;
-                if(start < 0) start = 0;
-                if(end < 0 || end >= fileSize)
-                    end = fileSize -1;
-                if(start <= end) {
-                    long long length = end - start + 1;
-                fs::FileReaderOptions opts;
-                opts.pos = start;
-                opts.size = length;
-                fs::FileReaderResult fr = fs::readFile(resource, opts);
-                if(fr.status == errors::NE_ST_OK) {
-                    const string &buffer = fr.data;
-                    long long bytesRead = buffer.size();
-                    
-                    con->set_status(websocketpp::http::status_code::partial_content);
-                    con->set_body(buffer);
-                    con->replace_header("Accept-Ranges","bytes");
-                    con->replace_header(
-                    "Content-Range",
-                    "bytes " + to_string(start) + "-" + to_string(start + bytesRead - 1) + "/" + to_string(fileSize)
-                    );
-                    con->replace_header("Content-Length",to_string(bytesRead));
-                    router::Response tmp = router::serve(resource);
-                    con->replace_header("Content-Type",tmp.contentType);
-                    if(applyConfigHeaders){
-                    __applyConfigHeaders(con);
-                    }
-                    return;
-                    }
-                }
-            }
-        }
-    }
-    router::Response routerResponse = router::serve(resource);
+    fs::FileReaderOptions fileReaderOptions =
+        __getFileReaderOptionsFromHeaders(con->get_request().get_headers());
+    router::Response routerResponse = router::serve(resource, fileReaderOptions);
     con->set_status(routerResponse.status);
     con->set_body(routerResponse.data);
     con->replace_header("Content-Type",routerResponse.contentType);
+    for(const auto &[header, value]: routerResponse.headers) {
+        con->replace_header(header, value);
+    }
     
     if(applyConfigHeaders){
         __applyConfigHeaders(con);

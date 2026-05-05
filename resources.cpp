@@ -53,7 +53,24 @@ ifstream __openResourceFile() {
     return asarArchive;
 }
 
-fs::FileReaderResult __getFileFromBundle(const string &filename) {
+void __applyFileReaderOptions(long long origSize, unsigned long &pos, unsigned long &size,
+                              const fs::FileReaderOptions &fileReaderOptions) {
+    long long readPos = 0;
+    long long readSize = origSize;
+
+    if(fileReaderOptions.pos > -1) {
+        readPos = min(fileReaderOptions.pos, origSize);
+        readSize = origSize - readPos;
+    }
+    if(fileReaderOptions.size > -1) {
+        readSize = min(fileReaderOptions.size, readSize);
+    }
+
+    pos = readPos;
+    size = readSize;
+}
+
+fs::FileReaderResult __getFileFromBundle(const string &filename, const fs::FileReaderOptions &fileReaderOptions) {
     fs::FileReaderResult fileReaderResult;
     pair<long, string> p = __seekFilePos(filename, fileTree);
     if(p.first != -1) {
@@ -62,11 +79,14 @@ fs::FileReaderResult __getFileFromBundle(const string &filename) {
             fileReaderResult.status = errors::NE_RS_TREEGER;
             return fileReaderResult;
         }
+        fileReaderResult.size = p.first;
+        unsigned long pos = 0;
         unsigned long size = p.first;
         unsigned long uOffset = stoi(p.second);
+        __applyFileReaderOptions(fileReaderResult.size, pos, size, fileReaderOptions);
 
         vector<char>fileBuf ( size );
-        asarArchive.seekg(asarHeaderSize + uOffset);
+        asarArchive.seekg(asarHeaderSize + uOffset + pos);
         asarArchive.read(fileBuf.data(), size);
         string fileContent(fileBuf.begin(), fileBuf.end());
         fileReaderResult.data = fileContent;
@@ -78,7 +98,7 @@ fs::FileReaderResult __getFileFromBundle(const string &filename) {
    return fileReaderResult;
 }
 
-fs::FileReaderResult __getFileFromEmbedded(const string &filename) {
+fs::FileReaderResult __getFileFromEmbedded(const string &filename, const fs::FileReaderOptions &fileReaderOptions) {
     fs::FileReaderResult fileReaderResult;
     pair<long, string> p = __seekFilePos(filename, fileTree);
     if(p.first != -1) {
@@ -90,12 +110,15 @@ fs::FileReaderResult __getFileFromEmbedded(const string &filename) {
         }
 
         const unsigned char* bytes = (const unsigned char*)resource_ptr;
+        fileReaderResult.size = p.first;
+        unsigned long pos = 0;
         unsigned long size = p.first;
         unsigned long uOffset = stoi(p.second);
+        __applyFileReaderOptions(fileReaderResult.size, pos, size, fileReaderOptions);
 
         vector<char>fileBuf ( size );
-        for (size_t i = asarHeaderSize + uOffset; i < asarHeaderSize + uOffset + size; i++) {
-          fileBuf[i - (asarHeaderSize + uOffset)] = bytes[i];
+        for (size_t i = asarHeaderSize + uOffset + pos; i < asarHeaderSize + uOffset + pos + size; i++) {
+          fileBuf[i - (asarHeaderSize + uOffset + pos)] = bytes[i];
         }
 
         string fileContent(fileBuf.begin(), fileBuf.end());
@@ -186,14 +209,14 @@ bool extractFile(const string &filename, const string &outputFilename) {
     return fs::writeFile(fileWriterOptions);
 }
 
-fs::FileReaderResult getFile(const string &filename) {
+fs::FileReaderResult getFile(const string &filename, const fs::FileReaderOptions &fileReaderOptions) {
     if (resources::isEmbeddedMode()) {
-        return __getFileFromEmbedded(filename);
+        return __getFileFromEmbedded(filename, fileReaderOptions);
     }
     if(resources::isBundleMode()) {
-        return __getFileFromBundle(filename);
+        return __getFileFromBundle(filename, fileReaderOptions);
     }
-    return fs::readFile(settings::joinAppPath(filename));
+    return fs::readFile(settings::joinAppPath(filename), fileReaderOptions);
 }
 
 void init() {
