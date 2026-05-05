@@ -129,7 +129,7 @@ bool __makeBundleFileTree() {
     try {
         files = json::parse(headerContent);
     }
-    catch(exception e) {
+    catch(const exception& e) {
         debug::log(debug::LogTypeError, e.what());
     }
     fileTree = files;
@@ -163,7 +163,7 @@ bool __makeEmbeddedFileTree() {
     try {
         files = json::parse(headerContent);
     }
-    catch(exception e) {
+    catch(const exception& e) {
         debug::log(debug::LogTypeError, e.what());
     }
     fileTree = files;

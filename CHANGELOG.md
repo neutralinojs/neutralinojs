@@ -6,6 +6,23 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: computer
+- Implement `computer.setMousePosition(x, y)` to update the current mouse cursor position.
+- Implement `computer.setMouseGrabbing(grabbing; boolean)` to activate/deactivate confining the mouse cursor within the native app window. If `grabbing` is set to `true`, the mouse cursor always stays within the window boundaries, so this feature helps create interactive games and similar apps operated using the mouse.
+- Implement `computer.sendKey(keyCode, keyState)` to simulate keyboard events. App developers can use a platform-specific key code and states (`press`, `down`, and `up`) to simulate from simple single key strokes to complex key combinations:
+```js
+// Simulate letter 'a' press on GNU/Linux:
+await Neutralino.computer.sendKey(38)
+
+// Simulate Ctrl + V keyboard shortcut on GNU/Linux:
+await Neutralino.computer.sendKey(105, 'down')    // Hold right control
+await Neutralino.computer.sendKey(47, 'down')     // Hold letter 'v' 
+await Neutralino.computer.sendKey(47, 'up')       // Release letter 'v'
+await Neutralino.computer.sendKey(105, 'up')      // Release right control
+```
+
+## v6.5.0
+
 ### Core: events
 - New window events: `windowMinimize`, `windowRestore`, `windowMaximize`, `windowFullScreenEnter`, and `windowFullScreenExit`
 
@@ -18,14 +35,24 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 // cross-platform
 "browserBinary": "/path/to/chrome/bin"
 
-// cross-platform (with path variables)
-"browserBinary": "${NL_DATAHOMEPATH}/chrome/bin"
-
 // platform-specific path
 "browserBinaryLinux": "/usr/bin/google-chrome",
 "browserBinaryDarwin": "/Applications/Google Chrome.app",
 "browserBinaryWindows": "C:\\Programs\\Google Chrome\\chrome.exe"
+
+// cross-platform (with path constants)
+"browserBinary": "${NL_OSDATAPATH}/chrome/bin"
+"browserBinaryWindows": "${NL_OSDOWNLOADSPATH}/chrome.exe"
+```
+- Add the `modes.window.useLogicalPixels: true|false` option to activate DPI-aware sizing based on the operating system's display scale factor.
+- Add extra path constants support (early versions only supported `${NL_PATH}`) for the extensions command: `${NL_OSDATAPATH}`, `${NL_OSCACHEPATH}`, ... All supported path constants use this format: `${NL_OS<name>PATH}` where `<name>` is any accepted parameter (uppercased) to the `os.getPath(name)` function:
+```js
+"commandLinux": "${NL_OSDOWNLOADSPATH}/extensionBinary --load"
 ``` 
+
+### Improvements/bugfixes
+- Fix issues with filter extension handling of the file dialogs API on Linux
+- Fix tray icon disappearing issue on Windows
 
 ## v6.4.0
 

@@ -35,6 +35,9 @@ using namespace std;
 
 namespace window {
 
+// TODO: remove extern and fix multiple include errors
+extern NEU_W_HANDLE windowHandle;
+
 struct SizeOptions {
     int width = -1;
     int height = -1;
@@ -61,6 +64,7 @@ struct WindowOptions {
     bool useSavedState = true;
     bool injectGlobals = false;
     bool injectClientLibrary = false;
+    bool useLogicalPixels = false;
     bool skipTaskbar = false;
     string webviewArgs = "";
     string title = "Neutralinojs";
@@ -122,6 +126,7 @@ void setBorderless(bool borderless);
 void setSkipTaskbar(bool skip);
 bool snapshot(const string &filename);
 void setMainMenu(const json &menu);
+NEU_W_HANDLE getHandle();
 bool init(const json &windowOptions);
 
 void _close(int exitCode);

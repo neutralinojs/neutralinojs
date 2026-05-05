@@ -25,6 +25,9 @@ enum StatusCode {
     NE_OS_INVMSGA,
     NE_OS_TRAYIER,
     NE_OS_INVKNPT,
+    // computer
+    NE_CO_UNLTOSC,
+    NE_CO_UNLTOMG,
     // extensions
     NE_EX_EXTNOTC,
     // filesystem
