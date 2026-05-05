@@ -211,17 +211,9 @@ json getHostname(const json &input) {
         hostname = helpers::wstr2str(hostnameW);
     }
     #else
-    long hostnameMax = 255;
-    #if defined(_SC_HOST_NAME_MAX)
-    hostnameMax = sysconf(_SC_HOST_NAME_MAX);
-    if(hostnameMax < 0) {
-        hostnameMax = 255;
-    }
-    #endif
-
-    string hostnameBuffer(hostnameMax + 1, '\0');
-    if(gethostname(hostnameBuffer.data(), hostnameBuffer.size()) == 0) {
-        hostname = string(hostnameBuffer.c_str());
+    char hostnameBuffer[256] = { 0 };
+    if(gethostname(hostnameBuffer, sizeof(hostnameBuffer)) == 0) {
+        hostname = string(hostnameBuffer);
     }
     #endif
 
