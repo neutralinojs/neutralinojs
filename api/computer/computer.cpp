@@ -22,6 +22,7 @@
 #include <infoware/system.hpp>
 #include <infoware/cpu.hpp>
 #include "api/computer/computer.h"
+#include "helpers.h"
 #include "lib/json/json.hpp"
 
 using namespace std;
@@ -199,28 +200,33 @@ json getMousePosition(const json &input) {
 
 json getHostname(const json &input) {
     json output;
+    string hostname = "";
+
     #if defined(_WIN32)
-    char hostname[MAX_COMPUTERNAME_LENGTH + 1];
-    DWORD size = sizeof(hostname);
-    if(GetComputerNameA(hostname, &size)) {
-        output["returnValue"] = string(hostname);
-        output["success"] = true;
-    }
-    else {
-        output["error"] = "Unable to retrieve hostname";
-        output["success"] = false;
+    wstring hostnameW;
+    hostnameW.resize(MAX_COMPUTERNAME_LENGTH + 1);
+    DWORD size = MAX_COMPUTERNAME_LENGTH + 1;
+    if(GetComputerName(hostnameW.data(), &size)) {
+        hostnameW.resize(size);
+        hostname = helpers::wstr2str(hostnameW);
     }
     #else
-    char hostname[256];
-    if(gethostname(hostname, sizeof(hostname)) == 0) {
-        output["returnValue"] = string(hostname);
-        output["success"] = true;
-    }
-    else {
-        output["error"] = "Unable to retrieve hostname";
-        output["success"] = false;
+    long hostnameMax = 255;
+    #if defined(_SC_HOST_NAME_MAX)
+    hostnameMax = sysconf(_SC_HOST_NAME_MAX);
+    if(hostnameMax < 0) {
+        hostnameMax = 255;
     }
     #endif
+
+    string hostnameBuffer(hostnameMax + 1, '\0');
+    if(gethostname(hostnameBuffer.data(), hostnameBuffer.size()) == 0) {
+        hostname = string(hostnameBuffer.c_str());
+    }
+    #endif
+
+    output["returnValue"] = hostname;
+    output["success"] = true;
     return output;
 }
 
