@@ -59,6 +59,7 @@ struct WindowOptions {
     bool transparent = false;
     bool exitProcessOnClose = true;
     bool useSavedState = true;
+    bool useLogicalPixels = false;
     bool injectGlobals = false;
     bool injectClientLibrary = false;
     bool skipTaskbar = false;
@@ -103,12 +104,16 @@ void onClose();
 bool isSavedStateLoaded();
 bool isMaximized();
 void maximize();
+void unmaximize();
 void minimize();
+void unminimize();
+bool isMinimized();
 bool isVisible();
 bool isFakeHidden();
 void undoFakeHidden();
 void show();
 void hide();
+void focus();
 void setFullScreen();
 void exitFullScreen();
 bool isFullScreen();
@@ -123,6 +128,7 @@ void setSkipTaskbar(bool skip);
 bool snapshot(const string &filename);
 void setMainMenu(const json &menu);
 bool init(const json &windowOptions);
+NEU_W_HANDLE getHandle();
 
 void _close(int exitCode);
 
