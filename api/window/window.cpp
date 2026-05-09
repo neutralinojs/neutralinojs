@@ -12,6 +12,7 @@
 
 #elif defined(__APPLE__)
 #include <objc/objc-runtime.h>
+#include <dispatch/dispatch.h>
 #include <CoreFoundation/CoreFoundation.h>
 #include <CoreGraphics/CGDisplayConfiguration.h>
 #include <CoreGraphics/CGWindow.h>
@@ -824,6 +825,9 @@ bool __createWindow() {
 
 void _close(int exitCode) {
     if(nativeWindow) {
+        #if defined(__APPLE__)
+        dispatch_sync(dispatch_get_main_queue(), ^{
+		#endif
         if(windowProps.useSavedState) {
             __saveWindowProps();
         }
@@ -836,10 +840,14 @@ void _close(int exitCode) {
         }
         #endif
         nativeWindow->terminate(exitCode);
+		#if defined(__APPLE__)
+		});
+		#endif
         #if defined(_WIN32)
         FreeConsole();
         #endif
         delete nativeWindow;
+        nativeWindow = nullptr;
     }
 }
 
