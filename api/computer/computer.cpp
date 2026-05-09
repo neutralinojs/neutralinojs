@@ -430,6 +430,8 @@ json getHostname(const json &input) {
     #endif
 
     output["returnValue"] = hostname;
+}
+
 json setMousePosition(const json &input) {
     json output;
     
