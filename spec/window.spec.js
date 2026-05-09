@@ -288,44 +288,31 @@ describe('window.spec: window namespace tests', () => {
         });
     });
 
-    // TODO: Remove this check after fixing: #1080
-    if(process.platform == 'win32') {
     describe('window.setSize', () => {
-        it('exports the function to the app', async () => {
-            runner.run(`
-                await __close(typeof Neutralino.window.setSize);
-            `);
-            assert.equal(runner.getOutput(), 'function');
-        });
+     it('works without throwing errors', async () => {
+        runner.run(`
+            await Neutralino.window.setSize({
+                width: 100,
+                height: 200,
+                minWidth: 20,
+                minHeight: 20,
+                maxWidth: 500,
+                maxHeight: 500,
+                resizable: true
+            });
+            await __close('done');
+        `);
+        assert.equal(runner.getOutput(), 'done');
     });
-    }
-    else {
-    describe('window.setSize', () => {
-        it('works without throwing errors', async () => {
-            runner.run(`
-                await Neutralino.window.setSize({
-                    width: 100,
-                    height: 200,
-                    minWidth: 20,
-                    minHeight: 20,
-                    maxWidth: 500,
-                    maxHeight: 500,
-                    resizable: true
-                });
-                await __close('done');
-            `);
-            assert.equal(runner.getOutput(), 'done');
-        });
 
-        it('doesns\'t throw errors for missing params', async () => {
-            runner.run(`
-                await Neutralino.window.setSize();
-                await __close('done');
-            `);
-            assert.equal(runner.getOutput(), 'done');
-        });
+    it('doesn\'t throw errors for missing params', async () => {
+        runner.run(`
+            await Neutralino.window.setSize();
+            await __close('done');
+        `);
+        assert.equal(runner.getOutput(), 'done');
     });
-    }
+});
 
     describe('window.setAlwaysOnTop', () => {
         it('works without throwing errors', async () => {

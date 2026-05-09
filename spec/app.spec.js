@@ -7,18 +7,14 @@ describe('app.spec: app namespace tests', () => {
 
         it('works without parameters', async () => {
             let exitCode = runner.run(`
-                setTimeout(() => {
-                    Neutralino.app.exit();
-                }, 2000);
+                Neutralino.app.exit();
             `);
             assert.ok(typeof exitCode != undefined);
         });
 
         it('works with parameters', async () => {
             let exitCode = runner.run(`
-                setTimeout(() => {
-                    Neutralino.app.exit(1);
-                }, 2000);
+                await Neutralino.app.exit(1);
             `);
             assert.ok(typeof exitCode != undefined);
         });

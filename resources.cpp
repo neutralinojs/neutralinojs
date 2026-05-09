@@ -1,13 +1,9 @@
 #include <string>
-#include <iostream>
 #include <fstream>
-#include <regex>
 #include <vector>
 #include <filesystem>
-#include <limits.h>
 
 #include "lib/postject/postject-api.h"
-#include "lib/easylogging/easylogging++.h"
 #include "lib/json/json.hpp"
 #include "helpers.h"
 #include "errors.h"
@@ -129,7 +125,7 @@ bool __makeBundleFileTree() {
     try {
         files = json::parse(headerContent);
     }
-    catch(exception e) {
+    catch(const exception& e) {
         debug::log(debug::LogTypeError, e.what());
     }
     fileTree = files;
@@ -163,7 +159,7 @@ bool __makeEmbeddedFileTree() {
     try {
         files = json::parse(headerContent);
     }
-    catch(exception e) {
+    catch(const exception& e) {
         debug::log(debug::LogTypeError, e.what());
     }
     fileTree = files;
