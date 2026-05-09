@@ -1,7 +1,6 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
-const DEFAULT_TIMEOUT = process.platform === 'win32' ? 40000 : 20000;
 
 const SOURCE_TEMPLATE = `
 {BEFORE_INIT_CODE}
@@ -32,7 +31,7 @@ async function __init() {
     setTimeout(async () => {
         await Neutralino.filesystem.writeFile(NL_PATH + "/.tmp/output.txt", 'NL_SP_MAXTIMT');
         await Neutralino.app.exit(1); // max timeout force exit
-    }, {TIMEOUT});
+    }, {20000});
 }
 `;
 
@@ -82,16 +81,11 @@ function getOutput() {
 
 function makeCommand(optArgs = '') {
     let command = `..${path.sep}bin${path.sep}neutralino-`;
-    if(process.platform === 'linux') {
+    if(process.platform == 'linux') {
         command += 'linux_' + process.arch
     }
-    else if(process.platform === 'darwin') {
+    else if(process.platform == 'darwin') {
         command += 'mac_' + process.arch
-    }
-    else if(process.platform === 'win32') {
-        command += 'win_' + process.arch + '.exe'
-    }else {
-    throw new Error(`Unsupported platform: ${process.platform}`);
     }
     command += ' --load-dir-res --window-exit-process-on-close ' +
         '--url=/index_spec.html --window-enable-inspector=false ' + optArgs;
@@ -102,7 +96,6 @@ function makeAppSource(code, beforeInitCode = '') {
     return SOURCE_TEMPLATE
         .replace('{CODE}', code)
         .replace('{BEFORE_INIT_CODE}', beforeInitCode)
-        .replace('{TIMEOUT}', DEFAULT_TIMEOUT);
 }
 
 function cleanup() {
