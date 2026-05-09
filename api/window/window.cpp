@@ -12,6 +12,7 @@
 
 #elif defined(__APPLE__)
 #include <objc/objc-runtime.h>
+#include <dispatch/dispatch.h>
 #include <CoreFoundation/Corefoundation.h>
 #include <CoreGraphics/CGDisplayConfiguration.h>
 #include <CoreGraphics/CGWindow.h>
@@ -145,8 +146,8 @@ void windowStateChange(int state) {
 
 
 pair<int, int> __getCenterPos(bool useConfigSizes = false) {
-    int x, y = 0;
-    int width, height = 0;
+    int x = 0, y = 0;
+    int width = 0, height = 0;
     if(useConfigSizes) {
         width = windowProps.sizeOptions.width;
         height = windowProps.sizeOptions.height;
@@ -696,14 +697,21 @@ bool __createWindow() {
 
 void _close(int exitCode) {
     if(nativeWindow) {
+        #if defined(__APPLE__)
+        dispatch_sync(dispatch_get_main_queue(), ^{
+		#endif
         if(windowProps.useSavedState) {
             __saveWindowProps();
         }
         nativeWindow->terminate(exitCode);
+		#if defined(__APPLE__)
+		});
+		#endif
         #if defined(_WIN32)
         FreeConsole();
         #endif
         delete nativeWindow;
+        nativeWindow = nullptr;
     }
 }
 

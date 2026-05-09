@@ -16,14 +16,14 @@ namespace controllers {
 json getFormat(const json &input) {
     json output;
     string format = "unknown";
-    if(clip::has(clip::text_format())) {
-        format = "text";
-    }
-    else if(clip::has(clip::image_format())) {
+    if(clip::has(clip::image_format())) {
         format = "image";
     }
     else if(clip::has(clip::html_format())) {
         format = "html";
+    }
+    else if(clip::has(clip::text_format())) {
+        format = "text";
     }
     output["returnValue"] = format;
     output["success"] = true;
