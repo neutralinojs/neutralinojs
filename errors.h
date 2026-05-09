@@ -29,6 +29,7 @@ enum StatusCode {
     NE_CO_UNLTOSC,
     NE_CO_UNLTOMG,
     NE_CO_UNLTONI,
+    NE_CO_UNLTOSK,
     // extensions
     NE_EX_EXTNOTC,
     // filesystem
@@ -46,6 +47,7 @@ enum StatusCode {
     NE_FS_UNLCWAT,
     NE_FS_NOWATID,
     NE_FS_UNLSTPR,
+    NE_FS_TRSERR,
     // window
     NE_WI_UNBSWSR,
     // router

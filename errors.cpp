@@ -29,6 +29,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_CO_UNLTOSC: return "NE_CO_UNLTOSC";
         case errors::NE_CO_UNLTOMG: return "NE_CO_UNLTOMG";
         case errors::NE_CO_UNLTONI: return "NE_CO_UNLTONI";
+        case errors::NE_CO_UNLTOSK: return "NE_CO_UNLTOSK";
         // extensions
         case errors::NE_EX_EXTNOTC: return "NE_EX_EXTNOTC";
         // filesystem
@@ -46,6 +47,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_FS_UNLCWAT: return "NE_FS_UNLCWAT";
         case errors::NE_FS_NOWATID: return "NE_FS_NOWATID";
         case errors::NE_FS_UNLSTPR: return "NE_FS_UNLSTPR";
+        case errors::NE_FS_TRSERR: return "NE_FS_TRSERR";
         // window
         case errors::NE_WI_UNBSWSR: return "NE_WI_UNBSWSR";
         // router
@@ -94,6 +96,8 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_CO_UNLTOSC: return "Unable to set mouse cursor";
         case errors::NE_CO_UNLTOMG: return "Unable to set mouse grabbinng";
         case errors::NE_CO_UNLTONI: return "Unable to retrieve network interfaces";
+        case errors::NE_CO_UNLTOMG: return "Unable to set mouse grabbing";
+        case errors::NE_CO_UNLTOSK: return "Unable to send keys";
         // extensions
         case errors::NE_EX_EXTNOTC: return "%1 is not connected yet";
         // filesystem
@@ -111,6 +115,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_FS_UNLCWAT: return "Unable to create watcher for path: %1";
         case errors::NE_FS_NOWATID: return "Unable to find watcher: %1";
         case errors::NE_FS_UNLSTPR: return "Unable to set file permissions for %1";
+        case errors::NE_FS_TRSERR: return "Cannot move to trash: %1";
         // window
         case errors::NE_WI_UNBSWSR: return "Unable to save window screenshot to %1";
         // router
