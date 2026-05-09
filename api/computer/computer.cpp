@@ -481,7 +481,7 @@ json sendKey(const json &input) {
         if(state == "up") keyState = computer::SendKeyStateUp;
     }
 
-    if(!computer::sendKey(key, state)) {
+    if(!computer::sendKey(keyCode, keyState)) {
         output["error"] = errors::makeErrorPayload(errors::NE_CO_UNLTOSK);
         return output;
     }
