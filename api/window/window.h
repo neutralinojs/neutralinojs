@@ -62,7 +62,6 @@ struct WindowOptions {
     bool transparent = false;
     bool exitProcessOnClose = true;
     bool useSavedState = true;
-    bool useLogicalPixels = false;
     bool injectGlobals = false;
     bool injectClientLibrary = false;
     bool useLogicalPixels = false;
