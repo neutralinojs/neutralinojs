@@ -23,14 +23,22 @@
 
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
 #include <unistd.h>
+#include <pwd.h>
+#include <sys/types.h>
 extern char **environ;
+#endif
 
-#elif defined(_WIN32)
+#if defined(__APPLE__)
+#include <objc/objc-runtime.h>
+#endif
+
+#if defined(_WIN32)
 #define _WINSOCKAPI_
 #include <windows.h>
 #include <tchar.h>
 #include <gdiplus.h>
 #include <shlwapi.h>
+#include <shlobj.h>
 
 #pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "Gdiplus.lib")
@@ -81,9 +89,22 @@ bool isTrayInitialized() {
 }
 
 void cleanupTray() {
-    if(os::isTrayInitialized()) {
+    if(!os::isTrayInitialized()) return;
         tray_exit();
+    #if defined(_WIN32)
+    if (tray.icon) {
+        DestroyIcon(tray.icon);
+        tray.icon = nullptr;
     }
+    #elif defined(__APPLE__)
+    if (tray.icon) {
+        ((void (*)(id, SEL))objc_msgSend)(tray.icon, sel_registerName("release"));
+        tray.icon = nullptr;
+    }
+    #elif defined(__linux__) || defined(__FreeBSD__)
+    delete[] tray.icon;
+    tray.icon = nullptr;
+    #endif
 }
 
 void open(const string &url) {
@@ -211,6 +232,7 @@ pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &optio
 }
 
 bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt) {
+    lock_guard<mutex> guard(spawnedProcessesLock);
     if(spawnedProcesses.find(evt.id) == spawnedProcesses.end()) {
         return false;
     }
@@ -257,6 +279,22 @@ string getPath(const string &name) {
         path = sago::getSaveGamesFolder2();
     else if(name == "temp")
         path = FS_CONVWSTR(filesystem::temp_directory_path());
+    else if(name == "desktop")
+        path = sago::getDesktopFolder();
+    else if(name == "home") {
+        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+        struct passwd *pw = getpwuid(getuid());
+        if(pw) {
+            path = string(pw->pw_dir);
+        }
+        #elif defined(_WIN32)
+        PWSTR homePath = nullptr;
+        if(SHGetKnownFolderPath(FOLDERID_Profile, 0, nullptr, &homePath) == S_OK) {
+            path = helpers::wstr2str(wstring(homePath));
+            CoTaskMemFree(homePath);
+        }
+        #endif
+    }
     return helpers::normalizePath(path);
 }
 
@@ -278,9 +316,13 @@ vector<string> __extensionsToVector(const json &filters) {
     vector<string> filtersV = {};
     for (auto &filter: filters) {
         filtersV.push_back(filter["name"].get<string>());
+		const auto &exts = filter["extensions"];
         string extensions = "";
-        for (auto &extension: filter["extensions"]) {
-            extensions += "*." + extension.get<string>() + " ";
+        for (int i = 0; i < exts.size(); i++) {
+            extensions += "*." + exts[i].get<string>();
+			if (i + 1 < exts.size()) {
+				extensions += " ";
+			}
         }
         filtersV.push_back(extensions);
     }
@@ -467,6 +509,7 @@ json showOpenDialog(const json &input) {
 
     if(helpers::hasField(input, "defaultPath")) {
         defaultPath = input["defaultPath"].get<string>();
+        defaultPath = helpers::unNormalizePath(defaultPath);
     }
 
     vector<string> selectedEntries = pfd::open_file(title, defaultPath, filters, option).result();
@@ -556,12 +599,40 @@ json showNotification(const json &input) {
         {"QUESTION", pfd::icon::question}
     };
 
-    if(iconMap.find(icon) != iconMap.end()) {
-        pfd::notify(title, content, iconMap[icon]);
+    if(iconMap.find(icon) == iconMap.end()) {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_INVNOTA, icon);
+        return output;
+    }
+
+#if defined(__APPLE__)
+    // Check if running as App Bundle by checking bundleIdentifier
+    id bundle = ((id (*)(id, SEL))objc_msgSend)("NSBundle"_cls, "mainBundle"_sel);
+    id bundleId = ((id (*)(id, SEL))objc_msgSend)(bundle, "bundleIdentifier"_sel);
+
+    if (bundleId != nullptr) {
+        // App Bundle: Use native NSUserNotificationCenter
+        id notification = ((id (*)(id, SEL))objc_msgSend)("NSUserNotification"_cls, "new"_sel);
+
+        id nsTitle = ((id (*)(id, SEL, const char*))objc_msgSend)(
+            "NSString"_cls, "stringWithUTF8String:"_sel, title.c_str());
+        id nsContent = ((id (*)(id, SEL, const char*))objc_msgSend)(
+            "NSString"_cls, "stringWithUTF8String:"_sel, content.c_str());
+
+        ((void (*)(id, SEL, id))objc_msgSend)(notification, "setTitle:"_sel, nsTitle);
+        ((void (*)(id, SEL, id))objc_msgSend)(notification, "setInformativeText:"_sel, nsContent);
+
+        id notificationCenter = ((id (*)(id, SEL))objc_msgSend)(
+            "NSUserNotificationCenter"_cls, "defaultUserNotificationCenter"_sel);
+        ((void (*)(id, SEL, id))objc_msgSend)(
+            notificationCenter, "deliverNotification:"_sel, notification);
     }
     else {
-        output["error"] = errors::makeErrorPayload(errors::NE_OS_INVNOTA, icon);
+        // Not App Bundle: Fall back to osascript via pfd::notify
+        pfd::notify(title, content, iconMap[icon]);
     }
+#else
+    pfd::notify(title, content, iconMap[icon]);
+#endif
     output["success"] = true;
     return output;
 }
@@ -696,6 +767,9 @@ json setTray(const json &input) {
         tray.icon = helpers::cStrCopy(fullIconPath);
 
         #elif defined(_WIN32)
+        if(tray.icon) {
+            DestroyIcon(tray.icon);
+        }
         fs::FileReaderResult fileReaderResult = resources::getFile(iconPath);
         string iconDataStr = fileReaderResult.data;
         const char *iconData = iconDataStr.c_str();
@@ -706,6 +780,9 @@ json setTray(const json &input) {
         pStream->Release();
 
         #elif defined(__APPLE__)
+        if(tray.icon) {
+            ((void (*)(id, SEL))objc_msgSend)(tray.icon, sel_registerName("release"));
+        }
         fs::FileReaderResult fileReaderResult = resources::getFile(iconPath);
         string iconDataStr = fileReaderResult.data;
         const char *iconData = iconDataStr.c_str();
@@ -716,6 +793,10 @@ json setTray(const json &input) {
                     "dataWithBytes:length:"_sel, iconData, iconDataStr.length());
 
         ((void (*)(id, SEL, id))objc_msgSend)(tray.icon, "initWithData:"_sel, nsIconData);
+
+        if(helpers::hasField(input, "useTemplateIcon") && input["useTemplateIcon"].get<bool>()) {
+            ((void (*)(id, SEL, BOOL))objc_msgSend)(tray.icon, "setTemplate:"_sel, YES);
+        }
         #endif
     }
 

@@ -21,13 +21,10 @@ jobs:
         include:
           - arch: amd64
             toolchain: ''
-            neuarch: 'x64'
           - arch: arm64
             toolchain: '-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/linux-aarch64.cmake'
-            neuarch: 'arm64'
           - arch: armhf
             toolchain: '-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/linux-armhf.cmake'
-            neuarch: 'armhf'
         
     steps:
     - name: Checkout
@@ -89,19 +86,19 @@ jobs:
         ninja -C build -j$(nproc)
 
     - name: Setup Spec Requirements (Build client)
-      if: ${{ matrix.arch == 'x64' }}
+      if: ${{ matrix.arch == 'amd64' }}
       run: |
         echo "$BUILD_CLIENT" > build_client.sh
         chmod +x build_client.sh
         ./build_client.sh
 
     - name: Setup Spec Requirements (Setup extensions)
-      if: ${{ matrix.arch == 'x64' }}
+      if: ${{ matrix.arch == 'amd64' }}
       working-directory: ./bin/extensions/sampleextension
       run: npm ci
 
     - name: Run Spec
-      if: ${{ matrix.arch == 'x64' }}
+      if: ${{ matrix.arch == 'amd64' }}
       working-directory: ./spec
       run: |
         npm ci

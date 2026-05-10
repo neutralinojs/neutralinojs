@@ -12,6 +12,7 @@
 
 #elif defined(__APPLE__)
 #include <objc/objc-runtime.h>
+#include <dispatch/dispatch.h>
 #include <CoreFoundation/Corefoundation.h>
 #include <CoreGraphics/CGDisplayConfiguration.h>
 #include <CoreGraphics/CGWindow.h>
@@ -135,6 +136,9 @@ void windowStateChange(int state) {
         case WEBVIEW_WINDOW_MAXIMIZE:
             events::dispatch("windowMaximize", nullptr);
             break;
+        case WEBVIEW_WINDOW_ACTIVATE:
+            window::focus();
+            break;
     }
 }
 
@@ -142,8 +146,8 @@ void windowStateChange(int state) {
 
 
 pair<int, int> __getCenterPos(bool useConfigSizes = false) {
-    int x, y = 0;
-    int width, height = 0;
+    int x = 0, y = 0;
+    int width = 0, height = 0;
     if(useConfigSizes) {
         width = windowProps.sizeOptions.width;
         height = windowProps.sizeOptions.height;
@@ -228,6 +232,26 @@ bool __getEncoderClsid(const WCHAR *format, CLSID *pClsid) {
 }
 #endif
 
+double __getScaleFactor() {
+	#if defined(_WIN32)
+    return GetDpiForSystem() / 96.0;
+
+	#elif defined(__APPLE__)
+    id screen = ((id (*)(id, SEL))objc_msgSend)(
+        "NSScreen"_cls, "mainScreen"_sel);
+    return ((double (*)(id, SEL))objc_msgSend)(
+        screen, "backingScaleFactor"_sel);
+
+	#elif defined(__linux__) || defined(__FreeBSD__)
+    GdkDisplay* display = gdk_display_get_default();
+    GdkMonitor* monitor = gdk_display_get_primary_monitor(display);
+    return gdk_monitor_get_scale_factor(monitor);
+
+	#else
+    return 1.0;
+	#endif
+}
+
 json __sizeOptionsToJson(const window::SizeOptions &opt) {
     json output = {
         {"width", opt.width},
@@ -290,7 +314,7 @@ bool __loadSavedWindowProps() {
         SetWindowPlacement(windowHandle, &wp);
         #endif
     }
-    catch(exception e) {
+    catch(const exception& e) {
         debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_CF_UNBLWCF, string(NEU_WIN_CONFIG_FILE)));
         return false;
     }
@@ -591,11 +615,25 @@ bool __createWindow() {
     if(windowProps.extendUserAgentWith != "") {
         nativeWindow->extend_user_agent(windowProps.extendUserAgentWith);
     }
-    nativeWindow->set_size(windowProps.sizeOptions.width,
-                    windowProps.sizeOptions.height,
-                    windowProps.sizeOptions.minWidth, windowProps.sizeOptions.minHeight,
-                    windowProps.sizeOptions.maxWidth, windowProps.sizeOptions.maxHeight,
-                    windowProps.sizeOptions.resizable);
+
+    int width = windowProps.sizeOptions.width;
+    int height = windowProps.sizeOptions.height;
+    if(windowProps.useLogicalPixels) {
+        double scale = __getScaleFactor();
+        if(width > 0)  width  = (int)(width  * scale);
+        if(height > 0) height = (int)(height * scale);
+    }
+
+    nativeWindow->set_size(
+    width,
+    height,
+    windowProps.sizeOptions.minWidth,
+    windowProps.sizeOptions.minHeight,
+    windowProps.sizeOptions.maxWidth,
+    windowProps.sizeOptions.maxHeight,
+    windowProps.sizeOptions.resizable
+);
+
     nativeWindow->setEventHandler(&window::handlers::windowStateChange);
 
     if(windowProps.injectGlobals) 
@@ -659,14 +697,21 @@ bool __createWindow() {
 
 void _close(int exitCode) {
     if(nativeWindow) {
+        #if defined(__APPLE__)
+        dispatch_sync(dispatch_get_main_queue(), ^{
+		#endif
         if(windowProps.useSavedState) {
             __saveWindowProps();
         }
         nativeWindow->terminate(exitCode);
+		#if defined(__APPLE__)
+		});
+		#endif
         #if defined(_WIN32)
         FreeConsole();
         #endif
         delete nativeWindow;
+        nativeWindow = nullptr;
     }
 }
 
@@ -711,6 +756,28 @@ void unmaximize() {
     #elif defined(__APPLE__)
     ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
         "zoom:"_sel, NULL);
+    #endif
+}
+
+void unminimize() {
+    #if defined(__linux__) || defined(__FreeBSD__)
+    gtk_window_present(GTK_WINDOW(windowHandle));
+    #elif defined(_WIN32)
+    ShowWindow(windowHandle, SW_RESTORE);
+    #elif defined(__APPLE__)
+    ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
+        "deminiaturize:"_sel, NULL);
+    #endif
+}
+
+bool isMinimized() {
+    #if defined(__linux__) || defined(__FreeBSD__)
+    return isGtkWindowMinimized;
+    #elif defined(_WIN32)
+    return IsIconic(windowHandle) == 1;
+    #elif defined(__APPLE__)
+    return ((bool (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
+        "isMiniaturized"_sel, NULL);
     #endif
 }
 
@@ -769,6 +836,25 @@ void hide() {
     #endif
 
     window::handlers::windowStateChange(WEBVIEW_WINDOW_HIDE);
+}
+
+void focus() {
+    #if defined(__linux__) || defined(__FreeBSD__)
+    gtk_window_present(GTK_WINDOW(windowHandle));
+    #elif defined(__APPLE__)
+    ((void (*)(id, SEL, BOOL))objc_msgSend)(
+        ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls, "sharedApplication"_sel),
+        "activateIgnoringOtherApps:"_sel, 1);
+    if(window::isMinimized()) {
+        window::unminimize();
+    }
+    else {
+        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
+                "makeKeyAndOrderFront:"_sel, NULL);
+    }
+    #elif defined(_WIN32)
+    SetForegroundWindow(windowHandle);
+    #endif
 }
 
 bool isFullScreen() {
@@ -947,6 +1033,11 @@ window::SizeOptions getSize() {
         height = winPos.bottom - winPos.top;
     }
     #endif
+    if(windowProps.useLogicalPixels) {
+        double scale = __getScaleFactor();
+        width = (int)(width / scale);
+        height = (int)(height / scale);
+   }
 
     windowProps.sizeOptions.width = width;
     windowProps.sizeOptions.height = height;
@@ -1178,6 +1269,11 @@ bool init(const json &windowOptions) {
 
     if(helpers::hasField(windowOptions, "x"))
         windowProps.x = windowOptions["x"].get<int>();
+    
+    if(helpers::hasField(windowOptions, "useLogicalPixels")) {
+        windowProps.useLogicalPixels = windowOptions["useLogicalPixels"].get<bool>();
+    }
+
 
     if(helpers::hasField(windowOptions, "y"))
         windowProps.y = windowOptions["y"].get<int>();
@@ -1250,6 +1346,10 @@ bool init(const json &windowOptions) {
     return true;
 }
 
+NEU_W_HANDLE getHandle() {
+    return windowHandle;
+}
+
 namespace controllers {
 
 json setTitle(const json &input) {
@@ -1307,30 +1407,14 @@ json minimize(const json &input) {
 
 json unminimize(const json &input) {
     json output;
-    #if defined(__linux__) || defined(__FreeBSD__)
-    gtk_window_present(GTK_WINDOW(windowHandle));
-    #elif defined(_WIN32)
-    ShowWindow(windowHandle, SW_RESTORE);
-    #elif defined(__APPLE__)
-    ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
-        "deminiaturize:"_sel, NULL);
-    #endif
+    window::unminimize();
     output["success"] = true;
     return output;
 }
 
 json isMinimized(const json &input) {
     json output;
-    bool minimized = false;
-    #if defined(__linux__) || defined(__FreeBSD__)
-    minimized = isGtkWindowMinimized;
-    #elif defined(_WIN32)
-    minimized = IsIconic(windowHandle) == 1;
-    #elif defined(__APPLE__)
-    minimized = ((bool (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
-        "isMiniaturized"_sel, NULL);
-    #endif
-    output["returnValue"] = minimized;
+    output["returnValue"] = window::isMinimized();
     output["success"] = true;
     return output;
 }
@@ -1385,14 +1469,7 @@ json isFullScreen(const json &input) {
 
 json focus(const json &input) {
     json output;
-    #if defined(__linux__) || defined(__FreeBSD__)
-    gtk_window_present(GTK_WINDOW(windowHandle));
-    #elif defined(__APPLE__)
-    ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
-            "orderFront:"_sel, NULL);
-    #elif defined(_WIN32)
-    SetForegroundWindow(windowHandle);
-    #endif
+    window::focus();
     output["success"] = true;
     return output;
 }
@@ -1433,13 +1510,30 @@ json center(const json &input) {
 json setSize(const json &input) {
     json output;
     windowProps.sizeOptions = __jsonToSizeOptions(input);
-    nativeWindow->set_size(windowProps.sizeOptions.width, windowProps.sizeOptions.height,
-                    windowProps.sizeOptions.minWidth, windowProps.sizeOptions.minHeight,
-                    windowProps.sizeOptions.maxWidth, windowProps.sizeOptions.maxHeight,
-                    windowProps.sizeOptions.resizable);
+
+    int width = windowProps.sizeOptions.width;
+    int height = windowProps.sizeOptions.height;
+
+    if(windowProps.useLogicalPixels) {
+        double scale = __getScaleFactor();
+        if(width > 0)  width  = (int)(width  * scale);
+        if(height > 0) height = (int)(height * scale);
+    }
+
+    nativeWindow->set_size(
+        width,
+        height,
+        windowProps.sizeOptions.minWidth,
+        windowProps.sizeOptions.minHeight,
+        windowProps.sizeOptions.maxWidth,
+        windowProps.sizeOptions.maxHeight,
+        windowProps.sizeOptions.resizable
+    );
+
     output["success"] = true;
     return output;
 }
+
 
 json getSize(const json &input) {
     json output;

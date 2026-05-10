@@ -1441,4 +1441,46 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             assert.equal(permissions.all, false);
         });
     });
+
+    describe('filesystem.moveToTrash', () => {
+        it('moves a file to trash without throwing errors', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/trash-test.txt', 'Hello');
+                await Neutralino.filesystem.moveToTrash(NL_PATH + '/.tmp/trash-test.txt');
+                try {
+                    await Neutralino.filesystem.getStats(NL_PATH + '/.tmp/trash-test.txt');
+                    await __close('still exists');
+                } catch (error) {
+                    await __close('moved');
+                }
+            `);
+            assert.equal(runner.getOutput(), 'moved');
+        });
+
+        it('moves a directory to trash without throwing errors', async () => {
+            runner.run(`
+                await Neutralino.filesystem.createDirectory(NL_PATH + '/.tmp/trash-dir');
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/trash-dir/file.txt', 'Hello');
+                await Neutralino.filesystem.moveToTrash(NL_PATH + '/.tmp/trash-dir');
+                try {
+                    await Neutralino.filesystem.getStats(NL_PATH + '/.tmp/trash-dir');
+                    await __close('still exists');
+                } catch (error) {
+                    await __close('moved');
+                }
+            `);
+            assert.equal(runner.getOutput(), 'moved');
+        });
+
+        it('throws an error for a non-existent path', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.moveToTrash(NL_PATH + '/.tmp/nonexistent-file.txt');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_TRSERR');
+        });
+    });
 });
