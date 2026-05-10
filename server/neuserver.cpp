@@ -171,14 +171,18 @@ void stop() {
 }
 
 void handleMessage(websocketpp::connection_hdl handler, websocketserver::message_ptr msg) {
-     if (wsMode.find(handler) == wsMode.end()) {
-            auto op = msg->get_opcode();
-            if (op == websocketpp::frame::opcode::binary) {
-                wsMode[handler] = websocketpp::frame::opcode::binary;
-            } else {
-                wsMode[handler] = websocketpp::frame::opcode::text;
-            }
+    websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
+    string url = con->get_resource();
+    if(__isExtensionEndpoint(url) && wsMode.find(handler) == wsMode.end()) {
+        auto op = msg->get_opcode();
+
+        if(op == websocketpp::frame::opcode::binary) {
+        wsMode[handler] = websocketpp::frame::opcode::binary;
         }
+        else {
+        wsMode[handler] = websocketpp::frame::opcode::text;
+        }
+    }
     json nativeMessage;
     try {
         nativeMessage = json::parse(msg->get_payload());
@@ -195,9 +199,11 @@ void handleMessage(websocketpp::connection_hdl handler, websocketserver::message
             nativeMessage["method"] = nativeResponse.method;
             nativeMessage["data"] = nativeResponse.data;
 
-            auto op = wsMode.count(handler)
-                ? wsMode[handler]
-                : websocketpp::frame::opcode::text;
+            auto op = websocketpp::frame::opcode::text;
+
+            if(__isExtensionEndpoint(url) && wsMode.count(handler)) {
+                op = wsMode[handler];
+            }
 
             server->send(handler, helpers::jsonToString(nativeMessage), op);
         } catch (websocketpp::exception const & e) {
@@ -242,6 +248,8 @@ void handleConnect(websocketpp::connection_hdl handler) {
 }
 
 void handleDisconnect(websocketpp::connection_hdl handler) {
+    wsMode.erase(handler);
+    
     websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
     string url = con->get_resource();
     if(__isExtensionEndpoint(url)) {
