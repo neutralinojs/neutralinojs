@@ -1,10 +1,15 @@
 cmake_minimum_required(VERSION 3.16)
-set(NEU_VERSION "6.4.0")
+set(NEU_VERSION "6.7.0")
 set(NEU_CXX_STANDARD 17)
 if(APPLE)
   project(NeutralinoJS LANGUAGES C CXX OBJC OBJCXX)
 else()
   project(NeutralinoJS LANGUAGES C CXX)
+endif()
+
+# MSVC runtime (FIX for clean Windows)
+if (MSVC)
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
 execute_process(
@@ -209,8 +214,12 @@ elseif(APPLE)
     target_link_libraries(${PROJECT_NAME} PRIVATE
       ${WebKit_FRAMEWORK}
       ${COCOA_FRAMEWORK}
-      ${SCREENCAPTUREKIT_FRAMEWORK}
     )
+    if(SCREENCAPTUREKIT_FRAMEWORK)
+      target_link_libraries(${PROJECT_NAME} PRIVATE
+        ${SCREENCAPTUREKIT_FRAMEWORK}
+      )
+    endif()
     target_compile_options(${PROJECT_NAME} PRIVATE
       -Wno-deprecated-declarations
       -Os
@@ -226,6 +235,7 @@ elseif(UNIX)
     pkg_check_modules(XCB REQUIRED xcb)
     pkg_check_modules(X11 REQUIRED x11)
     pkg_check_modules(XRANDR REQUIRED xrandr)
+    pkg_check_modules(XTST REQUIRED xtst)
     
     target_include_directories(${PROJECT_NAME} PRIVATE 
       ${GTK3_INCLUDE_DIRS}
@@ -233,6 +243,7 @@ elseif(UNIX)
       ${XCB_INCLUDE_DIRS}
       ${X11_INCLUDE_DIRS}
       ${XRANDR_INCLUDE_DIRS}
+      ${XTST_INCLUDE_DIRS}
     )
     
     target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -241,6 +252,7 @@ elseif(UNIX)
       ${XCB_LIBRARIES}
       ${X11_LIBRARIES}
       ${XRANDR_LIBRARIES}
+      ${XTST_LIBRARIES}
       pthread
       png
       stdc++fs

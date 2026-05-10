@@ -1,5 +1,3 @@
-#include <iostream>
-#include <cstdlib>
 #include <string>
 #include <regex>
 #include <map>
@@ -190,21 +188,21 @@ void handleMessage(websocketpp::connection_hdl handler, websocketserver::message
         });
 
         try {
-            json nativeMessage;
-            nativeMessage["id"] = nativeResponse.id;
-            nativeMessage["method"] = nativeResponse.method;
-            nativeMessage["data"] = nativeResponse.data;
+            json responseMessage;
+            responseMessage["id"] = nativeResponse.id;
+            responseMessage["method"] = nativeResponse.method;
+            responseMessage["data"] = nativeResponse.data;
 
             auto op = wsMode.count(handler)
                 ? wsMode[handler]
                 : websocketpp::frame::opcode::text;
 
-            server->send(handler, helpers::jsonToString(nativeMessage), op);
+            server->send(handler, helpers::jsonToString(responseMessage), op);
         } catch (websocketpp::exception const & e) {
             debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_SR_UNBSEND));
         }
     }
-    catch(exception e) {
+    catch(const exception& e) {
         debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_SR_UNBPARS));
     }
 }
@@ -288,7 +286,7 @@ bool handleValidate(websocketpp::connection_hdl handler) {
 
 void broadcast(const json &message) {
     neuserver::broadcastToAllApps(message);
-    neuserver::broadcastToAllExtensions(message);
+    neuserver::broadcastToAllExtensions(message); 
 }
 
 bool sendToExtension(const string &extensionId, const json &message) {

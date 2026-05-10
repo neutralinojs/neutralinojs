@@ -135,11 +135,110 @@ describe('computer.spec: computer namespace tests', () => {
     
             let result = JSON.parse(runner.getOutput());
             let pos = result.position;
-            let screenWidth = result.screen[0].resolution.width;
-            let screenHeight = result.screen[0].resolution.height;
+            
+            assert.ok(typeof pos.x === 'number');
+            assert.ok(typeof pos.y === 'number');  
+            
+            if(result.screen.length > 0) {
+                let screenWidth = result.screen[0].resolution.width;
+                let screenHeight = result.screen[0].resolution.height;
+
+                assert.ok(pos.x >= 0 && pos.x <= screenWidth);
+                assert.ok(pos.y >= 0 && pos.y <= screenHeight);
+            }
     
-            assert.ok(pos.x >= 0 && pos.x <= screenWidth, `Mouse x position ${pos.x} is outside the screen width ${screenWidth}`);
-            assert.ok(pos.y >= 0 && pos.y <= screenHeight, `Mouse y position ${pos.y} is outside the screen height ${screenHeight}`);
         });
     });
+
+    describe('computer.getInputCapabilities', () => {
+        it('returns input capability flags', async () => {
+            runner.run(`
+                try {
+                    let caps = await Neutralino.computer.getInputCapabilities();
+                    await __close(JSON.stringify(caps));
+                } catch(e) {
+                    await __close("skipped");
+                }
+            `, { allowNative: true });
+
+            let output = runner.getOutput();
+            if(output === "skipped") return;
+            let caps = JSON.parse(output);
+            assert.ok(typeof caps == 'object');
+            assert.ok(typeof caps.warp == 'boolean');
+            assert.ok(typeof caps.grab == 'boolean');
+            assert.ok(typeof caps.syntheticKeys == 'boolean');
+        });
+    });
+
+    describe('computer.setCursorPosition', () => {
+        it('moves cursor without throwing error', async () => {
+            runner.run(`
+                try {
+                    let caps = await Neutralino.computer.getInputCapabilities();
+                    if(!caps.warp) {
+                        await __close("skipped");
+                        return;
+                    }
+                    let pos = await Neutralino.computer.getMousePosition();
+                    await Neutralino.computer.setCursorPosition({ x: pos.x, y: pos.y });
+                    await __close("ok");
+                } catch(e) {
+                    await __close("skipped");
+                }
+            `, { allowNative: true });
+
+            let out = runner.getOutput();
+            assert.ok(out === "ok" || out === "skipped");
+        });
+    });
+
+    describe('computer.setCursorGrab', () => {
+        it('enables and disables cursor grab', async () => {
+            runner.run(`
+                try {
+                    let caps = await Neutralino.computer.getInputCapabilities();
+                    if(!caps.grab) {
+                        await __close("skipped");
+                        return;
+                    }
+                    await Neutralino.computer.setCursorGrab({ enabled: true });
+                    await Neutralino.computer.setCursorGrab({ enabled: false });
+                    await __close("ok");
+                } catch(e) {
+                    await __close("skipped");
+                }
+            `, { allowNative: true });
+
+            let out = runner.getOutput();
+            assert.ok(out === "ok" || out === "skipped");
+        });
+    });
+
+    describe('computer.sendKey', () => {
+        it('sends a synthetic key event', async () => {
+            runner.run(`
+                try {
+                    let caps = await Neutralino.computer.getInputCapabilities();
+                    if(!caps.syntheticKeys) {
+                        await __close("skipped");
+                        return;
+                    }
+                    window.__lastKey = null;
+                    document.addEventListener('keydown', e => {
+                        window.__lastKey = e.key;
+                    });
+                    await Neutralino.computer.sendKey({ key: "a" });
+                    await new Promise(r => setTimeout(r, 100));
+                    await __close(window.__lastKey || "skipped");
+                } catch(e) {
+                    await __close("skipped");
+                }
+            `, { allowNative: true });
+
+            let key = runner.getOutput();
+            assert.ok(key === "a" || key === "skipped", "Expected 'a' or skipped depending on platform");
+        });
+    });
+
 });

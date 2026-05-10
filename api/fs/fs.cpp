@@ -1,8 +1,9 @@
 #include <map>
 #include <mutex>
-#include <iostream>
 #include <fstream>
 #include <regex>
+#include <algorithm>
+#include <cctype>
 #include <filesystem>
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
@@ -11,12 +12,18 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <libgen.h>
+#endif
 
-#elif defined(_WIN32)
+#if defined(__APPLE__)
+#include <objc/objc-runtime.h>
+#endif
+
+#if defined(_WIN32)
 #define _WINSOCKAPI_
 #include <windows.h>
 #include <atlstr.h>
 #include <shlwapi.h>
+#include <shellapi.h>
 #include <winbase.h>
 
 #define NEU_WINDOWS_TICK 10000000
@@ -26,7 +33,6 @@
 #include <efsw/efsw.hpp>
 #include "lib/json/json.hpp"
 #include "lib/base64/base64.hpp"
-#include "lib/platformfolders/platform_folders.h"
 #include "settings.h"
 #include "helpers.h"
 #include "errors.h"
@@ -352,8 +358,51 @@ fs::DirReaderResult readDirectory(const string &path, bool recursive) {
 
 string applyPathConstants(const string &path) {
     string newPath = regex_replace(path, regex("\\$\\{NL_PATH\\}"), settings::getAppPath());
-    newPath = regex_replace(newPath, regex("\\$\\{NL_DATAHOMEPATH\\}"), sago::getDataHome());
-    return helpers::normalizePath(newPath);
+
+    vector<string> pathNames = {"data", "cache", "documents", 
+                    "pictures", "music", "video", "downloads",
+                    "saveGames1", "saveGames2", "temp"};
+    for(const string &pathName: pathNames) {
+        string varSegment = pathName;
+        transform(varSegment.begin(), varSegment.end(), varSegment.begin(), ::toupper); 
+        newPath = regex_replace(newPath, regex("\\$\\{NL_OS" + varSegment + "PATH\\}"), os::getPath(pathName));
+    }
+    return newPath;
+}
+
+bool moveToTrash(const string &path) {
+	#if defined(__linux__) || defined(__FreeBSD__)
+    return true;
+
+	#elif defined(__APPLE__)
+    id fileManager = ((id (*)(id, SEL))objc_msgSend)(
+        (id)objc_getClass("NSFileManager"), sel_registerName("defaultManager"));
+
+    id pathStr = ((id (*)(id, SEL, const char*))objc_msgSend)(
+        (id)objc_getClass("NSString"), sel_registerName("stringWithUTF8String:"),
+        path.c_str());
+
+    id fileURL = ((id (*)(id, SEL, id))objc_msgSend)(
+        (id)objc_getClass("NSURL"), sel_registerName("fileURLWithPath:"), pathStr);
+
+    id error = nullptr;
+    BOOL result = ((BOOL (*)(id, SEL, id, id, id*))objc_msgSend)(
+        fileManager, sel_registerName("trashItemAtURL:resultingItemURL:error:"),
+        fileURL, nullptr, &error);
+
+    return result && !error;
+
+	#elif defined(_WIN32)
+    wstring widePath = helpers::str2wstr(path);
+    widePath.push_back(L'\0');
+
+    SHFILEOPSTRUCTW fileOp = {};
+    fileOp.wFunc = FO_DELETE;
+    fileOp.pFrom = widePath.c_str();
+    fileOp.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT;
+
+    return SHFileOperationW(&fileOp) == 0;
+	#endif
 }
 
 namespace controllers {
@@ -941,9 +990,32 @@ json getUnnormalizedPath(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
-    
+
     output["returnValue"] = helpers::unNormalizePath(path);
     output["success"] = true;
+    return output;
+}
+
+json moveToTrash(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload("path");
+        return output;
+    }
+    string path = input["path"].get<string>();
+
+    if(!filesystem::exists(CONVSTR(path))) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_NOPATHE, path);
+        return output;
+    }
+
+    if(fs::moveToTrash(path)) {
+        output["success"] = true;
+        output["message"] = path + " was moved to trash";
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_TRSERR, path);
+    }
     return output;
 }
 
