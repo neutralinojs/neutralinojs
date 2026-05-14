@@ -405,13 +405,25 @@ router::Response getAsset(string path, const string &prependData) {
 
 router::Response serve(string path) {
     char *originalPath = (char *) path.c_str();
-    char *decodedPath = new char[strlen(originalPath) + 1];
-    helpers::urldecode(decodedPath, originalPath);
+    size_t bufSize = strlen(originalPath) + 1;
+    char *decodedPath = new char[bufSize];
+    helpers::urldecode(decodedPath, originalPath, bufSize);
     path = string(decodedPath);
     delete []decodedPath;
 
     // Ignore query params
     path = path.substr(0, path.find("?"));
+
+    // Reject path traversal attempts (e.g. "/../../../etc/passwd").
+    // Check for ".." segments after URL decoding to prevent encoded bypasses.
+    if(path.find("..") != string::npos) {
+        router::Response response;
+        response.status = websocketpp::http::status_code::forbidden;
+        response.contentType = "text/plain";
+        response.data = "Forbidden";
+        debug::log(debug::LogTypeError, "Blocked path traversal attempt: " + path);
+        return response;
+    }
 
     bool isClientLibrary = regex_match(path, regex(".*neutralino.js$"));
     bool isGlobalsRequest = regex_match(path, regex(".*__neutralino_globals.js$"));

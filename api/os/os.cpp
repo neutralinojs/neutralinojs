@@ -108,16 +108,30 @@ void cleanupTray() {
 }
 
 void open(const string &url) {
+    // Sanitize URL to prevent shell command injection.
+    // Reject URLs containing shell metacharacters that could escape quoting.
+    string sanitizedUrl = url;
+    const string dangerousChars = "`$;|&\n\r";
+    for(char c : dangerousChars) {
+        if(sanitizedUrl.find(c) != string::npos) {
+            return; // silently reject potentially malicious URLs
+        }
+    }
+    // Also reject embedded quotes which could break the shell quoting.
+    if(sanitizedUrl.find('"') != string::npos || sanitizedUrl.find('\'') != string::npos) {
+        return;
+    }
+
     #if defined(__linux__) || defined(__FreeBSD__)
     os::ChildProcessOptions processOptions;
     processOptions.background = true;
-    os::execCommand("xdg-open \"" + url + "\"", processOptions);
+    os::execCommand("xdg-open \"" + sanitizedUrl + "\"", processOptions);
     #elif defined(__APPLE__)
     os::ChildProcessOptions processOptions;
     processOptions.background = true;
-    os::execCommand("open \"" + url + "\"", processOptions);
+    os::execCommand("open \"" + sanitizedUrl + "\"", processOptions);
     #elif defined(_WIN32)
-    ShellExecute(0, 0, helpers::str2wstr(url).c_str(), 0, 0, SW_SHOW );
+    ShellExecute(0, 0, helpers::str2wstr(sanitizedUrl).c_str(), 0, 0, SW_SHOW );
     #endif
 }
 
@@ -215,6 +229,10 @@ pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &optio
 
     spawnedProcesses[virtualPid] = childProcess;
 
+    // Capture the OS PID before starting the exit-monitor thread,
+    // because the thread may delete childProcess before we return.
+    int osPid = childProcess->get_id();
+
     thread processThread([=](){
         int exitCode = childProcess->get_exit_status(); // sync wait
         
@@ -228,7 +246,7 @@ pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &optio
     });
     processThread.detach();
 
-    return make_pair(virtualPid, childProcess->get_id());
+    return make_pair(virtualPid, osPid);
 }
 
 bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt) {
@@ -777,6 +795,7 @@ json setTray(const json &input) {
         IStream *pStream = SHCreateMemStream((BYTE *) uiconData, iconDataStr.length());
         Gdiplus::Bitmap* bitmap = Gdiplus::Bitmap::FromStream(pStream);
         bitmap->GetHICON(&tray.icon);
+        delete bitmap;
         pStream->Release();
 
         #elif defined(__APPLE__)

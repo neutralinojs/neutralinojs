@@ -68,6 +68,8 @@ void __registerAllowList() {
 
 bool hasMethodAccess(const string &nativeMethod) {
     string module = __getModuleFromMethod(nativeMethod);
+
+    // If a block list is configured, reject blocked methods first.
     if(shouldCheckBlockList) {
         // Check modules
         if(find(blockedModules.begin(), blockedModules.end(), module)
@@ -80,9 +82,12 @@ bool hasMethodAccess(const string &nativeMethod) {
                 != blockedMethods.end()) {
             return false;
         }
-        return true; // method is not blocked
     }
-    else if(shouldCheckAllowList) {
+
+    // If an allow list is configured, the method must be explicitly allowed.
+    // This check runs regardless of whether a block list is also configured,
+    // so both lists are honored when both are set.
+    if(shouldCheckAllowList) {
         // Check modules
         if(find(allowedModules.begin(), allowedModules.end(), module)
                 != allowedModules.end()) {
@@ -96,7 +101,10 @@ bool hasMethodAccess(const string &nativeMethod) {
         }
         return false; // method is not allowed
     }
-    return true; // anything is allowed if no allow/block list defined
+
+    // If only a block list is configured and we passed it, allow.
+    // If neither list is configured, allow everything.
+    return true;
 }
 
 bool hasAPIAccess() {

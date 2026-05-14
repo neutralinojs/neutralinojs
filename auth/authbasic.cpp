@@ -1,5 +1,6 @@
 #include <string>
 #include <filesystem>
+#include <cstring>
 
 #include "helpers.h"
 #include "settings.h"
@@ -50,6 +51,17 @@ void exportAuthInfo() {
     };
     fs::writeFile(fileWriterOptions);
 
+    // Restrict file permissions to owner-only (0600) to prevent
+    // other local users from reading the auth token.
+    try {
+        filesystem::permissions(CONVSTR(tempAuthInfoPath),
+            filesystem::perms::owner_read | filesystem::perms::owner_write,
+            filesystem::perm_options::replace);
+    }
+    catch(const filesystem::filesystem_error& e) {
+        debug::log(debug::LogTypeError, "Failed to set permissions on " + tempAuthInfoPath);
+    }
+
     debug::log(debug::LogTypeInfo, "Auth info was exported to " + tempAuthInfoPath);
 }
 
@@ -69,12 +81,25 @@ string getConnectTokenInternal() {
     return connectToken;
 }
 
+// Constant-time comparison to prevent timing side-channel attacks.
+// Unlike std::string::operator== which short-circuits on the first
+// mismatch, this always compares the full length.
+bool __constantTimeCompare(const string &a, const string &b) {
+    if(a.size() != b.size())
+        return false;
+    volatile unsigned char result = 0;
+    for(size_t i = 0; i < a.size(); i++) {
+        result |= static_cast<unsigned char>(a[i]) ^ static_cast<unsigned char>(b[i]);
+    }
+    return result == 0;
+}
+
 bool verifyToken(const string &accessToken) {
-    return token == accessToken;
+    return __constantTimeCompare(token, accessToken);
 }
 
 bool verifyConnectToken(const string &inConnectToken) {
-    return connectToken == inConnectToken;
+    return __constantTimeCompare(connectToken, inConnectToken);
 }
 
 } // namespace authbasic

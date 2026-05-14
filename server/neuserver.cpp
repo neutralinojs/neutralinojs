@@ -4,6 +4,7 @@
 #include <thread>
 #include <chrono>
 #include <set>
+#include <mutex>
 
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
@@ -32,6 +33,7 @@ namespace neuserver {
 websocketserver *server;
 wsclientsSet appConnections;
 wsclientsMap extConnections;
+mutex connectionsMutex;
 
 bool initialized = false;
 bool applyConfigHeaders = false;
@@ -212,6 +214,7 @@ void handleHTTP(websocketpp::connection_hdl handler) {
 void handleConnect(websocketpp::connection_hdl handler) {
     websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
     string url = con->get_resource();
+    lock_guard<mutex> guard(connectionsMutex);
     if(__isExtensionEndpoint(url)) {
         string extensionId = __getExtensionIdFromUrl(url);
         extConnections[extensionId] = handler;
@@ -227,6 +230,7 @@ void handleConnect(websocketpp::connection_hdl handler) {
 void handleDisconnect(websocketpp::connection_hdl handler) {
     websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
     string url = con->get_resource();
+    lock_guard<mutex> guard(connectionsMutex);
     if(__isExtensionEndpoint(url)) {
         string extensionId = __getExtensionIdFromUrl(url);
         extConnections.erase(extensionId);
@@ -275,6 +279,7 @@ void broadcast(const json &message) {
 }
 
 bool sendToExtension(const string &extensionId, const json &message) {
+    lock_guard<mutex> guard(connectionsMutex);
     if(extConnections.find(extensionId) != extConnections.end()) {
         server->send(extConnections[extensionId], helpers::jsonToString(message), websocketpp::frame::opcode::text);
         return true;
@@ -283,18 +288,21 @@ bool sendToExtension(const string &extensionId, const json &message) {
 }
 
 void broadcastToAllExtensions(const json &message) {
+    lock_guard<mutex> guard(connectionsMutex);
     for (const auto &[_, connection]: extConnections) {
         server->send(connection, helpers::jsonToString(message), websocketpp::frame::opcode::text);
     }
 }
 
 void broadcastToAllApps(const json &message) {
+    lock_guard<mutex> guard(connectionsMutex);
     for (const auto &connection: appConnections) {
         server->send(connection, helpers::jsonToString(message), websocketpp::frame::opcode::text);
     }
 }
 
 vector<string> getConnectedExtensions() {
+    lock_guard<mutex> guard(connectionsMutex);
     vector<string> extensions;
     for (const auto &[extensionId, _]: extConnections) {
         extensions.push_back(extensionId);

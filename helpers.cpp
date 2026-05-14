@@ -66,10 +66,12 @@ string generateToken() {
 
 /*
 * https://stackoverflow.com/a/14530993 - mini url decoder
+* Enhanced with bounds checking to prevent buffer overflows.
 */
-void urldecode(char *dst, const char *src) {
+void urldecode(char *dst, const char *src, size_t dstSize) {
     char a, b;
-    while (*src) {
+    char *dstEnd = dst + dstSize - 1; // reserve space for null terminator
+    while (*src && dst < dstEnd) {
         if ((*src == '%') &&
             ((a = src[1]) && (b = src[2])) &&
             (isxdigit(a) && isxdigit(b))) {

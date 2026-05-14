@@ -27,7 +27,7 @@ namespace helpers {
 vector<string> split(const string &s, char delim, unsigned int stopAfter = -1);
 vector<string> splitTwo(const string &s, char delim);
 string generateToken();
-void urldecode(char *dst, const char *src);
+void urldecode(char *dst, const char *src, size_t dstSize);
 char* cStrCopy(const string &str);
 bool hasRequiredFields(const json &input, const vector<string> &keys);
 optional<string> missingRequiredField(const json &input, const vector<string> &keys);

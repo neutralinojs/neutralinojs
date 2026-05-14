@@ -1,5 +1,6 @@
 #include <map>
 #include <mutex>
+#include <atomic>
 #include <fstream>
 #include <regex>
 #include <algorithm>
@@ -45,6 +46,7 @@ using json = nlohmann::json;
 
 map<int, ifstream*> openedFiles;
 mutex openedFilesLock;
+atomic<int> nextFileId(0);
 efsw::FileWatcher* fileWatcher;
 map<efsw::WatchID, pair<efsw::FileWatchListener*, string>> watchListeners;
 mutex watcherLock;
@@ -199,13 +201,13 @@ bool writeFile(const fs::FileWriterOptions &fileWriterOptions) {
 }
 
 int openFile(const string &filename) {
-    int virtualFileId = openedFiles.size();
     ifstream *reader = new ifstream(CONVSTR(filename), ios::binary);
     if(!reader->is_open()) {
         delete reader;
         return -1;
     }
     lock_guard<mutex> guard(openedFilesLock);
+    int virtualFileId = nextFileId++;
     openedFiles[virtualFileId] = reader;
     return virtualFileId;
 }
@@ -372,7 +374,13 @@ string applyPathConstants(const string &path) {
 
 bool moveToTrash(const string &path) {
 	#if defined(__linux__) || defined(__FreeBSD__)
-    return true;
+    // Use gio trash (available on most modern Linux desktops) to actually
+    // move the file to the desktop trash. Falls back to returning false
+    // if gio is not available or the operation fails.
+    os::ChildProcessOptions processOptions;
+    os::CommandResult result = os::execCommand(
+        "gio trash \"" + path + "\"", processOptions);
+    return result.exitCode == 0;
 
 	#elif defined(__APPLE__)
     id fileManager = ((id (*)(id, SEL))objc_msgSend)(

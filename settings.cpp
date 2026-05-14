@@ -138,35 +138,57 @@ string getNavigationUrl() {
         settings::getOptionForCurrentMode("url").get<string>() : "https://neutralino.js.org";
 }
 
+// Escapes a string for safe embedding inside a JavaScript single-quoted
+// string literal. Prevents injection via paths containing quotes, backslashes,
+// newlines, or other special characters.
+string __escapeJsSingleQuoted(const string &s) {
+    string result;
+    result.reserve(s.size());
+    for(char c : s) {
+        switch(c) {
+            case '\\': result += "\\\\"; break;
+            case '\'': result += "\\'"; break;
+            case '\n': result += "\\n"; break;
+            case '\r': result += "\\r"; break;
+            case '<':  result += "\\x3c"; break;
+            case '>':  result += "\\x3e"; break;
+            default:   result += c; break;
+        }
+    }
+    return result;
+}
+
 string getGlobalVars(){
-    string jsSnippet = "var NL_OS='" + string(NEU_OS_NAME) + "';";
-    jsSnippet += "var NL_ARCH='" + computer::getArch() + "';";
-    jsSnippet += "var NL_VERSION='" + string(NEU_VERSION) + "';";
-    jsSnippet += "var NL_COMMIT='" + string(NEU_COMMIT) + "';";
-    jsSnippet += "var NL_APPID='" + settings::getAppId() + "';";
+    string jsSnippet = "var NL_OS='" + __escapeJsSingleQuoted(string(NEU_OS_NAME)) + "';";
+    jsSnippet += "var NL_ARCH='" + __escapeJsSingleQuoted(computer::getArch()) + "';";
+    jsSnippet += "var NL_VERSION='" + __escapeJsSingleQuoted(string(NEU_VERSION)) + "';";
+    jsSnippet += "var NL_COMMIT='" + __escapeJsSingleQuoted(string(NEU_COMMIT)) + "';";
+    jsSnippet += "var NL_APPID='" + __escapeJsSingleQuoted(settings::getAppId()) + "';";
     if(!options["version"].is_null()) {
-        jsSnippet += "var NL_APPVERSION='" + options["version"].get<string>() + "';";
+        jsSnippet += "var NL_APPVERSION='" + __escapeJsSingleQuoted(options["version"].get<string>()) + "';";
     }
     jsSnippet += "var NL_PORT=" + to_string(settings::getOptionForCurrentMode("port").get<int>()) + ";";
-    jsSnippet += "var NL_MODE='" + helpers::appModeToStr(settings::getMode()) + "';";
-    jsSnippet += "var NL_TOKEN='" + authbasic::getToken() + "';";
-    jsSnippet += "var NL_CWD='" + fs::getCurrentDirectory() + "';";
+    jsSnippet += "var NL_MODE='" + __escapeJsSingleQuoted(helpers::appModeToStr(settings::getMode())) + "';";
+    jsSnippet += "var NL_TOKEN='" + __escapeJsSingleQuoted(authbasic::getToken()) + "';";
+    jsSnippet += "var NL_CWD='" + __escapeJsSingleQuoted(fs::getCurrentDirectory()) + "';";
     jsSnippet += "var NL_ARGS=" + helpers::jsonToString(globalArgs) + ";";
-    jsSnippet += "var NL_PATH='" + appPath + "';";
-    jsSnippet += "var NL_DATAPATH='" + appDataPath + "';";
+    jsSnippet += "var NL_PATH='" + __escapeJsSingleQuoted(appPath) + "';";
+    jsSnippet += "var NL_DATAPATH='" + __escapeJsSingleQuoted(appDataPath) + "';";
     jsSnippet += "var NL_PID=" + to_string(app::getProcessId()) + ";";
-    jsSnippet += "var NL_RESMODE='" + resources::getModeString() + "';";
+    jsSnippet += "var NL_RESMODE='" + __escapeJsSingleQuoted(resources::getModeString()) + "';";
     jsSnippet += "var NL_EXTENABLED=" + helpers::jsonToString(json(extensions::isInitialized())) + ";";
     jsSnippet += "var NL_CMETHODS=" + helpers::jsonToString(json(custom::getMethods())) + ";";
     jsSnippet += "var NL_WSAVSTLOADED=" + helpers::jsonToString(json(window::isSavedStateLoaded())) + ";";
-    jsSnippet += "var NL_CONFIGFILE='" + settings::getConfigFile() + "';";
-    jsSnippet += "var NL_LOCALE='" + localeName + "';";
-    jsSnippet += "var NL_COMPDATA='" + string(NEU_COMPILATION_DATA) + "';";
+    jsSnippet += "var NL_CONFIGFILE='" + __escapeJsSingleQuoted(settings::getConfigFile()) + "';";
+    jsSnippet += "var NL_LOCALE='" + __escapeJsSingleQuoted(localeName) + "';";
+    jsSnippet += "var NL_COMPDATA='" + __escapeJsSingleQuoted(string(NEU_COMPILATION_DATA)) + "';";
 
     json jGlobalVariables = settings::getOptionForCurrentMode("globalVariables");
     if(!jGlobalVariables.is_null()) {
         for(const auto &it: jGlobalVariables.items()) {
-            jsSnippet += "var NL_" + it.key() +  "=JSON.parse('" + helpers::jsonToString(it.value()) + "');";
+            // Sanitize the key to only allow alphanumeric and underscores
+            string safeKey = regex_replace(it.key(), regex("[^a-zA-Z0-9_]"), "");
+            jsSnippet += "var NL_" + safeKey +  "=JSON.parse('" + __escapeJsSingleQuoted(helpers::jsonToString(it.value())) + "');";
         }
     }
     return jsSnippet;
