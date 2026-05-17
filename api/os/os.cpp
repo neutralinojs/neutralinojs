@@ -329,6 +329,20 @@ vector<string> __extensionsToVector(const json &filters) {
     return filtersV;
 }
 
+json __normalizeDialogInput(const json &input) {
+    if(!helpers::hasField(input, "title") || !input["title"].is_object()) {
+        return input;
+    }
+
+    json normalizedInput = input["title"];
+    for(auto &entry: input.items()) {
+        if(entry.key() != "title") {
+            normalizedInput[entry.key()] = entry.value();
+        }
+    }
+    return normalizedInput;
+}
+
 json execCommand(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"command"})) {
@@ -489,26 +503,27 @@ json getEnvs(const json &input) {
 
 json showOpenDialog(const json &input) {
     json output;
+    json dialogInput = __normalizeDialogInput(input);
     string title = "Open a file";
     string defaultPath = "";
     vector<string> filters = {"All files", "*"};
     pfd::opt option = pfd::opt::none;
 
-    if(helpers::hasField(input, "title")) {
-        title = input["title"].get<string>();
+    if(helpers::hasField(dialogInput, "title")) {
+        title = dialogInput["title"].get<string>();
     }
 
-    if(helpers::hasField(input, "multiSelections") && input["multiSelections"].get<bool>()) {
+    if(helpers::hasField(dialogInput, "multiSelections") && dialogInput["multiSelections"].get<bool>()) {
         option = pfd::opt::multiselect;
     }
 
-    if(helpers::hasField(input, "filters")) {
+    if(helpers::hasField(dialogInput, "filters")) {
         filters.clear();
-        filters = __extensionsToVector(input["filters"]);
+        filters = __extensionsToVector(dialogInput["filters"]);
     }
 
-    if(helpers::hasField(input, "defaultPath")) {
-        defaultPath = input["defaultPath"].get<string>();
+    if(helpers::hasField(dialogInput, "defaultPath")) {
+        defaultPath = dialogInput["defaultPath"].get<string>();
         defaultPath = helpers::unNormalizePath(defaultPath);
     }
 
@@ -525,15 +540,16 @@ json showOpenDialog(const json &input) {
 
 json showFolderDialog(const json &input) {
     json output;
+    json dialogInput = __normalizeDialogInput(input);
     string title = "Select a folder";
     string defaultPath = "";
 
-    if(helpers::hasField(input, "title")) {
-        title = input["title"].get<string>();
+    if(helpers::hasField(dialogInput, "title")) {
+        title = dialogInput["title"].get<string>();
     }
 
-    if(helpers::hasField(input, "defaultPath")) {
-        defaultPath = input["defaultPath"].get<string>();
+    if(helpers::hasField(dialogInput, "defaultPath")) {
+        defaultPath = dialogInput["defaultPath"].get<string>();
         defaultPath = helpers::unNormalizePath(defaultPath);
     }
 
@@ -547,26 +563,27 @@ json showFolderDialog(const json &input) {
 
 json showSaveDialog(const json &input) {
     json output;
+    json dialogInput = __normalizeDialogInput(input);
     string title = "Save a file";
     string defaultPath = "";
     vector<string> filters = {"All files", "*"};
     pfd::opt option = pfd::opt::none;
 
-    if(helpers::hasField(input, "title")) {
-        title = input["title"].get<string>();
+    if(helpers::hasField(dialogInput, "title")) {
+        title = dialogInput["title"].get<string>();
     }
 
-    if(helpers::hasField(input, "forceOverwrite") && input["forceOverwrite"].get<bool>()) {
+    if(helpers::hasField(dialogInput, "forceOverwrite") && dialogInput["forceOverwrite"].get<bool>()) {
         option = pfd::opt::force_overwrite;
     }
 
-    if(helpers::hasField(input, "filters")) {
+    if(helpers::hasField(dialogInput, "filters")) {
         filters.clear();
-        filters = __extensionsToVector(input["filters"]);
+        filters = __extensionsToVector(dialogInput["filters"]);
     }
 
-    if(helpers::hasField(input, "defaultPath")) {
-        defaultPath = input["defaultPath"].get<string>();
+    if(helpers::hasField(dialogInput, "defaultPath")) {
+        defaultPath = dialogInput["defaultPath"].get<string>();
         defaultPath = helpers::unNormalizePath(defaultPath);
     }
 
