@@ -35,6 +35,9 @@ namespace neuserver {
 websocketserver *server;
 wsclientsSet appConnections;
 wsclientsMap extConnections;
+map<websocketpp::connection_hdl,
+    websocketpp::frame::opcode::value,
+    owner_less<websocketpp::connection_hdl>> wsMode;
 
 bool initialized = false;
 bool applyConfigHeaders = false;
@@ -189,6 +192,16 @@ void stop() {
 }
 
 void handleMessage(websocketpp::connection_hdl handler, websocketserver::message_ptr msg) {
+    websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
+    string url = con->get_resource();
+    if(__isExtensionEndpoint(url) && wsMode.find(handler) == wsMode.end()) {
+        if(msg->get_opcode() == websocketpp::frame::opcode::text) {
+        	wsMode[handler] = websocketpp::frame::opcode::text;
+        }
+        else if(msg->get_opcode() == websocketpp::frame::opcode::binary) {
+        	wsMode[handler] = websocketpp::frame::opcode::binary;
+        }
+    }
     json nativeMessage;
     try {
         nativeMessage = json::parse(msg->get_payload());
@@ -205,7 +218,13 @@ void handleMessage(websocketpp::connection_hdl handler, websocketserver::message
             responseMessage["method"] = nativeResponse.method;
             responseMessage["data"] = nativeResponse.data;
 
-            server->send(handler, helpers::jsonToString(responseMessage), msg->get_opcode());
+            auto op = websocketpp::frame::opcode::text;
+
+            if(__isExtensionEndpoint(url) && wsMode.count(handler)) {
+                op = wsMode[handler];
+            }
+
+            server->send(handler, helpers::jsonToString(responseMessage), op);
         } catch (websocketpp::exception const & e) {
             debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_SR_UNBSEND));
         }
@@ -253,6 +272,8 @@ void handleConnect(websocketpp::connection_hdl handler) {
 }
 
 void handleDisconnect(websocketpp::connection_hdl handler) {
+    wsMode.erase(handler);
+    
     websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
     string url = con->get_resource();
     if(__isExtensionEndpoint(url)) {
@@ -304,7 +325,11 @@ void broadcast(const json &message) {
 
 bool sendToExtension(const string &extensionId, const json &message) {
     if(extConnections.find(extensionId) != extConnections.end()) {
-        server->send(extConnections[extensionId], helpers::jsonToString(message), websocketpp::frame::opcode::text);
+        auto hdl = extConnections[extensionId];
+        auto op = wsMode.count(hdl)
+              ? wsMode[hdl]
+              : websocketpp::frame::opcode::text;
+        server->send(hdl, helpers::jsonToString(message), op);
         return true;
     }
     return false;
@@ -312,7 +337,10 @@ bool sendToExtension(const string &extensionId, const json &message) {
 
 void broadcastToAllExtensions(const json &message) {
     for (const auto &[_, connection]: extConnections) {
-        server->send(connection, helpers::jsonToString(message), websocketpp::frame::opcode::text);
+        auto op = wsMode.count(connection)
+            ? wsMode[connection]
+            : websocketpp::frame::opcode::text;
+        server->send(connection, helpers::jsonToString(message), op);
     }
 }
 
