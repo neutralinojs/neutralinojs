@@ -210,6 +210,7 @@ static id _tray_menu(struct tray_menu *m) {
           sel_registerName("menuCallback:"),
           ((id (*)(id, SEL, const char *))objc_msgSend)((id)objc_getClass("NSString"), sel_registerName("stringWithUTF8String:"), ""));
 
+      ((id (*)(id, SEL, id))objc_msgSend)(menuItem, sel_registerName("setTarget:"), trayDelegate);
       ((id (*)(id, SEL, bool))objc_msgSend)(menuItem, sel_registerName("setEnabled:"), (m->disabled ? false : true));
       ((id (*)(id, SEL, bool))objc_msgSend)(menuItem, sel_registerName("setState:"), (m->checked ? 1 : 0));
 

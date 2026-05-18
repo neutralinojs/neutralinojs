@@ -1,6 +1,4 @@
-#include <iostream>
 #include <string>
-#include <fstream>
 #include <regex>
 #include <vector>
 #include <filesystem>
@@ -29,6 +27,7 @@
 #include "api/res/res.h"
 #include "api/server/server.h"
 #include "api/custom/custom.h"
+
 
 #if defined(__APPLE__)
 #include <dispatch/dispatch.h>
@@ -85,6 +84,9 @@ map<string, router::NativeMethod> methodMap = {
     {"computer.getCPUInfo", computer::controllers::getCPUInfo},
     {"computer.getDisplays", computer::controllers::getDisplays},
     {"computer.getMousePosition", computer::controllers::getMousePosition},
+    {"computer.setMousePosition", computer::controllers::setMousePosition},
+    {"computer.setMouseGrabbing", computer::controllers::setMouseGrabbing},
+    {"computer.sendKey", computer::controllers::sendKey},
     // Neutralino.debug
     {"debug.log", debug::controllers::log},
     // Neutralino.filesystem
@@ -114,6 +116,7 @@ map<string, router::NativeMethod> methodMap = {
     {"filesystem.getJoinedPath", fs::controllers::getJoinedPath},
     {"filesystem.getNormalizedPath", fs::controllers::getNormalizedPath},
     {"filesystem.getUnnormalizedPath", fs::controllers::getUnnormalizedPath},
+    {"filesystem.moveToTrash", fs::controllers::moveToTrash},
     // Neutralino.os
     {"os.execCommand", os::controllers::execCommand},
     {"os.spawnProcess", os::controllers::spawnProcess},
@@ -164,6 +167,7 @@ map<string, router::NativeMethod> methodMap = {
     // Neutralino.custom
     {"custom.getMethods", custom::controllers::getMethods},
     // {"custom.add", custom::controllers::add} // Sample custom method
+
 };
 
 map<string, router::NativeMethod> getMethodMap() {
@@ -206,6 +210,7 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
             // In macos, child threads cannot run UI logic
             if(nativeMethodId == "os.showMessageBox" ||
                 regex_match(nativeMethodId, regex("^window.*")) ||
+                regex_match(nativeMethodId, regex("^computer.*")) ||
                 nativeMethodId == "os.setTray") {
                 dispatch_sync(dispatch_get_main_queue(), ^{
                     apiOutput = (*nativeMethod)(request.data);
@@ -220,7 +225,7 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
             response.data = apiOutput;
             return response;
         }
-        catch(exception e){
+        catch(const exception& e){
             response.data["error"] = errors::makeErrorPayload(errors::NE_RT_NATRTER);
             return response;
         }
@@ -279,14 +284,14 @@ map<string, string> getMounts() {
     return mountedPaths;
 }
 
-router::Response getAsset(string path, const string &prependData) {
+router::Response getAsset(string path, const string &prependData, const fs::FileReaderOptions &fileReaderOptions) {
     router::Response response;
     vector<string> split = helpers::split(path, '.');
 
     if(split.size() < 2) {
         if(path.back() != '/')
             path += "/";
-        return getAsset(path + "index.html", prependData);
+        return getAsset(path + "index.html", prependData, fileReaderOptions);
     }
 
     string extension = split[split.size() - 1];
@@ -355,7 +360,7 @@ router::Response getAsset(string path, const string &prependData) {
         for(const auto& [mountedPath, mountTarget] : mountedPaths) {
             if(pathname.find(mountedPath) == 0) {
                 string adjustedPath = mountTarget + "/" + pathname.substr(mountedPath.length());
-                fileReaderResult = fs::readFile(adjustedPath);
+                fileReaderResult = fs::readFile(adjustedPath, fileReaderOptions);
                 foundMountedPath = true;
                 break;
             }
@@ -363,7 +368,7 @@ router::Response getAsset(string path, const string &prependData) {
     }
 
     if(!foundMountedPath) {
-        fileReaderResult = resources::getFile(path);
+        fileReaderResult = resources::getFile(path, fileReaderOptions);
     }
     
     if(fileReaderResult.status != errors::NE_ST_OK) {
@@ -377,7 +382,7 @@ router::Response getAsset(string path, const string &prependData) {
             else {
                 newPath = settings::getNavigationUrl();
             }
-            if(newPath != path) return getAsset(newPath, prependData);
+            if(newPath != path) return getAsset(newPath, prependData, fileReaderOptions);
         }
     }
     response.data = fileReaderResult.data;
@@ -387,7 +392,26 @@ router::Response getAsset(string path, const string &prependData) {
         response.status = websocketpp::http::status_code::not_found;
         debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_RS_UNBLDRE, path));
     }
-    else if(prependData != "") {
+    else if(fileReaderOptions.pos > -1) {
+        if(fileReaderOptions.pos >= fileReaderResult.size) {
+            response.status = websocketpp::http::status_code::request_range_not_satisfiable;
+            response.data = "";
+            response.headers["Accept-Ranges"] = "bytes";
+            response.headers["Content-Range"] = "bytes */" + to_string(fileReaderResult.size);
+            response.headers["Content-Length"] = "0";
+        }
+        else {
+            long long bytesRead = response.data.size();
+            long long end = fileReaderOptions.pos + bytesRead - 1;
+            response.status = websocketpp::http::status_code::partial_content;
+            response.headers["Accept-Ranges"] = "bytes";
+            response.headers["Content-Range"] = "bytes " + to_string(fileReaderOptions.pos) +
+                "-" + to_string(end) + "/" + to_string(fileReaderResult.size);
+            response.headers["Content-Length"] = to_string(bytesRead);
+        }
+    }
+    
+	if(prependData != "") {
         response.data = prependData + response.data;
     }
 
@@ -395,10 +419,11 @@ router::Response getAsset(string path, const string &prependData) {
     if(mimeTypes.find(extension) != mimeTypes.end()) {
         response.contentType = mimeTypes[extension];
     }
+	
     return response;
 }
 
-router::Response serve(string path) {
+router::Response serve(string path, const fs::FileReaderOptions &fileReaderOptions) {
     char *originalPath = (char *) path.c_str();
     char *decodedPath = new char[strlen(originalPath) + 1];
     helpers::urldecode(decodedPath, originalPath);
@@ -412,7 +437,7 @@ router::Response serve(string path) {
     bool isGlobalsRequest = regex_match(path, regex(".*__neutralino_globals.js$"));
 
     if(isClientLibrary) {
-        return getAsset(path, settings::getGlobalVars());
+        return getAsset(path, settings::getGlobalVars(), fileReaderOptions);
     }
     else if(isGlobalsRequest) {
         return router::Response {
@@ -422,7 +447,7 @@ router::Response serve(string path) {
         };
     }
     else {
-        return getAsset(path);
+        return getAsset(path, "", fileReaderOptions);
     }
 }
 

@@ -12,9 +12,11 @@
 
 #elif defined(__APPLE__)
 #include <objc/objc-runtime.h>
-#include <CoreFoundation/Corefoundation.h>
+#include <dispatch/dispatch.h>
+#include <CoreFoundation/CoreFoundation.h>
 #include <CoreGraphics/CGDisplayConfiguration.h>
 #include <CoreGraphics/CGWindow.h>
+#include <dlfcn.h>
 
 #if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 120300
 #import <ScreenCaptureKit/ScreenCaptureKit.h>
@@ -23,7 +25,9 @@
 #define NSBaseWindowLevel 0
 #define NSFloatingWindowLevel 5
 #define NSWindowStyleMaskFullScreen 16384
+#define NSWindowStyleMaskTitled 1
 #define NSPNGFileType 4
+#define NSDragOperationCopy 1
 
 #define kCGWindowListOptionIncludingWindow 8
 #define kCGWindowImageBoundsIgnoreFraming 1
@@ -38,6 +42,7 @@
 #include "webview2.h"
 #include <wrl.h>
 #include <ShlObj_core.h>
+#include <shellapi.h>
 #endif
 
 #include "lib/json/json.hpp"
@@ -70,13 +75,38 @@ bool isGtkWindowMinimized = false;
 GtkWidget *menuContainer;
 
 #elif defined(_WIN32)
-#define ID_MENU_FIRST 20000;
+#define ID_MENU_FIRST 20000
 bool isWinWindowFullScreen = false;
 DWORD savedStyle;
 DWORD savedStyleX;
 RECT savedRect;
 HMENU windowMenu;
 int windowMenuItemId = ID_MENU_FIRST;
+WNDPROC originalWndProc = nullptr;
+
+LRESULT CALLBACK NeutralinoWndProc(HWND hwnd, UINT msg, WPARAM wParam,
+                                   LPARAM lParam) {
+    if(msg == WM_DROPFILES) {
+        HDROP hDrop = (HDROP)wParam;
+        UINT count = DragQueryFileW(hDrop, 0xFFFFFFFF, nullptr, 0);
+
+        json payload;
+        payload["paths"] = json::array();
+
+        for(UINT i = 0; i < count; ++i) {
+            UINT length = DragQueryFileW(hDrop, i, nullptr, 0);
+            wstring path(length + 1, L'\0');
+            DragQueryFileW(hDrop, i, path.data(), length + 1);
+            payload["paths"].push_back(helpers::wcstr2str(path.c_str()));
+        }
+
+        DragFinish(hDrop);
+        events::dispatch("fileDrop", payload);
+        return 0;
+    }
+
+    return CallWindowProc(originalWndProc, hwnd, msg, wParam, lParam);
+}
 #endif
 
 window::WindowOptions windowProps;
@@ -135,6 +165,9 @@ void windowStateChange(int state) {
         case WEBVIEW_WINDOW_MAXIMIZE:
             events::dispatch("windowMaximize", nullptr);
             break;
+        case WEBVIEW_WINDOW_ACTIVATE:
+            window::focus();
+            break;
     }
 }
 
@@ -142,8 +175,8 @@ void windowStateChange(int state) {
 
 
 pair<int, int> __getCenterPos(bool useConfigSizes = false) {
-    int x, y = 0;
-    int width, height = 0;
+    int x = 0, y = 0;
+    int width = 0, height = 0;
     if(useConfigSizes) {
         width = windowProps.sizeOptions.width;
         height = windowProps.sizeOptions.height;
@@ -310,7 +343,7 @@ bool __loadSavedWindowProps() {
         SetWindowPlacement(windowHandle, &wp);
         #endif
     }
-    catch(exception e) {
+    catch(const exception& e) {
         debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_CF_UNBLWCF, string(NEU_WIN_CONFIG_FILE)));
         return false;
     }
@@ -597,6 +630,70 @@ void __injectScript() {
     }
 }
 
+#if defined(__APPLE__)
+static void __appendDroppedFilePaths(id pasteboard, json &paths) {
+    id filenamesType = ((id(*)(id, SEL, const char *))objc_msgSend)(
+        "NSString"_cls, "stringWithUTF8String:"_sel, "NSFilenamesPboardType");
+    id files = ((id(*)(id, SEL, id))objc_msgSend)(
+        pasteboard, "propertyListForType:"_sel, filenamesType);
+
+    if(!files) {
+        return;
+    }
+
+    unsigned long count = ((unsigned long (*)(id, SEL))objc_msgSend)(
+        files, "count"_sel);
+    for(unsigned long i = 0; i < count; ++i) {
+        id path = ((id(*)(id, SEL, unsigned long))objc_msgSend)(
+            files, "objectAtIndex:"_sel, i);
+        const char *cpath = ((const char *(*)(id, SEL))objc_msgSend)(
+            path, "UTF8String"_sel);
+        if(cpath) {
+            paths.push_back(cpath);
+        }
+    }
+}
+
+static void __enableFileDropForWindow(id targetWindow) {
+    Class windowClass = object_getClass(targetWindow);
+
+    class_addMethod(windowClass, "draggingEntered:"_sel,
+                    (IMP)(+[](id, SEL, id) -> unsigned long {
+                        return NSDragOperationCopy;
+                    }),
+                    "L@:@");
+
+    class_addMethod(windowClass, "prepareForDragOperation:"_sel,
+                    (IMP)(+[](id, SEL, id) -> BOOL {
+                        return YES;
+                    }),
+                    "B@:@");
+
+    class_addMethod(windowClass, "performDragOperation:"_sel,
+                    (IMP)(+[](id, SEL, id sender) -> BOOL {
+                        json payload;
+                        payload["paths"] = json::array();
+
+                        id pasteboard = ((id(*)(id, SEL))objc_msgSend)(
+                            sender, "draggingPasteboard"_sel);
+                        __appendDroppedFilePaths(pasteboard, payload["paths"]);
+
+                        if(!payload["paths"].empty()) {
+                            events::dispatch("fileDrop", payload);
+                        }
+                        return YES;
+                    }),
+                    "B@:@");
+
+    id filenamesType = ((id(*)(id, SEL, const char *))objc_msgSend)(
+        "NSString"_cls, "stringWithUTF8String:"_sel, "NSFilenamesPboardType");
+    id draggedTypes = ((id(*)(id, SEL, id))objc_msgSend)(
+        "NSArray"_cls, "arrayWithObject:"_sel, filenamesType);
+    ((void (*)(id, SEL, id))objc_msgSend)(
+        targetWindow, "registerForDraggedTypes:"_sel, draggedTypes);
+}
+#endif
+
 bool __createWindow() {
     savedState = windowProps.useSavedState && __loadSavedWindowProps();
 
@@ -644,13 +741,48 @@ bool __createWindow() {
     #if defined(__linux__) || defined(__FreeBSD__)
     windowHandle = (GtkWidget*) nativeWindow->window();
 
+    GtkTargetEntry targets[] = {{(gchar *)"text/uri-list", 0, 0}};
+    gtk_drag_dest_set(windowHandle, GTK_DEST_DEFAULT_ALL, targets, 1,
+                      GDK_ACTION_COPY);
+    g_signal_connect(
+        windowHandle, "drag-data-received",
+        G_CALLBACK(+[](GtkWidget *, GdkDragContext *, gint, gint,
+                       GtkSelectionData *data, guint, guint, gpointer) {
+            json payload;
+            payload["paths"] = json::array();
+
+            if(data && gtk_selection_data_get_length(data) > 0) {
+                gchar **uris = gtk_selection_data_get_uris(data);
+                if(uris) {
+                    for(int i = 0; uris[i] != nullptr; ++i) {
+                        gchar *path =
+                            g_filename_from_uri(uris[i], nullptr, nullptr);
+                        if(path) {
+                            payload["paths"].push_back(path);
+                            g_free(path);
+                        }
+                    }
+                    g_strfreev(uris);
+                }
+            }
+
+            if(!payload["paths"].empty()) {
+                events::dispatch("fileDrop", payload);
+            }
+        }),
+        nullptr);
+
     #elif defined(__APPLE__)
     windowHandle = (id) nativeWindow->window();
+    __enableFileDropForWindow((id)windowHandle);
     ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle,
                 "setHasShadow:"_sel, true);
 
     #elif defined(_WIN32)
     windowHandle = (HWND) nativeWindow->window();
+    DragAcceptFiles(windowHandle, TRUE);
+    originalWndProc = (WNDPROC)SetWindowLongPtr(windowHandle, GWLP_WNDPROC,
+                                                (LONG_PTR)NeutralinoWndProc);
     #endif
 
     #if !defined(_WIN32)
@@ -693,14 +825,29 @@ bool __createWindow() {
 
 void _close(int exitCode) {
     if(nativeWindow) {
+        #if defined(__APPLE__)
+        dispatch_sync(dispatch_get_main_queue(), ^{
+		#endif
         if(windowProps.useSavedState) {
             __saveWindowProps();
         }
+        #if defined(_WIN32)
+        if(windowHandle && originalWndProc) {
+            DragAcceptFiles(windowHandle, FALSE);
+            SetWindowLongPtr(windowHandle, GWLP_WNDPROC,
+                             (LONG_PTR)originalWndProc);
+            originalWndProc = nullptr;
+        }
+        #endif
         nativeWindow->terminate(exitCode);
+		#if defined(__APPLE__)
+		});
+		#endif
         #if defined(_WIN32)
         FreeConsole();
         #endif
         delete nativeWindow;
+        nativeWindow = nullptr;
     }
 }
 
@@ -745,6 +892,28 @@ void unmaximize() {
     #elif defined(__APPLE__)
     ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
         "zoom:"_sel, NULL);
+    #endif
+}
+
+void unminimize() {
+    #if defined(__linux__) || defined(__FreeBSD__)
+    gtk_window_present(GTK_WINDOW(windowHandle));
+    #elif defined(_WIN32)
+    ShowWindow(windowHandle, SW_RESTORE);
+    #elif defined(__APPLE__)
+    ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
+        "deminiaturize:"_sel, NULL);
+    #endif
+}
+
+bool isMinimized() {
+    #if defined(__linux__) || defined(__FreeBSD__)
+    return isGtkWindowMinimized;
+    #elif defined(_WIN32)
+    return IsIconic(windowHandle) == 1;
+    #elif defined(__APPLE__)
+    return ((bool (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
+        "isMiniaturized"_sel, NULL);
     #endif
 }
 
@@ -803,6 +972,25 @@ void hide() {
     #endif
 
     window::handlers::windowStateChange(WEBVIEW_WINDOW_HIDE);
+}
+
+void focus() {
+    #if defined(__linux__) || defined(__FreeBSD__)
+    gtk_window_present(GTK_WINDOW(windowHandle));
+    #elif defined(__APPLE__)
+    ((void (*)(id, SEL, BOOL))objc_msgSend)(
+        ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls, "sharedApplication"_sel),
+        "activateIgnoringOtherApps:"_sel, 1);
+    if(window::isMinimized()) {
+        window::unminimize();
+    }
+    else {
+        ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
+                "makeKeyAndOrderFront:"_sel, NULL);
+    }
+    #elif defined(_WIN32)
+    SetForegroundWindow(windowHandle);
+    #endif
 }
 
 bool isFullScreen() {
@@ -938,22 +1126,24 @@ void move(int x, int y) {
 }
 
 void beginDragNative() {
-
-    #if defined(__linux__) || defined(__FreeBSD__)
+	#if defined(__linux__) || defined(__FreeBSD__)
     auto mousePos = computer::getMousePosition();
     gtk_window_begin_move_drag(GTK_WINDOW(windowHandle), 1, mousePos.first, mousePos.second, GDK_CURRENT_TIME);
 
-    #elif defined(_WIN32)
-    ReleaseCapture();
-    SendMessage(windowHandle, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, 0);
+	#elif defined(_WIN32)
+    POINT startPos;
+    if (GetCursorPos(&startPos)) {
+        ReleaseCapture();
+        PostMessage(windowHandle, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, 0);
+    }
 
-    #elif defined(__APPLE__)
+	#elif defined(__APPLE__)
     ((void (*)(id, SEL, id))objc_msgSend)(windowHandle,
         "performWindowDragWithEvent:"_sel, 
         ((id (*)(id, SEL))objc_msgSend)(windowHandle,
         "currentEvent"_sel)
         );
-    #endif
+	#endif
 }
 
 window::SizeOptions getSize() {
@@ -1218,9 +1408,8 @@ bool init(const json &windowOptions) {
     if(helpers::hasField(windowOptions, "x"))
         windowProps.x = windowOptions["x"].get<int>();
     
-    if(helpers::hasField(windowOptions, "pixelUnits")) {
-       string units = windowOptions["pixelUnits"].get<string>();
-       windowProps.useLogicalPixels = (units == "logical");
+    if(helpers::hasField(windowOptions, "useLogicalPixels")) {
+        windowProps.useLogicalPixels = windowOptions["useLogicalPixels"].get<bool>();
     }
 
 
@@ -1295,6 +1484,10 @@ bool init(const json &windowOptions) {
     return true;
 }
 
+NEU_W_HANDLE getHandle() {
+    return windowHandle;
+}
+
 namespace controllers {
 
 json setTitle(const json &input) {
@@ -1352,30 +1545,14 @@ json minimize(const json &input) {
 
 json unminimize(const json &input) {
     json output;
-    #if defined(__linux__) || defined(__FreeBSD__)
-    gtk_window_present(GTK_WINDOW(windowHandle));
-    #elif defined(_WIN32)
-    ShowWindow(windowHandle, SW_RESTORE);
-    #elif defined(__APPLE__)
-    ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
-        "deminiaturize:"_sel, NULL);
-    #endif
+    window::unminimize();
     output["success"] = true;
     return output;
 }
 
 json isMinimized(const json &input) {
     json output;
-    bool minimized = false;
-    #if defined(__linux__) || defined(__FreeBSD__)
-    minimized = isGtkWindowMinimized;
-    #elif defined(_WIN32)
-    minimized = IsIconic(windowHandle) == 1;
-    #elif defined(__APPLE__)
-    minimized = ((bool (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
-        "isMiniaturized"_sel, NULL);
-    #endif
-    output["returnValue"] = minimized;
+    output["returnValue"] = window::isMinimized();
     output["success"] = true;
     return output;
 }
@@ -1430,14 +1607,7 @@ json isFullScreen(const json &input) {
 
 json focus(const json &input) {
     json output;
-    #if defined(__linux__) || defined(__FreeBSD__)
-    gtk_window_present(GTK_WINDOW(windowHandle));
-    #elif defined(__APPLE__)
-    ((void (*)(id, SEL, id))objc_msgSend)((id) windowHandle,
-            "orderFront:"_sel, NULL);
-    #elif defined(_WIN32)
-    SetForegroundWindow(windowHandle);
-    #endif
+    window::focus();
     output["success"] = true;
     return output;
 }

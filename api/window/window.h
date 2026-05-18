@@ -35,6 +35,9 @@ using namespace std;
 
 namespace window {
 
+// TODO: remove extern and fix multiple include errors
+extern NEU_W_HANDLE windowHandle;
+
 struct SizeOptions {
     int width = -1;
     int height = -1;
@@ -104,12 +107,16 @@ void onClose();
 bool isSavedStateLoaded();
 bool isMaximized();
 void maximize();
+void unmaximize();
 void minimize();
+void unminimize();
+bool isMinimized();
 bool isVisible();
 bool isFakeHidden();
 void undoFakeHidden();
 void show();
 void hide();
+void focus();
 void setFullScreen();
 void exitFullScreen();
 bool isFullScreen();
@@ -123,7 +130,9 @@ void setBorderless(bool borderless);
 void setSkipTaskbar(bool skip);
 bool snapshot(const string &filename);
 void setMainMenu(const json &menu);
+NEU_W_HANDLE getHandle();
 bool init(const json &windowOptions);
+NEU_W_HANDLE getHandle();
 
 void _close(int exitCode);
 
