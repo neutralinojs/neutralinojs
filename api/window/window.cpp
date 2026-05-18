@@ -13,9 +13,10 @@
 #elif defined(__APPLE__)
 #include <objc/objc-runtime.h>
 #include <dispatch/dispatch.h>
-#include <CoreFoundation/Corefoundation.h>
+#include <CoreFoundation/CoreFoundation.h>
 #include <CoreGraphics/CGDisplayConfiguration.h>
 #include <CoreGraphics/CGWindow.h>
+#include <dlfcn.h>
 
 #if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 120300
 #import <ScreenCaptureKit/ScreenCaptureKit.h>
@@ -24,7 +25,9 @@
 #define NSBaseWindowLevel 0
 #define NSFloatingWindowLevel 5
 #define NSWindowStyleMaskFullScreen 16384
+#define NSWindowStyleMaskTitled 1
 #define NSPNGFileType 4
+#define NSDragOperationCopy 1
 
 #define kCGWindowListOptionIncludingWindow 8
 #define kCGWindowImageBoundsIgnoreFraming 1
@@ -39,6 +42,7 @@
 #include "webview2.h"
 #include <wrl.h>
 #include <ShlObj_core.h>
+#include <shellapi.h>
 #endif
 
 #include "lib/json/json.hpp"
@@ -71,13 +75,38 @@ bool isGtkWindowMinimized = false;
 GtkWidget *menuContainer;
 
 #elif defined(_WIN32)
-#define ID_MENU_FIRST 20000;
+#define ID_MENU_FIRST 20000
 bool isWinWindowFullScreen = false;
 DWORD savedStyle;
 DWORD savedStyleX;
 RECT savedRect;
 HMENU windowMenu;
 int windowMenuItemId = ID_MENU_FIRST;
+WNDPROC originalWndProc = nullptr;
+
+LRESULT CALLBACK NeutralinoWndProc(HWND hwnd, UINT msg, WPARAM wParam,
+                                   LPARAM lParam) {
+    if(msg == WM_DROPFILES) {
+        HDROP hDrop = (HDROP)wParam;
+        UINT count = DragQueryFileW(hDrop, 0xFFFFFFFF, nullptr, 0);
+
+        json payload;
+        payload["paths"] = json::array();
+
+        for(UINT i = 0; i < count; ++i) {
+            UINT length = DragQueryFileW(hDrop, i, nullptr, 0);
+            wstring path(length + 1, L'\0');
+            DragQueryFileW(hDrop, i, path.data(), length + 1);
+            payload["paths"].push_back(helpers::wcstr2str(path.c_str()));
+        }
+
+        DragFinish(hDrop);
+        events::dispatch("fileDrop", payload);
+        return 0;
+    }
+
+    return CallWindowProc(originalWndProc, hwnd, msg, wParam, lParam);
+}
 #endif
 
 window::WindowOptions windowProps;
@@ -601,6 +630,70 @@ void __injectScript() {
     }
 }
 
+#if defined(__APPLE__)
+static void __appendDroppedFilePaths(id pasteboard, json &paths) {
+    id filenamesType = ((id(*)(id, SEL, const char *))objc_msgSend)(
+        "NSString"_cls, "stringWithUTF8String:"_sel, "NSFilenamesPboardType");
+    id files = ((id(*)(id, SEL, id))objc_msgSend)(
+        pasteboard, "propertyListForType:"_sel, filenamesType);
+
+    if(!files) {
+        return;
+    }
+
+    unsigned long count = ((unsigned long (*)(id, SEL))objc_msgSend)(
+        files, "count"_sel);
+    for(unsigned long i = 0; i < count; ++i) {
+        id path = ((id(*)(id, SEL, unsigned long))objc_msgSend)(
+            files, "objectAtIndex:"_sel, i);
+        const char *cpath = ((const char *(*)(id, SEL))objc_msgSend)(
+            path, "UTF8String"_sel);
+        if(cpath) {
+            paths.push_back(cpath);
+        }
+    }
+}
+
+static void __enableFileDropForWindow(id targetWindow) {
+    Class windowClass = object_getClass(targetWindow);
+
+    class_addMethod(windowClass, "draggingEntered:"_sel,
+                    (IMP)(+[](id, SEL, id) -> unsigned long {
+                        return NSDragOperationCopy;
+                    }),
+                    "L@:@");
+
+    class_addMethod(windowClass, "prepareForDragOperation:"_sel,
+                    (IMP)(+[](id, SEL, id) -> BOOL {
+                        return YES;
+                    }),
+                    "B@:@");
+
+    class_addMethod(windowClass, "performDragOperation:"_sel,
+                    (IMP)(+[](id, SEL, id sender) -> BOOL {
+                        json payload;
+                        payload["paths"] = json::array();
+
+                        id pasteboard = ((id(*)(id, SEL))objc_msgSend)(
+                            sender, "draggingPasteboard"_sel);
+                        __appendDroppedFilePaths(pasteboard, payload["paths"]);
+
+                        if(!payload["paths"].empty()) {
+                            events::dispatch("fileDrop", payload);
+                        }
+                        return YES;
+                    }),
+                    "B@:@");
+
+    id filenamesType = ((id(*)(id, SEL, const char *))objc_msgSend)(
+        "NSString"_cls, "stringWithUTF8String:"_sel, "NSFilenamesPboardType");
+    id draggedTypes = ((id(*)(id, SEL, id))objc_msgSend)(
+        "NSArray"_cls, "arrayWithObject:"_sel, filenamesType);
+    ((void (*)(id, SEL, id))objc_msgSend)(
+        targetWindow, "registerForDraggedTypes:"_sel, draggedTypes);
+}
+#endif
+
 bool __createWindow() {
     savedState = windowProps.useSavedState && __loadSavedWindowProps();
 
@@ -648,13 +741,48 @@ bool __createWindow() {
     #if defined(__linux__) || defined(__FreeBSD__)
     windowHandle = (GtkWidget*) nativeWindow->window();
 
+    GtkTargetEntry targets[] = {{(gchar *)"text/uri-list", 0, 0}};
+    gtk_drag_dest_set(windowHandle, GTK_DEST_DEFAULT_ALL, targets, 1,
+                      GDK_ACTION_COPY);
+    g_signal_connect(
+        windowHandle, "drag-data-received",
+        G_CALLBACK(+[](GtkWidget *, GdkDragContext *, gint, gint,
+                       GtkSelectionData *data, guint, guint, gpointer) {
+            json payload;
+            payload["paths"] = json::array();
+
+            if(data && gtk_selection_data_get_length(data) > 0) {
+                gchar **uris = gtk_selection_data_get_uris(data);
+                if(uris) {
+                    for(int i = 0; uris[i] != nullptr; ++i) {
+                        gchar *path =
+                            g_filename_from_uri(uris[i], nullptr, nullptr);
+                        if(path) {
+                            payload["paths"].push_back(path);
+                            g_free(path);
+                        }
+                    }
+                    g_strfreev(uris);
+                }
+            }
+
+            if(!payload["paths"].empty()) {
+                events::dispatch("fileDrop", payload);
+            }
+        }),
+        nullptr);
+
     #elif defined(__APPLE__)
     windowHandle = (id) nativeWindow->window();
+    __enableFileDropForWindow((id)windowHandle);
     ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle,
                 "setHasShadow:"_sel, true);
 
     #elif defined(_WIN32)
     windowHandle = (HWND) nativeWindow->window();
+    DragAcceptFiles(windowHandle, TRUE);
+    originalWndProc = (WNDPROC)SetWindowLongPtr(windowHandle, GWLP_WNDPROC,
+                                                (LONG_PTR)NeutralinoWndProc);
     #endif
 
     #if !defined(_WIN32)
@@ -703,6 +831,14 @@ void _close(int exitCode) {
         if(windowProps.useSavedState) {
             __saveWindowProps();
         }
+        #if defined(_WIN32)
+        if(windowHandle && originalWndProc) {
+            DragAcceptFiles(windowHandle, FALSE);
+            SetWindowLongPtr(windowHandle, GWLP_WNDPROC,
+                             (LONG_PTR)originalWndProc);
+            originalWndProc = nullptr;
+        }
+        #endif
         nativeWindow->terminate(exitCode);
 		#if defined(__APPLE__)
 		});
