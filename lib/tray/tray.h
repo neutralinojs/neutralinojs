@@ -218,7 +218,7 @@ static id _tray_menu(struct tray_menu *m) {
           sel_registerName("setRepresentedObject:"),
           ((id (*)(id, SEL, void*))objc_msgSend)((id)objc_getClass("NSValue"), sel_registerName("valueWithPointer:"), m));
 
-      ((id (*)(id, SEL, id))objc_msgSend)(menuItem, sel_registerName("setTarget:"), trayDelegate);
+      ((id (*)(id, SEL, id))objc_msgSend)(menuItem, sel_registerName("setTarget:"), trayDelegate); 
 
       ((id (*)(id, SEL, id))objc_msgSend)(menu, sel_registerName("addItem:"), menuItem);
 
