@@ -172,13 +172,11 @@ void handleMessage(websocketpp::connection_hdl handler, websocketserver::message
     websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
     string url = con->get_resource();
     if(__isExtensionEndpoint(url) && wsMode.find(handler) == wsMode.end()) {
-        auto op = msg->get_opcode();
-
-        if(op == websocketpp::frame::opcode::binary) {
-        wsMode[handler] = websocketpp::frame::opcode::binary;
+        if(msg->get_opcode() == websocketpp::frame::opcode::text) {
+        	wsMode[handler] = websocketpp::frame::opcode::text;
         }
-        else {
-        wsMode[handler] = websocketpp::frame::opcode::text;
+        else if(msg->get_opcode() == websocketpp::frame::opcode::binary) {
+        	wsMode[handler] = websocketpp::frame::opcode::binary;
         }
     }
     json nativeMessage;
