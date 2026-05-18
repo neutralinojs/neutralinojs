@@ -5,6 +5,7 @@
 
 #if defined(__linux__)
 #include <sys/sysinfo.h>
+#include <unistd.h>
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
@@ -35,6 +36,7 @@
 #include <infoware/system.hpp>
 #include <infoware/cpu.hpp>
 #include "api/computer/computer.h"
+#include "helpers.h"
 #include "api/window/window.h"
 #include "api/os/os.h"
 #include "lib/json/json.hpp"
@@ -406,6 +408,28 @@ json getMousePosition(const json &input) {
     output["returnValue"] = posRes;
     output["success"] = true;
     return output;
+}
+
+json getHostname(const json &input) {
+    json output;
+    string hostname = "";
+
+    #if defined(_WIN32)
+    wstring hostnameW;
+    hostnameW.resize(MAX_COMPUTERNAME_LENGTH + 1);
+    DWORD size = MAX_COMPUTERNAME_LENGTH + 1;
+    if(GetComputerName(hostnameW.data(), &size)) {
+        hostnameW.resize(size);
+        hostname = helpers::wstr2str(hostnameW);
+    }
+    #else
+    char hostnameBuffer[256] = { 0 };
+    if(gethostname(hostnameBuffer, sizeof(hostnameBuffer)) == 0) {
+        hostname = string(hostnameBuffer);
+    }
+    #endif
+
+    output["returnValue"] = hostname;
 }
 
 json setMousePosition(const json &input) {
