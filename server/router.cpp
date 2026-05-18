@@ -410,7 +410,8 @@ router::Response getAsset(string path, const string &prependData, const fs::File
             response.headers["Content-Length"] = to_string(bytesRead);
         }
     }
-    else if(prependData != "") {
+    
+	if(prependData != "") {
         response.data = prependData + response.data;
     }
 
@@ -418,6 +419,7 @@ router::Response getAsset(string path, const string &prependData, const fs::File
     if(mimeTypes.find(extension) != mimeTypes.end()) {
         response.contentType = mimeTypes[extension];
     }
+	
     return response;
 }
 
