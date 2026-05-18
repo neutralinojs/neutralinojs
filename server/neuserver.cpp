@@ -4,6 +4,7 @@
 #include <thread>
 #include <chrono>
 #include <set>
+#include <fstream>
 
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
@@ -19,6 +20,8 @@
 #include "api/debug/debug.h"
 #include "api/events/events.h"
 #include "api/app/app.h"
+#include "api/fs/fs.h"
+
 
 using namespace std;
 using json = nlohmann::json;
@@ -42,6 +45,26 @@ bool __isExtensionEndpoint(const string &url) {
 
 bool __hasConnectToken(const string &url) {
     return regex_match(url, regex(".*connectToken=.*"));
+}
+
+fs::FileReaderOptions __getFileReaderOptionsFromHeaders(const websocketpp::http::parser::header_list &headers) {
+    fs::FileReaderOptions fileReaderOptions;
+    auto rangeIt = headers.find("Range");
+    if(rangeIt == headers.end()) {
+        return fileReaderOptions;
+    }
+
+    smatch match;
+    if(regex_match(rangeIt->second, match, regex(R"(bytes=(\d+)-(\d*)?)"))) {
+        fileReaderOptions.pos = stoll(match[1].str());
+        if(match[2].matched && match[2].str() != "") {
+            long long end = stoll(match[2].str());
+            if(end >= fileReaderOptions.pos) {
+                fileReaderOptions.size = end - fileReaderOptions.pos + 1;
+            }
+        }
+    }
+    return fileReaderOptions;
 }
 
 void __applyConfigHeaders(websocketserver::connection_ptr con) {
@@ -72,7 +95,7 @@ string __getConnectTokenFromUrl(const string &url) {
 
 void __exitProcessIfIdle() {
     thread exitCheckThread([=]() {
-        std::this_thread::sleep_for(10s);
+        this_thread::sleep_for(10s);
         if(appConnections.size() == 0) {
             app::exit();
         }
@@ -132,7 +155,7 @@ string init() {
         settings::setPort(port);
     }
 
-    string navigationUrl = "http://127.0.0.1:" + std::to_string(port);
+    string navigationUrl = "http://127.0.0.1:" + to_string(port);
     json jUrl = settings::getOptionForCurrentMode("url");
 
     if(!jUrl.is_null()) {
@@ -199,12 +222,17 @@ void handleHTTP(websocketpp::connection_hdl handler) {
     if(!documentRoot.empty()) {
         resource = documentRoot + resource;
     }
-    router::Response routerResponse = router::serve(resource);
+    fs::FileReaderOptions fileReaderOptions =
+        __getFileReaderOptionsFromHeaders(con->get_request().get_headers());
+    router::Response routerResponse = router::serve(resource, fileReaderOptions);
     con->set_status(routerResponse.status);
     con->set_body(routerResponse.data);
-    con->replace_header("Content-Type", routerResponse.contentType);
-
-    if(applyConfigHeaders) {
+    con->replace_header("Content-Type",routerResponse.contentType);
+    for(const auto &[header, value]: routerResponse.headers) {
+        con->replace_header(header, value);
+    }
+    
+    if(applyConfigHeaders){
         __applyConfigHeaders(con);
     }
 }

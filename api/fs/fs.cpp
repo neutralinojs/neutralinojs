@@ -163,6 +163,7 @@ fs::FileReaderResult readFile(const string &filename, const fs::FileReaderOption
     long long origSize = reader.tellg();
     long long size = origSize;
     long long pos = 0;
+    fileReaderResult.size = origSize;
 
     if(fileReaderOptions.pos > -1) {
         pos = min(fileReaderOptions.pos, origSize);
