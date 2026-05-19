@@ -143,14 +143,11 @@ string __getGPUVendor(unsigned int vendorId) {
     switch(vendorId) {
         case 0x10DE:
             return "NVIDIA Corporation";
-
         case 0x1002:
         case 0x1022:
             return "Advanced Micro Devices, Inc.";
-
         case 0x8086:
             return "Intel Corporation";
-
         default:
             return "Unknown";
     }
@@ -163,18 +160,14 @@ string __getGPUVendor(unsigned int vendorId) {
 string __parseLinuxGPUVendor(const string &vendorId) {
     if(vendorId == "0x10de")
         return "NVIDIA Corporation";
-
     if(vendorId == "0x1002")
         return "Advanced Micro Devices, Inc.";
-
     if(vendorId == "0x8086")
         return "Intel Corporation";
-
     return "Unknown";
 }
 
 #endif
-
 
 json getGPUInfo() {
     json output = {
@@ -187,10 +180,8 @@ json getGPUInfo() {
     #if defined(_WIN32)
 
     IDXGIFactory* factory = nullptr;
-
     if(CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&factory) != S_OK)
         return output;
-
     IDXGIAdapter* adapter = nullptr;
 
     if(factory->EnumAdapters(0, &adapter) != S_OK) {
@@ -216,7 +207,6 @@ json getGPUInfo() {
         __uuidof(IDXGIDevice),
         &driverVersion
     ) == S_OK) {
-
         output["driverVersion"] =
             to_string(HIWORD(driverVersion.HighPart)) + "." +
             to_string(LOWORD(driverVersion.HighPart));
@@ -261,21 +251,14 @@ json getGPUInfo() {
         }
     }
 
-
-    
     ifstream vramFile("/sys/class/drm/card0/device/mem_info_vram_total");
-
     if(vramFile.is_open()) {
-
         uint64_t vramBytes = 0;
-
         vramFile >> vramBytes;
-
         output["vramSize"] =
             static_cast<uint64_t>(
                 vramBytes / (1024 * 1024)
             );
-
         vramFile.close();
     }
 
@@ -284,8 +267,7 @@ json getGPUInfo() {
     io_iterator_t iterator;
     io_service_t service;
 
-    CFMutableDictionaryRef matchDict =
-        IOServiceMatching("IOPCIDevice");
+    CFMutableDictionaryRef matchDict = IOServiceMatching("IOPCIDevice");
 
     if(IOServiceGetMatchingServices(
         kIOMainPortDefault,
@@ -316,19 +298,15 @@ json getGPUInfo() {
                     find(gpuName.begin(),gpuName.end(),'\0'),
                     gpuName.end()
                 );
-
                 output["name"] = gpuName;
                 output["vendor"] = "Apple";
 
                 CFRelease(model);
-
                 IOObjectRelease(service);
                 break;
             }
-
             IOObjectRelease(service);
         }
-
         IOObjectRelease(iterator);
     }
 
@@ -583,7 +561,6 @@ json getGPUInfo(const json &input) {
 
     output["returnValue"] = computer::getGPUInfo();
     output["success"] = true;
-
     return output;
 }
 
