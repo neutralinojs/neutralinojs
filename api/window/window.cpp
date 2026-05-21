@@ -158,7 +158,7 @@ pair<int, int> __getCenterPos(bool useConfigSizes = false) {
     }
     #if defined(__linux__) || defined(__FreeBSD__)
     GdkRectangle screen = {0};
-	GdkDisplay *display = gdk_display_get_default()
+	GdkDisplay *display = gdk_display_get_default();
     if(display){
         GdkMonitor *monitor = gdk_display_get_primary_monitor(display);
         if(!monitor) {
