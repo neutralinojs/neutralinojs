@@ -28,6 +28,7 @@ enum StatusCode {
     // computer
     NE_CO_UNLTOSC,
     NE_CO_UNLTOMG,
+    NE_CO_UNLTOSK,
     // extensions
     NE_EX_EXTNOTC,
     // filesystem
@@ -48,6 +49,7 @@ enum StatusCode {
     NE_FS_ACCERR,
     NE_FS_CHMDERR,
     NE_FS_CHWNERR,
+    NE_FS_TRSERR,
     // window
     NE_WI_UNBSWSR,
     // router

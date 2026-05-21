@@ -11,9 +11,11 @@ using namespace std;
 
 namespace computer {
 
+enum SendKeyState { SendKeyStatePress, SendKeyStateDown, SendKeyStateUp };
+
 bool setMousePosition(int x, int y);
 bool setMouseGrabbing(bool grabbing);
-bool sendKey(const string &key, bool up);
+bool sendKey(const string &key, computer::SendKeyState keyState);
 
 string getArch();
 pair<int, int> getMousePosition();
@@ -27,6 +29,7 @@ json getOSInfo(const json &input);
 json getCPUInfo(const json &input);
 json getDisplays(const json &input);
 json getMousePosition(const json &input);
+json getHostname(const json &input);
 json setMousePosition(const json &input);
 json setMouseGrabbing(const json &input);
 json sendKey(const json &input);;
