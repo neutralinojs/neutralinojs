@@ -865,7 +865,7 @@ json trashItem(const json &input) {
     }
     string path = input["path"].get<string>();
 
-    if(trashcan_soft_delete(CONVSTR(path).c_str()) == 0) {
+    if(trashcan_soft_delete(path.c_str()) == 0) {
         output["success"] = true;
         output["message"] = path + " was moved to trash";
     }
