@@ -795,6 +795,7 @@ using browser_engine = cocoa_wkwebview_engine;
 #include <codecvt>
 #include <stdlib.h>
 #include <windows.h>
+#include <wrl.h>
 
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "Shlwapi.lib")
@@ -813,6 +814,8 @@ using browser_engine = cocoa_wkwebview_engine;
 #define WM_WINDOW_PASS_MENU_REFS (WM_USER + 3)
 #define WM_WINDOW_DELETE_MENU_REFS (WM_USER + 4)
 #define ID_MENU_FIRST 20000
+
+using namespace Microsoft::WRL;
 
 namespace webview {
 
