@@ -6,6 +6,13 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: os
+- Add `home` and `desktop` path name implementations to the `os.getPath(name)` function.
+
+### Improvements/bugfixes
+- Fix memory handling issues in `os.setTray()` implementation.
+- Focus app content on the window focus event on Windows.
+
 ## v6.7.0
 
 ### API: Input device simulation and handling
