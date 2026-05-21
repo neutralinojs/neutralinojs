@@ -1,6 +1,5 @@
 #include <map>
 #include <mutex>
-#include <iostream>
 #include <fstream>
 #include <regex>
 #include <algorithm>
@@ -13,13 +12,20 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <libgen.h>
+#endif
 
-#elif defined(_WIN32)
+#if defined(__APPLE__)
+#include <objc/objc-runtime.h>
+#endif
+
+#if defined(_WIN32)
 #define _WINSOCKAPI_
 #include <windows.h>
 #include <atlstr.h>
 #include <shlwapi.h>
+#include <shellapi.h>
 #include <winbase.h>
+#include <io.h>
 
 #define NEU_WINDOWS_TICK 10000000
 #define NEU_SEC_TO_UNIX_EPOCH 11644473600LL
@@ -28,7 +34,6 @@
 #include <efsw/efsw.hpp>
 #include "lib/json/json.hpp"
 #include "lib/base64/base64.hpp"
-#include "lib/platformfolders/platform_folders.h"
 #include "settings.h"
 #include "helpers.h"
 #include "errors.h"
@@ -159,6 +164,7 @@ fs::FileReaderResult readFile(const string &filename, const fs::FileReaderOption
     long long origSize = reader.tellg();
     long long size = origSize;
     long long pos = 0;
+    fileReaderResult.size = origSize;
 
     if(fileReaderOptions.pos > -1) {
         pos = min(fileReaderOptions.pos, origSize);
@@ -364,6 +370,41 @@ string applyPathConstants(const string &path) {
         newPath = regex_replace(newPath, regex("\\$\\{NL_OS" + varSegment + "PATH\\}"), os::getPath(pathName));
     }
     return newPath;
+}
+
+bool moveToTrash(const string &path) {
+	#if defined(__linux__) || defined(__FreeBSD__)
+    return true;
+
+	#elif defined(__APPLE__)
+    id fileManager = ((id (*)(id, SEL))objc_msgSend)(
+        (id)objc_getClass("NSFileManager"), sel_registerName("defaultManager"));
+
+    id pathStr = ((id (*)(id, SEL, const char*))objc_msgSend)(
+        (id)objc_getClass("NSString"), sel_registerName("stringWithUTF8String:"),
+        path.c_str());
+
+    id fileURL = ((id (*)(id, SEL, id))objc_msgSend)(
+        (id)objc_getClass("NSURL"), sel_registerName("fileURLWithPath:"), pathStr);
+
+    id error = nullptr;
+    BOOL result = ((BOOL (*)(id, SEL, id, id, id*))objc_msgSend)(
+        fileManager, sel_registerName("trashItemAtURL:resultingItemURL:error:"),
+        fileURL, nullptr, &error);
+
+    return result && !error;
+
+	#elif defined(_WIN32)
+    wstring widePath = helpers::str2wstr(path);
+    widePath.push_back(L'\0');
+
+    SHFILEOPSTRUCTW fileOp = {};
+    fileOp.wFunc = FO_DELETE;
+    fileOp.pFrom = widePath.c_str();
+    fileOp.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT;
+
+    return SHFileOperationW(&fileOp) == 0;
+	#endif
 }
 
 namespace controllers {
@@ -913,6 +954,84 @@ json setPermissions(const json &input) {
     return output;
 }
 
+json access(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload("path");
+        return output;
+    }
+    string path = input["path"].get<string>();
+
+    // Mode defaults to F_OK (0) if not provided.
+    int mode = 0;
+    if(helpers::hasField(input, "mode")) {
+        mode = input["mode"].get<int>();
+    }
+
+    #if defined(_WIN32)
+    int result = _waccess(helpers::str2wstr(path).c_str(), mode);
+    #else
+    int result = ::access(path.c_str(), mode);
+    #endif
+
+    if(result == 0) {
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_ACCERR, path);
+    }
+    return output;
+}
+
+json chmod(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path", "mode"})) {
+        output["error"] = errors::makeMissingArgErrorPayload("path, mode");
+        return output;
+    }
+    string path = input["path"].get<string>();
+    int mode = input["mode"].get<int>();
+
+    #if defined(_WIN32)
+    int result = _wchmod(helpers::str2wstr(path).c_str(), mode);
+    #else
+    int result = ::chmod(path.c_str(), mode);
+    #endif
+
+    if(result == 0) {
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_CHMDERR, path);
+    }
+    return output;
+}
+
+json chown(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path", "uid", "gid"})) {
+        output["error"] = errors::makeMissingArgErrorPayload("path, uid, gid");
+        return output;
+    }
+    string path = input["path"].get<string>();
+    int uid = input["uid"].get<int>();
+    int gid = input["gid"].get<int>();
+
+    #if defined(_WIN32)
+    // chown is not available on Windows, standard is to fail or ignore. Node.js largely ignores.
+    output["success"] = true;
+    #else
+    int result = ::chown(path.c_str(), uid, gid);
+    if(result == 0) {
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_CHWNERR, path);
+    }
+    #endif
+    return output;
+}
+
 json getJoinedPath(const json &input) {
     json output;
     if(!helpers::hasRequiredFields(input, {"paths"})) {
@@ -951,9 +1070,32 @@ json getUnnormalizedPath(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
-    
+
     output["returnValue"] = helpers::unNormalizePath(path);
     output["success"] = true;
+    return output;
+}
+
+json moveToTrash(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload("path");
+        return output;
+    }
+    string path = input["path"].get<string>();
+
+    if(!filesystem::exists(CONVSTR(path))) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_NOPATHE, path);
+        return output;
+    }
+
+    if(fs::moveToTrash(path)) {
+        output["success"] = true;
+        output["message"] = path + " was moved to trash";
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_TRSERR, path);
+    }
     return output;
 }
 

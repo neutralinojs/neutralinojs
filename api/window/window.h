@@ -107,12 +107,16 @@ void onClose();
 bool isSavedStateLoaded();
 bool isMaximized();
 void maximize();
+void unmaximize();
 void minimize();
+void unminimize();
+bool isMinimized();
 bool isVisible();
 bool isFakeHidden();
 void undoFakeHidden();
 void show();
 void hide();
+void focus();
 void setFullScreen();
 void exitFullScreen();
 bool isFullScreen();
@@ -128,6 +132,7 @@ bool snapshot(const string &filename);
 void setMainMenu(const json &menu);
 NEU_W_HANDLE getHandle();
 bool init(const json &windowOptions);
+NEU_W_HANDLE getHandle();
 
 void _close(int exitCode);
 
