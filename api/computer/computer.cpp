@@ -470,7 +470,7 @@ json sendKey(const json &input) {
         return output;
     }
 
-    int keyCode = input["key"].get<int>();
+    int key = input["key"].get<int>();
     computer::SendKeyState state = computer::SendKeyStatePress;
 
     if(helpers::hasField(input, "state")) {
