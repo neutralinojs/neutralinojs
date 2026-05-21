@@ -205,6 +205,8 @@ if(WIN32)
       wbemuuid
       ntdll
       dwmapi
+      iphlpapi
+      ws2_32
     )
 elseif(APPLE)
     # macOS

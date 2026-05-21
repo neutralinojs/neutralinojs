@@ -33,6 +33,7 @@ json getHostname(const json &input);
 json setMousePosition(const json &input);
 json setMouseGrabbing(const json &input);
 json sendKey(const json &input);;
+json getNetworkInterfaces(const json &input);
 
 } // namespace controllers
 } // namespace computer

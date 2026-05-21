@@ -215,6 +215,50 @@ describe('computer.spec: computer namespace tests', () => {
         });
     });
 
+    describe('computer.getNetworkInterfaces', () => {
+        it('returns an array of network interfaces', async () => {
+            runner.run(`
+                let interfaces = await Neutralino.computer.getNetworkInterfaces();
+                await __close(JSON.stringify(interfaces));
+            `);
+            let interfaces = JSON.parse(runner.getOutput());
+            assert.ok(Array.isArray(interfaces));
+
+            if(interfaces.length > 0) {
+                let iface = interfaces[0];
+                assert.ok(typeof iface == 'object');
+                assert.ok(typeof iface.name == 'string');
+                assert.ok(Array.isArray(iface.ipv4));
+                assert.ok(Array.isArray(iface.ipv6));
+                assert.ok(typeof iface.mac == 'string');
+                assert.ok(typeof iface.isUp == 'boolean');
+                assert.ok(typeof iface.isLoopback == 'boolean');
+            }
+        });
+
+        it('excludes loopback interfaces when excludeLoopback is true', async () => {
+            runner.run(`
+                let interfaces = await Neutralino.computer.getNetworkInterfaces({ excludeLoopback: true });
+                await __close(JSON.stringify(interfaces));
+            `);
+            let interfaces = JSON.parse(runner.getOutput());
+            assert.ok(Array.isArray(interfaces));
+            interfaces.forEach(iface => {
+                assert.ok(!iface.isLoopback, 'Loopback interface should be excluded');
+            });
+        });
+
+        it('includes loopback interfaces by default', async () => {
+            runner.run(`
+                let all = await Neutralino.computer.getNetworkInterfaces();
+                let noLoopback = await Neutralino.computer.getNetworkInterfaces({ excludeLoopback: true });
+                await __close(JSON.stringify({ all: all.length, noLoopback: noLoopback.length }));
+            `);
+            let result = JSON.parse(runner.getOutput());
+            assert.ok(result.all >= result.noLoopback, 'Default call should return at least as many interfaces as excludeLoopback:true');
+        });
+    });
+
     describe('computer.sendKey', () => {
         it('sends a synthetic key event', async () => {
             runner.run(`
