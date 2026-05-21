@@ -70,10 +70,11 @@
 namespace webview {
 using dispatch_fn_t = std::function<void()>;
 using eventHandler_t = std::function<void(int)>;
+using newWindowHandler_t = std::function<void(const std::string&)>;
 
 static eventHandler_t windowStateChange;
+static newWindowHandler_t newWindow;
 static int processExitCode = 0;
-static std::function<void(const std::string&)> newWindowHandler;
 
 struct WindowMenuItem {
   std::string id;
@@ -320,8 +321,8 @@ public:
             const char* uri = webkit_uri_request_get_uri(request);
             if(uri) {
                 std::string uriStr(uri);
-                if(uriStr.find("http://localhost") != 0 && uriStr.find("http://127.0.0.1") != 0 &&newWindowHandler) {
-                    newWindowHandler(uriStr);
+                if(uriStr.find("http://localhost") != 0 && uriStr.find("http://127.0.0.1") != 0 &&newWindow) {
+                    newWindow(uriStr);
                 }
             }
         }
@@ -645,8 +646,8 @@ public:
             const char* uri = ((const char*(*)(id,SEL))objc_msgSend)(urlStr, "UTF8String"_sel);
             if(uri) {
                 std::string uriStr(uri);
-                if(uriStr.find("http://localhost") != 0 && uriStr.find("http://127.0.0.1") != 0 && newWindowHandler) {
-                    newWindowHandler(uriStr);
+                if(uriStr.find("http://localhost") != 0 && uriStr.find("http://127.0.0.1") != 0 && newWindow) {
+                    newWindow(uriStr);
                 }
             }
             return nullptr;
@@ -970,8 +971,8 @@ private:
                 args->get_Uri(&uri);
                 std::wstring ws(uri);
                 std::string url(ws.begin(), ws.end());
-                if(url.find("http://localhost") != 0 && url.find("http://127.0.0.1") != 0 && newWindowHandler) {
-                    newWindowHandler(url);
+                if(url.find("http://localhost") != 0 && url.find("http://127.0.0.1") != 0 && newWindow) {
+                    newWindow(url);
                 }
                 args->put_Handled(TRUE);
                 CoTaskMemFree(uri);
@@ -1331,8 +1332,8 @@ public:
     windowStateChange = handler;
   }
   
-  void setNewWindowHandler(std::function<void(const std::string&)> handler) {
-    newWindowHandler = handler;
+  void setNewWindowHandler(newWindowHandler_t handler) {
+    newWindow = handler;
   }
 
   int get_init_code() {
