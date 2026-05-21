@@ -188,8 +188,17 @@ pair<int, int> __getCenterPos(bool useConfigSizes = false) {
         height = opt.height;
     }
     #if defined(__linux__) || defined(__FreeBSD__)
-    GdkRectangle screen;
-    gdk_monitor_get_workarea(gdk_display_get_primary_monitor(gdk_display_get_default()), &screen);
+    GdkRectangle screen = {0};
+	GdkDisplay *display = gdk_display_get_default();
+    if(display){
+        GdkMonitor *monitor = gdk_display_get_primary_monitor(display);
+        if(!monitor) {
+			monitor = gdk_display_get_monitor(display, 0);
+		}
+        if(monitor) {
+			gdk_monitor_get_workarea(monitor, &screen);
+		}
+    }
     x = (screen.width - width) / 2;
     y = (screen.height - height) / 2;
     #elif defined(__APPLE__)
