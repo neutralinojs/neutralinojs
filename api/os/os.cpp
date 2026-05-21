@@ -23,6 +23,8 @@
 
 #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
 #include <unistd.h>
+#include <pwd.h>
+#include <sys/types.h>
 extern char **environ;
 #endif
 
@@ -36,6 +38,7 @@ extern char **environ;
 #include <tchar.h>
 #include <gdiplus.h>
 #include <shlwapi.h>
+#include <shlobj.h>
 
 #pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "Gdiplus.lib")
@@ -86,10 +89,23 @@ bool isTrayInitialized() {
 }
 
 void cleanupTray() {
-    if(os::isTrayInitialized()) {
+    if(!os::isTrayInitialized()) return;
         tray_exit();
         trayInitialized = false;
+    #if defined(_WIN32)
+    if (tray.icon) {
+        DestroyIcon(tray.icon);
+        tray.icon = nullptr;
     }
+    #elif defined(__APPLE__)
+    if (tray.icon) {
+        ((void (*)(id, SEL))objc_msgSend)(tray.icon, sel_registerName("release"));
+        tray.icon = nullptr;
+    }
+    #elif defined(__linux__) || defined(__FreeBSD__)
+    delete[] tray.icon;
+    tray.icon = nullptr;
+    #endif
 }
 
 void open(const string &url) {
@@ -217,6 +233,7 @@ pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &optio
 }
 
 bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt) {
+    lock_guard<mutex> guard(spawnedProcessesLock);
     if(spawnedProcesses.find(evt.id) == spawnedProcesses.end()) {
         return false;
     }
@@ -263,6 +280,22 @@ string getPath(const string &name) {
         path = sago::getSaveGamesFolder2();
     else if(name == "temp")
         path = FS_CONVWSTR(filesystem::temp_directory_path());
+    else if(name == "desktop")
+        path = sago::getDesktopFolder();
+    else if(name == "home") {
+        #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+        struct passwd *pw = getpwuid(getuid());
+        if(pw) {
+            path = string(pw->pw_dir);
+        }
+        #elif defined(_WIN32)
+        PWSTR homePath = nullptr;
+        if(SHGetKnownFolderPath(FOLDERID_Profile, 0, nullptr, &homePath) == S_OK) {
+            path = helpers::wstr2str(wstring(homePath));
+            CoTaskMemFree(homePath);
+        }
+        #endif
+    }
     return helpers::normalizePath(path);
 }
 
@@ -477,6 +510,7 @@ json showOpenDialog(const json &input) {
 
     if(helpers::hasField(input, "defaultPath")) {
         defaultPath = input["defaultPath"].get<string>();
+        defaultPath = helpers::unNormalizePath(defaultPath);
     }
 
     vector<string> selectedEntries = pfd::open_file(title, defaultPath, filters, option).result();
@@ -734,6 +768,9 @@ json setTray(const json &input) {
         tray.icon = helpers::cStrCopy(fullIconPath);
 
         #elif defined(_WIN32)
+        if(tray.icon) {
+            DestroyIcon(tray.icon);
+        }
         fs::FileReaderResult fileReaderResult = resources::getFile(iconPath);
         string iconDataStr = fileReaderResult.data;
         const char *iconData = iconDataStr.c_str();
@@ -744,6 +781,9 @@ json setTray(const json &input) {
         pStream->Release();
 
         #elif defined(__APPLE__)
+        if(tray.icon) {
+            ((void (*)(id, SEL))objc_msgSend)(tray.icon, sel_registerName("release"));
+        }
         fs::FileReaderResult fileReaderResult = resources::getFile(iconPath);
         string iconDataStr = fileReaderResult.data;
         const char *iconData = iconDataStr.c_str();

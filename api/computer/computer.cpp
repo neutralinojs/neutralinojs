@@ -5,6 +5,7 @@
 
 #if defined(__linux__)
 #include <sys/sysinfo.h>
+#include <unistd.h>
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
@@ -35,13 +36,21 @@
 #include <infoware/system.hpp>
 #include <infoware/cpu.hpp>
 #include "api/computer/computer.h"
+#include "helpers.h"
 #include "api/window/window.h"
+#include "api/os/os.h"
 #include "lib/json/json.hpp"
 
 using namespace std;
 using json = nlohmann::json;
 
 namespace computer {
+
+#if defined(__linux__) || defined(__FreeBSD__)
+bool __isWayland() {
+    return os::getEnv("XDG_SESSION_TYPE") == "wayland";
+}
+#endif
 
 #if defined(__APPLE__)
 CFMachPortRef mouseTap = nullptr;
@@ -133,6 +142,8 @@ bool setMousePosition(int x, int y) {
     return true;
 
     #elif defined(__linux__) || defined(__FreeBSD__)
+    if(__isWayland()) return false;
+    
     Display *display = XOpenDisplay(nullptr);
     if(!display) return false;
 
@@ -193,26 +204,29 @@ bool setMouseGrabbing(bool grabbing = true) {
     return true;
 
     #elif defined(__linux__) || defined(__FreeBSD__)
-        GdkWindow *gdkWindow = gtk_widget_get_window(window::getHandle());
-        Display *xDisplay = gdk_x11_display_get_xdisplay(gdk_window_get_display(gdkWindow));
-        Window xWindow = gdk_x11_window_get_xid(gdkWindow);
-        if(grabbing) {
-            return XGrabPointer(
-                xDisplay,
-                xWindow,
-                True,
-                ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
-                GrabModeAsync,
-                GrabModeAsync,
-                xWindow,
-                None,
-                CurrentTime
-            ) == GrabSuccess;
-        }
-        else {
-            XUngrabPointer(xDisplay, CurrentTime);
-            return true;
-        }
+    if(__isWayland()) return false;
+    
+    GdkWindow *gdkWindow = gtk_widget_get_window(window::getHandle());
+    Display *xDisplay = gdk_x11_display_get_xdisplay(gdk_window_get_display(gdkWindow));
+    Window xWindow = gdk_x11_window_get_xid(gdkWindow);
+
+    if(grabbing) {
+        return XGrabPointer(
+            xDisplay,
+            xWindow,
+            True,
+            ButtonPressMask | ButtonReleaseMask | PointerMotionMask,
+            GrabModeAsync,
+            GrabModeAsync,
+            xWindow,
+            None,
+            CurrentTime
+        ) == GrabSuccess;
+    }
+    else {
+        XUngrabPointer(xDisplay, CurrentTime);
+        return true;
+    }
     #else
     return false;
     #endif
@@ -252,6 +266,8 @@ bool sendKey(unsigned int keyCode, computer::SendKeyState keyState = computer::S
     return true;
 
     #elif defined(__linux__) || defined(__FreeBSD__)
+    if(__isWayland()) return false;
+    
     Display *display = XOpenDisplay(nullptr);
     if(!display) return false;
 
@@ -394,6 +410,28 @@ json getMousePosition(const json &input) {
     return output;
 }
 
+json getHostname(const json &input) {
+    json output;
+    string hostname = "";
+
+    #if defined(_WIN32)
+    wstring hostnameW;
+    hostnameW.resize(MAX_COMPUTERNAME_LENGTH + 1);
+    DWORD size = MAX_COMPUTERNAME_LENGTH + 1;
+    if(GetComputerName(hostnameW.data(), &size)) {
+        hostnameW.resize(size);
+        hostname = helpers::wstr2str(hostnameW);
+    }
+    #else
+    char hostnameBuffer[256] = { 0 };
+    if(gethostname(hostnameBuffer, sizeof(hostnameBuffer)) == 0) {
+        hostname = string(hostnameBuffer);
+    }
+    #endif
+
+    output["returnValue"] = hostname;
+}
+
 json setMousePosition(const json &input) {
     json output;
     
@@ -434,24 +472,24 @@ json setMouseGrabbing(const json &input) {
 json sendKey(const json &input) {
     json output;
     
-    const auto missingRequiredField = helpers::missingRequiredField(input, {"keyCode"});
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"key"});
     if(missingRequiredField) {
         output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
 
-    int keyCode = input["keyCode"].get<int>();
-    computer::SendKeyState keyState = computer::SendKeyStatePress;
+    int key = input["key"].get<int>();
+    computer::SendKeyState state = computer::SendKeyStatePress;
     
-    if(helpers::hasField(input, "keyState")) {
-        string state = input["keyState"].get<string>();
-        if(state == "press") keyState = computer::SendKeyStatePress;
-        if(state == "down") keyState = computer::SendKeyStateDown;
-        if(state == "up") keyState = computer::SendKeyStateUp;
+    if(helpers::hasField(input, "state")) {
+        string st = input["state"].get<string>();
+        if(st == "press") state = computer::SendKeyStatePress;
+        if(st == "down") state = computer::SendKeyStateDown;
+        if(st == "up") state = computer::SendKeyStateUp;
     }
 
-    if(!computer::sendKey(keyCode, keyState)) {
-        output["error"] = errors::makeErrorPayload(errors::NE_RT_NATRTER);
+    if(!computer::sendKey(key, state)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_CO_UNLTOSK);
         return output;
     }
 

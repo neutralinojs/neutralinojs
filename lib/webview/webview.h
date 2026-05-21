@@ -154,7 +154,6 @@ static webkit_settings_get_user_agent_func webkit_settings_get_user_agent = null
 static webkit_settings_set_user_agent_func webkit_settings_set_user_agent = nullptr;
 static webkit_web_view_load_uri_func webkit_web_view_load_uri = nullptr;
 
-static bool gtkSupportsAlpha = true;
 static void *dlib = nullptr;
 
 class gtk_webkit_engine {
@@ -175,30 +174,19 @@ public:
       GdkScreen *screen = gtk_widget_get_screen(m_window);
       GdkVisual *visual = gdk_screen_get_rgba_visual(screen);
 
-      if(!visual) {
-      visual = gdk_screen_get_system_visual(screen);
-      gtkSupportsAlpha = false;
+      if(visual) {
+        gtk_widget_set_app_paintable(m_window, true);
+        gtk_widget_set_visual(m_window, visual);
+
+        g_signal_connect(G_OBJECT(m_window), "draw",
+            G_CALLBACK(+[](GtkWidget *widget, cairo_t *cr, gpointer userdata) {
+            cairo_set_source_rgba(cr, 0, 0, 0, 0);
+            cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+            cairo_paint(cr);
+            return false;
+        }),
+        nullptr);
       }
-
-      gtk_widget_set_app_paintable(m_window, true);
-      gtk_widget_set_visual(m_window, visual);
-
-      g_signal_connect(G_OBJECT(m_window), "draw",
-          G_CALLBACK(+[](GtkWidget *widget, cairo_t *cr, gpointer userdata) {
-
-          if(gtkSupportsAlpha) {
-          cairo_set_source_rgba(cr, 0, 0, 0, 0);
-          }
-          else {
-          cairo_set_source_rgb(cr, 1.0, 1.0, 1.0);
-          }
-
-          cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-          cairo_paint(cr);
-
-          return false;
-      }),
-      nullptr);
     }
 
     g_signal_connect(G_OBJECT(m_window), "destroy",
@@ -297,10 +285,15 @@ public:
       }
     }
 
+    GdkRGBA color = { 1, 1, 1, 1 };
     if(transparent) {
-      GdkRGBA color { 0, 0, 0, 0 };
-      webkit_web_view_set_background_color((WebKitWebView*)(m_webview), &color);
+      color = { 0, 0, 0, 0 };
     }
+    else {
+      GtkStyleContext* context = gtk_widget_get_style_context(m_window);
+      gtk_style_context_lookup_color(context, "theme_bg_color", &color);
+    }
+    webkit_web_view_set_background_color((WebKitWebView*)(m_webview), &color);
 
     gtk_widget_show_all(m_window);
   }
@@ -682,10 +675,14 @@ public:
 
   void set_size(int width, int height, int minWidth, int minHeight,
                 int maxWidth, int maxHeight, bool resizable) {
-    auto style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
-                 NSWindowStyleMaskMiniaturizable;
+    // Read the current style mask and only toggle NSWindowStyleMaskResizable,
+    // preserving all other flags (e.g. borderless removes NSWindowStyleMaskTitled).
+    auto style = ((unsigned long (*)(id, SEL))objc_msgSend)(
+        m_window, "styleMask"_sel);
     if (resizable) {
       style = style | NSWindowStyleMaskResizable;
+    } else {
+      style = style & ~NSWindowStyleMaskResizable;
     }
     ((void (*)(id, SEL, unsigned long))objc_msgSend)(
         m_window, "setStyleMask:"_sel, style);
@@ -863,6 +860,13 @@ public:
     m_controller->put_Bounds(bounds);
   }
 
+  void focus(){
+    if(m_controller == nullptr){
+      return;
+    }
+    m_controller->MoveFocus(COREWEBVIEW2_MOVE_FOCUS_REASON_PROGRAMMATIC);
+  }
+
   void navigate(const std::string url) {
     auto wurl = to_lpwstr(url);
     m_webview->Navigate(wurl);
@@ -991,8 +995,10 @@ public:
               if(!windowStateChange) break;
               if(LOWORD(wp) == WA_INACTIVE)
                 windowStateChange(WEBVIEW_WINDOW_BLUR);
-              else
+              else{
                 windowStateChange(WEBVIEW_WINDOW_FOCUS);
+				w->m_browser->focus();
+              }
               break;
             case WM_DESTROY:
               PostQuitMessage(processExitCode);
