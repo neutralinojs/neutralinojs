@@ -46,6 +46,7 @@ extern char **environ;
 
 #include "lib/json/json.hpp"
 #include "lib/tray/tray.h"
+#include "lib/trashcan/trashcan.h"
 #include "helpers.h"
 #include "errors.h"
 #include "settings.h"
@@ -855,5 +856,24 @@ json getPath(const json &input) {
     }
     return output;
 }
+
+json trashItem(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload("path");
+        return output;
+    }
+    string path = input["path"].get<string>();
+
+    if(trashcan_soft_delete(CONVSTR(path).c_str()) == 0) {
+        output["success"] = true;
+        output["message"] = path + " was moved to trash";
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_UNLTRAS, path);
+    }
+    return output;
+}
+
 } // namespace controllers
 } // namespace os

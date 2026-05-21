@@ -25,6 +25,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_OS_INVMSGA: return "NE_OS_INVMSGA";
         case errors::NE_OS_TRAYIER: return "NE_OS_TRAYIER";
         case errors::NE_OS_INVKNPT: return "NE_OS_INVKNPT";
+        case errors::NE_OS_UNLTRAS: return "NE_OS_UNLTRAS";
         // computer
         case errors::NE_CO_UNLTOSC: return "NE_CO_UNLTOSC";
         case errors::NE_CO_UNLTOMG: return "NE_CO_UNLTOMG";
@@ -50,7 +51,6 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_FS_ACCERR: return "NE_FS_ACCERR";
         case errors::NE_FS_CHMDERR: return "NE_FS_CHMDERR";
         case errors::NE_FS_CHWNERR: return "NE_FS_CHWNERR";
-        case errors::NE_FS_TRSERR: return "NE_FS_TRSERR";
         // window
         case errors::NE_WI_UNBSWSR: return "NE_WI_UNBSWSR";
         // router
@@ -95,6 +95,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_OS_INVMSGA: return "Invalid message box style arguments: %1";
         case errors::NE_OS_TRAYIER: return "Unable to initialize the tray menu";
         case errors::NE_OS_INVKNPT: return "Invalid platform path name: %1";
+        case errors::NE_OS_UNLTRAS: return "Unable to move %1 item to trash";
         // computer
         case errors::NE_CO_UNLTOSC: return "Unable to set mouse cursor";
         case errors::NE_CO_UNLTONI: return "Unable to retrieve network interfaces";
@@ -120,7 +121,6 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_FS_ACCERR: return "Cannot access path: %1";
         case errors::NE_FS_CHMDERR: return "Unable to change permissions for: %1";
         case errors::NE_FS_CHWNERR: return "Unable to change ownership for: %1";
-        case errors::NE_FS_TRSERR: return "Cannot move to trash: %1";
         // window
         case errors::NE_WI_UNBSWSR: return "Unable to save window screenshot to %1";
         // router
@@ -144,7 +144,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_CF_UNBLDCF: return "Unable to load the %1 configuration file. Framework defaults will be loaded.";
         case errors::NE_CF_UNBPRCF: return "Unable to parse the config file: %1";
         case errors::NE_CF_UNSUPMD: return "Unsupported mode: %1. The default mode (window) is selected.";
-                case errors::NE_CF_UNBLWCF: return "Unable to load the window config file: %1";
+        case errors::NE_CF_UNBLWCF: return "Unable to load the window config file: %1";
     }
     return "";
 }

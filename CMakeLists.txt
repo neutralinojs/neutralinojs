@@ -35,6 +35,7 @@ file(GLOB_RECURSE RECURSIVE_SOURCES
   lib/clip/image.cpp
   lib/infoware/src/**/*.cpp
   lib/efsw/src/efsw/*.cpp
+  lib/trashcan/trashcan.c
 )
 list(APPEND SOURCES ${RECURSIVE_SOURCES})
 

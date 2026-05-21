@@ -121,7 +121,6 @@ map<string, router::NativeMethod> methodMap = {
     {"filesystem.access", fs::controllers::access},
     {"filesystem.chmod", fs::controllers::chmod},
     {"filesystem.chown", fs::controllers::chown},
-    {"filesystem.moveToTrash", fs::controllers::moveToTrash},
     // Neutralino.os
     {"os.execCommand", os::controllers::execCommand},
     {"os.spawnProcess", os::controllers::spawnProcess},
@@ -137,6 +136,7 @@ map<string, router::NativeMethod> methodMap = {
     {"os.setTray", os::controllers::setTray},
     {"os.open", os::controllers::open},
     {"os.getPath", os::controllers::getPath},
+    {"os.trashItem", os::controllers::trashItem},
     // Neutralino.storage
     {"storage.setData", storage::controllers::setData},
     {"storage.getData", storage::controllers::getData},
