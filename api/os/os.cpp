@@ -91,6 +91,7 @@ bool isTrayInitialized() {
 void cleanupTray() {
     if(!os::isTrayInitialized()) return;
         tray_exit();
+        trayInitialized = false;
     #if defined(_WIN32)
     if (tray.icon) {
         DestroyIcon(tray.icon);
