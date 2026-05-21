@@ -157,14 +157,19 @@ pair<int, int> __getCenterPos(bool useConfigSizes = false) {
         height = opt.height;
     }
     #if defined(__linux__) || defined(__FreeBSD__)
-    GdkRectangle screen = {0,0,0,0};
-    if(GdkDisplay *display = gdk_display_get_default()){
-        GdkMonitor *monitor =gdk_display_get_primary_monitor(display);
-        if(!monitor) monitor = gdk_display_get_monitor(display, 0);
-        if(monitor) gdk_monitor_get_workarea(monitor, &screen);
+    GdkRectangle screen = {0};
+	GdkDisplay *display = gdk_display_get_default()
+    if(display){
+        GdkMonitor *monitor = gdk_display_get_primary_monitor(display);
+        if(!monitor) {
+			monitor = gdk_display_get_monitor(display, 0);
+		}
+        if(monitor) {
+			gdk_monitor_get_workarea(monitor, &screen);
+		}
     }
-    x = screen.width> 0 ? (screen.width - width) / 2 : 0;
-    y = screen.height> 0 ? (screen.height - height) /2 : 0;
+    x = (screen.width - width) / 2;
+    y = (screen.height - height) / 2;
     #elif defined(__APPLE__)
     auto displayId = CGMainDisplayID();
     x = (CGDisplayPixelsWide(displayId) - width) / 2;
