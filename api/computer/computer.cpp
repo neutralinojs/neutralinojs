@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <string>
+#include <climits>
 #include "helpers.h"
 #include "errors.h"
 
@@ -440,13 +441,15 @@ json getHostname(const json &input) {
         hostname = helpers::wstr2str(hostnameW);
     }
     #else
-    char hostnameBuffer[256] = { 0 };
-    if(gethostname(hostnameBuffer, sizeof(hostnameBuffer)) == 0) {
-        hostname = string(hostnameBuffer);
+    char hostnameArr[HOST_NAME_MAX];
+    if(gethostname(hostnameArr, sizeof(hostnameArr)) == 0) {
+        hostname = string(hostnameArr);
     }
     #endif
 
     output["returnValue"] = hostname;
+    output["success"] = true;
+    return output;
 }
 
 json setMousePosition(const json &input) {
