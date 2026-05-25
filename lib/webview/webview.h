@@ -71,9 +71,11 @@ namespace webview {
 using dispatch_fn_t = std::function<void()>;
 using eventHandler_t = std::function<void(int)>;
 using newWindowHandler_t = std::function<void(const std::string&)>;
+using fileDropHandler_t = std::function<void(const std::vector<std::string>&)>;
 
 static eventHandler_t windowStateChange;
 static newWindowHandler_t newWindow;
+static fileDropHandler_t filesDropped;
 static int processExitCode = 0;
 
 struct WindowMenuItem {
@@ -230,6 +232,32 @@ public:
                 windowStateChange(WEBVIEW_WINDOW_UNDEFINED);
         }),
     nullptr);
+
+    GtkTargetEntry targets[] = {{(gchar *)"text/uri-list", 0, 0}};
+    gtk_drag_dest_set(m_window, GTK_DEST_DEFAULT_ALL, targets, 1,
+                      GDK_ACTION_COPY);
+    g_signal_connect(
+      m_window, "drag-data-received",
+      G_CALLBACK(+[](GtkWidget *, GdkDragContext *, gint, gint,
+                     GtkSelectionData *data, guint, guint, gpointer) {
+          std::vector<std::string> droppedPaths;
+
+          if(data && gtk_selection_data_get_length(data) > 0) {
+              gchar **uris = gtk_selection_data_get_uris(data);
+              if(uris) {
+                  for(int i = 0; uris[i] != nullptr; ++i) {
+                      gchar *path = g_filename_from_uri(uris[i], nullptr, nullptr);
+                      if(path) {
+                          droppedPaths.push_back(path);
+                          g_free(path);
+                      }
+                  }
+                  g_strfreev(uris);
+              }
+          }
+          filesDropped(droppedPaths);
+      }),
+      nullptr);
 
     // libwebkit2gtk loader
     const std::vector<std::string> libs = {
@@ -1343,6 +1371,10 @@ public:
   
   void setNewWindowHandler(newWindowHandler_t handler) {
     newWindow = handler;
+  }
+
+  void setFileDropHandler(fileDropHandler_t handler) {
+    filesDropped = handler;
   }
 
   int get_init_code() {
