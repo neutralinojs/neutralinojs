@@ -738,9 +738,11 @@ bool __createWindow() {
 );
 
     nativeWindow->setEventHandler(&window::handlers::windowStateChange);
-
     nativeWindow->setNewWindowHandler([](const std::string& url) {
         os::open(url);
+    });
+    nativeWindow->setFileDropHandler([](const vector<string>& droppedPaths) {
+        events::dispatch("filesDropped", droppedPaths);
     });
 
     if(windowProps.injectGlobals) 
@@ -754,37 +756,6 @@ bool __createWindow() {
 
     #if defined(__linux__) || defined(__FreeBSD__)
     windowHandle = (GtkWidget*) nativeWindow->window();
-
-    GtkTargetEntry targets[] = {{(gchar *)"text/uri-list", 0, 0}};
-    gtk_drag_dest_set(windowHandle, GTK_DEST_DEFAULT_ALL, targets, 1,
-                      GDK_ACTION_COPY);
-    g_signal_connect(
-        windowHandle, "drag-data-received",
-        G_CALLBACK(+[](GtkWidget *, GdkDragContext *, gint, gint,
-                       GtkSelectionData *data, guint, guint, gpointer) {
-            json payload;
-            payload["paths"] = json::array();
-
-            if(data && gtk_selection_data_get_length(data) > 0) {
-                gchar **uris = gtk_selection_data_get_uris(data);
-                if(uris) {
-                    for(int i = 0; uris[i] != nullptr; ++i) {
-                        gchar *path =
-                            g_filename_from_uri(uris[i], nullptr, nullptr);
-                        if(path) {
-                            payload["paths"].push_back(path);
-                            g_free(path);
-                        }
-                    }
-                    g_strfreev(uris);
-                }
-            }
-
-            if(!payload["paths"].empty()) {
-                events::dispatch("fileDrop", payload);
-            }
-        }),
-        nullptr);
 
     #elif defined(__APPLE__)
     windowHandle = (id) nativeWindow->window();
