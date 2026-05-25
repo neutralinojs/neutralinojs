@@ -440,13 +440,15 @@ json getHostname(const json &input) {
         hostname = helpers::wstr2str(hostnameW);
     }
     #else
-    char hostnameBuffer[256] = { 0 };
+    char hostnameBuffer[255];
     if(gethostname(hostnameBuffer, sizeof(hostnameBuffer)) == 0) {
         hostname = string(hostnameBuffer);
     }
     #endif
 
     output["returnValue"] = hostname;
+    output["success"] = true;
+    return output;
 }
 
 json setMousePosition(const json &input) {
