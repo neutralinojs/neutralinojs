@@ -48,7 +48,7 @@ enum StatusCode {
     NE_FS_UNLCWAT,
     NE_FS_NOWATID,
     NE_FS_UNLSTPR,
-    NE_FS_ACCERR,
+    NE_FS_ACSFAIL,
     NE_FS_CHMDERR,
     NE_FS_CHWNERR,
     // window
