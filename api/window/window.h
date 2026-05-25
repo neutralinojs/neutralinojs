@@ -66,6 +66,7 @@ struct WindowOptions {
     bool injectClientLibrary = false;
     bool useLogicalPixels = false;
     bool skipTaskbar = false;
+    bool emitDropEvents = false;
     string webviewArgs = "";
     string title = "Neutralinojs";
     string url = "https://neutralino.js.org";

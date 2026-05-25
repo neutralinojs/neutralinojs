@@ -708,7 +708,7 @@ bool __createWindow() {
     savedState = windowProps.useSavedState && __loadSavedWindowProps();
 
     nativeWindow = new webview::webview(windowProps.enableInspector, windowProps.openInspectorOnStartup, 
-        nullptr, windowProps.transparent, windowProps.webviewArgs);
+        nullptr, windowProps.transparent, windowProps.webviewArgs, windowProps.emitDropEvents);
     
     if(nativeWindow->get_init_code() == 1) {
         return false;
@@ -1486,6 +1486,9 @@ bool init(const json &windowOptions) {
 
     if(helpers::hasField(windowOptions, "skipTaskbar"))
         windowProps.skipTaskbar = windowOptions["skipTaskbar"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "emitDropEvents"))
+        windowProps.emitDropEvents = windowOptions["emitDropEvents"].get<bool>();
 
     if(!__createWindow()) {
         return false;

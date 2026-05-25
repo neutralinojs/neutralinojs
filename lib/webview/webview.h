@@ -163,7 +163,7 @@ static void *dlib = nullptr;
 
 class gtk_webkit_engine {
 public:
-  gtk_webkit_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string &args)
+  gtk_webkit_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string &args, bool emitDropEvents)
       : m_window(static_cast<GtkWidget *>(window)) {
         
     setlocale(LC_ALL, "");
@@ -232,32 +232,6 @@ public:
                 windowStateChange(WEBVIEW_WINDOW_UNDEFINED);
         }),
     nullptr);
-
-    GtkTargetEntry targets[] = {{(gchar *)"text/uri-list", 0, 0}};
-    gtk_drag_dest_set(m_window, GTK_DEST_DEFAULT_ALL, targets, 1,
-                      GDK_ACTION_COPY);
-    g_signal_connect(
-      m_window, "drag-data-received",
-      G_CALLBACK(+[](GtkWidget *, GdkDragContext *, gint, gint,
-                     GtkSelectionData *data, guint, guint, gpointer) {
-          std::vector<std::string> droppedPaths;
-
-          if(data && gtk_selection_data_get_length(data) > 0) {
-              gchar **uris = gtk_selection_data_get_uris(data);
-              if(uris) {
-                  for(int i = 0; uris[i] != nullptr; ++i) {
-                      gchar *path = g_filename_from_uri(uris[i], nullptr, nullptr);
-                      if(path) {
-                          droppedPaths.push_back(path);
-                          g_free(path);
-                      }
-                  }
-                  g_strfreev(uris);
-              }
-          }
-          filesDropped(droppedPaths);
-      }),
-      nullptr);
 
     // libwebkit2gtk loader
     const std::vector<std::string> libs = {
@@ -350,6 +324,53 @@ public:
         return nullptr;
     }),
     nullptr);
+
+
+    if(emitDropEvents) {
+      GtkTargetEntry targets[] = {{(gchar *)"text/uri-list", 0, 0}};
+      gtk_drag_dest_set(m_webview, GTK_DEST_DEFAULT_ALL, targets, 1,
+                        GDK_ACTION_COPY);
+
+      g_signal_connect(
+          G_OBJECT(m_webview), "drag-motion",
+          G_CALLBACK(+[](
+              GtkWidget*, GdkDragContext*, gint, gint, guint, gpointer) {
+              return true;
+          }),
+          nullptr
+      );
+
+      g_signal_connect(
+        G_OBJECT(m_webview), "drag-drop",
+          G_CALLBACK(+[](GtkWidget* widget, GdkDragContext* context,
+              gint, gint, guint time, gpointer) {
+              return true;
+          }),
+      nullptr);
+
+      g_signal_connect(
+        G_OBJECT(m_webview), "drag-data-received",
+        G_CALLBACK(+[](GtkWidget *, GdkDragContext *context, gint, gint,
+                      GtkSelectionData *data, guint, guint time, gpointer) {
+            std::vector<std::string> droppedPaths;
+
+            if(data && gtk_selection_data_get_length(data) > 0) {
+                gchar **uris = gtk_selection_data_get_uris(data);
+                if(uris) {
+                    for(int i = 0; uris[i] != nullptr; ++i) {
+                        gchar *path = g_filename_from_uri(uris[i], nullptr, nullptr);
+                        if(path) {
+                            droppedPaths.push_back(path);
+                            g_free(path);
+                        }
+                    }
+                    g_strfreev(uris);
+                }
+            }
+            filesDropped(droppedPaths);
+        }),
+      nullptr);
+    }
   }
   void *window() { return (void *)m_window; }
   void *wv() { return (void *)m_webview; }
@@ -481,7 +502,7 @@ id operator"" _str(const char *s, std::size_t) {
 
 class cocoa_wkwebview_engine {
 public:
-  cocoa_wkwebview_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string &args) {
+  cocoa_wkwebview_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string &args, bool emitDropEvents) {
     // Application
     id app = ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls,
                                             "sharedApplication"_sel);
@@ -1047,7 +1068,7 @@ private:
 
 class win32_edge_engine {
 public:
-  win32_edge_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string& args) {
+  win32_edge_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string& args, bool emitDropEvents) {
     if(args != "") {
         std::wstring wargs = str2wstr(args);
         SetEnvironmentVariableW(L"WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", wargs.c_str());
@@ -1358,8 +1379,8 @@ namespace webview {
 
 class webview : public browser_engine {
 public:
-  webview(bool debug = false, bool openInspector = true, void *wnd = nullptr, bool transparent = false, const std::string& args = "")
-      : browser_engine(debug, openInspector, wnd, transparent, args) {}
+  webview(bool debug = false, bool openInspector = true, void *wnd = nullptr, bool transparent = false, const std::string& args = "", bool emitDropEvents = false)
+      : browser_engine(debug, openInspector, wnd, transparent, args, emitDropEvents) {}
 
   void navigate(const std::string url) {
     browser_engine::navigate(url);
