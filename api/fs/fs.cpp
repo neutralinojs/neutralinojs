@@ -922,8 +922,7 @@ json access(const json &input) {
     }
     string path = input["path"].get<string>();
 
-    // Mode defaults to F_OK (0) if not provided.
-    int mode = 0;
+    int mode = 0; // F_OK
     if(helpers::hasField(input, "mode")) {
         mode = input["mode"].get<int>();
     }
@@ -938,15 +937,16 @@ json access(const json &input) {
         output["success"] = true;
     }
     else {
-        output["error"] = errors::makeErrorPayload(errors::NE_FS_ACCERR, path);
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_ACSFAIL, path);
     }
     return output;
 }
 
 json chmod(const json &input) {
     json output;
-    if(!helpers::hasRequiredFields(input, {"path", "mode"})) {
-        output["error"] = errors::makeMissingArgErrorPayload("path, mode");
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"path", "mode"});
+    if(missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
     string path = input["path"].get<string>();
@@ -969,8 +969,9 @@ json chmod(const json &input) {
 
 json chown(const json &input) {
     json output;
-    if(!helpers::hasRequiredFields(input, {"path", "uid", "gid"})) {
-        output["error"] = errors::makeMissingArgErrorPayload("path, uid, gid");
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"path", "uid", "gid"});
+    if(missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
         return output;
     }
     string path = input["path"].get<string>();
@@ -978,7 +979,6 @@ json chown(const json &input) {
     int gid = input["gid"].get<int>();
 
     #if defined(_WIN32)
-    // chown is not available on Windows, standard is to fail or ignore. Node.js largely ignores.
     output["success"] = true;
     #else
     int result = ::chown(path.c_str(), uid, gid);
