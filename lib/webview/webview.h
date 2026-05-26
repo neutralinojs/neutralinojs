@@ -70,11 +70,11 @@
 namespace webview {
 using dispatch_fn_t = std::function<void()>;
 using eventHandler_t = std::function<void(int)>;
-using newWindowHandler_t = std::function<void(const std::string&)>;
+using navigationHandler_t = std::function<bool(const std::string&)>;
 using fileDropHandler_t = std::function<void(const std::vector<std::string>&)>;
 
 static eventHandler_t windowStateChange;
-static newWindowHandler_t newWindow;
+static navigationHandler_t handleNavigation;
 static fileDropHandler_t filesDropped;
 static int processExitCode = 0;
 
@@ -116,6 +116,10 @@ using WebKitSettings = struct _WebKitSettings;
 using WebKitWebInspector = struct _WebKitWebInspector;
 using WebKitUserContentManager = struct _WebKitUserContentManager;
 using WebKitUserScript = struct _WebKitUserScript;
+using WebKitPolicyDecision = struct _WebKitPolicyDecision;
+using WebKitNavigationPolicyDecision = struct _WebKitNavigationPolicyDecision;
+using WebKitNavigationAction = struct _WebKitNavigationAction;
+using WebKitURIRequest = struct _WebKitURIRequest;
 
 enum WebKitUserContentInjectedFrames {
   WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
@@ -125,6 +129,14 @@ enum WebKitUserContentInjectedFrames {
 enum WebKitUserScriptInjectionTime {
   WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START,
   WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_END,
+};
+
+enum WebKitPolicyDecisionType {
+  WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION
+};
+
+enum WebKitNavigationType {
+  WEBKIT_NAVIGATION_TYPE_LINK_CLICKED
 };
 
 using webkit_web_view_new_func = std::add_pointer<GtkWidget*()>::type;
@@ -141,6 +153,11 @@ using webkit_user_script_new_func = std::add_pointer<WebKitUserScript*(const cha
 using webkit_settings_get_user_agent_func = std::add_pointer<const char*(WebKitSettings*)>::type;
 using webkit_settings_set_user_agent_func = std::add_pointer<void(WebKitSettings*, const char*)>::type;
 using webkit_web_view_load_uri_func = std::add_pointer<void(WebKitWebView*, const char*)>::type;
+using webkit_navigation_policy_decision_get_navigation_action_func = std::add_pointer<WebKitNavigationAction*(WebKitNavigationPolicyDecision*)>::type;
+using webkit_navigation_action_get_request_func = std::add_pointer<WebKitURIRequest*(WebKitNavigationAction*)>::type;
+using webkit_uri_request_get_uri_func = std::add_pointer<const gchar*(WebKitURIRequest*)>::type;
+using webkit_navigation_action_get_navigation_type_func = std::add_pointer<WebKitNavigationType(WebKitNavigationAction*)>::type;
+using webkit_policy_decision_ignore_func = std::add_pointer<void(WebKitPolicyDecision*)>::type;
 
 namespace webview {
 
@@ -158,6 +175,11 @@ static webkit_user_script_new_func webkit_user_script_new = nullptr;
 static webkit_settings_get_user_agent_func webkit_settings_get_user_agent = nullptr;
 static webkit_settings_set_user_agent_func webkit_settings_set_user_agent = nullptr;
 static webkit_web_view_load_uri_func webkit_web_view_load_uri = nullptr;
+static webkit_navigation_policy_decision_get_navigation_action_func webkit_navigation_policy_decision_get_navigation_action = nullptr;
+static webkit_navigation_action_get_request_func webkit_navigation_action_get_request = nullptr;
+static webkit_uri_request_get_uri_func webkit_uri_request_get_uri = nullptr;
+static webkit_navigation_action_get_navigation_type_func webkit_navigation_action_get_navigation_type = nullptr;
+static webkit_policy_decision_ignore_func webkit_policy_decision_ignore = nullptr;
 
 static void *dlib = nullptr;
 
@@ -266,7 +288,11 @@ public:
     webkit_settings_get_user_agent = (webkit_settings_get_user_agent_func)(dlsym(dlib, "webkit_settings_get_user_agent"));
     webkit_settings_set_user_agent = (webkit_settings_set_user_agent_func)(dlsym(dlib, "webkit_settings_set_user_agent"));
     webkit_web_view_load_uri = (webkit_web_view_load_uri_func)(dlsym(dlib, "webkit_web_view_load_uri"));
-
+    webkit_navigation_policy_decision_get_navigation_action = (webkit_navigation_policy_decision_get_navigation_action_func)(dlsym(dlib, "webkit_navigation_policy_decision_get_navigation_action"));
+    webkit_navigation_action_get_request = (webkit_navigation_action_get_request_func)(dlsym(dlib, "webkit_navigation_action_get_request"));
+    webkit_uri_request_get_uri = (webkit_uri_request_get_uri_func)(dlsym(dlib, "webkit_uri_request_get_uri"));
+    webkit_navigation_action_get_navigation_type = (webkit_navigation_action_get_navigation_type_func)(dlsym(dlib, "webkit_navigation_action_get_navigation_type"));
+    webkit_policy_decision_ignore = (webkit_policy_decision_ignore_func)(dlsym(dlib, "webkit_policy_decision_ignore"));
 
     // Initialize webview widget
     m_webview = webkit_web_view_new();
@@ -302,26 +328,23 @@ public:
 
     gtk_widget_show_all(m_window);
 
-    g_signal_connect(G_OBJECT(m_webview), "create",
-    G_CALLBACK(+[](WebKitWebView*, WebKitNavigationAction* action,
-                   gpointer) -> GtkWidget* {
-        using get_request_fn = std::add_pointer<void*(void*)>::type;
-        using get_uri_fn = std::add_pointer<const char*(void*)>::type;
+    g_signal_connect(G_OBJECT(m_webview), "decide-policy",
+      G_CALLBACK(+[](WebKitWebView*, WebKitPolicyDecision* decision, WebKitPolicyDecisionType type, gpointer) {
+        if(type == WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION) {
+          WebKitNavigationPolicyDecision *nav = (WebKitNavigationPolicyDecision*)decision;
+          WebKitNavigationAction *action = webkit_navigation_policy_decision_get_navigation_action(nav);
+          WebKitURIRequest *request = webkit_navigation_action_get_request(action);
 
-        auto webkit_navigation_action_get_request = (get_request_fn)dlsym(dlib, "webkit_navigation_action_get_request");
-        auto webkit_uri_request_get_uri = (get_uri_fn)dlsym(dlib, "webkit_uri_request_get_uri");
-
-        if(webkit_navigation_action_get_request && webkit_uri_request_get_uri) {
-            void* request = webkit_navigation_action_get_request(action);
-            const char* uri = webkit_uri_request_get_uri(request);
-            if(uri) {
-                std::string uriStr(uri);
-                if(uriStr.find("http://localhost") != 0 && uriStr.find("http://127.0.0.1") != 0 &&newWindow) {
-                    newWindow(uriStr);
-                }
-            }
+          if(webkit_navigation_action_get_navigation_type(action) == 
+              WEBKIT_NAVIGATION_TYPE_LINK_CLICKED) {
+              const gchar *uri = webkit_uri_request_get_uri(request);
+              if(uri && handleNavigation && handleNavigation(std::string(uri))) {
+                webkit_policy_decision_ignore(decision);
+                return true;
+              }
+          }
         }
-        return nullptr;
+        return false;
     }),
     nullptr);
 
@@ -1390,8 +1413,8 @@ public:
     windowStateChange = handler;
   }
   
-  void setNewWindowHandler(newWindowHandler_t handler) {
-    newWindow = handler;
+  void setNavigationHandler(navigationHandler_t handler) {
+    handleNavigation = handler;
   }
 
   void setFileDropHandler(fileDropHandler_t handler) {

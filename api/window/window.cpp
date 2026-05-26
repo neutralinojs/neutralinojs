@@ -738,8 +738,21 @@ bool __createWindow() {
 );
 
     nativeWindow->setEventHandler(&window::handlers::windowStateChange);
-    nativeWindow->setNewWindowHandler([](const std::string& url) {
-        os::open(url);
+    nativeWindow->setNavigationHandler([](const std::string& url) {
+        switch(windowProps.navigationPolicy) {
+            case window::NavigationPolicySystem:
+                return false;
+            case window::NavigationPolicyBrowser:
+                if(url.find("http://localhost") != 0 && url.find("http://127.0.0.1") != 0) {
+                    os::open(url);
+                    return true;
+                }
+                return false;
+            case window::NavigationPolicyCustom:
+                events::dispatch("navigationRequest", url);
+                return true;               
+        }
+        return false;
     });
     nativeWindow->setFileDropHandler([](const vector<string>& droppedPaths) {
         events::dispatch("filesDropped", droppedPaths);
@@ -1489,6 +1502,15 @@ bool init(const json &windowOptions) {
 
     if(helpers::hasField(windowOptions, "emitDropEvents"))
         windowProps.emitDropEvents = windowOptions["emitDropEvents"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "navigationPolicy")) {
+        string policy = windowOptions["navigationPolicy"].get<string>();
+        if(policy == "browser")
+            windowProps.navigationPolicy = window::NavigationPolicyBrowser;
+        else if(policy == "custom")
+            windowProps.navigationPolicy = window::NavigationPolicyCustom;
+            
+    }
 
     if(!__createWindow()) {
         return false;
