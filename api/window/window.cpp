@@ -172,6 +172,23 @@ void windowStateChange(int state) {
     }
 }
 
+bool handleNavigation(const std::string& url) {
+    switch(windowProps.navigationPolicy) {
+        case window::NavigationPolicySystem:
+            return false;
+        case window::NavigationPolicyBrowser:
+            if(url.find("http://localhost") != 0 && url.find("http://127.0.0.1") != 0) {
+                os::open(url);
+                return true;
+            }
+            return false;
+        case window::NavigationPolicyCustom:
+            events::dispatch("navigationRequest", url);
+            return true;               
+    }
+    return false;
+}
+
 } // namespace handlers
 
 
@@ -738,22 +755,7 @@ bool __createWindow() {
 );
 
     nativeWindow->setEventHandler(&window::handlers::windowStateChange);
-    nativeWindow->setNavigationHandler([](const std::string& url) {
-        switch(windowProps.navigationPolicy) {
-            case window::NavigationPolicySystem:
-                return false;
-            case window::NavigationPolicyBrowser:
-                if(url.find("http://localhost") != 0 && url.find("http://127.0.0.1") != 0) {
-                    os::open(url);
-                    return true;
-                }
-                return false;
-            case window::NavigationPolicyCustom:
-                events::dispatch("navigationRequest", url);
-                return true;               
-        }
-        return false;
-    });
+    nativeWindow->setNavigationHandler(&window::handlers::handleNavigation);
     nativeWindow->setFileDropHandler([](const vector<string>& droppedPaths) {
         events::dispatch("filesDropped", droppedPaths);
     });
