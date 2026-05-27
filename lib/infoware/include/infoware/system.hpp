@@ -95,6 +95,9 @@ namespace iware {
 		/// Get system information.
 		INFOWARE_API_LINKAGE OS_info_t OS_info();
 
+		/// Get stable machine UUID/ID.
+        INFOWARE_API_LINKAGE std::string machine_uuid();
+
 		/// Get information about displays.
 		INFOWARE_API_LINKAGE std::vector<display_t> displays();
 

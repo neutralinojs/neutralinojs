@@ -472,6 +472,17 @@ json setMousePosition(const json &input) {
     return output;
 }
 
+json getUUID(const json &input) {
+    json output;
+
+    output["returnValue"] = {
+        { "uuid", iware::system::machine_uuid() }
+    };
+
+    output["success"] = true;
+    return output;
+}
+
 json setMouseGrabbing(const json &input) {
     json output;
 
