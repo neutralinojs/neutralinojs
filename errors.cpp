@@ -75,6 +75,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_CF_UNBPRCF: return "NE_CF_UNBPRCF";
         case errors::NE_CF_UNSUPMD: return "NE_CF_UNSUPMD";
         case errors::NE_CF_UNBLWCF: return "NE_CF_UNBLWCF";
+        case errors::NE_CF_INVINTVAL: return "NE_CF_INVINTVAL";
     }
     return "NE_ST_NOTOK";
 }
@@ -145,6 +146,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_CF_UNBPRCF: return "Unable to parse the config file: %1";
         case errors::NE_CF_UNSUPMD: return "Unsupported mode: %1. The default mode (window) is selected.";
         case errors::NE_CF_UNBLWCF: return "Unable to load the window config file: %1";
+        case errors::NE_CF_INVINTVAL: return "Invalid integer value for config key '%1'. Skipping override.";
     }
     return "";
 }
