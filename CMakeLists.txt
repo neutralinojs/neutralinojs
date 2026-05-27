@@ -145,6 +145,7 @@ if(WIN32)
     _WEBSOCKETPP_CPP11_STL_
     _HAS_STD_BYTE=0
     TRAY_WINAPI=1
+    INFOWARE_USE_D3D
     UNICODE
     _UNICODE
   )
@@ -206,6 +207,7 @@ if(WIN32)
       wbemuuid
       ntdll
       dwmapi
+      dxgi
       iphlpapi
       ws2_32
     )
@@ -214,9 +216,11 @@ elseif(APPLE)
     find_library(WebKit_FRAMEWORK WebKit)
     find_library(COCOA_FRAMEWORK Cocoa)
     find_library(SCREENCAPTUREKIT_FRAMEWORK ScreenCaptureKit)
+    find_library(IOKIT_FRAMEWORK IOKit)
     target_link_libraries(${PROJECT_NAME} PRIVATE
       ${WebKit_FRAMEWORK}
       ${COCOA_FRAMEWORK}
+      ${IOKIT_FRAMEWORK}
     )
     if(SCREENCAPTUREKIT_FRAMEWORK)
       target_link_libraries(${PROJECT_NAME} PRIVATE

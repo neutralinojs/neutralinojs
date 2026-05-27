@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <string>
+#include <algorithm>
 #include "helpers.h"
 #include "errors.h"
 
@@ -52,6 +53,7 @@
 
 #include <infoware/system.hpp>
 #include <infoware/cpu.hpp>
+#include <infoware/gpu.hpp>
 #include "api/computer/computer.h"
 #include "helpers.h"
 #include "api/window/window.h"
@@ -318,6 +320,25 @@ string __getKernelVariant(const iware::system::kernel_t &variant) {
 	}
 }
 
+string __getGPUVendor(const iware::gpu::vendor_t &vendor) {
+    switch(vendor) {
+        case iware::gpu::vendor_t::intel:
+            return "Intel";
+        case iware::gpu::vendor_t::amd:
+            return "AMD";
+        case iware::gpu::vendor_t::nvidia:
+            return "NVIDIA";
+        case iware::gpu::vendor_t::microsoft:
+            return "Microsoft";
+        case iware::gpu::vendor_t::qualcomm:
+            return "Qualcomm";
+        case iware::gpu::vendor_t::apple:
+            return "Apple";
+        default:
+            return "Unknown";
+    }
+}
+
 json getMemoryInfo(const json &input) {
     json output;
     const auto memory = iware::system::memory();
@@ -385,6 +406,29 @@ json getCPUInfo(const json &input) {
         { "physicalCores", quantities.physical },
         { "physicalUnits", quantities.packages }
     };
+    output["success"] = true;
+    return output;
+}
+
+json getGPUInfo(const json &input) {
+    json output;
+    output["returnValue"] = json::array();
+    const auto devices = iware::gpu::device_properties();
+
+    unsigned int deviceId = 0;
+    for(const auto &device: devices) {
+        json gpuInfo = {
+            { "id", deviceId },
+            { "vendor", __getGPUVendor(device.vendor) },
+            { "name", device.name },
+            { "memorySize", device.memory_size },
+            { "cacheSize", device.cache_size },
+            { "maxFrequency", device.max_frequency }
+        };
+
+        output["returnValue"].push_back(gpuInfo);
+        deviceId++;
+    }
     output["success"] = true;
     return output;
 }
