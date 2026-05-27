@@ -126,12 +126,19 @@ static string cfDataToString(CFTypeRef value) {
 }
 
 
-static size_t cfNumberToSize(CFTypeRef value) {
+static bool cfNumberToUint64(CFTypeRef value, uint64_t &output) {
 	if(!value || CFGetTypeID(value) != CFNumberGetTypeID())
+		return false;
+
+	return CFNumberGetValue(static_cast<CFNumberRef>(value), kCFNumberSInt64Type, &output);
+}
+
+
+static size_t cfNumberToSize(CFTypeRef value) {
+	uint64_t output = 0;
+	if(!cfNumberToUint64(value, output))
 		return 0;
 
-	uint64_t output = 0;
-	CFNumberGetValue(static_cast<CFNumberRef>(value), kCFNumberSInt64Type, &output);
 	return static_cast<size_t>(output);
 }
 
@@ -164,6 +171,8 @@ static bool isDisplayController(io_service_t service) {
 
 	return hasClassCode && ((classCode >> 16) & 0xFF) == 0x03;
 }
+
+
 #endif
 
 
@@ -189,7 +198,7 @@ vector<iware::gpu::device_properties_t> iware::gpu::device_properties() {
 		return {};
 
 	io_iterator_t iterator;
-	if(IOServiceGetMatchingServices(kIOMainPortDefault, matchDict, &iterator) != KERN_SUCCESS)
+	if(IOServiceGetMatchingServices(kIOMasterPortDefault, matchDict, &iterator) != KERN_SUCCESS)
 		return {};
 
 	vector<iware::gpu::device_properties_t> devices{};
@@ -205,10 +214,12 @@ vector<iware::gpu::device_properties_t> iware::gpu::device_properties() {
 		CFTypeRef memoryRef = IORegistryEntryCreateCFProperty(service, CFSTR("VRAM,totalMB"), kCFAllocatorDefault, 0);
 
 		uint32_t vendorId = 0;
-		cfDataToUint32(vendorIdRef, vendorId);
+		const bool hasVendorId = cfDataToUint32(vendorIdRef, vendorId);
+		string deviceName = cfDataToString(modelRef);
 		const auto memorySize = cfNumberToSize(memoryRef) * 1024 * 1024;
 
-		devices.push_back({vendorFromId(vendorId), cfDataToString(modelRef), memorySize, 0, 0});
+		if(hasVendorId && !deviceName.empty())
+			devices.push_back({vendorFromId(vendorId), deviceName, memorySize, 0, 0});
 
 		if(vendorIdRef)
 			CFRelease(vendorIdRef);
