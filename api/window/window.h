@@ -38,6 +38,8 @@ namespace window {
 // TODO: remove extern and fix multiple include errors
 extern NEU_W_HANDLE windowHandle;
 
+enum NavigationPolicy { NavigationPolicySystem, NavigationPolicyBrowser, NavigationPolicyCustom };
+
 struct SizeOptions {
     int width = -1;
     int height = -1;
@@ -66,6 +68,7 @@ struct WindowOptions {
     bool injectClientLibrary = false;
     bool useLogicalPixels = false;
     bool skipTaskbar = false;
+    bool emitDropEvents = false;
     string webviewArgs = "";
     string title = "Neutralinojs";
     string url = "https://neutralino.js.org";
@@ -74,6 +77,7 @@ struct WindowOptions {
     string injectScript = "";
     int x = 0;
     int y = 0;
+    window::NavigationPolicy navigationPolicy = window::NavigationPolicySystem;
 };
 
 struct WindowMenuItem {

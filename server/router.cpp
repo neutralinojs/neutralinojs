@@ -89,6 +89,7 @@ map<string, router::NativeMethod> methodMap = {
     {"computer.setMousePosition", computer::controllers::setMousePosition},
     {"computer.setMouseGrabbing", computer::controllers::setMouseGrabbing},
     {"computer.sendKey", computer::controllers::sendKey},
+    {"computer.getNetworkInterfaces", computer::controllers::getNetworkInterfaces},
     // Neutralino.debug
     {"debug.log", debug::controllers::log},
     // Neutralino.filesystem
@@ -118,7 +119,9 @@ map<string, router::NativeMethod> methodMap = {
     {"filesystem.getJoinedPath", fs::controllers::getJoinedPath},
     {"filesystem.getNormalizedPath", fs::controllers::getNormalizedPath},
     {"filesystem.getUnnormalizedPath", fs::controllers::getUnnormalizedPath},
-    {"filesystem.moveToTrash", fs::controllers::moveToTrash},
+    {"filesystem.access", fs::controllers::access},
+    {"filesystem.chmod", fs::controllers::chmod},
+    {"filesystem.chown", fs::controllers::chown},
     // Neutralino.os
     {"os.execCommand", os::controllers::execCommand},
     {"os.spawnProcess", os::controllers::spawnProcess},
@@ -134,6 +137,7 @@ map<string, router::NativeMethod> methodMap = {
     {"os.setTray", os::controllers::setTray},
     {"os.open", os::controllers::open},
     {"os.getPath", os::controllers::getPath},
+    {"os.trashItem", os::controllers::trashItem},
     // Neutralino.storage
     {"storage.setData", storage::controllers::setData},
     {"storage.getData", storage::controllers::getData},

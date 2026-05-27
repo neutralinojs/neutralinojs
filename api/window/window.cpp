@@ -59,6 +59,7 @@
 #include "api/fs/fs.h"
 #include "api/debug/debug.h"
 #include "api/computer/computer.h"
+#include "api/os/os.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -171,6 +172,23 @@ void windowStateChange(int state) {
     }
 }
 
+bool handleNavigation(const std::string& url) {
+    switch(windowProps.navigationPolicy) {
+        case window::NavigationPolicySystem:
+            return false;
+        case window::NavigationPolicyBrowser:
+            if(url.find("http://localhost") != 0 && url.find("http://127.0.0.1") != 0) {
+                os::open(url);
+                return true;
+            }
+            return false;
+        case window::NavigationPolicyCustom:
+            events::dispatch("navigationRequest", url);
+            return true;               
+    }
+    return false;
+}
+
 } // namespace handlers
 
 
@@ -187,8 +205,17 @@ pair<int, int> __getCenterPos(bool useConfigSizes = false) {
         height = opt.height;
     }
     #if defined(__linux__) || defined(__FreeBSD__)
-    GdkRectangle screen;
-    gdk_monitor_get_workarea(gdk_display_get_primary_monitor(gdk_display_get_default()), &screen);
+    GdkRectangle screen = {0};
+	GdkDisplay *display = gdk_display_get_default();
+    if(display){
+        GdkMonitor *monitor = gdk_display_get_primary_monitor(display);
+        if(!monitor) {
+			monitor = gdk_display_get_monitor(display, 0);
+		}
+        if(monitor) {
+			gdk_monitor_get_workarea(monitor, &screen);
+		}
+    }
     x = (screen.width - width) / 2;
     y = (screen.height - height) / 2;
     #elif defined(__APPLE__)
@@ -698,7 +725,7 @@ bool __createWindow() {
     savedState = windowProps.useSavedState && __loadSavedWindowProps();
 
     nativeWindow = new webview::webview(windowProps.enableInspector, windowProps.openInspectorOnStartup, 
-        nullptr, windowProps.transparent, windowProps.webviewArgs);
+        nullptr, windowProps.transparent, windowProps.webviewArgs, windowProps.emitDropEvents);
     
     if(nativeWindow->get_init_code() == 1) {
         return false;
@@ -728,6 +755,10 @@ bool __createWindow() {
 );
 
     nativeWindow->setEventHandler(&window::handlers::windowStateChange);
+    nativeWindow->setNavigationHandler(&window::handlers::handleNavigation);
+    nativeWindow->setFileDropHandler([](const vector<string>& droppedPaths) {
+        events::dispatch("filesDropped", droppedPaths);
+    });
 
     if(windowProps.injectGlobals) 
         nativeWindow->init(settings::getGlobalVars() + "var NL_GINJECTED = true;");
@@ -740,37 +771,6 @@ bool __createWindow() {
 
     #if defined(__linux__) || defined(__FreeBSD__)
     windowHandle = (GtkWidget*) nativeWindow->window();
-
-    GtkTargetEntry targets[] = {{(gchar *)"text/uri-list", 0, 0}};
-    gtk_drag_dest_set(windowHandle, GTK_DEST_DEFAULT_ALL, targets, 1,
-                      GDK_ACTION_COPY);
-    g_signal_connect(
-        windowHandle, "drag-data-received",
-        G_CALLBACK(+[](GtkWidget *, GdkDragContext *, gint, gint,
-                       GtkSelectionData *data, guint, guint, gpointer) {
-            json payload;
-            payload["paths"] = json::array();
-
-            if(data && gtk_selection_data_get_length(data) > 0) {
-                gchar **uris = gtk_selection_data_get_uris(data);
-                if(uris) {
-                    for(int i = 0; uris[i] != nullptr; ++i) {
-                        gchar *path =
-                            g_filename_from_uri(uris[i], nullptr, nullptr);
-                        if(path) {
-                            payload["paths"].push_back(path);
-                            g_free(path);
-                        }
-                    }
-                    g_strfreev(uris);
-                }
-            }
-
-            if(!payload["paths"].empty()) {
-                events::dispatch("fileDrop", payload);
-            }
-        }),
-        nullptr);
 
     #elif defined(__APPLE__)
     windowHandle = (id) nativeWindow->window();
@@ -1501,6 +1501,18 @@ bool init(const json &windowOptions) {
 
     if(helpers::hasField(windowOptions, "skipTaskbar"))
         windowProps.skipTaskbar = windowOptions["skipTaskbar"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "emitDropEvents"))
+        windowProps.emitDropEvents = windowOptions["emitDropEvents"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "navigationPolicy")) {
+        string policy = windowOptions["navigationPolicy"].get<string>();
+        if(policy == "browser")
+            windowProps.navigationPolicy = window::NavigationPolicyBrowser;
+        else if(policy == "custom")
+            windowProps.navigationPolicy = window::NavigationPolicyCustom;
+            
+    }
 
     if(!__createWindow()) {
         return false;

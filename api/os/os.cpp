@@ -46,6 +46,7 @@ extern char **environ;
 
 #include "lib/json/json.hpp"
 #include "lib/tray/tray.h"
+#include "lib/trashcan/trashcan.h"
 #include "helpers.h"
 #include "errors.h"
 #include "settings.h"
@@ -91,6 +92,7 @@ bool isTrayInitialized() {
 void cleanupTray() {
     if(!os::isTrayInitialized()) return;
         tray_exit();
+        trayInitialized = false;
     #if defined(_WIN32)
     if (tray.icon) {
         DestroyIcon(tray.icon);
@@ -715,11 +717,15 @@ json setTray(const json &input) {
     json output;
 
     if(helpers::hasField(input, "menuItems")) {
-        int menuCount = input["menuItems"].size();
-        menus[menuCount - 1] = { nullptr, nullptr, 0, 0, nullptr, nullptr };
+        int menuCount = static_cast<int>(input["menuItems"].size());
+        if(menuCount > NEU_MAX_TRAY_MENU_ITEMS){
+            menuCount = NEU_MAX_TRAY_MENU_ITEMS;
+        }
+        
 
         int i = 0;
         for (const auto &menuItem: input["menuItems"]) {
+            if(i >= menuCount) break;
             char *id = nullptr;
             char *text = helpers::cStrCopy(menuItem["text"].get<string>());
             int disabled = 0;
@@ -738,6 +744,9 @@ json setTray(const json &input) {
             delete[] menus[i].text;
             menus[i] = { id, text, disabled, checked, __handleTrayMenuItem, nullptr };
             i++;
+        }
+        if(menuCount < NEU_MAX_TRAY_MENU_ITEMS){
+            menus[menuCount] = { nullptr, nullptr, 0, 0, nullptr,nullptr};
         }
     }
 
@@ -847,5 +856,24 @@ json getPath(const json &input) {
     }
     return output;
 }
+
+json trashItem(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload("path");
+        return output;
+    }
+    string path = input["path"].get<string>();
+
+    if(trashcan_soft_delete(path.c_str()) == 0) {
+        output["success"] = true;
+        output["message"] = path + " was moved to trash";
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_UNLTRAS, path);
+    }
+    return output;
+}
+
 } // namespace controllers
 } // namespace os

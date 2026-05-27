@@ -94,10 +94,12 @@ json getRelativePath(const json &input);
 json getPathParts(const json &input);
 json getPermissions(const json &input);
 json setPermissions(const json &input);
+json access(const json &input);
+json chmod(const json &input);
+json chown(const json &input);
 json getJoinedPath(const json &input);
 json getNormalizedPath(const json &input);
 json getUnnormalizedPath(const json &input);
-json moveToTrash(const json &input);
 
 } // namespace controllers
 

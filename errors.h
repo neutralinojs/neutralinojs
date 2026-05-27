@@ -25,9 +25,11 @@ enum StatusCode {
     NE_OS_INVMSGA,
     NE_OS_TRAYIER,
     NE_OS_INVKNPT,
+    NE_OS_UNLTRAS,
     // computer
     NE_CO_UNLTOSC,
     NE_CO_UNLTOMG,
+    NE_CO_UNLTONI,
     NE_CO_UNLTOSK,
     // extensions
     NE_EX_EXTNOTC,
@@ -46,7 +48,9 @@ enum StatusCode {
     NE_FS_UNLCWAT,
     NE_FS_NOWATID,
     NE_FS_UNLSTPR,
-    NE_FS_TRSERR,
+    NE_FS_ACSFAIL,
+    NE_FS_CHMDERR,
+    NE_FS_CHWNERR,
     // window
     NE_WI_UNBSWSR,
     // router

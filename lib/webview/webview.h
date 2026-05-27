@@ -70,8 +70,12 @@
 namespace webview {
 using dispatch_fn_t = std::function<void()>;
 using eventHandler_t = std::function<void(int)>;
+using navigationHandler_t = std::function<bool(const std::string&)>;
+using fileDropHandler_t = std::function<void(const std::vector<std::string>&)>;
 
 static eventHandler_t windowStateChange;
+static navigationHandler_t handleNavigation;
+static fileDropHandler_t filesDropped;
 static int processExitCode = 0;
 
 struct WindowMenuItem {
@@ -107,10 +111,15 @@ struct WindowMenuItem {
 
 // webkit2gtk definitions
 using WebKitWebView = struct _WebKitWebView;
+using WebKitNavigationAction = struct _WebKitNavigationAction;
 using WebKitSettings = struct _WebKitSettings;
 using WebKitWebInspector = struct _WebKitWebInspector;
 using WebKitUserContentManager = struct _WebKitUserContentManager;
 using WebKitUserScript = struct _WebKitUserScript;
+using WebKitPolicyDecision = struct _WebKitPolicyDecision;
+using WebKitNavigationPolicyDecision = struct _WebKitNavigationPolicyDecision;
+using WebKitNavigationAction = struct _WebKitNavigationAction;
+using WebKitURIRequest = struct _WebKitURIRequest;
 
 enum WebKitUserContentInjectedFrames {
   WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
@@ -120,6 +129,14 @@ enum WebKitUserContentInjectedFrames {
 enum WebKitUserScriptInjectionTime {
   WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START,
   WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_END,
+};
+
+enum WebKitPolicyDecisionType {
+  WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION
+};
+
+enum WebKitNavigationType {
+  WEBKIT_NAVIGATION_TYPE_LINK_CLICKED
 };
 
 using webkit_web_view_new_func = std::add_pointer<GtkWidget*()>::type;
@@ -136,6 +153,11 @@ using webkit_user_script_new_func = std::add_pointer<WebKitUserScript*(const cha
 using webkit_settings_get_user_agent_func = std::add_pointer<const char*(WebKitSettings*)>::type;
 using webkit_settings_set_user_agent_func = std::add_pointer<void(WebKitSettings*, const char*)>::type;
 using webkit_web_view_load_uri_func = std::add_pointer<void(WebKitWebView*, const char*)>::type;
+using webkit_navigation_policy_decision_get_navigation_action_func = std::add_pointer<WebKitNavigationAction*(WebKitNavigationPolicyDecision*)>::type;
+using webkit_navigation_action_get_request_func = std::add_pointer<WebKitURIRequest*(WebKitNavigationAction*)>::type;
+using webkit_uri_request_get_uri_func = std::add_pointer<const gchar*(WebKitURIRequest*)>::type;
+using webkit_navigation_action_get_navigation_type_func = std::add_pointer<WebKitNavigationType(WebKitNavigationAction*)>::type;
+using webkit_policy_decision_ignore_func = std::add_pointer<void(WebKitPolicyDecision*)>::type;
 
 namespace webview {
 
@@ -153,12 +175,17 @@ static webkit_user_script_new_func webkit_user_script_new = nullptr;
 static webkit_settings_get_user_agent_func webkit_settings_get_user_agent = nullptr;
 static webkit_settings_set_user_agent_func webkit_settings_set_user_agent = nullptr;
 static webkit_web_view_load_uri_func webkit_web_view_load_uri = nullptr;
+static webkit_navigation_policy_decision_get_navigation_action_func webkit_navigation_policy_decision_get_navigation_action = nullptr;
+static webkit_navigation_action_get_request_func webkit_navigation_action_get_request = nullptr;
+static webkit_uri_request_get_uri_func webkit_uri_request_get_uri = nullptr;
+static webkit_navigation_action_get_navigation_type_func webkit_navigation_action_get_navigation_type = nullptr;
+static webkit_policy_decision_ignore_func webkit_policy_decision_ignore = nullptr;
 
 static void *dlib = nullptr;
 
 class gtk_webkit_engine {
 public:
-  gtk_webkit_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string &args)
+  gtk_webkit_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string &args, bool emitDropEvents)
       : m_window(static_cast<GtkWidget *>(window)) {
         
     setlocale(LC_ALL, "");
@@ -261,7 +288,11 @@ public:
     webkit_settings_get_user_agent = (webkit_settings_get_user_agent_func)(dlsym(dlib, "webkit_settings_get_user_agent"));
     webkit_settings_set_user_agent = (webkit_settings_set_user_agent_func)(dlsym(dlib, "webkit_settings_set_user_agent"));
     webkit_web_view_load_uri = (webkit_web_view_load_uri_func)(dlsym(dlib, "webkit_web_view_load_uri"));
-
+    webkit_navigation_policy_decision_get_navigation_action = (webkit_navigation_policy_decision_get_navigation_action_func)(dlsym(dlib, "webkit_navigation_policy_decision_get_navigation_action"));
+    webkit_navigation_action_get_request = (webkit_navigation_action_get_request_func)(dlsym(dlib, "webkit_navigation_action_get_request"));
+    webkit_uri_request_get_uri = (webkit_uri_request_get_uri_func)(dlsym(dlib, "webkit_uri_request_get_uri"));
+    webkit_navigation_action_get_navigation_type = (webkit_navigation_action_get_navigation_type_func)(dlsym(dlib, "webkit_navigation_action_get_navigation_type"));
+    webkit_policy_decision_ignore = (webkit_policy_decision_ignore_func)(dlsym(dlib, "webkit_policy_decision_ignore"));
 
     // Initialize webview widget
     m_webview = webkit_web_view_new();
@@ -296,6 +327,73 @@ public:
     webkit_web_view_set_background_color((WebKitWebView*)(m_webview), &color);
 
     gtk_widget_show_all(m_window);
+
+    g_signal_connect(G_OBJECT(m_webview), "decide-policy",
+      G_CALLBACK(+[](WebKitWebView*, WebKitPolicyDecision* decision, WebKitPolicyDecisionType type, gpointer) {
+        if(type == WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION) {
+          WebKitNavigationPolicyDecision *nav = (WebKitNavigationPolicyDecision*)decision;
+          WebKitNavigationAction *action = webkit_navigation_policy_decision_get_navigation_action(nav);
+          WebKitURIRequest *request = webkit_navigation_action_get_request(action);
+
+          if(webkit_navigation_action_get_navigation_type(action) == 
+              WEBKIT_NAVIGATION_TYPE_LINK_CLICKED) {
+              const gchar *uri = webkit_uri_request_get_uri(request);
+              if(uri && handleNavigation && handleNavigation(std::string(uri))) {
+                webkit_policy_decision_ignore(decision);
+                return true;
+              }
+          }
+        }
+        return false;
+    }),
+    nullptr);
+
+
+    if(emitDropEvents) {
+      GtkTargetEntry targets[] = {{(gchar *)"text/uri-list", 0, 0}};
+      gtk_drag_dest_set(m_webview, GTK_DEST_DEFAULT_ALL, targets, 1,
+                        GDK_ACTION_COPY);
+
+      g_signal_connect(
+          G_OBJECT(m_webview), "drag-motion",
+          G_CALLBACK(+[](
+              GtkWidget*, GdkDragContext*, gint, gint, guint, gpointer) {
+              return true;
+          }),
+          nullptr
+      );
+
+      g_signal_connect(
+        G_OBJECT(m_webview), "drag-drop",
+          G_CALLBACK(+[](GtkWidget* widget, GdkDragContext* context,
+              gint, gint, guint time, gpointer) {
+              return true;
+          }),
+      nullptr);
+
+      g_signal_connect(
+        G_OBJECT(m_webview), "drag-data-received",
+        G_CALLBACK(+[](GtkWidget *, GdkDragContext *context, gint, gint,
+                      GtkSelectionData *data, guint, guint time, gpointer) {
+            std::vector<std::string> droppedPaths;
+
+            if(data && gtk_selection_data_get_length(data) > 0) {
+                gchar **uris = gtk_selection_data_get_uris(data);
+                if(uris) {
+                    for(int i = 0; uris[i] != nullptr; ++i) {
+                        gchar *path = g_filename_from_uri(uris[i], nullptr, nullptr);
+                        if(path) {
+                            droppedPaths.push_back(path);
+                            g_free(path);
+                        }
+                    }
+                    g_strfreev(uris);
+                }
+            }
+            filesDropped(droppedPaths);
+        }),
+      nullptr);
+    }
   }
   void *window() { return (void *)m_window; }
   void *wv() { return (void *)m_webview; }
@@ -427,7 +525,7 @@ id operator"" _str(const char *s, std::size_t) {
 
 class cocoa_wkwebview_engine {
 public:
-  cocoa_wkwebview_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string &args) {
+  cocoa_wkwebview_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string &args, bool emitDropEvents) {
     // Application
     id app = ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls,
                                             "sharedApplication"_sel);
@@ -601,6 +699,27 @@ public:
                                           m_webview);
     ((void (*)(id, SEL, id))objc_msgSend)(m_window, "makeKeyAndOrderFront:"_sel,
                                           nullptr);
+
+    auto uicls = objc_allocateClassPair((Class)"NSResponder"_cls, "WebViewUIDelegate", 0);
+    class_addProtocol(uicls, objc_getProtocol("WKUIDelegate"));
+    class_addMethod(uicls,
+        "webView:createWebViewWithConfiguration:forNavigationAction:windowFeatures:"_sel,
+        (IMP)(+[](id, SEL, id, id, id action, id) -> id {
+            id request = ((id(*)(id,SEL))objc_msgSend)(action, "request"_sel);
+            id nsurl  = ((id(*)(id,SEL))objc_msgSend)(request, "URL"_sel);
+            id urlStr = ((id(*)(id,SEL))objc_msgSend)(nsurl, "absoluteString"_sel);
+            const char* uri = ((const char*(*)(id,SEL))objc_msgSend)(urlStr, "UTF8String"_sel);
+            if(uri) {
+                std::string uriStr(uri);
+                if(uriStr.find("http://localhost") != 0 && uriStr.find("http://127.0.0.1") != 0 && newWindow) {
+                    newWindow(uriStr);
+                }
+            }
+            return nullptr;
+        }), "@@:@@@@");
+    objc_registerClassPair(uicls);
+    auto uidelegate = ((id(*)(id,SEL))objc_msgSend)((id)uicls, "new"_sel);
+    ((void(*)(id,SEL,id))objc_msgSend)(m_webview, "setUIDelegate:"_sel, uidelegate);
   }
   ~cocoa_wkwebview_engine() { close(); }
   void *window() { return (void *)m_window; }
@@ -675,10 +794,14 @@ public:
 
   void set_size(int width, int height, int minWidth, int minHeight,
                 int maxWidth, int maxHeight, bool resizable) {
-    auto style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
-                 NSWindowStyleMaskMiniaturizable;
+    // Read the current style mask and only toggle NSWindowStyleMaskResizable,
+    // preserving all other flags (e.g. borderless removes NSWindowStyleMaskTitled).
+    auto style = ((unsigned long (*)(id, SEL))objc_msgSend)(
+        m_window, "styleMask"_sel);
     if (resizable) {
       style = style | NSWindowStyleMaskResizable;
+    } else {
+      style = style & ~NSWindowStyleMaskResizable;
     }
     ((void (*)(id, SEL, unsigned long))objc_msgSend)(
         m_window, "setStyleMask:"_sel, style);
@@ -741,6 +864,7 @@ using browser_engine = cocoa_wkwebview_engine;
 #include <codecvt>
 #include <stdlib.h>
 #include <windows.h>
+#include <wrl.h>
 
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "Shlwapi.lib")
@@ -759,6 +883,8 @@ using browser_engine = cocoa_wkwebview_engine;
 #define WM_WINDOW_PASS_MENU_REFS (WM_USER + 3)
 #define WM_WINDOW_DELETE_MENU_REFS (WM_USER + 4)
 #define ID_MENU_FIRST 20000
+
+using namespace Microsoft::WRL;
 
 namespace webview {
 
@@ -915,6 +1041,22 @@ private:
       controller->get_CoreWebView2(&webview);
       webview->add_WebMessageReceived(this, &token);
       webview->add_PermissionRequested(this, &token);
+      
+      webview->add_NewWindowRequested(
+        Callback<ICoreWebView2NewWindowRequestedEventHandler>(
+            [](ICoreWebView2* sender,
+              ICoreWebView2NewWindowRequestedEventArgs* args) -> HRESULT {
+                LPWSTR uri;
+                args->get_Uri(&uri);
+                std::wstring ws(uri);
+                std::string url(ws.begin(), ws.end());
+                if(url.find("http://localhost") != 0 && url.find("http://127.0.0.1") != 0 && newWindow) {
+                    newWindow(url);
+                }
+                args->put_Handled(TRUE);
+                CoTaskMemFree(uri);
+                return S_OK;
+            }).Get(), &token);
 
       m_cb(controller);
       return S_OK;
@@ -949,7 +1091,7 @@ private:
 
 class win32_edge_engine {
 public:
-  win32_edge_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string& args) {
+  win32_edge_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string& args, bool emitDropEvents) {
     if(args != "") {
         std::wstring wargs = str2wstr(args);
         SetEnvironmentVariableW(L"WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", wargs.c_str());
@@ -1260,8 +1402,8 @@ namespace webview {
 
 class webview : public browser_engine {
 public:
-  webview(bool debug = false, bool openInspector = true, void *wnd = nullptr, bool transparent = false, const std::string& args = "")
-      : browser_engine(debug, openInspector, wnd, transparent, args) {}
+  webview(bool debug = false, bool openInspector = true, void *wnd = nullptr, bool transparent = false, const std::string& args = "", bool emitDropEvents = false)
+      : browser_engine(debug, openInspector, wnd, transparent, args, emitDropEvents) {}
 
   void navigate(const std::string url) {
     browser_engine::navigate(url);
@@ -1269,6 +1411,14 @@ public:
 
   void setEventHandler(eventHandler_t handler) {
     windowStateChange = handler;
+  }
+  
+  void setNavigationHandler(navigationHandler_t handler) {
+    handleNavigation = handler;
+  }
+
+  void setFileDropHandler(fileDropHandler_t handler) {
+    filesDropped = handler;
   }
 
   int get_init_code() {

@@ -53,7 +53,9 @@
             "port": 0,
             "extendUserAgentWith": "NeutralinojsSampleApp",
             "injectGlobals": false,
-            "injectClientLibrary": false
+            "injectClientLibrary": false,
+            "emitDropEvents": false,
+            "navigationPolicy": "browser"
         },
         "browser": {
             "globalVariables": {
