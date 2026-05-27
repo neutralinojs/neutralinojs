@@ -13,7 +13,6 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/XTest.h>
 #include <cstdlib>
-#include <fstream>
 
 #elif defined(__FreeBSD__)
 #include <unistd.h>
@@ -28,19 +27,16 @@
 #include <sys/sysctl.h>
 #include <CoreGraphics/CoreGraphics.h>
 #include <CoreFoundation/CoreFoundation.h>
-#include <IOKit/graphics/IOGraphicsLib.h>
-#include <IOKit/IOKitLib.h>
 
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
 #include <windows.h>
-#include <dxgi.h>
-#pragma comment(lib, "dxgi.lib")
 #endif
 
 
 #include <infoware/system.hpp>
 #include <infoware/cpu.hpp>
+#include <infoware/gpu.hpp>
 #include "api/computer/computer.h"
 #include "helpers.h"
 #include "api/window/window.h"
@@ -135,184 +131,6 @@ pair<int, int> getMousePosition() {
     #endif
 
     return make_pair(x, y);
-}
-
-#if defined(_WIN32)
-
-string __getGPUVendor(unsigned int vendorId) {
-    switch(vendorId) {
-        case 0x10DE:
-            return "NVIDIA Corporation";
-        case 0x1002:
-        case 0x1022:
-            return "Advanced Micro Devices, Inc.";
-        case 0x8086:
-            return "Intel Corporation";
-        default:
-            return "Unknown";
-    }
-}
-
-#endif
-
-#if defined(__linux__)
-
-string __parseLinuxGPUVendor(const string &vendorId) {
-    if(vendorId == "0x10de")
-        return "NVIDIA Corporation";
-    if(vendorId == "0x1002")
-        return "Advanced Micro Devices, Inc.";
-    if(vendorId == "0x8086")
-        return "Intel Corporation";
-    return "Unknown";
-}
-
-#endif
-
-json getGPUInfo() {
-    json output = {
-        { "name", "" },
-        { "vendor", "" },
-        { "vramSize", 0 },
-        { "driverVersion", "" }
-    };
-
-    #if defined(_WIN32)
-
-    IDXGIFactory* factory = nullptr;
-    if(CreateDXGIFactory(__uuidof(IDXGIFactory), (void**)&factory) != S_OK)
-        return output;
-    IDXGIAdapter* adapter = nullptr;
-
-    if(factory->EnumAdapters(0, &adapter) != S_OK) {
-        factory->Release();
-        return output;
-    }
-
-    DXGI_ADAPTER_DESC desc;
-    adapter->GetDesc(&desc);
-
-    string gpuName = helpers::wstr2str(desc.Description);
-
-    output["name"] = gpuName;
-    output["vendor"] = __getGPUVendor(desc.VendorId);
-
-    output["vramSize"] =
-        static_cast<uint64_t>(
-            desc.DedicatedVideoMemory / (1024 * 1024)
-        );
-
-    LARGE_INTEGER driverVersion;
-    if(adapter->CheckInterfaceSupport(
-        __uuidof(IDXGIDevice),
-        &driverVersion
-    ) == S_OK) {
-        output["driverVersion"] =
-            to_string(HIWORD(driverVersion.HighPart)) + "." +
-            to_string(LOWORD(driverVersion.HighPart));
-    }
-
-    adapter->Release();
-    factory->Release();
-
-    #elif defined(__linux__)
-
-    string vendorId = "";
-
-    ifstream vendorFile("/sys/class/drm/card0/device/vendor");
-
-    if(vendorFile.is_open()) {
-        getline(vendorFile, vendorId);
-        vendorFile.close();
-    }
-
-    output["vendor"] = __parseLinuxGPUVendor(vendorId);
-
-    ifstream nameFile("/sys/class/drm/card0/device/product_name");
-
-    if(nameFile.is_open()) {
-        string gpuName;
-        getline(nameFile, gpuName);
-        output["name"] = gpuName;
-        nameFile.close();
-    }
-
-    if(output["name"] == "") {
-        ifstream ueventFile("/sys/class/drm/card0/device/uevent");
-        if(ueventFile.is_open()) {
-            string line;
-            while(getline(ueventFile, line)) {
-                if(line.find("DRIVER=") == 0) {
-                    output["name"] = line.substr(7);
-                    break;
-                }
-            }
-            ueventFile.close();
-        }
-    }
-
-    ifstream vramFile("/sys/class/drm/card0/device/mem_info_vram_total");
-    if(vramFile.is_open()) {
-        uint64_t vramBytes = 0;
-        vramFile >> vramBytes;
-        output["vramSize"] =
-            static_cast<uint64_t>(
-                vramBytes / (1024 * 1024)
-            );
-        vramFile.close();
-    }
-
-    #elif defined(__APPLE__)
-
-    io_iterator_t iterator;
-    io_service_t service;
-
-    CFMutableDictionaryRef matchDict = IOServiceMatching("IOPCIDevice");
-
-    if(IOServiceGetMatchingServices(
-        kIOMainPortDefault,
-        matchDict,
-        &iterator
-    ) == KERN_SUCCESS) {
-
-        while((service = IOIteratorNext(iterator))) {
-
-            CFTypeRef model =
-                IORegistryEntryCreateCFProperty(
-                    service,
-                    CFSTR("model"),
-                    kCFAllocatorDefault,
-                    0
-                );
-
-            if(model) {
-
-                CFDataRef data = (CFDataRef)model;
-
-                string gpuName(
-                    (const char*)CFDataGetBytePtr(data),
-                    CFDataGetLength(data)
-                );
-
-                gpuName.erase(
-                    find(gpuName.begin(),gpuName.end(),'\0'),
-                    gpuName.end()
-                );
-                output["name"] = gpuName;
-                output["vendor"] = "Apple";
-
-                CFRelease(model);
-                IOObjectRelease(service);
-                break;
-            }
-            IOObjectRelease(service);
-        }
-        IOObjectRelease(iterator);
-    }
-
-    #endif
-
-    return output;
 }
 
 bool setMousePosition(int x, int y) {
@@ -485,6 +303,25 @@ string __getKernelVariant(const iware::system::kernel_t &variant) {
 	}
 }
 
+string __getGPUVendor(const iware::gpu::vendor_t &vendor) {
+    switch(vendor) {
+        case iware::gpu::vendor_t::intel:
+            return "Intel";
+        case iware::gpu::vendor_t::amd:
+            return "AMD";
+        case iware::gpu::vendor_t::nvidia:
+            return "NVIDIA";
+        case iware::gpu::vendor_t::microsoft:
+            return "Microsoft";
+        case iware::gpu::vendor_t::qualcomm:
+            return "Qualcomm";
+        case iware::gpu::vendor_t::apple:
+            return "Apple";
+        default:
+            return "Unknown";
+    }
+}
+
 json getMemoryInfo(const json &input) {
     json output;
     const auto memory = iware::system::memory();
@@ -558,8 +395,23 @@ json getCPUInfo(const json &input) {
 
 json getGPUInfo(const json &input) {
     json output;
+    output["returnValue"] = json::array();
+    const auto devices = iware::gpu::device_properties();
 
-    output["returnValue"] = computer::getGPUInfo();
+    unsigned int deviceId = 0;
+    for(const auto &device: devices) {
+        json gpuInfo = {
+            { "id", deviceId },
+            { "vendor", __getGPUVendor(device.vendor) },
+            { "name", device.name },
+            { "memorySize", device.memory_size },
+            { "cacheSize", device.cache_size },
+            { "maxFrequency", device.max_frequency }
+        };
+
+        output["returnValue"].push_back(gpuInfo);
+        deviceId++;
+    }
     output["success"] = true;
     return output;
 }

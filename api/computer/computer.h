@@ -20,7 +20,6 @@ bool sendKey(const string &key, computer::SendKeyState keyState);
 string getArch();
 pair<int, int> getMousePosition();
 
-json getGPUInfo();
 namespace controllers {
 
 json getMemoryInfo(const json &input);
