@@ -48,6 +48,7 @@
 #endif
 
 #include <cstdio>
+#include <map>
 
 
 #include <infoware/system.hpp>
@@ -531,8 +532,7 @@ json getNetworkInterfaces(const json &input) {
     output["returnValue"] = json::array();
 
     bool excludeLoopback = false;
-    if(helpers::hasField(input,"data") &&
-        helpers::hasField(input, "excludeLoopback")){
+    if(helpers::hasField(input, "excludeLoopback")) {
         excludeLoopback = input["excludeLoopback"].get<bool>();
     }
 
