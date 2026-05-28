@@ -30,6 +30,7 @@ json getCPUInfo(const json &input);
 json getDisplays(const json &input);
 json getMousePosition(const json &input);
 json getHostname(const json &input);
+json getUUID(const json &input);
 json setMousePosition(const json &input);
 json setMouseGrabbing(const json &input);
 json sendKey(const json &input);;

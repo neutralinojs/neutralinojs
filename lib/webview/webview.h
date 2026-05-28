@@ -72,10 +72,12 @@ using dispatch_fn_t = std::function<void()>;
 using eventHandler_t = std::function<void(int)>;
 using navigationHandler_t = std::function<bool(const std::string&)>;
 using fileDropHandler_t = std::function<void(const std::vector<std::string>&)>;
+using newWindowHandler_t = std::function<void(const std::string&)>;
 
 static eventHandler_t windowStateChange;
 static navigationHandler_t handleNavigation;
 static fileDropHandler_t filesDropped;
+static newWindowHandler_t newWindow;
 static int processExitCode = 0;
 
 struct WindowMenuItem {
@@ -1419,6 +1421,10 @@ public:
 
   void setFileDropHandler(fileDropHandler_t handler) {
     filesDropped = handler;
+  }
+
+  void setNewWindowHandler(newWindowHandler_t handler) {
+    newWindow = handler;
   }
 
   int get_init_code() {

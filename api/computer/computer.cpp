@@ -48,6 +48,7 @@
 #endif
 
 #include <cstdio>
+#include <map>
 
 
 #include <infoware/system.hpp>
@@ -472,6 +473,17 @@ json setMousePosition(const json &input) {
     return output;
 }
 
+json getUUID(const json &input) {
+    json output;
+
+    output["returnValue"] = {
+        { "uuid", iware::system::machine_uuid() }
+    };
+
+    output["success"] = true;
+    return output;
+}
+
 json setMouseGrabbing(const json &input) {
     json output;
 
@@ -520,8 +532,7 @@ json getNetworkInterfaces(const json &input) {
     output["returnValue"] = json::array();
 
     bool excludeLoopback = false;
-    if(helpers::hasField(input,"data") &&
-        helpers::hasField(input, "excludeLoopback")){
+    if(helpers::hasField(input, "excludeLoopback")) {
         excludeLoopback = input["excludeLoopback"].get<bool>();
     }
 

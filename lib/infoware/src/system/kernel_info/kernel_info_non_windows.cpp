@@ -17,7 +17,12 @@
 #include <cstdlib>
 #include <cstring>
 #include <sys/utsname.h>
+#include <fstream>
 
+#ifdef __APPLE__
+	#include <CoreFoundation/CoreFoundation.h>
+	#include <IOKit/IOKitLib.h>
+#endif
 
 iware::system::kernel_info_t iware::system::kernel_info() {
 	utsname uts;
@@ -38,5 +43,59 @@ iware::system::kernel_info_t iware::system::kernel_info() {
 	return {kernel, major, minor, patch, build_number};
 }
 
+std::string iware::system::machine_uuid() {
+#if defined(__linux__)
+
+	std::ifstream file("/etc/machine-id");
+
+	if(!file.is_open())
+		return "";
+
+	std::string machine_id;
+	std::getline(file, machine_id);
+
+	return machine_id;
+
+#elif defined(__APPLE__)
+
+	io_service_t service = IOServiceGetMatchingService(
+	    kIOMainPortDefault,
+	    IOServiceMatching("IOPlatformExpertDevice"));
+
+	if(!service)
+		return "";
+
+	CFTypeRef uuid_cf = IORegistryEntryCreateCFProperty(
+	    service,
+	    CFSTR("IOPlatformUUID"),
+	    kCFAllocatorDefault,
+	    0);
+
+	IOObjectRelease(service);
+
+	if(!uuid_cf)
+		return "";
+
+	char buffer[256];
+
+	const auto success = CFStringGetCString(
+	    (CFStringRef)uuid_cf,
+	    buffer,
+	    sizeof(buffer),
+	    kCFStringEncodingUTF8);
+
+	CFRelease(uuid_cf);
+
+	if(!success)
+		return "";
+
+	return buffer;
+
+#else
+
+	return "";
+
+#endif
+}
 
 #endif
