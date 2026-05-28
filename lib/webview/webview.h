@@ -711,8 +711,8 @@ public:
             const char* uri = ((const char*(*)(id,SEL))objc_msgSend)(urlStr, "UTF8String"_sel);
             if(uri) {
                 std::string uriStr(uri);
-                if(uriStr.find("http://localhost") != 0 && uriStr.find("http://127.0.0.1") != 0 && newWindow) {
-                    newWindow(uriStr);
+                if(uriStr.find("http://localhost") != 0 && uriStr.find("http://127.0.0.1") != 0 && handleNavigation) {
+                    handleNavigation(uriStr);
                 }
             }
             return nullptr;
