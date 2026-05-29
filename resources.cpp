@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <filesystem>
+#include <cerrno>
 
 #include "lib/postject/postject-api.h"
 #include "lib/json/json.hpp"
@@ -78,7 +79,14 @@ fs::FileReaderResult __getFileFromBundle(const string &filename, const fs::FileR
         fileReaderResult.size = p.first;
         unsigned long pos = 0;
         unsigned long size = p.first;
-        unsigned long uOffset = stoi(p.second);
+        char *endPtr = nullptr;
+        errno = 0;
+        unsigned long uOffset = strtoul(p.second.c_str(), &endPtr, 10);
+        if(endPtr == p.second.c_str() || *endPtr != '\0' || errno == ERANGE) {
+            fileReaderResult.status = errors::NE_RS_TREEGER;
+            asarArchive.close();
+            return fileReaderResult;
+        }
         __applyFileReaderOptions(fileReaderResult.size, pos, size, fileReaderOptions);
 
         vector<char>fileBuf ( size );
@@ -109,7 +117,13 @@ fs::FileReaderResult __getFileFromEmbedded(const string &filename, const fs::Fil
         fileReaderResult.size = p.first;
         unsigned long pos = 0;
         unsigned long size = p.first;
-        unsigned long uOffset = stoi(p.second);
+        char *endPtr = nullptr;
+        errno = 0;
+        unsigned long uOffset = strtoul(p.second.c_str(), &endPtr, 10);
+        if(endPtr == p.second.c_str() || *endPtr != '\0' || errno == ERANGE) {
+            fileReaderResult.status = errors::NE_RS_TREEGER;
+            return fileReaderResult;
+        }
         __applyFileReaderOptions(fileReaderResult.size, pos, size, fileReaderOptions);
 
         vector<char>fileBuf ( size );

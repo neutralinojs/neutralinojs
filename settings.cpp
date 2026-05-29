@@ -90,7 +90,13 @@ bool init() {
 
         // String to actual types
         if(cfgOverride.convertTo == "int") {
-            patch["value"] = stoi(cfgOverride.value);
+            int intVal = 0;
+            if(!helpers::strToInt(cfgOverride.value, intVal)) {
+                debug::log(debug::LogTypeError,
+                    errors::makeErrorMsg(errors::NE_CF_INVINTVAL, cfgOverride.key));
+                continue;
+            }
+            patch["value"] = intVal;
         }
         else if(cfgOverride.convertTo == "bool") {
             patch["value"] = cfgOverride.value == "true";
