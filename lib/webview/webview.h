@@ -508,10 +508,17 @@ using browser_engine = gtk_webkit_engine;
 #define NSWindowStyleMaskTitled 1
 #define NSWindowStyleMaskClosable 2
 
+#define NSDragOperationCopy 1
+
 #define NSApplicationActivationPolicyRegular 0
 #define NSApplicationActivationPolicyAccessory 1
 
 #define WKUserScriptInjectionTimeAtDocumentStart 0
+
+#define WKNavigationTypeLinkActivated 0
+
+#define WKNavigationActionPolicyCancel 0
+#define WKNavigationActionPolicyAllow 1
 
 namespace webview {
 
@@ -559,7 +566,7 @@ public:
 
     objc_registerClassPair(cls);
 
-    auto delegate = ((id(*)(id, SEL))objc_msgSend)((id)cls, "new"_sel);
+    id delegate = ((id(*)(id, SEL))objc_msgSend)((id)cls, "new"_sel);
     objc_setAssociatedObject(delegate, "webview", (id)this,
                              OBJC_ASSOCIATION_ASSIGN);
     ((void (*)(id, SEL, id))objc_msgSend)(app, sel_registerName("setDelegate:"),
@@ -629,16 +636,54 @@ public:
                           windowStateChange(WEBVIEW_WINDOW_MAXIMIZE);
                     }), "c@:@");
 
+  
+    class_addMethod(wcls, "draggingEntered:"_sel,
+                    (IMP)(+[](id, SEL, id) -> unsigned long {
+                        return NSDragOperationCopy;
+                    }),
+                    "L@:@");
+    class_addMethod(wcls, "prepareForDragOperation:"_sel,
+                    (IMP)(+[](id, SEL, id) -> BOOL {
+                        return YES;
+                    }),
+                    "B@:@");
+    class_addMethod(
+      wcls,
+      "performDragOperation:"_sel,
+      (IMP)+[](id self, SEL, id sender) -> BOOL {
+          std::vector<std::string> droppedPaths;
+          id pasteboard = ((id(*)(id,SEL))objc_msgSend)(sender, "draggingPasteboard"_sel);
+          id filenamesType = ((id(*)(id, SEL, const char *))objc_msgSend)(
+              "NSString"_cls, "stringWithUTF8String:"_sel, "NSFilenamesPboardType");
+          id files = ((id(*)(id, SEL, id))objc_msgSend)(pasteboard, "propertyListForType:"_sel, filenamesType);
+
+          unsigned long count = ((unsigned long (*)(id, SEL))objc_msgSend)(
+              files, "count"_sel);
+          for(unsigned long i = 0; i < count; i++) {
+              id path = ((id(*)(id, SEL, unsigned long))objc_msgSend)(
+                  files, "objectAtIndex:"_sel, i);
+              const char *cpath = ((const char *(*)(id, SEL))objc_msgSend)(
+                  path, "UTF8String"_sel);
+              if(cpath) {
+                  droppedPaths.push_back(cpath);
+              }
+          }
+          filesDropped(droppedPaths);
+          return YES;
+      },
+      "B@:@"
+   );
+
     objc_registerClassPair(wcls);
 
-    auto wdelegate = ((id(*)(id, SEL))objc_msgSend)((id)wcls, "new"_sel);
+    id wdelegate = ((id(*)(id, SEL))objc_msgSend)((id)wcls, "new"_sel);
     objc_setAssociatedObject(delegate, "webview", (id)this,
                              OBJC_ASSOCIATION_ASSIGN);
     ((void (*)(id, SEL, id))objc_msgSend)(m_window, sel_registerName("setDelegate:"),
                                           wdelegate);
 
     // Webview
-    auto config =
+    id config =
         ((id(*)(id, SEL))objc_msgSend)("WKWebViewConfiguration"_cls, "new"_sel);
     m_manager =
         ((id(*)(id, SEL))objc_msgSend)(config, "userContentController"_sel);
@@ -700,26 +745,48 @@ public:
     ((void (*)(id, SEL, id))objc_msgSend)(m_window, "makeKeyAndOrderFront:"_sel,
                                           nullptr);
 
-    auto uicls = objc_allocateClassPair((Class)"NSResponder"_cls, "WebViewUIDelegate", 0);
-    class_addProtocol(uicls, objc_getProtocol("WKUIDelegate"));
-    class_addMethod(uicls,
-        "webView:createWebViewWithConfiguration:forNavigationAction:windowFeatures:"_sel,
-        (IMP)(+[](id, SEL, id, id, id action, id) -> id {
-            id request = ((id(*)(id,SEL))objc_msgSend)(action, "request"_sel);
-            id nsurl  = ((id(*)(id,SEL))objc_msgSend)(request, "URL"_sel);
-            id urlStr = ((id(*)(id,SEL))objc_msgSend)(nsurl, "absoluteString"_sel);
-            const char* uri = ((const char*(*)(id,SEL))objc_msgSend)(urlStr, "UTF8String"_sel);
-            if(uri) {
-                std::string uriStr(uri);
-                if(uriStr.find("http://localhost") != 0 && uriStr.find("http://127.0.0.1") != 0 && newWindow) {
-                    newWindow(uriStr);
-                }
+    auto navcls = objc_allocateClassPair("NSResponder"_cls, "WebViewNavDelegate", 0);
+    class_addProtocol(navcls, objc_getProtocol("WKNavigationDelegate"));
+    class_addMethod(
+        navcls,
+        "webView:decidePolicyForNavigationAction:decisionHandler:"_sel,
+        imp_implementationWithBlock(^(id self, id webView, id action, id decisionHandler) {
+            using DecisionBlock = void(^)(long);
+            auto handler = (DecisionBlock)decisionHandler;
+            bool policy = WKNavigationActionPolicyAllow;
+            auto type = ((long(*)(id,SEL))objc_msgSend)(action, "navigationType"_sel);
+
+            if(type == WKNavigationTypeLinkActivated) {
+              id request = ((id(*)(id, SEL))objc_msgSend)(action, "request"_sel);
+              id nsurl = ((id(*)(id,SEL))objc_msgSend)(request, "URL"_sel);
+              id urlStr = ((id(*)(id,SEL))objc_msgSend)(nsurl, "absoluteString"_sel);
+              const char* uri = ((const char*(*)(id,SEL))objc_msgSend)(urlStr, "UTF8String"_sel);
+
+              if(uri && handleNavigation && handleNavigation(std::string(uri))) {
+                policy = WKNavigationActionPolicyCancel;
+              }
             }
-            return nullptr;
-        }), "@@:@@@@");
-    objc_registerClassPair(uicls);
-    auto uidelegate = ((id(*)(id,SEL))objc_msgSend)((id)uicls, "new"_sel);
-    ((void(*)(id,SEL,id))objc_msgSend)(m_webview, "setUIDelegate:"_sel, uidelegate);
+
+            handler(policy);
+        }),
+    "v@:@@@@");
+
+    objc_registerClassPair(navcls);
+    id navDelegate =
+        ((id(*)(id,SEL))objc_msgSend)(
+            (id)navcls,
+            "new"_sel);
+    ((void(*)(id,SEL,id))objc_msgSend)(
+        m_webview,
+        "setNavigationDelegate:"_sel,
+        navDelegate);
+
+    id filenamesType = ((id(*)(id, SEL, const char *))objc_msgSend)(
+        "NSString"_cls, "stringWithUTF8String:"_sel, "NSFilenamesPboardType");
+    id draggedTypes = ((id(*)(id, SEL, id))objc_msgSend)(
+        "NSArray"_cls, "arrayWithObject:"_sel, filenamesType);
+    ((void (*)(id, SEL, id))objc_msgSend)(
+        m_window, "registerForDraggedTypes:"_sel, draggedTypes);
   }
   ~cocoa_wkwebview_engine() { close(); }
   void *window() { return (void *)m_window; }
@@ -794,10 +861,8 @@ public:
 
   void set_size(int width, int height, int minWidth, int minHeight,
                 int maxWidth, int maxHeight, bool resizable) {
-    // Read the current style mask and only toggle NSWindowStyleMaskResizable,
-    // preserving all other flags (e.g. borderless removes NSWindowStyleMaskTitled).
-    auto style = ((unsigned long (*)(id, SEL))objc_msgSend)(
-        m_window, "styleMask"_sel);
+    auto style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable |
+                 NSWindowStyleMaskMiniaturizable;
     if (resizable) {
       style = style | NSWindowStyleMaskResizable;
     } else {
@@ -822,7 +887,7 @@ public:
     }
   }
   void navigate(const std::string url) {
-    auto nsurl = ((id(*)(id, SEL, id))objc_msgSend)(
+    id nsurl = ((id(*)(id, SEL, id))objc_msgSend)(
         "NSURL"_cls, "URLWithString:"_sel,
         ((id(*)(id, SEL, const char *))objc_msgSend)(
             "NSString"_cls, "stringWithUTF8String:"_sel, url.c_str()));
