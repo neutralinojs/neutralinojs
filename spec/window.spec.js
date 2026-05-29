@@ -339,6 +339,41 @@ describe('window.spec: window namespace tests', () => {
         });
     });
 
+    describe('window.setOpacity', () => {
+        it('works without throwing errors', async () => {
+            runner.run(`
+                await Neutralino.window.setOpacity(0.8);
+                await Neutralino.window.setOpacity(1);
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+
+        it('throws errors for missing params', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.window.setOpacity();
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+        });
+
+        it('throws errors for invalid opacity values', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.window.setOpacity(1.5);
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_WI_INVOPAC');
+        });
+    });
+
     describe('window.getSize', () => {
         it('returns size information', async () => {
             runner.run(`

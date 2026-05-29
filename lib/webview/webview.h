@@ -711,8 +711,8 @@ public:
             const char* uri = ((const char*(*)(id,SEL))objc_msgSend)(urlStr, "UTF8String"_sel);
             if(uri) {
                 std::string uriStr(uri);
-                if(uriStr.find("http://localhost") != 0 && uriStr.find("http://127.0.0.1") != 0 && newWindow) {
-                    newWindow(uriStr);
+                if(uriStr.find("http://localhost") != 0 && uriStr.find("http://127.0.0.1") != 0 && handleNavigation) {
+                    handleNavigation(uriStr);
                 }
             }
             return nullptr;
@@ -1050,8 +1050,8 @@ private:
                 args->get_Uri(&uri);
                 std::wstring ws(uri);
                 std::string url(ws.begin(), ws.end());
-                if(url.find("http://localhost") != 0 && url.find("http://127.0.0.1") != 0 && newWindow) {
-                    newWindow(url);
+                if(url.find("http://localhost") != 0 && url.find("http://127.0.0.1") != 0 && handleNavigation) {
+                    handleNavigation(url);
                 }
                 args->put_Handled(TRUE);
                 CoTaskMemFree(uri);
