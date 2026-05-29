@@ -657,69 +657,6 @@ void __injectScript() {
     }
 }
 
-#if defined(__APPLE__)
-static void __appendDroppedFilePaths(id pasteboard, json &paths) {
-    id filenamesType = ((id(*)(id, SEL, const char *))objc_msgSend)(
-        "NSString"_cls, "stringWithUTF8String:"_sel, "NSFilenamesPboardType");
-    id files = ((id(*)(id, SEL, id))objc_msgSend)(
-        pasteboard, "propertyListForType:"_sel, filenamesType);
-
-    if(!files) {
-        return;
-    }
-
-    unsigned long count = ((unsigned long (*)(id, SEL))objc_msgSend)(
-        files, "count"_sel);
-    for(unsigned long i = 0; i < count; ++i) {
-        id path = ((id(*)(id, SEL, unsigned long))objc_msgSend)(
-            files, "objectAtIndex:"_sel, i);
-        const char *cpath = ((const char *(*)(id, SEL))objc_msgSend)(
-            path, "UTF8String"_sel);
-        if(cpath) {
-            paths.push_back(cpath);
-        }
-    }
-}
-
-static void __enableFileDropForWindow(id targetWindow) {
-    Class windowClass = object_getClass(targetWindow);
-
-    class_addMethod(windowClass, "draggingEntered:"_sel,
-                    (IMP)(+[](id, SEL, id) -> unsigned long {
-                        return NSDragOperationCopy;
-                    }),
-                    "L@:@");
-
-    class_addMethod(windowClass, "prepareForDragOperation:"_sel,
-                    (IMP)(+[](id, SEL, id) -> BOOL {
-                        return YES;
-                    }),
-                    "B@:@");
-
-    class_addMethod(windowClass, "performDragOperation:"_sel,
-                    (IMP)(+[](id, SEL, id sender) -> BOOL {
-                        json payload;
-                        payload["paths"] = json::array();
-
-                        id pasteboard = ((id(*)(id, SEL))objc_msgSend)(
-                            sender, "draggingPasteboard"_sel);
-                        __appendDroppedFilePaths(pasteboard, payload["paths"]);
-
-                        if(!payload["paths"].empty()) {
-                            events::dispatch("fileDrop", payload);
-                        }
-                        return YES;
-                    }),
-                    "B@:@");
-
-    id filenamesType = ((id(*)(id, SEL, const char *))objc_msgSend)(
-        "NSString"_cls, "stringWithUTF8String:"_sel, "NSFilenamesPboardType");
-    id draggedTypes = ((id(*)(id, SEL, id))objc_msgSend)(
-        "NSArray"_cls, "arrayWithObject:"_sel, filenamesType);
-    ((void (*)(id, SEL, id))objc_msgSend)(
-        targetWindow, "registerForDraggedTypes:"_sel, draggedTypes);
-}
-#endif
 
 bool __createWindow() {
     savedState = windowProps.useSavedState && __loadSavedWindowProps();
@@ -774,7 +711,6 @@ bool __createWindow() {
 
     #elif defined(__APPLE__)
     windowHandle = (id) nativeWindow->window();
-    __enableFileDropForWindow((id)windowHandle);
     ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle,
                 "setHasShadow:"_sel, true);
 
@@ -1281,83 +1217,83 @@ bool snapshot(const string &filename) {
     return gdk_pixbuf_save(screenshot, filename.c_str(), "png", nullptr, nullptr);
 
     #elif defined(__APPLE__)
+    return false;
+    // if (@available(macOS 12.3, *)) {
 
-    if (@available(macOS 12.3, *)) {
+    //     long winId =
+    //         ((long(*)(id, SEL))objc_msgSend)(
+    //             windowHandle,
+    //             "windowNumber"_sel);
 
-        long winId =
-            ((long(*)(id, SEL))objc_msgSend)(
-                windowHandle,
-                "windowNumber"_sel);
+    //     __block CGImageRef resultImage = NULL;
+    //     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
 
-        __block CGImageRef resultImage = NULL;
-        dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    //     [SCShareableContent getShareableContentWithCompletionHandler:
+    //         ^(SCShareableContent *content, NSError *error) {
 
-        [SCShareableContent getShareableContentWithCompletionHandler:
-            ^(SCShareableContent *content, NSError *error) {
+    //         if (error) {
+    //             dispatch_semaphore_signal(sem);
+    //             return;
+    //         }
 
-            if (error) {
-                dispatch_semaphore_signal(sem);
-                return;
-            }
+    //         SCWindow *targetWindow = nil;
+    //         for (SCWindow *window in content.windows) {
+    //             if (window.windowID == winId) {
+    //                 targetWindow = window;
+    //                 break;
+    //             }
+    //         }
 
-            SCWindow *targetWindow = nil;
-            for (SCWindow *window in content.windows) {
-                if (window.windowID == winId) {
-                    targetWindow = window;
-                    break;
-                }
-            }
+    //     if (!targetWindow) {
+    //         dispatch_semaphore_signal(sem);
+    //         return;
+    //     }
 
-        if (!targetWindow) {
-            dispatch_semaphore_signal(sem);
-            return;
-        }
+    //     SCContentFilter *filter =
+    //         [[SCContentFilter alloc] initWithDesktopIndependentWindow:targetWindow];
 
-        SCContentFilter *filter =
-            [[SCContentFilter alloc] initWithDesktopIndependentWindow:targetWindow];
+    //     SCStreamConfiguration *config =
+    //         [[SCStreamConfiguration alloc] init];
 
-        SCStreamConfiguration *config =
-            [[SCStreamConfiguration alloc] init];
+    //     config.scalesToFit = NO;
 
-        config.scalesToFit = NO;
+    //     [SCScreenshotManager captureImageWithFilter:filter
+    //                               configuration:config
+    //                               completionHandler:^(CGImageRef image,
+    //                               NSError *err) {
 
-        [SCScreenshotManager captureImageWithFilter:filter
-                                  configuration:config
-                                  completionHandler:^(CGImageRef image,
-                                  NSError *err) {
+    //         if (!err && image) {
+    //             resultImage = CGImageCreateCopy(image);
+    //         }
 
-            if (!err && image) {
-                resultImage = CGImageCreateCopy(image);
-            }
+    //         dispatch_semaphore_signal(sem);
+    //     }];
+    // }];
 
-            dispatch_semaphore_signal(sem);
-        }];
-    }];
+    // dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
 
-    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+    // if (!resultImage)
+    //     return false;
 
-    if (!resultImage)
-        return false;
+    // id bitmap =
+    //     [[NSBitmapImageRep alloc] initWithCGImage:resultImage];
 
-    id bitmap =
-        [[NSBitmapImageRep alloc] initWithCGImage:resultImage];
+    // NSData *data =
+    //     [bitmap representationUsingType:NSBitmapImageFileTypePNG
+    //                           properties:@{}];
 
-    NSData *data =
-        [bitmap representationUsingType:NSBitmapImageFileTypePNG
-                              properties:@{}];
+    //     BOOL status =
+    //         [data writeToFile:
+    //             [NSString stringWithUTF8String:filename.c_str()]
+    //               atomically:YES];
 
-        BOOL status =
-            [data writeToFile:
-                [NSString stringWithUTF8String:filename.c_str()]
-                  atomically:YES];
+    //     CGImageRelease(resultImage);
 
-        CGImageRelease(resultImage);
+    //     return status;
 
-        return status;
-
-    } else {
-        return false;
-    }
+    // } else {
+    //     return false;
+    // }
     #elif defined(_WIN32)
     GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;
