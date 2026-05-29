@@ -636,43 +636,51 @@ public:
                           windowStateChange(WEBVIEW_WINDOW_MAXIMIZE);
                     }), "c@:@");
 
-  
-    class_addMethod(wcls, "draggingEntered:"_sel,
-                    (IMP)(+[](id, SEL, id) -> unsigned long {
-                        return NSDragOperationCopy;
-                    }),
-                    "L@:@");
-    class_addMethod(wcls, "prepareForDragOperation:"_sel,
-                    (IMP)(+[](id, SEL, id) -> BOOL {
-                        return YES;
-                    }),
-                    "B@:@");
-    class_addMethod(
-      wcls,
-      "performDragOperation:"_sel,
-      (IMP)+[](id self, SEL, id sender) -> BOOL {
-          std::vector<std::string> droppedPaths;
-          id pasteboard = ((id(*)(id,SEL))objc_msgSend)(sender, "draggingPasteboard"_sel);
-          id filenamesType = ((id(*)(id, SEL, const char *))objc_msgSend)(
-              "NSString"_cls, "stringWithUTF8String:"_sel, "NSFilenamesPboardType");
-          id files = ((id(*)(id, SEL, id))objc_msgSend)(pasteboard, "propertyListForType:"_sel, filenamesType);
+    if(emitDropEvents) {
+      class_addMethod(wcls, "draggingEntered:"_sel,
+                      (IMP)(+[](id, SEL, id) -> unsigned long {
+                          return NSDragOperationCopy;
+                      }),
+                      "L@:@");
+      class_addMethod(wcls, "prepareForDragOperation:"_sel,
+                      (IMP)(+[](id, SEL, id) -> BOOL {
+                          return YES;
+                      }),
+                      "B@:@");
+      class_addMethod(
+        wcls,
+        "performDragOperation:"_sel,
+        (IMP)+[](id self, SEL, id sender) -> BOOL {
+            std::vector<std::string> droppedPaths;
+            id pasteboard = ((id(*)(id,SEL))objc_msgSend)(sender, "draggingPasteboard"_sel);
+            id filenamesType = ((id(*)(id, SEL, const char *))objc_msgSend)(
+                "NSString"_cls, "stringWithUTF8String:"_sel, "NSFilenamesPboardType");
+            id files = ((id(*)(id, SEL, id))objc_msgSend)(pasteboard, "propertyListForType:"_sel, filenamesType);
 
-          unsigned long count = ((unsigned long (*)(id, SEL))objc_msgSend)(
-              files, "count"_sel);
-          for(unsigned long i = 0; i < count; i++) {
-              id path = ((id(*)(id, SEL, unsigned long))objc_msgSend)(
-                  files, "objectAtIndex:"_sel, i);
-              const char *cpath = ((const char *(*)(id, SEL))objc_msgSend)(
-                  path, "UTF8String"_sel);
-              if(cpath) {
-                  droppedPaths.push_back(cpath);
-              }
-          }
-          filesDropped(droppedPaths);
-          return YES;
-      },
-      "B@:@"
-   );
+            unsigned long count = ((unsigned long (*)(id, SEL))objc_msgSend)(
+                files, "count"_sel);
+            for(unsigned long i = 0; i < count; i++) {
+                id path = ((id(*)(id, SEL, unsigned long))objc_msgSend)(
+                    files, "objectAtIndex:"_sel, i);
+                const char *cpath = ((const char *(*)(id, SEL))objc_msgSend)(
+                    path, "UTF8String"_sel);
+                if(cpath) {
+                    droppedPaths.push_back(cpath);
+                }
+            }
+            filesDropped(droppedPaths);
+            return YES;
+        },
+        "B@:@"
+      );
+      
+      id filenamesType = ((id(*)(id, SEL, const char *))objc_msgSend)(
+          "NSString"_cls, "stringWithUTF8String:"_sel, "NSFilenamesPboardType");
+      id draggedTypes = ((id(*)(id, SEL, id))objc_msgSend)(
+          "NSArray"_cls, "arrayWithObject:"_sel, filenamesType);
+      ((void (*)(id, SEL, id))objc_msgSend)(
+          m_window, "registerForDraggedTypes:"_sel, draggedTypes);
+    }
 
     objc_registerClassPair(wcls);
 
@@ -780,13 +788,6 @@ public:
         m_webview,
         "setNavigationDelegate:"_sel,
         navDelegate);
-
-    id filenamesType = ((id(*)(id, SEL, const char *))objc_msgSend)(
-        "NSString"_cls, "stringWithUTF8String:"_sel, "NSFilenamesPboardType");
-    id draggedTypes = ((id(*)(id, SEL, id))objc_msgSend)(
-        "NSArray"_cls, "arrayWithObject:"_sel, filenamesType);
-    ((void (*)(id, SEL, id))objc_msgSend)(
-        m_window, "registerForDraggedTypes:"_sel, draggedTypes);
   }
   ~cocoa_wkwebview_engine() { close(); }
   void *window() { return (void *)m_window; }
