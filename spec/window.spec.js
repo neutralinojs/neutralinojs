@@ -340,8 +340,16 @@ describe('window.spec: window namespace tests', () => {
     });
 
     describe('window.setOpacity', () => {
+        it('exports the function to the app', async () => {
+            runner.run(`
+                await __close(typeof Neutralino.window.setOpacity);
+            `);
+            assert.equal(runner.getOutput(), 'function');
+        });
+
         it('works without throwing errors', async () => {
             runner.run(`
+                await Neutralino.window.setOpacity(0);
                 await Neutralino.window.setOpacity(0.8);
                 await Neutralino.window.setOpacity(1);
                 await __close('done');
@@ -364,7 +372,29 @@ describe('window.spec: window namespace tests', () => {
         it('throws errors for invalid opacity values', async () => {
             runner.run(`
                 try {
-                    await Neutralino.window.setOpacity(1.5);
+                    await Neutralino.window.setOpacity(-0.1);
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_WI_INVOPAC');
+
+            runner.run(`
+                try {
+                    await Neutralino.window.setOpacity(1.1);
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_WI_INVOPAC');
+        });
+
+        it('throws errors for non-number opacity values', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.window.setOpacity('0.5');
                 }
                 catch(err) {
                     await __close(err.code);

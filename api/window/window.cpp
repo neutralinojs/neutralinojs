@@ -2,6 +2,7 @@
 #include <iostream>
 #include <filesystem>
 #include <regex>
+#include <cmath>
 
 #if defined(__linux__) || defined(__FreeBSD__)
 #include <type_traits>
@@ -1233,6 +1234,8 @@ void setAlwaysOnTop(bool onTop) {
 }
 
 void setOpacity(double opacity) {
+    if(!windowHandle) return;
+
     #if defined(__linux__) || defined(__FreeBSD__)
     gtk_widget_set_opacity(windowHandle, opacity);
 
@@ -1245,10 +1248,15 @@ void setOpacity(double opacity) {
     Display *display = GDK_DISPLAY_XDISPLAY(gdkDisplay);
     Window xid = GDK_WINDOW_XID(gdkWindow);
     Atom opacityAtom = XInternAtom(display, "_NET_WM_WINDOW_OPACITY", False);
-    unsigned long opacityValue = (unsigned long)(opacity * 0xffffffff);
 
-    XChangeProperty(display, xid, opacityAtom, XA_CARDINAL, 32,
-                    PropModeReplace, (unsigned char *)&opacityValue, 1);
+    if(opacity >= 1.0) {
+        XDeleteProperty(display, xid, opacityAtom);
+    }
+    else {
+        unsigned long opacityValue = (unsigned long)round(opacity * 0xffffffffUL);
+        XChangeProperty(display, xid, opacityAtom, XA_CARDINAL, 32,
+                        PropModeReplace, (unsigned char *)&opacityValue, 1);
+    }
     XFlush(display);
 
     #elif defined(__APPLE__)
@@ -1781,7 +1789,50 @@ json setOpacity(const json &input) {
         return output;
     }
 
+    #if defined(__linux__) || defined(__FreeBSD__)
+    if(g_main_context_is_owner(g_main_context_default())) {
+        window::setOpacity(opacity);
+    }
+    else {
+        GMutex mutex;
+        GCond cond;
+        bool completed = false;
+
+        g_mutex_init(&mutex);
+        g_cond_init(&cond);
+        g_mutex_lock(&mutex);
+
+        nativeWindow->dispatch([&]() {
+            window::setOpacity(opacity);
+            g_mutex_lock(&mutex);
+            completed = true;
+            g_cond_signal(&cond);
+            g_mutex_unlock(&mutex);
+        });
+
+        while(!completed) {
+            g_cond_wait(&cond, &mutex);
+        }
+
+        g_mutex_unlock(&mutex);
+        g_cond_clear(&cond);
+        g_mutex_clear(&mutex);
+    }
+    #elif defined(__APPLE__)
+    bool isMainThread = ((bool (*)(id, SEL))objc_msgSend)(
+        "NSThread"_cls, "isMainThread"_sel);
+    if(isMainThread) {
+        window::setOpacity(opacity);
+    }
+    else {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            window::setOpacity(opacity);
+        });
+    }
+    #else
     window::setOpacity(opacity);
+    #endif
+
     output["success"] = true;
     return output;
 }
