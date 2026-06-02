@@ -757,11 +757,12 @@ public:
         "webView:decidePolicyForNavigationAction:decisionHandler:"_sel,
         imp_implementationWithBlock(^(id self, id webView, id action, id decisionHandler) {
             using DecisionBlock = void(^)(long);
+            id targetFrame = ((id(*)(id,SEL))objc_msgSend)(action, "targetFrame"_sel);
             auto handler = (DecisionBlock)decisionHandler;
             bool policy = WKNavigationActionPolicyAllow;
             auto type = ((long(*)(id,SEL))objc_msgSend)(action, "navigationType"_sel);
 
-            if(type == WKNavigationTypeLinkActivated) {
+            if(!targetFrame && type == WKNavigationTypeLinkActivated) {
               id request = ((id(*)(id, SEL))objc_msgSend)(action, "request"_sel);
               id nsurl = ((id(*)(id,SEL))objc_msgSend)(request, "URL"_sel);
               id urlStr = ((id(*)(id,SEL))objc_msgSend)(nsurl, "absoluteString"_sel);
