@@ -1553,8 +1553,8 @@ public:
     windowStateChange = handler;
   }
   
-  void setNewWindowHandler(navigationHandler_t handler) {
-    handleNavigation = handler;
+  void setNewWindowHandler(newWindowHandler_t handler) {
+    handleNewWindow = handler;
   }
 
   void setFileDropHandler(fileDropHandler_t handler) {
