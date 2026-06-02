@@ -21,7 +21,12 @@
 #include <cstdint>
 #include <cstring>
 #include <fstream>
+#include <set>
 #include <string>
+
+#ifdef __linux__
+#include <dirent.h>
+#endif
 
 #ifdef __APPLE__
 #include <CoreFoundation/CoreFoundation.h>
@@ -32,6 +37,31 @@ using namespace std;
 
 
 #ifdef __linux__
+static vector<string> drmCardDevicePaths() {
+	vector<string> devicePaths{};
+	DIR* drmDir = opendir("/sys/class/drm");
+	if(!drmDir)
+		return devicePaths;
+
+	dirent* entry;
+	while((entry = readdir(drmDir))) {
+		const string name = entry->d_name;
+		if(name.find("card") != 0 || name.find("-") != string::npos)
+			continue;
+
+		const auto id = name.substr(4);
+		if(id.empty() || !all_of(id.begin(), id.end(), [](const char ch) { return ch >= '0' && ch <= '9'; }))
+			continue;
+
+		devicePaths.push_back("/sys/class/drm/" + name + "/device/");
+	}
+	closedir(drmDir);
+
+	sort(devicePaths.begin(), devicePaths.end());
+	return devicePaths;
+}
+
+
 static bool readLine(const string &path, string &value) {
 	ifstream file(path);
 	if(!file.is_open())
@@ -102,6 +132,25 @@ static string readDeviceName(const string &devicePath) {
 
 
 #ifdef __APPLE__
+static string cfStringToString(CFStringRef value) {
+	if(!value)
+		return "";
+
+	const char* directString = CFStringGetCStringPtr(value, kCFStringEncodingUTF8);
+	if(directString)
+		return directString;
+
+	const CFIndex length = CFStringGetLength(value);
+	const CFIndex maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8) + 1;
+	string output(static_cast<size_t>(maxSize), '\0');
+	if(!CFStringGetCString(value, &output[0], maxSize, kCFStringEncodingUTF8))
+		return "";
+
+	output.erase(find(output.begin(), output.end(), '\0'), output.end());
+	return output;
+}
+
+
 static bool cfDataToUint32(CFTypeRef value, uint32_t &output) {
 	if(!value || CFGetTypeID(value) != CFDataGetTypeID())
 		return false;
@@ -115,14 +164,36 @@ static bool cfDataToUint32(CFTypeRef value, uint32_t &output) {
 }
 
 
-static string cfDataToString(CFTypeRef value) {
+static bool cfDataToUint64(CFTypeRef value, uint64_t &output) {
 	if(!value || CFGetTypeID(value) != CFDataGetTypeID())
-		return "";
+		return false;
 
 	const auto data = static_cast<CFDataRef>(value);
-	string output(reinterpret_cast<const char*>(CFDataGetBytePtr(data)), CFDataGetLength(data));
-	output.erase(find(output.begin(), output.end(), '\0'), output.end());
-	return output;
+	const auto length = min<CFIndex>(CFDataGetLength(data), static_cast<CFIndex>(sizeof(output)));
+	if(length <= 0)
+		return false;
+
+	output = 0;
+	memcpy(&output, CFDataGetBytePtr(data), length);
+	return true;
+}
+
+
+static string cfTypeToString(CFTypeRef value) {
+	if(!value)
+		return "";
+
+	if(CFGetTypeID(value) == CFStringGetTypeID())
+		return cfStringToString(static_cast<CFStringRef>(value));
+
+	if(CFGetTypeID(value) == CFDataGetTypeID()) {
+		const auto data = static_cast<CFDataRef>(value);
+		string output(reinterpret_cast<const char*>(CFDataGetBytePtr(data)), CFDataGetLength(data));
+		output.erase(find(output.begin(), output.end(), '\0'), output.end());
+		return output;
+	}
+
+	return "";
 }
 
 
@@ -134,12 +205,55 @@ static bool cfNumberToUint64(CFTypeRef value, uint64_t &output) {
 }
 
 
-static size_t cfNumberToSize(CFTypeRef value) {
-	uint64_t output = 0;
-	if(!cfNumberToUint64(value, output))
-		return 0;
+static bool cfTypeToUint64(CFTypeRef value, uint64_t &output) {
+	return cfNumberToUint64(value, output) || cfDataToUint64(value, output);
+}
 
-	return static_cast<size_t>(output);
+
+static bool readRegistryUint64(io_service_t service, CFStringRef key, uint64_t &output) {
+	CFTypeRef value = IORegistryEntryCreateCFProperty(service, key, kCFAllocatorDefault, 0);
+	const bool hasValue = cfTypeToUint64(value, output);
+	if(value)
+		CFRelease(value);
+	return hasValue;
+}
+
+
+static string readRegistryString(io_service_t service, CFStringRef key) {
+	CFTypeRef value = IORegistryEntryCreateCFProperty(service, key, kCFAllocatorDefault, 0);
+	const auto output = cfTypeToString(value);
+	if(value)
+		CFRelease(value);
+	return output;
+}
+
+
+static size_t readMemorySize(io_service_t service) {
+	uint64_t output = 0;
+	if(readRegistryUint64(service, CFSTR("VRAM,totalsize"), output))
+		return static_cast<size_t>(output);
+
+	if(readRegistryUint64(service, CFSTR("VRAM,totalMB"), output))
+		return static_cast<size_t>(output * 1024 * 1024);
+
+	return 0;
+}
+
+
+static string readDeviceName(io_service_t service) {
+	string name = readRegistryString(service, CFSTR("model"));
+	if(!name.empty())
+		return name;
+
+	name = readRegistryString(service, CFSTR("IOName"));
+	if(!name.empty())
+		return name;
+
+	char entryName[128] = {0};
+	if(IORegistryEntryGetName(service, entryName) == KERN_SUCCESS)
+		return entryName;
+
+	return "";
 }
 
 
@@ -162,6 +276,16 @@ static iware::gpu::vendor_t vendorFromId(const uint32_t id) {
 }
 
 
+static void appendDevice(vector<iware::gpu::device_properties_t> &devices, set<string> &deviceNames, const iware::gpu::vendor_t vendor,
+                         const string &name, const size_t memorySize) {
+	if(name.empty() || deviceNames.find(name) != deviceNames.end())
+		return;
+
+	deviceNames.insert(name);
+	devices.push_back({vendor, name, memorySize, 0, 0});
+}
+
+
 static bool isDisplayController(io_service_t service) {
 	CFTypeRef classCodeRef = IORegistryEntryCreateCFProperty(service, CFSTR("class-code"), kCFAllocatorDefault, 0);
 	uint32_t classCode = 0;
@@ -173,15 +297,32 @@ static bool isDisplayController(io_service_t service) {
 }
 
 
+static void appendIOAcceleratorDevices(vector<iware::gpu::device_properties_t> &devices, set<string> &deviceNames) {
+	CFMutableDictionaryRef matchDict = IOServiceMatching("IOAccelerator");
+	if(!matchDict)
+		return;
+
+	io_iterator_t iterator;
+	if(IOServiceGetMatchingServices(kIOMasterPortDefault, matchDict, &iterator) != KERN_SUCCESS)
+		return;
+
+	io_service_t service;
+	while((service = IOIteratorNext(iterator))) {
+		appendDevice(devices, deviceNames, iware::gpu::vendor_t::apple, readDeviceName(service), readMemorySize(service));
+		IOObjectRelease(service);
+	}
+
+	IOObjectRelease(iterator);
+}
+
+
 #endif
 
 
 vector<iware::gpu::device_properties_t> iware::gpu::device_properties() {
 #ifdef __linux__
 	vector<iware::gpu::device_properties_t> devices{};
-	for(auto cardId = 0u; cardId < 16; ++cardId) {
-		const auto devicePath = "/sys/class/drm/card" + to_string(cardId) + "/device/";
-
+	for(const auto &devicePath: drmCardDevicePaths()) {
 		string vendorIdValue;
 		if(!readLine(devicePath + "vendor", vendorIdValue))
 			continue;
@@ -202,6 +343,7 @@ vector<iware::gpu::device_properties_t> iware::gpu::device_properties() {
 		return {};
 
 	vector<iware::gpu::device_properties_t> devices{};
+	set<string> deviceNames{};
 	io_service_t service;
 	while((service = IOIteratorNext(iterator))) {
 		if(!isDisplayController(service)) {
@@ -210,27 +352,19 @@ vector<iware::gpu::device_properties_t> iware::gpu::device_properties() {
 		}
 
 		CFTypeRef vendorIdRef = IORegistryEntryCreateCFProperty(service, CFSTR("vendor-id"), kCFAllocatorDefault, 0);
-		CFTypeRef modelRef = IORegistryEntryCreateCFProperty(service, CFSTR("model"), kCFAllocatorDefault, 0);
-		CFTypeRef memoryRef = IORegistryEntryCreateCFProperty(service, CFSTR("VRAM,totalMB"), kCFAllocatorDefault, 0);
 
 		uint32_t vendorId = 0;
 		const bool hasVendorId = cfDataToUint32(vendorIdRef, vendorId);
-		string deviceName = cfDataToString(modelRef);
-		const auto memorySize = cfNumberToSize(memoryRef) * 1024 * 1024;
-
-		if(hasVendorId && !deviceName.empty())
-			devices.push_back({vendorFromId(vendorId), deviceName, memorySize, 0, 0});
+		if(hasVendorId)
+			appendDevice(devices, deviceNames, vendorFromId(vendorId), readDeviceName(service), readMemorySize(service));
 
 		if(vendorIdRef)
 			CFRelease(vendorIdRef);
-		if(modelRef)
-			CFRelease(modelRef);
-		if(memoryRef)
-			CFRelease(memoryRef);
 		IOObjectRelease(service);
 	}
 
 	IOObjectRelease(iterator);
+	appendIOAcceleratorDevices(devices, deviceNames);
 	return devices;
 #else
 	return {};
