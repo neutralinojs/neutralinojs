@@ -148,18 +148,15 @@ void windowStateChange(int state) {
     }
 }
 
-bool handleNavigation(const std::string& url) {
-    switch(windowProps.navigationPolicy) {
-        case window::NavigationPolicySystem:
+bool decideNewWindowPolicy(const std::string& url) {
+    switch(windowProps.newWindowPolicy) {
+        case window::NewWindowPolicySystem:
             return false;
-        case window::NavigationPolicyBrowser:
-            if(url.find("http://localhost") != 0 && url.find("http://127.0.0.1") != 0) {
-                os::open(url);
-                return true;
-            }
-            return false;
-        case window::NavigationPolicyCustom:
-            events::dispatch("navigationRequest", url);
+        case window::NewWindowPolicyBrowser:
+            os::open(url);
+            return true;
+        case window::NewWindowPolicyCustom:
+            events::dispatch("newWindowRequest", url);
             return true;               
     }
     return false;
@@ -668,7 +665,7 @@ bool __createWindow() {
 );
 
     nativeWindow->setEventHandler(&window::handlers::windowStateChange);
-    nativeWindow->setNavigationHandler(&window::handlers::handleNavigation);
+    nativeWindow->setNewWindowHandler(&window::handlers::decideNewWindowPolicy);
     nativeWindow->setFileDropHandler([](const vector<string>& droppedPaths) {
         events::dispatch("filesDropped", droppedPaths);
     });
@@ -1388,12 +1385,12 @@ bool init(const json &windowOptions) {
     if(helpers::hasField(windowOptions, "emitDropEvents"))
         windowProps.emitDropEvents = windowOptions["emitDropEvents"].get<bool>();
 
-    if(helpers::hasField(windowOptions, "navigationPolicy")) {
-        string policy = windowOptions["navigationPolicy"].get<string>();
+    if(helpers::hasField(windowOptions, "newWindowPolicy")) {
+        string policy = windowOptions["newWindowPolicy"].get<string>();
         if(policy == "browser")
-            windowProps.navigationPolicy = window::NavigationPolicyBrowser;
+            windowProps.newWindowPolicy = window::NewWindowPolicyBrowser;
         else if(policy == "custom")
-            windowProps.navigationPolicy = window::NavigationPolicyCustom;
+            windowProps.newWindowPolicy = window::NewWindowPolicyCustom;
             
     }
 
