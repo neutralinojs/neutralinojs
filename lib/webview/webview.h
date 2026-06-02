@@ -70,11 +70,11 @@
 namespace webview {
 using dispatch_fn_t = std::function<void()>;
 using eventHandler_t = std::function<void(int)>;
-using navigationHandler_t = std::function<bool(const std::string&)>;
+using newWindowHandler_t = std::function<bool(const std::string&)>;
 using fileDropHandler_t = std::function<void(const std::vector<std::string>&)>;
 
 static eventHandler_t windowStateChange;
-static navigationHandler_t handleNavigation;
+static newWindowHandler_t handleNewWindow;
 static fileDropHandler_t filesDropped;
 static int processExitCode = 0;
 
@@ -132,7 +132,8 @@ enum WebKitUserScriptInjectionTime {
 };
 
 enum WebKitPolicyDecisionType {
-  WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION
+  WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION,
+  WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION
 };
 
 enum WebKitNavigationType {
@@ -330,18 +331,14 @@ public:
 
     g_signal_connect(G_OBJECT(m_webview), "decide-policy",
       G_CALLBACK(+[](WebKitWebView*, WebKitPolicyDecision* decision, WebKitPolicyDecisionType type, gpointer) {
-        if(type == WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION) {
+        if(type == WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION) {
           WebKitNavigationPolicyDecision *nav = (WebKitNavigationPolicyDecision*)decision;
           WebKitNavigationAction *action = webkit_navigation_policy_decision_get_navigation_action(nav);
           WebKitURIRequest *request = webkit_navigation_action_get_request(action);
-
-          if(webkit_navigation_action_get_navigation_type(action) == 
-              WEBKIT_NAVIGATION_TYPE_LINK_CLICKED) {
-              const gchar *uri = webkit_uri_request_get_uri(request);
-              if(uri && handleNavigation && handleNavigation(std::string(uri))) {
-                webkit_policy_decision_ignore(decision);
-                return true;
-              }
+          const gchar *uri = webkit_uri_request_get_uri(request);
+          if(uri && handleNewWindow && handleNewWindow(std::string(uri))) {
+            webkit_policy_decision_ignore(decision);
+            return true;
           }
         }
         return false;
@@ -770,7 +767,7 @@ public:
               id urlStr = ((id(*)(id,SEL))objc_msgSend)(nsurl, "absoluteString"_sel);
               const char* uri = ((const char*(*)(id,SEL))objc_msgSend)(urlStr, "UTF8String"_sel);
 
-              if(uri && handleNavigation && handleNavigation(std::string(uri))) {
+              if(uri && handleNewWindow && handleNewWindow(std::string(uri))) {
                 policy = WKNavigationActionPolicyCancel;
               }
             }
@@ -1200,7 +1197,7 @@ private:
               LPWSTR uri = nullptr;
               args->get_Uri(&uri);
               std::string url = wstr2str(uri);
-              if(!url.empty() && handleNavigation && handleNavigation(url)) {
+              if(!url.empty() && handleNewWindow && handleNewWindow(url)) {
                 args->put_Handled(TRUE);
               }
               CoTaskMemFree(uri);
@@ -1556,7 +1553,7 @@ public:
     windowStateChange = handler;
   }
   
-  void setNavigationHandler(navigationHandler_t handler) {
+  void setNewWindowHandler(navigationHandler_t handler) {
     handleNavigation = handler;
   }
 
