@@ -84,30 +84,6 @@ RECT savedRect;
 HMENU windowMenu;
 int windowMenuItemId = ID_MENU_FIRST;
 WNDPROC originalWndProc = nullptr;
-
-LRESULT CALLBACK NeutralinoWndProc(HWND hwnd, UINT msg, WPARAM wParam,
-                                   LPARAM lParam) {
-    if(msg == WM_DROPFILES) {
-        HDROP hDrop = (HDROP)wParam;
-        UINT count = DragQueryFileW(hDrop, 0xFFFFFFFF, nullptr, 0);
-
-        json payload;
-        payload["paths"] = json::array();
-
-        for(UINT i = 0; i < count; ++i) {
-            UINT length = DragQueryFileW(hDrop, i, nullptr, 0);
-            wstring path(length + 1, L'\0');
-            DragQueryFileW(hDrop, i, path.data(), length + 1);
-            payload["paths"].push_back(helpers::wcstr2str(path.c_str()));
-        }
-
-        DragFinish(hDrop);
-        events::dispatch("fileDrop", payload);
-        return 0;
-    }
-
-    return CallWindowProc(originalWndProc, hwnd, msg, wParam, lParam);
-}
 #endif
 
 window::WindowOptions windowProps;
@@ -716,9 +692,6 @@ bool __createWindow() {
 
     #elif defined(_WIN32)
     windowHandle = (HWND) nativeWindow->window();
-    DragAcceptFiles(windowHandle, TRUE);
-    originalWndProc = (WNDPROC)SetWindowLongPtr(windowHandle, GWLP_WNDPROC,
-                                                (LONG_PTR)NeutralinoWndProc);
     #endif
 
     #if !defined(_WIN32)

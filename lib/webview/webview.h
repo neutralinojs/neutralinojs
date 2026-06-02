@@ -969,9 +969,74 @@ namespace webview {
     return ret;
   }
 
+class DropTarget : public IDropTarget {
+  ULONG ref = 1;
+
+  public:
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppv) override {
+      if (riid == IID_IUnknown || riid == IID_IDropTarget)
+      {
+          *ppv = static_cast<IDropTarget*>(this);
+          AddRef();
+          return S_OK;
+      }
+      *ppv = nullptr;
+      return E_NOINTERFACE;
+    }
+
+    ULONG STDMETHODCALLTYPE AddRef() override { return ++ref; }
+
+    ULONG STDMETHODCALLTYPE Release() override {
+      if (--ref == 0) delete this;
+      return ref;
+    }
+
+    HRESULT STDMETHODCALLTYPE DragEnter(
+      IDataObject* data,
+      DWORD,
+      POINTL,
+      DWORD* effect) override {
+        *effect = DROPEFFECT_COPY;
+        return S_OK;
+    }
+
+    HRESULT STDMETHODCALLTYPE DragOver(DWORD, POINTL, DWORD* effect) override {
+      *effect = DROPEFFECT_COPY;
+      return S_OK;
+    }
+
+    HRESULT STDMETHODCALLTYPE DragLeave() override {
+      return S_OK;
+    }
+
+    HRESULT STDMETHODCALLTYPE Drop(
+      IDataObject* data,
+      DWORD,
+      POINTL,
+      DWORD* effect) override {
+        FORMATETC fmt = { CF_HDROP, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+        STGMEDIUM medium;
+        std::vector<std::string> droppedPaths;
+        if(SUCCEEDED(data->GetData(&fmt, &medium))) {
+            HDROP hDrop = (HDROP)GlobalLock(medium.hGlobal);
+            UINT count = DragQueryFileW(hDrop, 0xFFFFFFFF, nullptr, 0);
+            for(UINT i = 0; i < count; i++) {
+                wchar_t path[MAX_PATH];
+                DragQueryFileW(hDrop, i, path, MAX_PATH);
+                droppedPaths.push_back(wstr2str(path));
+            }
+            GlobalUnlock(medium.hGlobal);
+            ReleaseStgMedium(&medium);
+        }
+        *effect = DROPEFFECT_COPY;
+        filesDropped(droppedPaths);
+        return S_OK;
+    }
+};
+
 class edge_chromium {
 public:
-  bool embed(HWND wnd, bool debug, bool openInspector) {
+  bool embed(HWND wnd, bool debug, bool openInspector, bool emitDropEvents) {
     CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
     std::atomic_flag flag = ATOMIC_FLAG_INIT;
     flag.test_and_set();
@@ -1007,6 +1072,11 @@ public:
             m_controller = controller;
             m_controller->get_CoreWebView2(&m_webview);
             m_webview->AddRef();
+
+            ComPtr<ICoreWebView2Controller4> controller4;
+            if(emitDropEvents && SUCCEEDED(controller->QueryInterface(IID_PPV_ARGS(&controller4)))) {
+                controller4->put_AllowExternalDrop(FALSE);
+            }
 
             ICoreWebView2Settings* m_settings;
             m_webview->get_Settings(&m_settings);
@@ -1328,11 +1398,19 @@ public:
     // set dark mode of title bar according to system theme
     TrySetWindowTheme(m_window);
 
-    if (!m_browser->embed(m_window, debug, openInspector)) {
+    if (!m_browser->embed(m_window, debug, openInspector, emitDropEvents)) {
       initCode = 1;
     }
 
     m_browser->resize(m_window);
+
+    if(emitDropEvents) {
+      OleInitialize(nullptr);
+      RevokeDragDrop(m_window);
+      ComPtr<DropTarget> dropTarget = new DropTarget();
+      RegisterDragDrop(m_window, dropTarget.Get());
+      DragAcceptFiles(m_window, TRUE);
+    }
   }
 
   void run() {
@@ -1379,7 +1457,7 @@ public:
     */
     WaitForSingleObject(evtWindowClosed, 300);
     CloseHandle(evtWindowClosed);
-
+    OleUninitialize();
   }
   void dispatch(dispatch_fn_t f) {
     PostThreadMessage(m_main_thread, WM_APP, 0, (LPARAM) new dispatch_fn_t(f));
