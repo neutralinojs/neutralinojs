@@ -62,6 +62,8 @@
             "-Wno-deprecated-declarations",
             "-framework WebKit",
             "-framework Cocoa",
+            "-framework CoreFoundation",
+            "-framework IOKit",
             "-Os",
             "-mmacosx-version-min=11.01"
         ],
