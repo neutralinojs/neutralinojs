@@ -46,10 +46,9 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
+#pragma comment(lib, "iphlpapi.lib")
+#pragma comment(lib, "ws2_32.lib")
 #endif
-
-#include <cstdio>
-
 
 #include <infoware/system.hpp>
 #include <infoware/cpu.hpp>
@@ -589,79 +588,62 @@ json getNetworkInterfaces(const json &input) {
     }
     
     freeifaddrs(ifap);
-    output["returnValue"] = interfaces;
-
     #elif defined(_WIN32)
-    ULONG bufLen = 15000;
-    ULONG ret;
-    PIP_ADAPTER_ADDRESSES pAddresses = nullptr;
+    ULONG flags = GAA_FLAG_INCLUDE_PREFIX;
+    ULONG family = AF_UNSPEC;
+    ULONG size = 0;
 
-    do {
-        pAddresses = (PIP_ADAPTER_ADDRESSES)malloc(bufLen);
-        if(!pAddresses) {
-            output["error"] = errors::makeErrorPayload(errors::NE_CO_UNLTONI);
-            return output;
-        }
-        ret = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, nullptr, pAddresses, &bufLen);
-        if(ret == ERROR_BUFFER_OVERFLOW) {
-            free(pAddresses);
-            pAddresses = nullptr;
-        }
-    } while(ret == ERROR_BUFFER_OVERFLOW);
+    GetAdaptersAddresses(family, flags, nullptr, nullptr, &size);
 
+    vector<BYTE> buffer(size);
+    IP_ADAPTER_ADDRESSES* adapters =
+        reinterpret_cast<IP_ADAPTER_ADDRESSES*>(buffer.data());
+
+    DWORD ret = GetAdaptersAddresses(family, flags, nullptr, adapters, &size);
     if(ret != NO_ERROR) {
-        if(pAddresses) free(pAddresses);
         output["error"] = errors::makeErrorPayload(errors::NE_CO_UNLTONI);
         return output;
     }
 
-    for(PIP_ADAPTER_ADDRESSES pCurr = pAddresses; pCurr != nullptr; pCurr = pCurr->Next) {
-        bool isLoopback = (pCurr->IfType == IF_TYPE_SOFTWARE_LOOPBACK);
-        bool isUp = (pCurr->OperStatus == IfOperStatusUp);
-
-        if(excludeLoopback && isLoopback) continue;
-
-        char ifName[256];
-        WideCharToMultiByte(CP_UTF8, 0, pCurr->FriendlyName, -1, ifName, sizeof(ifName), nullptr, nullptr);
-
-        json iface = {
-            {"name", string(ifName)},
-            {"ipv4", json::array()},
-            {"ipv6", json::array()},
-            {"mac", ""},
-            {"isUp", isUp},
-            {"isLoopback", isLoopback}
-        };
-
-        if(pCurr->PhysicalAddressLength == 6) {
-            char mac[18];
-            snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x",
-                pCurr->PhysicalAddress[0], pCurr->PhysicalAddress[1],
-                pCurr->PhysicalAddress[2], pCurr->PhysicalAddress[3],
-                pCurr->PhysicalAddress[4], pCurr->PhysicalAddress[5]);
-            iface["mac"] = string(mac);
+    for(auto* adapter = adapters; adapter; adapter = adapter->Next) {
+        string name = helpers::wstr2str(adapter->FriendlyName);
+        ostringstream oss;
+        string mac = "";
+        for(UINT i = 0; i < adapter->PhysicalAddressLength; ++i) {
+            if(i) oss << ":";
+            oss << hex << setw(2) << setfill('0')<< (int)adapter->PhysicalAddress[i];
+            mac = oss.str();
         }
 
-        for(PIP_ADAPTER_UNICAST_ADDRESS pUnicast = pCurr->FirstUnicastAddress;
-                pUnicast != nullptr; pUnicast = pUnicast->Next) {
-            SOCKADDR *sa = pUnicast->Address.lpSockaddr;
-            char addr[INET6_ADDRSTRLEN];
+        for(auto* ua = adapter->FirstUnicastAddress; ua; ua = ua->Next) {
+            char ip[INET6_ADDRSTRLEN];
+            sockaddr* sa = ua->Address.lpSockaddr;
+            getnameinfo(
+                sa,
+                ua->Address.iSockaddrLength,
+                ip,
+                sizeof(ip),
+                nullptr,
+                0,
+                NI_NUMERICHOST);
+
+            json interfaceInfo = {
+                { "isInternal", adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK },
+                { "mac", mac }
+            };
+
             if(sa->sa_family == AF_INET) {
-                inet_ntop(AF_INET, &((SOCKADDR_IN *)sa)->sin_addr, addr, sizeof(addr));
-                iface["ipv4"].push_back(string(addr));
+                interfaceInfo["ipv4"] = string(ip);
             }
             else if(sa->sa_family == AF_INET6) {
-                inet_ntop(AF_INET6, &((SOCKADDR_IN6 *)sa)->sin6_addr, addr, sizeof(addr));
-                iface["ipv6"].push_back(string(addr));
+                interfaceInfo["ipv6"] = string(ip);
             }
+            interfaces[name].push_back(interfaceInfo);
         }
-
-        output["returnValue"].push_back(iface);
     }
 
-    free(pAddresses);
     #endif
-
+    output["returnValue"] = interfaces;
     output["success"] = true;
     return output;
 }
