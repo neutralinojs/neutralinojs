@@ -23,7 +23,7 @@ await Neutralino.events.on('filesDropped', (e) => {
 
 ### API: computer
 - Implement `os.getHostname()` to retrieve the hostname.
-- Implement `os.getNetworkInterfaces()` to retrieve network interface details, including name, IP, MAC, type (internal/loopback or not), and IP family (v4 or v6) for each network interface entity. This method produces a similar output to Node.js's `os.networkInterfaces()`
+- Implement `os.getNetworkInterfaces()` to retrieve network interface details, including name, IP, MAC, type (internal/loopback or not), and IP family (v4 or v6) for each network interface entity. This function produces a similar output to Node.js's `os.networkInterfaces()`
 
 ### API: filesystem
 - Implement `filesystem.chmod(path, mode)` to change file access permissions using POSIX octal file modes — a POSIX-friendly alternative to the existing generic `filesystem.setPermissions()` function.
