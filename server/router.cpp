@@ -73,6 +73,7 @@ map<string, router::NativeMethod> methodMap = {
     {"window.getPosition", window::controllers::getPosition},
     {"window.setAlwaysOnTop", window::controllers::setAlwaysOnTop},
     {"window.setBorderless", window::controllers::setBorderless},
+    {"window.setSkipTaskbar", window::controllers::setSkipTaskbar},
     {"window.snapshot", window::controllers::snapshot},
     {"window.setMainMenu", window::controllers::setMainMenu},
     {"window.print", window::controllers::print},

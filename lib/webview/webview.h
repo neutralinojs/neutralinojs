@@ -1116,8 +1116,8 @@ private:
                 args->get_Uri(&uri);
                 std::wstring ws(uri);
                 std::string url(ws.begin(), ws.end());
-                if(url.find("http://localhost") != 0 && url.find("http://127.0.0.1") != 0 && newWindow) {
-                    newWindow(url);
+                if(url.find("http://localhost") != 0 && url.find("http://127.0.0.1") != 0 && handleNavigation) {
+                    handleNavigation(url);
                 }
                 args->put_Handled(TRUE);
                 CoTaskMemFree(uri);

@@ -1678,6 +1678,17 @@ json setBorderless(const json &input) {
     return output;
 }
 
+json setSkipTaskbar(const json &input) {
+    json output;
+    bool skip = true;
+    if(helpers::hasField(input, "skip")) {
+        skip = input["skip"].get<bool>();
+    }
+    window::setSkipTaskbar(skip);
+    output["success"] = true;
+    return output;
+}
+
 json getPosition(const json &input) {
     json output;
     json posRes;
