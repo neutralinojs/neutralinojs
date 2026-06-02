@@ -7,21 +7,44 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ## Unreleased
 
 ### API: native file drag and drop
-By default, Neutralinojs webview enables the system webview's drag and drop implementation, so developers add drag and drop features for Neutralinojs apps using standard JavaScript web APIs. Now, you can disable webview-specific drag and drop handling and get dropped files directly via Neutralinojs events using the `window.emitDropEvents: boolean` configuration option. If this option is set to `true`, you can instantly get dropped files without registering drag and drop handlers yourself:
+By default, Neutralinojs webview enables the system webview's drag and drop implementation, so developers add drag and drop features for Neutralinojs apps using standard JavaScript web APIs, but the standard web APIs won't expose the actual file path for security concerns. Now, you can disable webview-specific drag and drop handling and get dropped full file paths directly via Neutralinojs events using the `window.emitDropEvents: boolean` configuration option. If this option is set to `true`, you can get dropped files as follows:
 
 ```js
 await Neutralino.events.on('filesDropped', (e) => {
   console.log('Files: ', e.detail);
 });
 ```
+### Core: new window policy
+In previous framework versions, `target="_blank"` hyperlinks didn't automatically open in the default web browser or a new Neutralinojs window. The new window policy feature offers a way to handle  `target="_blank"` hyperlinks properly using the `window.newWindowPolicy: string` configuration option. This option accepts three values:
+- `system`: Default behavior of the platform-specific system webview. Ignores or opens in a new webview window.
+- `browser`: Opens the URL in the default web browser.
+- `custom`: Emits the `newWindowRequest` event with the URL, so the developer can implement custom logic (e.g., opening the URL in a new Neutralinojs window, HTML popup, etc.).
+
+### API: computer
+- Implement `os.getHostname()` to retrieve the hostname.
+- Implement `os.getNetworkInterfaces()` to retrieve network interface details, including name, IP, MAC, type (internal or not), and IP family (v4 or v6) for each network interface entity.
+
+### API: filesystem
+- Implement `filesystem.chmod(path, mode)` to change file access permissions using POSIX octal file modes. A POSIX-friendly alternative to the existing generic `filesystem.setPermissions()` function.
+- Implement `filesystem.access(path, mode)` to test file access permissions using POSIX access modes (`0`, `1`, `2`, and `4`). A POSIX-friendly alternative to the existing generic `filesystem.getPermissions()` function.
+- Implement `filesystem.chown(path, uid, gid)` to change user/group ownership of files and directories. This method has no effect on Windows.
 
 ### API: os
+- Implement `os.trashItem(path)` to send a file or directory into the system trash container.
 - Add `home` and `desktop` path name implementations to the `os.getPath(name)` function.
 
+### Core: static server
+- Implements HTTP 206 partial content feature to support HTML `<video>` progress change (seeking).
+
+### Core: extensions
+- Allow extensions to use WebSocket binary mode for communication with the Neutralinojs framework.
+
 ### Improvements/bugfixes
-- Fix memory handling issues in `os.setTray()` implementation.
+- Fix memory handling issues in the `os.setTray()` implementation.
+- Fix the crash that occurs while using the tray menu and window menu together on macOS.
 - Focus app content on the window focus event on Windows.
 - Using the theme color to fix the initial white flashing effect on Linux.
+- Remove the registered system tray icon when the framework process exits on Windows.
 
 ## v6.7.0
 
