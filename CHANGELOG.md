@@ -6,12 +6,22 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: native file drag and drop
+By default, Neutralinojs webview enables the system webview's drag and drop implementation, so developers add drag and drop features for Neutralinojs apps using standard JavaScript web APIs. Now, you can disable webview-specific drag and drop handling and get dropped files directly via Neutralinojs events using the `window.emitDropEvents: boolean` configuration option. If this option is set to `true`, you can instantly get dropped files without registering drag and drop handlers yourself:
+
+```js
+await Neutralino.events.on('filesDropped', (e) => {
+  console.log('Files: ', e.detail);
+});
+```
+
 ### API: os
 - Add `home` and `desktop` path name implementations to the `os.getPath(name)` function.
 
 ### Improvements/bugfixes
 - Fix memory handling issues in `os.setTray()` implementation.
 - Focus app content on the window focus event on Windows.
+- Using the theme color to fix the initial white flashing effect on Linux.
 
 ## v6.7.0
 
