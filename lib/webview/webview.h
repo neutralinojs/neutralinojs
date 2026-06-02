@@ -954,6 +954,21 @@ using namespace Microsoft::WRL;
 
 namespace webview {
 
+  static std::string wstr2str(std::wstring const &str)
+  {
+    int len = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0, nullptr, nullptr);
+    std::string ret(len, '\0');
+    WideCharToMultiByte(CP_UTF8, 0, str.c_str(), (int)str.size(), (LPSTR)ret.data(), (int)ret.size(), nullptr, nullptr);
+    return ret;
+  }
+
+  static std::wstring str2wstr(std::string const &str) {
+    int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0);
+    std::wstring ret(len, '\0');
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), (LPWSTR)ret.data(), (int)ret.size());
+    return ret;
+  }
+
 class edge_chromium {
 public:
   bool embed(HWND wnd, bool debug, bool openInspector) {
@@ -1109,20 +1124,18 @@ private:
       webview->add_PermissionRequested(this, &token);
       
       webview->add_NewWindowRequested(
-        Callback<ICoreWebView2NewWindowRequestedEventHandler>(
-            [](ICoreWebView2* sender,
-              ICoreWebView2NewWindowRequestedEventArgs* args) -> HRESULT {
-                LPWSTR uri;
-                args->get_Uri(&uri);
-                std::wstring ws(uri);
-                std::string url(ws.begin(), ws.end());
-                if(url.find("http://localhost") != 0 && url.find("http://127.0.0.1") != 0 && newWindow) {
-                    newWindow(url);
-                }
+      Callback<ICoreWebView2NewWindowRequestedEventHandler>(
+          [](ICoreWebView2* sender,
+            ICoreWebView2NewWindowRequestedEventArgs* args) -> HRESULT {
+              LPWSTR uri = nullptr;
+              args->get_Uri(&uri);
+              std::string url = wstr2str(uri);
+              if(!url.empty() && handleNavigation && handleNavigation(url)) {
                 args->put_Handled(TRUE);
-                CoTaskMemFree(uri);
-                return S_OK;
-            }).Get(), &token);
+              }
+              CoTaskMemFree(uri);
+              return S_OK;
+      }).Get(), &token);
 
       m_cb(controller);
       return S_OK;
@@ -1443,20 +1456,6 @@ private:
   std::unique_ptr<webview::edge_chromium> m_browser =
       std::make_unique<webview::edge_chromium>();
 
-  static std::wstring str2wstr(std::string const &str) {
-    int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0);
-    std::wstring ret(len, '\0');
-    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), (LPWSTR)ret.data(), (int)ret.size());
-    return ret;
-  }
-
-  std::string wstr2str(std::wstring const &str)
-  {
-    int len = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0, nullptr, nullptr);
-    std::string ret(len, '\0');
-    WideCharToMultiByte(CP_UTF8, 0, str.c_str(), (int)str.size(), (LPSTR)ret.data(), (int)ret.size(), nullptr, nullptr);
-    return ret;
-  }
 };
 
 using browser_engine = win32_edge_engine;
