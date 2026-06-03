@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v6.8.0
+
 ### Core: new window policy
 In previous framework versions, `target="_blank"` hyperlinks didn't automatically open in the default web browser or a new Neutralinojs window. The new window policy feature offers a way to handle  `target="_blank"` hyperlinks properly using the `window.newWindowPolicy: string` configuration option. This option accepts three values:
 - `system`: Uses the default behavior of the platform-specific system webview. Ignores or opens in a new webview window.
