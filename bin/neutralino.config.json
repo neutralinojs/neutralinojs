@@ -55,7 +55,7 @@
             "injectGlobals": false,
             "injectClientLibrary": false,
             "emitDropEvents": false,
-            "navigationPolicy": "browser"
+            "newWindowPolicy": "custom"
         },
         "browser": {
             "globalVariables": {
