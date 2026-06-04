@@ -84,30 +84,6 @@ RECT savedRect;
 HMENU windowMenu;
 int windowMenuItemId = ID_MENU_FIRST;
 WNDPROC originalWndProc = nullptr;
-
-LRESULT CALLBACK NeutralinoWndProc(HWND hwnd, UINT msg, WPARAM wParam,
-                                   LPARAM lParam) {
-    if(msg == WM_DROPFILES) {
-        HDROP hDrop = (HDROP)wParam;
-        UINT count = DragQueryFileW(hDrop, 0xFFFFFFFF, nullptr, 0);
-
-        json payload;
-        payload["paths"] = json::array();
-
-        for(UINT i = 0; i < count; ++i) {
-            UINT length = DragQueryFileW(hDrop, i, nullptr, 0);
-            wstring path(length + 1, L'\0');
-            DragQueryFileW(hDrop, i, path.data(), length + 1);
-            payload["paths"].push_back(helpers::wcstr2str(path.c_str()));
-        }
-
-        DragFinish(hDrop);
-        events::dispatch("fileDrop", payload);
-        return 0;
-    }
-
-    return CallWindowProc(originalWndProc, hwnd, msg, wParam, lParam);
-}
 #endif
 
 window::WindowOptions windowProps;
@@ -172,18 +148,15 @@ void windowStateChange(int state) {
     }
 }
 
-bool handleNavigation(const std::string& url) {
-    switch(windowProps.navigationPolicy) {
-        case window::NavigationPolicySystem:
+bool decideNewWindowPolicy(const std::string& url) {
+    switch(windowProps.newWindowPolicy) {
+        case window::NewWindowPolicySystem:
             return false;
-        case window::NavigationPolicyBrowser:
-            if(url.find("http://localhost") != 0 && url.find("http://127.0.0.1") != 0) {
-                os::open(url);
-                return true;
-            }
-            return false;
-        case window::NavigationPolicyCustom:
-            events::dispatch("navigationRequest", url);
+        case window::NewWindowPolicyBrowser:
+            os::open(url);
+            return true;
+        case window::NewWindowPolicyCustom:
+            events::dispatch("newWindowRequest", url);
             return true;               
     }
     return false;
@@ -692,7 +665,7 @@ bool __createWindow() {
 );
 
     nativeWindow->setEventHandler(&window::handlers::windowStateChange);
-    nativeWindow->setNavigationHandler(&window::handlers::handleNavigation);
+    nativeWindow->setNewWindowHandler(&window::handlers::decideNewWindowPolicy);
     nativeWindow->setFileDropHandler([](const vector<string>& droppedPaths) {
         events::dispatch("filesDropped", droppedPaths);
     });
@@ -716,9 +689,6 @@ bool __createWindow() {
 
     #elif defined(_WIN32)
     windowHandle = (HWND) nativeWindow->window();
-    DragAcceptFiles(windowHandle, TRUE);
-    originalWndProc = (WNDPROC)SetWindowLongPtr(windowHandle, GWLP_WNDPROC,
-                                                (LONG_PTR)NeutralinoWndProc);
     #endif
 
     #if !defined(_WIN32)
@@ -1217,83 +1187,57 @@ bool snapshot(const string &filename) {
     return gdk_pixbuf_save(screenshot, filename.c_str(), "png", nullptr, nullptr);
 
     #elif defined(__APPLE__)
-    return false;
-    // if (@available(macOS 12.3, *)) {
+    CGRect frameRect = __getWindowRect();
+    CGRect clientRect =
+            ((CGRect (*)(id, SEL, CGRect))objc_msgSend)(windowHandle, "contentRectForFrameRect:"_sel, frameRect);
+    clientRect.origin.y +=  frameRect.size.height - clientRect.size.height;
 
-    //     long winId =
-    //         ((long(*)(id, SEL))objc_msgSend)(
-    //             windowHandle,
-    //             "windowNumber"_sel);
+    long winId = ((long(*)(id, SEL))objc_msgSend)(windowHandle, "windowNumber"_sel);
+    
+    CGImageRef imgRef = nil;
 
-    //     __block CGImageRef resultImage = NULL;
-    //     dispatch_semaphore_t sem = dispatch_semaphore_create(0);
+    #if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 120300
 
-    //     [SCShareableContent getShareableContentWithCompletionHandler:
-    //         ^(SCShareableContent *content, NSError *error) {
+    // Modern ScreenCaptureKit API (macOS 12.3+)
+    __block CGImageRef screenshotImage = nil;
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    
+    SCContentFilter *filter = [[SCContentFilter alloc] initWithDesktopIndependentWindow:
+        [SCWindow windowWithWindowID:winId]];
+    
+    SCStreamConfiguration *config = [[SCStreamConfiguration alloc] init];
+    config.scalesToFit = NO;
+    
+    [SCScreenshotManager captureImageWithFilter:filter
+                                  configuration:config
+                              completionHandler:^(CGImageRef capturedImage, NSError *error) {
+        if (error == nil && capturedImage != NULL) {
+            
+            screenshotImage = CGImageCreateWithImageInRect(capturedImage, clientRect);
+        }
+        dispatch_semaphore_signal(semaphore);  
+    }];
+    
+    dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC));
+    imgRef = screenshotImage;
 
-    //         if (error) {
-    //             dispatch_semaphore_signal(sem);
-    //             return;
-    //         }
+    #else
+        // Fallback for macOS < 12.3
+        imgRef = CGWindowListCreateImage(clientRect, kCGWindowListOptionIncludingWindow, winId, kCGWindowImageBoundsIgnoreFraming);
+    #endif
 
-    //         SCWindow *targetWindow = nil;
-    //         for (SCWindow *window in content.windows) {
-    //             if (window.windowID == winId) {
-    //                 targetWindow = window;
-    //                 break;
-    //             }
-    //         }
+      
+    id screenshot =
+        ((id (*)(id, SEL))objc_msgSend)("NSBitmapImageRep"_cls, "alloc"_sel);
+    ((void (*)(id, SEL, CGImageRef))objc_msgSend)(screenshot, "initWithCGImage:"_sel, imgRef);
+    id screenshotData =
+        ((id (*)(id, SEL, int, id))objc_msgSend)(screenshot, "representationUsingType:properties:"_sel, NSPNGFileType, nullptr);
+    bool status = ((bool (*)(id, SEL, id, bool))objc_msgSend)(screenshotData, "writeToFile:atomically:"_sel, 
+            ((id(*)(id, SEL, const char *))objc_msgSend)("NSString"_cls, "stringWithUTF8String:"_sel, filename.c_str())
+    , true);
+    
+    return status;
 
-    //     if (!targetWindow) {
-    //         dispatch_semaphore_signal(sem);
-    //         return;
-    //     }
-
-    //     SCContentFilter *filter =
-    //         [[SCContentFilter alloc] initWithDesktopIndependentWindow:targetWindow];
-
-    //     SCStreamConfiguration *config =
-    //         [[SCStreamConfiguration alloc] init];
-
-    //     config.scalesToFit = NO;
-
-    //     [SCScreenshotManager captureImageWithFilter:filter
-    //                               configuration:config
-    //                               completionHandler:^(CGImageRef image,
-    //                               NSError *err) {
-
-    //         if (!err && image) {
-    //             resultImage = CGImageCreateCopy(image);
-    //         }
-
-    //         dispatch_semaphore_signal(sem);
-    //     }];
-    // }];
-
-    // dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
-
-    // if (!resultImage)
-    //     return false;
-
-    // id bitmap =
-    //     [[NSBitmapImageRep alloc] initWithCGImage:resultImage];
-
-    // NSData *data =
-    //     [bitmap representationUsingType:NSBitmapImageFileTypePNG
-    //                           properties:@{}];
-
-    //     BOOL status =
-    //         [data writeToFile:
-    //             [NSString stringWithUTF8String:filename.c_str()]
-    //               atomically:YES];
-
-    //     CGImageRelease(resultImage);
-
-    //     return status;
-
-    // } else {
-    //     return false;
-    // }
     #elif defined(_WIN32)
     GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;
@@ -1441,12 +1385,12 @@ bool init(const json &windowOptions) {
     if(helpers::hasField(windowOptions, "emitDropEvents"))
         windowProps.emitDropEvents = windowOptions["emitDropEvents"].get<bool>();
 
-    if(helpers::hasField(windowOptions, "navigationPolicy")) {
-        string policy = windowOptions["navigationPolicy"].get<string>();
+    if(helpers::hasField(windowOptions, "newWindowPolicy")) {
+        string policy = windowOptions["newWindowPolicy"].get<string>();
         if(policy == "browser")
-            windowProps.navigationPolicy = window::NavigationPolicyBrowser;
+            windowProps.newWindowPolicy = window::NewWindowPolicyBrowser;
         else if(policy == "custom")
-            windowProps.navigationPolicy = window::NavigationPolicyCustom;
+            windowProps.newWindowPolicy = window::NewWindowPolicyCustom;
             
     }
 

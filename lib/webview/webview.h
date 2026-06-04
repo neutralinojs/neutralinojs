@@ -70,11 +70,11 @@
 namespace webview {
 using dispatch_fn_t = std::function<void()>;
 using eventHandler_t = std::function<void(int)>;
-using navigationHandler_t = std::function<bool(const std::string&)>;
+using newWindowHandler_t = std::function<bool(const std::string&)>;
 using fileDropHandler_t = std::function<void(const std::vector<std::string>&)>;
 
 static eventHandler_t windowStateChange;
-static navigationHandler_t handleNavigation;
+static newWindowHandler_t handleNewWindow;
 static fileDropHandler_t filesDropped;
 static int processExitCode = 0;
 
@@ -132,7 +132,8 @@ enum WebKitUserScriptInjectionTime {
 };
 
 enum WebKitPolicyDecisionType {
-  WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION
+  WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION,
+  WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION
 };
 
 enum WebKitNavigationType {
@@ -330,18 +331,14 @@ public:
 
     g_signal_connect(G_OBJECT(m_webview), "decide-policy",
       G_CALLBACK(+[](WebKitWebView*, WebKitPolicyDecision* decision, WebKitPolicyDecisionType type, gpointer) {
-        if(type == WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION) {
+        if(type == WEBKIT_POLICY_DECISION_TYPE_NEW_WINDOW_ACTION) {
           WebKitNavigationPolicyDecision *nav = (WebKitNavigationPolicyDecision*)decision;
           WebKitNavigationAction *action = webkit_navigation_policy_decision_get_navigation_action(nav);
           WebKitURIRequest *request = webkit_navigation_action_get_request(action);
-
-          if(webkit_navigation_action_get_navigation_type(action) == 
-              WEBKIT_NAVIGATION_TYPE_LINK_CLICKED) {
-              const gchar *uri = webkit_uri_request_get_uri(request);
-              if(uri && handleNavigation && handleNavigation(std::string(uri))) {
-                webkit_policy_decision_ignore(decision);
-                return true;
-              }
+          const gchar *uri = webkit_uri_request_get_uri(request);
+          if(uri && handleNewWindow && handleNewWindow(std::string(uri))) {
+            webkit_policy_decision_ignore(decision);
+            return true;
           }
         }
         return false;
@@ -760,17 +757,18 @@ public:
         "webView:decidePolicyForNavigationAction:decisionHandler:"_sel,
         imp_implementationWithBlock(^(id self, id webView, id action, id decisionHandler) {
             using DecisionBlock = void(^)(long);
+            id targetFrame = ((id(*)(id,SEL))objc_msgSend)(action, "targetFrame"_sel);
             auto handler = (DecisionBlock)decisionHandler;
             bool policy = WKNavigationActionPolicyAllow;
             auto type = ((long(*)(id,SEL))objc_msgSend)(action, "navigationType"_sel);
 
-            if(type == WKNavigationTypeLinkActivated) {
+            if(!targetFrame && type == WKNavigationTypeLinkActivated) {
               id request = ((id(*)(id, SEL))objc_msgSend)(action, "request"_sel);
               id nsurl = ((id(*)(id,SEL))objc_msgSend)(request, "URL"_sel);
               id urlStr = ((id(*)(id,SEL))objc_msgSend)(nsurl, "absoluteString"_sel);
               const char* uri = ((const char*(*)(id,SEL))objc_msgSend)(urlStr, "UTF8String"_sel);
 
-              if(uri && handleNavigation && handleNavigation(std::string(uri))) {
+              if(uri && handleNewWindow && handleNewWindow(std::string(uri))) {
                 policy = WKNavigationActionPolicyCancel;
               }
             }
@@ -954,9 +952,89 @@ using namespace Microsoft::WRL;
 
 namespace webview {
 
+  static std::string wstr2str(std::wstring const &str)
+  {
+    int len = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0, nullptr, nullptr);
+    std::string ret(len, '\0');
+    WideCharToMultiByte(CP_UTF8, 0, str.c_str(), (int)str.size(), (LPSTR)ret.data(), (int)ret.size(), nullptr, nullptr);
+    return ret;
+  }
+
+  static std::wstring str2wstr(std::string const &str) {
+    int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0);
+    std::wstring ret(len, '\0');
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), (LPWSTR)ret.data(), (int)ret.size());
+    return ret;
+  }
+
+class DropTarget : public IDropTarget {
+  ULONG ref = 1;
+
+  public:
+    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppv) override {
+      if (riid == IID_IUnknown || riid == IID_IDropTarget)
+      {
+          *ppv = static_cast<IDropTarget*>(this);
+          AddRef();
+          return S_OK;
+      }
+      *ppv = nullptr;
+      return E_NOINTERFACE;
+    }
+
+    ULONG STDMETHODCALLTYPE AddRef() override { return ++ref; }
+
+    ULONG STDMETHODCALLTYPE Release() override {
+      if (--ref == 0) delete this;
+      return ref;
+    }
+
+    HRESULT STDMETHODCALLTYPE DragEnter(
+      IDataObject* data,
+      DWORD,
+      POINTL,
+      DWORD* effect) override {
+        *effect = DROPEFFECT_COPY;
+        return S_OK;
+    }
+
+    HRESULT STDMETHODCALLTYPE DragOver(DWORD, POINTL, DWORD* effect) override {
+      *effect = DROPEFFECT_COPY;
+      return S_OK;
+    }
+
+    HRESULT STDMETHODCALLTYPE DragLeave() override {
+      return S_OK;
+    }
+
+    HRESULT STDMETHODCALLTYPE Drop(
+      IDataObject* data,
+      DWORD,
+      POINTL,
+      DWORD* effect) override {
+        FORMATETC fmt = { CF_HDROP, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+        STGMEDIUM medium;
+        std::vector<std::string> droppedPaths;
+        if(SUCCEEDED(data->GetData(&fmt, &medium))) {
+            HDROP hDrop = (HDROP)GlobalLock(medium.hGlobal);
+            UINT count = DragQueryFileW(hDrop, 0xFFFFFFFF, nullptr, 0);
+            for(UINT i = 0; i < count; i++) {
+                wchar_t path[MAX_PATH];
+                DragQueryFileW(hDrop, i, path, MAX_PATH);
+                droppedPaths.push_back(wstr2str(path));
+            }
+            GlobalUnlock(medium.hGlobal);
+            ReleaseStgMedium(&medium);
+        }
+        *effect = DROPEFFECT_COPY;
+        filesDropped(droppedPaths);
+        return S_OK;
+    }
+};
+
 class edge_chromium {
 public:
-  bool embed(HWND wnd, bool debug, bool openInspector) {
+  bool embed(HWND wnd, bool debug, bool openInspector, bool emitDropEvents) {
     CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
     std::atomic_flag flag = ATOMIC_FLAG_INIT;
     flag.test_and_set();
@@ -992,6 +1070,11 @@ public:
             m_controller = controller;
             m_controller->get_CoreWebView2(&m_webview);
             m_webview->AddRef();
+
+            ComPtr<ICoreWebView2Controller4> controller4;
+            if(emitDropEvents && SUCCEEDED(controller->QueryInterface(IID_PPV_ARGS(&controller4)))) {
+                controller4->put_AllowExternalDrop(FALSE);
+            }
 
             ICoreWebView2Settings* m_settings;
             m_webview->get_Settings(&m_settings);
@@ -1119,10 +1202,18 @@ private:
                 if(url.find("http://localhost") != 0 && url.find("http://127.0.0.1") != 0 && handleNavigation) {
                     handleNavigation(url);
                 }
+      Callback<ICoreWebView2NewWindowRequestedEventHandler>(
+          [](ICoreWebView2* sender,
+            ICoreWebView2NewWindowRequestedEventArgs* args) -> HRESULT {
+              LPWSTR uri = nullptr;
+              args->get_Uri(&uri);
+              std::string url = wstr2str(uri);
+              if(!url.empty() && handleNewWindow && handleNewWindow(url)) {
                 args->put_Handled(TRUE);
-                CoTaskMemFree(uri);
-                return S_OK;
-            }).Get(), &token);
+              }
+              CoTaskMemFree(uri);
+              return S_OK;
+      }).Get(), &token);
 
       m_cb(controller);
       return S_OK;
@@ -1315,11 +1406,19 @@ public:
     // set dark mode of title bar according to system theme
     TrySetWindowTheme(m_window);
 
-    if (!m_browser->embed(m_window, debug, openInspector)) {
+    if (!m_browser->embed(m_window, debug, openInspector, emitDropEvents)) {
       initCode = 1;
     }
 
     m_browser->resize(m_window);
+
+    if(emitDropEvents) {
+      OleInitialize(nullptr);
+      RevokeDragDrop(m_window);
+      ComPtr<DropTarget> dropTarget = new DropTarget();
+      RegisterDragDrop(m_window, dropTarget.Get());
+      DragAcceptFiles(m_window, TRUE);
+    }
   }
 
   void run() {
@@ -1366,7 +1465,7 @@ public:
     */
     WaitForSingleObject(evtWindowClosed, 300);
     CloseHandle(evtWindowClosed);
-
+    OleUninitialize();
   }
   void dispatch(dispatch_fn_t f) {
     PostThreadMessage(m_main_thread, WM_APP, 0, (LPARAM) new dispatch_fn_t(f));
@@ -1443,20 +1542,6 @@ private:
   std::unique_ptr<webview::edge_chromium> m_browser =
       std::make_unique<webview::edge_chromium>();
 
-  static std::wstring str2wstr(std::string const &str) {
-    int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0);
-    std::wstring ret(len, '\0');
-    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), (LPWSTR)ret.data(), (int)ret.size());
-    return ret;
-  }
-
-  std::string wstr2str(std::wstring const &str)
-  {
-    int len = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0, nullptr, nullptr);
-    std::string ret(len, '\0');
-    WideCharToMultiByte(CP_UTF8, 0, str.c_str(), (int)str.size(), (LPSTR)ret.data(), (int)ret.size(), nullptr, nullptr);
-    return ret;
-  }
 };
 
 using browser_engine = win32_edge_engine;
@@ -1479,8 +1564,8 @@ public:
     windowStateChange = handler;
   }
   
-  void setNavigationHandler(navigationHandler_t handler) {
-    handleNavigation = handler;
+  void setNewWindowHandler(newWindowHandler_t handler) {
+    handleNewWindow = handler;
   }
 
   void setFileDropHandler(fileDropHandler_t handler) {

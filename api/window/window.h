@@ -38,7 +38,7 @@ namespace window {
 // TODO: remove extern and fix multiple include errors
 extern NEU_W_HANDLE windowHandle;
 
-enum NavigationPolicy { NavigationPolicySystem, NavigationPolicyBrowser, NavigationPolicyCustom };
+enum NewWindowPolicy { NewWindowPolicySystem, NewWindowPolicyBrowser, NewWindowPolicyCustom };
 
 struct SizeOptions {
     int width = -1;
@@ -77,7 +77,7 @@ struct WindowOptions {
     string injectScript = "";
     int x = 0;
     int y = 0;
-    window::NavigationPolicy navigationPolicy = window::NavigationPolicySystem;
+    window::NewWindowPolicy newWindowPolicy = window::NewWindowPolicySystem;
 };
 
 struct WindowMenuItem {

@@ -40,7 +40,7 @@
 
 #include "trashcan.h"
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <Windows.h>
 #include <objbase.h>
 #include <shellapi.h>
@@ -92,7 +92,7 @@
 	VAR = VAL;\
 	goto LABEL;\
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #define STATUS_CODES(X) \
 	X(0, LIBTRASHCAN_SUCCESS, "Successful.")\
