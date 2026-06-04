@@ -98,6 +98,31 @@ describe('computer.spec: computer namespace tests', () => {
         });
     });
 
+    describe('computer.getGPUInfo', () => {
+        it('returns available GPU details', async () => {
+            runner.run(`
+                let gpuInfo = await Neutralino.computer.getGPUInfo();
+                await __close(JSON.stringify(gpuInfo));
+            `);
+            let gpuInfo = JSON.parse(runner.getOutput());
+            assert.ok(Array.isArray(gpuInfo));
+
+            if(gpuInfo.length > 0) {
+                let gpu = gpuInfo[0];
+                assert.ok(typeof gpu == 'object');
+                assert.ok(typeof gpu.id == 'number');
+                assert.ok(typeof gpu.vendor == 'string');
+                assert.ok(typeof gpu.name == 'string');
+                assert.ok(typeof gpu.memorySize == 'number');
+                assert.ok(typeof gpu.cacheSize == 'number');
+                assert.ok(typeof gpu.maxFrequency == 'number');
+            }
+            else {
+                // No GPU details in the machine
+            }
+        });
+    });
+
     describe('computer.getDisplays', () => {
         it('returns available displays', async () => {
             runner.run(`

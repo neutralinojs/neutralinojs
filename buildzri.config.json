@@ -64,6 +64,7 @@
             "-Wno-deprecated-declarations",
             "-framework WebKit",
             "-framework Cocoa",
+            "-framework IOKit",
             "-Os",
             "-mmacosx-version-min=11.01"
         ],
@@ -72,7 +73,7 @@
             "/EHsc",
             "/Os",
             "/Fobin/",
-            "/link lib/webview/windows/WebView2LoaderStatic.lib gdi32.lib version.lib Ole32.lib OleAut32.lib wbemuuid.lib ntdll.lib dwmapi.lib"
+            "/link lib/webview/windows/WebView2LoaderStatic.lib gdi32.lib version.lib Ole32.lib OleAut32.lib wbemuuid.lib ntdll.lib dwmapi.lib dxgi.lib"
         ]
     },
     "definitions": {
@@ -100,6 +101,7 @@
             "_WEBSOCKETPP_CPP11_STL_",
             "_HAS_STD_BYTE=0",
             "TRAY_WINAPI=1",
+            "INFOWARE_USE_D3D",
             "UNICODE",
             "_UNICODE"
         ]
