@@ -42,7 +42,7 @@
 extern "C" {
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <stdbool.h>
 #include <wchar.h>
 
