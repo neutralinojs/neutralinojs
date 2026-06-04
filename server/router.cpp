@@ -72,6 +72,7 @@ map<string, router::NativeMethod> methodMap = {
     {"window.getSize", window::controllers::getSize},
     {"window.getPosition", window::controllers::getPosition},
     {"window.setAlwaysOnTop", window::controllers::setAlwaysOnTop},
+    {"window.setOpacity", window::controllers::setOpacity},
     {"window.setBorderless", window::controllers::setBorderless},
     {"window.snapshot", window::controllers::snapshot},
     {"window.setMainMenu", window::controllers::setMainMenu},
