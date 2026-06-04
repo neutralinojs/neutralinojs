@@ -41,5 +41,34 @@ iware::system::kernel_info_t iware::system::kernel_info() {
 	        HIWORD(file_version->dwProductVersionLS), LOWORD(file_version->dwProductVersionLS)};
 }
 
+std::string iware::system::machine_uuid() {
+	HKEY hKey;
+
+	if(RegOpenKeyExA(
+	       HKEY_LOCAL_MACHINE,
+	       "SOFTWARE\\Microsoft\\Cryptography",
+	       0,
+	       KEY_READ,
+	       &hKey) != ERROR_SUCCESS)
+		return "";
+
+	char value[256] = {0};
+	DWORD value_size = sizeof(value);
+
+	const auto status = RegQueryValueExA(
+	    hKey,
+	    "MachineGuid",
+	    nullptr,
+	    nullptr,
+	    reinterpret_cast<LPBYTE>(value),
+	    &value_size);
+
+	RegCloseKey(hKey);
+
+	if(status != ERROR_SUCCESS)
+		return "";
+
+	return value;
+}
 
 #endif

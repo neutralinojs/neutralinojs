@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <sstream>
 #include <string>
+#include <iomanip>
 #include "helpers.h"
 #include "errors.h"
 
@@ -49,6 +50,9 @@
 #pragma comment(lib, "iphlpapi.lib")
 #pragma comment(lib, "ws2_32.lib")
 #endif
+
+#include <cstdio>
+#include <map>
 
 #include <infoware/system.hpp>
 #include <infoware/cpu.hpp>
@@ -472,6 +476,17 @@ json setMousePosition(const json &input) {
     return output;
 }
 
+json getUUID(const json &input) {
+    json output;
+
+    output["returnValue"] = {
+        { "uuid", iware::system::machine_uuid() }
+    };
+
+    output["success"] = true;
+    return output;
+}
+
 json setMouseGrabbing(const json &input) {
     json output;
 
@@ -517,6 +532,13 @@ json sendKey(const json &input) {
 
 json getNetworkInterfaces(const json &input) {
     json output;
+    output["returnValue"] = json::array();
+
+    bool excludeLoopback = false;
+    if(helpers::hasField(input, "excludeLoopback")) {
+        excludeLoopback = input["excludeLoopback"].get<bool>();
+    }
+
     json interfaces = json::object();
     #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
     struct ifaddrs *ifap, *ifa;
