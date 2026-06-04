@@ -1192,16 +1192,6 @@ private:
       webview->add_PermissionRequested(this, &token);
       
       webview->add_NewWindowRequested(
-        Callback<ICoreWebView2NewWindowRequestedEventHandler>(
-            [](ICoreWebView2* sender,
-              ICoreWebView2NewWindowRequestedEventArgs* args) -> HRESULT {
-                LPWSTR uri;
-                args->get_Uri(&uri);
-                std::wstring ws(uri);
-                std::string url(ws.begin(), ws.end());
-                if(url.find("http://localhost") != 0 && url.find("http://127.0.0.1") != 0 && handleNavigation) {
-                    handleNavigation(url);
-                }
       Callback<ICoreWebView2NewWindowRequestedEventHandler>(
           [](ICoreWebView2* sender,
             ICoreWebView2NewWindowRequestedEventArgs* args) -> HRESULT {
