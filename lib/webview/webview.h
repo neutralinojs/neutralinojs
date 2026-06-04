@@ -51,6 +51,7 @@
 #endif
 
 #include <atomic>
+#include <filesystem>
 #include <functional>
 #include <future>
 #include <map>
@@ -692,8 +693,21 @@ namespace webview {
             std::wstring userDataFolder = appdata;
             std::wstring currentExeNameW = wideCharConverter.from_bytes(currentExeName);
 
+            // 读取 DLCV_WEBVIEW 环境变量，未设置则使用默认值
+            wchar_t envWebView[32767];
+            DWORD lenWebView = GetEnvironmentVariableW(L"DLCV_WEBVIEW", envWebView, 32767);
+            std::wstring browserExecutableFolder = (lenWebView > 0)
+                ? envWebView
+                : L"C:\\dlcv\\bin\\webview\\Microsoft.WebView2.FixedVersionRuntime.148.0.3967.96.x64";
+            // 检查固定版本 WebView2 是否存在，不存在则回退到系统默认
+            char msedgeCheck[MAX_PATH];
+            snprintf(msedgeCheck, MAX_PATH, "%ls\\msedgewebview2.exe", browserExecutableFolder.c_str());
+            if (GetFileAttributesA(msedgeCheck) == INVALID_FILE_ATTRIBUTES) {
+                browserExecutableFolder.clear();
+            }
+
             HRESULT res = CreateCoreWebView2EnvironmentWithOptions(
-                nullptr,
+                browserExecutableFolder.empty() ? nullptr : browserExecutableFolder.c_str(),
                 (userDataFolder + L"/" + currentExeNameW).c_str(),
                 nullptr,
                 new webview2_com_handler(wnd, [&](ICoreWebView2Controller* controller) {
