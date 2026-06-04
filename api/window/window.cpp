@@ -59,6 +59,7 @@
 #include "api/fs/fs.h"
 #include "api/debug/debug.h"
 #include "api/computer/computer.h"
+#include "api/os/os.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -83,30 +84,6 @@ RECT savedRect;
 HMENU windowMenu;
 int windowMenuItemId = ID_MENU_FIRST;
 WNDPROC originalWndProc = nullptr;
-
-LRESULT CALLBACK NeutralinoWndProc(HWND hwnd, UINT msg, WPARAM wParam,
-                                   LPARAM lParam) {
-    if(msg == WM_DROPFILES) {
-        HDROP hDrop = (HDROP)wParam;
-        UINT count = DragQueryFileW(hDrop, 0xFFFFFFFF, nullptr, 0);
-
-        json payload;
-        payload["paths"] = json::array();
-
-        for(UINT i = 0; i < count; ++i) {
-            UINT length = DragQueryFileW(hDrop, i, nullptr, 0);
-            wstring path(length + 1, L'\0');
-            DragQueryFileW(hDrop, i, path.data(), length + 1);
-            payload["paths"].push_back(helpers::wcstr2str(path.c_str()));
-        }
-
-        DragFinish(hDrop);
-        events::dispatch("fileDrop", payload);
-        return 0;
-    }
-
-    return CallWindowProc(originalWndProc, hwnd, msg, wParam, lParam);
-}
 #endif
 
 window::WindowOptions windowProps;
@@ -171,6 +148,20 @@ void windowStateChange(int state) {
     }
 }
 
+bool decideNewWindowPolicy(const std::string& url) {
+    switch(windowProps.newWindowPolicy) {
+        case window::NewWindowPolicySystem:
+            return false;
+        case window::NewWindowPolicyBrowser:
+            os::open(url);
+            return true;
+        case window::NewWindowPolicyCustom:
+            events::dispatch("newWindowRequest", url);
+            return true;               
+    }
+    return false;
+}
+
 } // namespace handlers
 
 
@@ -187,8 +178,17 @@ pair<int, int> __getCenterPos(bool useConfigSizes = false) {
         height = opt.height;
     }
     #if defined(__linux__) || defined(__FreeBSD__)
-    GdkRectangle screen;
-    gdk_monitor_get_workarea(gdk_display_get_primary_monitor(gdk_display_get_default()), &screen);
+    GdkRectangle screen = {0};
+	GdkDisplay *display = gdk_display_get_default();
+    if(display){
+        GdkMonitor *monitor = gdk_display_get_primary_monitor(display);
+        if(!monitor) {
+			monitor = gdk_display_get_monitor(display, 0);
+		}
+        if(monitor) {
+			gdk_monitor_get_workarea(monitor, &screen);
+		}
+    }
     x = (screen.width - width) / 2;
     y = (screen.height - height) / 2;
     #elif defined(__APPLE__)
@@ -630,75 +630,12 @@ void __injectScript() {
     }
 }
 
-#if defined(__APPLE__)
-static void __appendDroppedFilePaths(id pasteboard, json &paths) {
-    id filenamesType = ((id(*)(id, SEL, const char *))objc_msgSend)(
-        "NSString"_cls, "stringWithUTF8String:"_sel, "NSFilenamesPboardType");
-    id files = ((id(*)(id, SEL, id))objc_msgSend)(
-        pasteboard, "propertyListForType:"_sel, filenamesType);
-
-    if(!files) {
-        return;
-    }
-
-    unsigned long count = ((unsigned long (*)(id, SEL))objc_msgSend)(
-        files, "count"_sel);
-    for(unsigned long i = 0; i < count; ++i) {
-        id path = ((id(*)(id, SEL, unsigned long))objc_msgSend)(
-            files, "objectAtIndex:"_sel, i);
-        const char *cpath = ((const char *(*)(id, SEL))objc_msgSend)(
-            path, "UTF8String"_sel);
-        if(cpath) {
-            paths.push_back(cpath);
-        }
-    }
-}
-
-static void __enableFileDropForWindow(id targetWindow) {
-    Class windowClass = object_getClass(targetWindow);
-
-    class_addMethod(windowClass, "draggingEntered:"_sel,
-                    (IMP)(+[](id, SEL, id) -> unsigned long {
-                        return NSDragOperationCopy;
-                    }),
-                    "L@:@");
-
-    class_addMethod(windowClass, "prepareForDragOperation:"_sel,
-                    (IMP)(+[](id, SEL, id) -> BOOL {
-                        return YES;
-                    }),
-                    "B@:@");
-
-    class_addMethod(windowClass, "performDragOperation:"_sel,
-                    (IMP)(+[](id, SEL, id sender) -> BOOL {
-                        json payload;
-                        payload["paths"] = json::array();
-
-                        id pasteboard = ((id(*)(id, SEL))objc_msgSend)(
-                            sender, "draggingPasteboard"_sel);
-                        __appendDroppedFilePaths(pasteboard, payload["paths"]);
-
-                        if(!payload["paths"].empty()) {
-                            events::dispatch("fileDrop", payload);
-                        }
-                        return YES;
-                    }),
-                    "B@:@");
-
-    id filenamesType = ((id(*)(id, SEL, const char *))objc_msgSend)(
-        "NSString"_cls, "stringWithUTF8String:"_sel, "NSFilenamesPboardType");
-    id draggedTypes = ((id(*)(id, SEL, id))objc_msgSend)(
-        "NSArray"_cls, "arrayWithObject:"_sel, filenamesType);
-    ((void (*)(id, SEL, id))objc_msgSend)(
-        targetWindow, "registerForDraggedTypes:"_sel, draggedTypes);
-}
-#endif
 
 bool __createWindow() {
     savedState = windowProps.useSavedState && __loadSavedWindowProps();
 
     nativeWindow = new webview::webview(windowProps.enableInspector, windowProps.openInspectorOnStartup, 
-        nullptr, windowProps.transparent, windowProps.webviewArgs);
+        nullptr, windowProps.transparent, windowProps.webviewArgs, windowProps.emitDropEvents);
     
     if(nativeWindow->get_init_code() == 1) {
         return false;
@@ -728,6 +665,10 @@ bool __createWindow() {
 );
 
     nativeWindow->setEventHandler(&window::handlers::windowStateChange);
+    nativeWindow->setNewWindowHandler(&window::handlers::decideNewWindowPolicy);
+    nativeWindow->setFileDropHandler([](const vector<string>& droppedPaths) {
+        events::dispatch("filesDropped", droppedPaths);
+    });
 
     if(windowProps.injectGlobals) 
         nativeWindow->init(settings::getGlobalVars() + "var NL_GINJECTED = true;");
@@ -741,48 +682,13 @@ bool __createWindow() {
     #if defined(__linux__) || defined(__FreeBSD__)
     windowHandle = (GtkWidget*) nativeWindow->window();
 
-    GtkTargetEntry targets[] = {{(gchar *)"text/uri-list", 0, 0}};
-    gtk_drag_dest_set(windowHandle, GTK_DEST_DEFAULT_ALL, targets, 1,
-                      GDK_ACTION_COPY);
-    g_signal_connect(
-        windowHandle, "drag-data-received",
-        G_CALLBACK(+[](GtkWidget *, GdkDragContext *, gint, gint,
-                       GtkSelectionData *data, guint, guint, gpointer) {
-            json payload;
-            payload["paths"] = json::array();
-
-            if(data && gtk_selection_data_get_length(data) > 0) {
-                gchar **uris = gtk_selection_data_get_uris(data);
-                if(uris) {
-                    for(int i = 0; uris[i] != nullptr; ++i) {
-                        gchar *path =
-                            g_filename_from_uri(uris[i], nullptr, nullptr);
-                        if(path) {
-                            payload["paths"].push_back(path);
-                            g_free(path);
-                        }
-                    }
-                    g_strfreev(uris);
-                }
-            }
-
-            if(!payload["paths"].empty()) {
-                events::dispatch("fileDrop", payload);
-            }
-        }),
-        nullptr);
-
     #elif defined(__APPLE__)
     windowHandle = (id) nativeWindow->window();
-    __enableFileDropForWindow((id)windowHandle);
     ((void (*)(id, SEL, bool))objc_msgSend)((id) windowHandle,
                 "setHasShadow:"_sel, true);
 
     #elif defined(_WIN32)
     windowHandle = (HWND) nativeWindow->window();
-    DragAcceptFiles(windowHandle, TRUE);
-    originalWndProc = (WNDPROC)SetWindowLongPtr(windowHandle, GWLP_WNDPROC,
-                                                (LONG_PTR)NeutralinoWndProc);
     #endif
 
     #if !defined(_WIN32)
@@ -1281,83 +1187,57 @@ bool snapshot(const string &filename) {
     return gdk_pixbuf_save(screenshot, filename.c_str(), "png", nullptr, nullptr);
 
     #elif defined(__APPLE__)
+    CGRect frameRect = __getWindowRect();
+    CGRect clientRect =
+            ((CGRect (*)(id, SEL, CGRect))objc_msgSend)(windowHandle, "contentRectForFrameRect:"_sel, frameRect);
+    clientRect.origin.y +=  frameRect.size.height - clientRect.size.height;
 
-    if (@available(macOS 12.3, *)) {
+    long winId = ((long(*)(id, SEL))objc_msgSend)(windowHandle, "windowNumber"_sel);
+    
+    CGImageRef imgRef = nil;
 
-        long winId =
-            ((long(*)(id, SEL))objc_msgSend)(
-                windowHandle,
-                "windowNumber"_sel);
+    #if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 120300
 
-        __block CGImageRef resultImage = NULL;
-        dispatch_semaphore_t sem = dispatch_semaphore_create(0);
-
-        [SCShareableContent getShareableContentWithCompletionHandler:
-            ^(SCShareableContent *content, NSError *error) {
-
-            if (error) {
-                dispatch_semaphore_signal(sem);
-                return;
-            }
-
-            SCWindow *targetWindow = nil;
-            for (SCWindow *window in content.windows) {
-                if (window.windowID == winId) {
-                    targetWindow = window;
-                    break;
-                }
-            }
-
-        if (!targetWindow) {
-            dispatch_semaphore_signal(sem);
-            return;
-        }
-
-        SCContentFilter *filter =
-            [[SCContentFilter alloc] initWithDesktopIndependentWindow:targetWindow];
-
-        SCStreamConfiguration *config =
-            [[SCStreamConfiguration alloc] init];
-
-        config.scalesToFit = NO;
-
-        [SCScreenshotManager captureImageWithFilter:filter
+    // Modern ScreenCaptureKit API (macOS 12.3+)
+    __block CGImageRef screenshotImage = nil;
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    
+    SCContentFilter *filter = [[SCContentFilter alloc] initWithDesktopIndependentWindow:
+        [SCWindow windowWithWindowID:winId]];
+    
+    SCStreamConfiguration *config = [[SCStreamConfiguration alloc] init];
+    config.scalesToFit = NO;
+    
+    [SCScreenshotManager captureImageWithFilter:filter
                                   configuration:config
-                                  completionHandler:^(CGImageRef image,
-                                  NSError *err) {
-
-            if (!err && image) {
-                resultImage = CGImageCreateCopy(image);
-            }
-
-            dispatch_semaphore_signal(sem);
-        }];
+                              completionHandler:^(CGImageRef capturedImage, NSError *error) {
+        if (error == nil && capturedImage != NULL) {
+            
+            screenshotImage = CGImageCreateWithImageInRect(capturedImage, clientRect);
+        }
+        dispatch_semaphore_signal(semaphore);  
     }];
+    
+    dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC));
+    imgRef = screenshotImage;
 
-    dispatch_semaphore_wait(sem, DISPATCH_TIME_FOREVER);
+    #else
+        // Fallback for macOS < 12.3
+        imgRef = CGWindowListCreateImage(clientRect, kCGWindowListOptionIncludingWindow, winId, kCGWindowImageBoundsIgnoreFraming);
+    #endif
 
-    if (!resultImage)
-        return false;
+      
+    id screenshot =
+        ((id (*)(id, SEL))objc_msgSend)("NSBitmapImageRep"_cls, "alloc"_sel);
+    ((void (*)(id, SEL, CGImageRef))objc_msgSend)(screenshot, "initWithCGImage:"_sel, imgRef);
+    id screenshotData =
+        ((id (*)(id, SEL, int, id))objc_msgSend)(screenshot, "representationUsingType:properties:"_sel, NSPNGFileType, nullptr);
+    bool status = ((bool (*)(id, SEL, id, bool))objc_msgSend)(screenshotData, "writeToFile:atomically:"_sel, 
+            ((id(*)(id, SEL, const char *))objc_msgSend)("NSString"_cls, "stringWithUTF8String:"_sel, filename.c_str())
+    , true);
+    
+    return status;
 
-    id bitmap =
-        [[NSBitmapImageRep alloc] initWithCGImage:resultImage];
-
-    NSData *data =
-        [bitmap representationUsingType:NSBitmapImageFileTypePNG
-                              properties:@{}];
-
-        BOOL status =
-            [data writeToFile:
-                [NSString stringWithUTF8String:filename.c_str()]
-                  atomically:YES];
-
-        CGImageRelease(resultImage);
-
-        return status;
-
-    } else {
-        return false;
-    }
     #elif defined(_WIN32)
     GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;
@@ -1501,6 +1381,18 @@ bool init(const json &windowOptions) {
 
     if(helpers::hasField(windowOptions, "skipTaskbar"))
         windowProps.skipTaskbar = windowOptions["skipTaskbar"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "emitDropEvents"))
+        windowProps.emitDropEvents = windowOptions["emitDropEvents"].get<bool>();
+
+    if(helpers::hasField(windowOptions, "newWindowPolicy")) {
+        string policy = windowOptions["newWindowPolicy"].get<string>();
+        if(policy == "browser")
+            windowProps.newWindowPolicy = window::NewWindowPolicyBrowser;
+        else if(policy == "custom")
+            windowProps.newWindowPolicy = window::NewWindowPolicyCustom;
+            
+    }
 
     if(!__createWindow()) {
         return false;

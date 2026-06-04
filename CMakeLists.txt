@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-set(NEU_VERSION "6.7.0")
+set(NEU_VERSION "6.8.0")
 set(NEU_CXX_STANDARD 17)
 if(APPLE)
   project(NeutralinoJS LANGUAGES C CXX OBJC OBJCXX)
@@ -35,6 +35,7 @@ file(GLOB_RECURSE RECURSIVE_SOURCES
   lib/clip/image.cpp
   lib/infoware/src/**/*.cpp
   lib/efsw/src/efsw/*.cpp
+  lib/trashcan/trashcan.c
 )
 list(APPEND SOURCES ${RECURSIVE_SOURCES})
 
@@ -207,6 +208,8 @@ if(WIN32)
       ntdll
       dwmapi
       dxgi
+      iphlpapi
+      ws2_32
     )
 elseif(APPLE)
     # macOS
