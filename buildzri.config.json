@@ -1,7 +1,7 @@
 {
     "std": "c++17",
     "name": "Neutralinojs",
-    "version": "6.7.0",
+    "version": "6.8.0",
     "output": "./bin/neutralino-${BZ_OS}_${BZ_TARGET_ARCH}",
     "include": {
         "*": [
@@ -10,7 +10,8 @@
             "lib/asio/include",
             "lib/infoware/include",
             "lib/efsw/include",
-            "lib/efsw/src"
+            "lib/efsw/src",
+            "lib/trashcan"
         ],
         "windows": [
             "lib/webview/windows"
@@ -28,7 +29,8 @@
             "lib/clip/clip.cpp",
             "lib/clip/image.cpp",
             "lib/infoware/src/**/*.cpp",
-            "lib/efsw/src/efsw/*.cpp"
+            "lib/efsw/src/efsw/*.cpp",
+            "lib/trashcan/trashcan.c"
         ],
         "linux": [
             "lib/tinyprocess/process_unix.cpp",
