@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <sstream>
 #include <string>
+#include <iomanip>
 #include "helpers.h"
 #include "errors.h"
 
@@ -538,7 +539,6 @@ json getNetworkInterfaces(const json &input) {
         excludeLoopback = input["excludeLoopback"].get<bool>();
     }
 
-#if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
     json interfaces = json::object();
     #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
     struct ifaddrs *ifap, *ifa;
