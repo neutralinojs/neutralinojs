@@ -31,6 +31,7 @@ enum StatusCode {
     NE_CO_UNLTOMG,
     NE_CO_UNLTONI,
     NE_CO_UNLTOSK,
+    NE_CO_UNLTODI,
     // extensions
     NE_EX_EXTNOTC,
     // filesystem

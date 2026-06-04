@@ -31,6 +31,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_CO_UNLTOMG: return "NE_CO_UNLTOMG";
         case errors::NE_CO_UNLTONI: return "NE_CO_UNLTONI";
         case errors::NE_CO_UNLTOSK: return "NE_CO_UNLTOSK";
+        case errors::NE_CO_UNLTODI: return "NE_CO_UNLTODI";
         // extensions
         case errors::NE_EX_EXTNOTC: return "NE_EX_EXTNOTC";
         // filesystem
@@ -101,6 +102,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_CO_UNLTONI: return "Unable to retrieve network interfaces";
         case errors::NE_CO_UNLTOMG: return "Unable to set mouse grabbing";
         case errors::NE_CO_UNLTOSK: return "Unable to send keys";
+        case errors::NE_CO_UNLTODI: return "Unable to retrieve disk information";
         // extensions
         case errors::NE_EX_EXTNOTC: return "%1 is not connected yet";
         // filesystem

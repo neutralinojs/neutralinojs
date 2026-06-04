@@ -124,6 +124,38 @@ describe('computer.spec: computer namespace tests', () => {
         });
     });
 
+    describe('computer.getDiskInfo', () => {
+        it('returns disk usage information', async () => {
+            runner.run(`
+                let diskInfo = await Neutralino.computer.getDiskInfo();
+                await __close(JSON.stringify(diskInfo));
+            `);
+            let diskInfo = JSON.parse(runner.getOutput());
+            assert.ok(typeof diskInfo == 'object');
+            assert.ok(typeof diskInfo.name == 'string');
+            assert.ok(typeof diskInfo.mountPoint == 'string');
+            assert.ok(typeof diskInfo.fileSystem == 'string');
+            assert.ok(typeof diskInfo.total == 'number');
+            assert.ok(typeof diskInfo.used == 'number');
+            assert.ok(typeof diskInfo.free == 'number');
+            assert.ok(typeof diskInfo.usedPercent == 'number');
+        });
+
+        it('returns consistent disk usage values', async () => {
+            runner.run(`
+                let diskInfo = await Neutralino.computer.getDiskInfo();
+                await __close(JSON.stringify(diskInfo));
+            `);
+            let diskInfo = JSON.parse(runner.getOutput());
+            assert.ok(diskInfo.total > 0, 'Disk total should be greater than zero');
+            assert.ok(diskInfo.free >= 0, 'Disk free space should not be negative');
+            assert.ok(diskInfo.used >= 0, 'Disk used space should not be negative');
+            assert.ok(diskInfo.total >= diskInfo.free, 'Disk free space should not be greater than total');
+            assert.ok(diskInfo.total >= diskInfo.used, 'Disk used space should not be greater than total');
+            assert.ok(diskInfo.usedPercent >= 0 && diskInfo.usedPercent <= 100, 'Disk used percent should be within 0..100');
+        });
+    });
+
 
     describe('computer.getMousePosition', () => {
         it('returns the current mouse cursor position and it is within screen bounds', async () => {

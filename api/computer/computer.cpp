@@ -414,6 +414,30 @@ json getDisplays(const json &input) {
     return output;
 }
 
+json getDiskInfo(const json &input) {
+    json output;
+    const auto diskInfo = iware::system::disk_info();
+
+    if(diskInfo.mount_point.empty() || diskInfo.total == 0) {
+        output["error"] = errors::makeErrorPayload(errors::NE_CO_UNLTODI);
+        return output;
+    }
+
+    json diskInfoRes = {
+        { "name", diskInfo.name },
+        { "mountPoint", diskInfo.mount_point },
+        { "fileSystem", diskInfo.file_system },
+        { "total", diskInfo.total },
+        { "used", diskInfo.used },
+        { "free", diskInfo.free },
+        { "usedPercent", diskInfo.used_percent }
+    };
+
+    output["returnValue"] = diskInfoRes;
+    output["success"] = true;
+    return output;
+}
+
 json getMousePosition(const json &input) {
     json output;
     auto pos = computer::getMousePosition();

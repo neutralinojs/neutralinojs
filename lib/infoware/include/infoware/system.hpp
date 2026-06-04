@@ -73,6 +73,16 @@ namespace iware {
 			std::vector<double> refresh_rates;
 		};
 
+		struct disk_info_t {
+			std::string name;
+			std::string mount_point;
+			std::string file_system;
+			std::uint64_t total;
+			std::uint64_t used;
+			std::uint64_t free;
+			double used_percent;
+		};
+
 		/// Get amount of connected mice.
 		INFOWARE_API_LINKAGE std::size_t mouse_amount() noexcept;
 
@@ -100,5 +110,8 @@ namespace iware {
 
 		/// Get information about available configurations for each display.
 		INFOWARE_API_LINKAGE std::vector<std::vector<display_config_t>> available_display_configurations();
+
+		/// Get disk information for the volume that contains the current working directory.
+		INFOWARE_API_LINKAGE disk_info_t disk_info();
 	}  // namespace system
 }  // namespace iware
