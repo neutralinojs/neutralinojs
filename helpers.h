@@ -38,6 +38,7 @@ string normalizePath(string &path);
 string unNormalizePath(string &path);
 string getCurrentTimestamp();
 string jsonToString(const json &obj);
+bool strToInt(const string &s, int &out);
 
 #if defined(_WIN32)
 wstring str2wstr(const string &str);

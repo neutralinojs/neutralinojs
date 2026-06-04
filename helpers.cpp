@@ -179,6 +179,18 @@ string jsonToString(const json &obj) {
     return obj.dump(-1, ' ', false, json::error_handler_t::replace);
 }
 
+bool strToInt(const string &s, int &out) {
+    if(s.empty()) return false;
+    size_t pos = 0;
+    try {
+        out = stoi(s, &pos);
+        return pos == s.size();
+    }
+    catch(...) {
+        return false;
+    }
+}
+
 #if defined(_WIN32)
 wstring str2wstr(const string &str) {
     int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), (int)str.size(), nullptr, 0);

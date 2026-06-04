@@ -74,7 +74,8 @@ enum StatusCode {
     NE_CF_UNBLDCF,
     NE_CF_UNBPRCF,
     NE_CF_UNSUPMD,
-    NE_CF_UNBLWCF
+    NE_CF_UNBLWCF,
+    NE_CF_INVINTVAL
 };
 
 json makeMissingArgErrorPayload(const string& missingArg);
