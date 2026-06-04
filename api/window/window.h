@@ -167,6 +167,7 @@ json getSize(const json &input);
 json getPosition(const json &input);
 json setAlwaysOnTop(const json &input);
 json setBorderless(const json &input);
+json setSkipTaskbar(const json &input);
 json snapshot(const json &input);
 json setMainMenu(const json &input);
 json beginDrag(const json& input);

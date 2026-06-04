@@ -339,6 +339,24 @@ describe('window.spec: window namespace tests', () => {
         });
     });
 
+    describe('window.setSkipTaskbar', () => {
+        it('exports the function to the app', async () => {
+            runner.run(`
+                await __close(typeof Neutralino.window.setSkipTaskbar);
+            `);
+            assert.equal(runner.getOutput(), 'function');
+        });
+
+        it('works without throwing errors', async () => {
+            runner.run(`
+                await Neutralino.window.setSkipTaskbar(true);
+                await Neutralino.window.setSkipTaskbar(false);
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+    });
+
     describe('window.getSize', () => {
         it('returns size information', async () => {
             runner.run(`
