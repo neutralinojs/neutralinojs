@@ -561,10 +561,11 @@ void __addMacHIDDevices(vector<ConnectedDevice> &devices, set<string> &deviceKey
     if(deviceSet) {
         map<string, ConnectedDevice> selectedDevices;
         CFIndex deviceCount = CFSetGetCount(deviceSet);
-        vector<IOHIDDeviceRef> hidDevices(deviceCount);
-        CFSetGetValues(deviceSet, reinterpret_cast<const void **>(hidDevices.data()));
+        vector<const void*> hidDeviceValues(deviceCount);
+        CFSetGetValues(deviceSet, hidDeviceValues.data());
 
-        for(IOHIDDeviceRef hidDevice: hidDevices) {
+        for(const void *hidDeviceValue: hidDeviceValues) {
+            IOHIDDeviceRef hidDevice = static_cast<IOHIDDeviceRef>(const_cast<void*>(hidDeviceValue));
             ConnectedDevice device;
             device.name = __cfStringToString(static_cast<CFStringRef>(
                 IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDProductKey))
