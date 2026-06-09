@@ -53,6 +53,7 @@
 #include <infoware/system.hpp>
 #include <infoware/cpu.hpp>
 #include "api/computer/computer.h"
+#include "api/computer/connected_devices.h"
 #include "helpers.h"
 #include "api/window/window.h"
 #include "api/os/os.h"
@@ -410,6 +411,24 @@ json getDisplays(const json &input) {
         output["returnValue"].push_back(displayInfo);
         displayId++;
     }
+    output["success"] = true;
+    return output;
+}
+
+json getConnectedDevices(const json &input) {
+    json output;
+    output["returnValue"] = json::array();
+
+    const auto devices = computer::getConnectedDevices();
+    for(const auto &device: devices) {
+        output["returnValue"].push_back({
+            { "name", device.name },
+            { "type", device.type },
+            { "vendorId", device.vendorId },
+            { "productId", device.productId }
+        });
+    }
+
     output["success"] = true;
     return output;
 }

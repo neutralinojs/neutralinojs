@@ -124,6 +124,25 @@ describe('computer.spec: computer namespace tests', () => {
         });
     });
 
+    describe('computer.getConnectedDevices', () => {
+        it('returns connected input devices', async () => {
+            runner.run(`
+                let devices = await Neutralino.computer.getConnectedDevices();
+                await __close(JSON.stringify(devices));
+            `);
+            let devices = JSON.parse(runner.getOutput());
+            assert.ok(Array.isArray(devices));
+
+            if(devices.length > 0) {
+                let device = devices[0];
+                assert.ok(typeof device == 'object');
+                assert.ok(typeof device.name == 'string');
+                assert.ok(['MOUSE', 'KEYBOARD', 'HID', 'AUDIO'].includes(device.type));
+                assert.ok(typeof device.vendorId == 'string');
+                assert.ok(typeof device.productId == 'string');
+            }
+        });
+    });
 
     describe('computer.getMousePosition', () => {
         it('returns the current mouse cursor position and it is within screen bounds', async () => {
