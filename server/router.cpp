@@ -43,6 +43,7 @@ map<string, router::NativeMethod> methodMap = {
     // Neutralino.app
     {"app.exit", app::controllers::exit},
     {"app.killProcess", app::controllers::killProcess},
+    {"app.getProcessId", app::controllers::getProcessId},
     {"app.getConfig", app::controllers::getConfig},
     {"app.broadcast", app::controllers::broadcast},
     {"app.readProcessInput", app::controllers::readProcessInput},

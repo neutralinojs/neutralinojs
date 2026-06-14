@@ -42,6 +42,18 @@ describe('app.spec: app namespace tests', () => {
         });
     });
 
+    describe('app.getProcessId', () => {
+        it('returns the current process id', async () => {
+            runner.run(`
+                let info = await Neutralino.app.getProcessId();
+                await __close(JSON.stringify(info));
+            `);
+            const info = JSON.parse(runner.getOutput());
+            assert.ok(typeof info.pid === 'number');
+            assert.ok(info.pid > 0);
+        });
+    });
+
     describe('app.getConfig', () => {
         it('JSON object contains the right fields', async () => {
             runner.run(`
