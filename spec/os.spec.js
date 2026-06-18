@@ -395,6 +395,29 @@ describe('os.spec: os namespace tests', () => {
         });
     });
 
+    describe('os.getLocale', () => {
+        it('exports the function to the app', async () => {
+            runner.run(`
+                await __close(typeof Neutralino.os.getLocale);
+            `);
+            assert.equal(runner.getOutput(), 'function');
+        });
+
+        it('returns locale information', async () => {
+            runner.run(`
+                let info = await Neutralino.os.getLocale();
+                await __close(JSON.stringify(info));
+            `);
+            let info = JSON.parse(runner.getOutput());
+            assert.ok(typeof info == 'object');
+            assert.ok(typeof info.locale == 'string');
+            assert.ok(typeof info.language == 'string');
+            assert.ok(typeof info.region == 'string');
+            assert.ok(info.locale.length > 0);
+            assert.ok(info.language.length > 0);
+        });
+    });
+
     describe('os.showOpenDialog', () => {
         it('exports the function to the app', async () => {
             runner.run(`
