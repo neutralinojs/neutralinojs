@@ -72,7 +72,7 @@ json killProcess(const json &input) {
 
 json getProcessId(const json &input) {
     json output;
-    output["returnValue"]["pid"] = app::getProcessId();
+    output["returnValue"] = app::getProcessId();
     output["success"] = true;
     return output;
 }
