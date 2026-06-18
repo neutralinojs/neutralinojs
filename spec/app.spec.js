@@ -48,9 +48,9 @@ describe('app.spec: app namespace tests', () => {
                 let info = await Neutralino.app.getProcessId();
                 await __close(JSON.stringify(info));
             `);
-            const info = JSON.parse(runner.getOutput());
-            assert.ok(typeof info.pid === 'number');
-            assert.ok(info.pid > 0);
+            const pid = JSON.parse(runner.getOutput());
+            assert.ok(typeof pid === 'number');
+            assert.ok(pid > 0);
         });
     });
 
