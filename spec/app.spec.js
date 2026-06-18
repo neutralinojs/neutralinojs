@@ -45,8 +45,8 @@ describe('app.spec: app namespace tests', () => {
     describe('app.getProcessId', () => {
         it('returns the current process id', async () => {
             runner.run(`
-                let info = await Neutralino.app.getProcessId();
-                await __close(JSON.stringify(info));
+                let pid = await Neutralino.app.getProcessId();
+                await __close(JSON.stringify(pid));
             `);
             const pid = JSON.parse(runner.getOutput());
             assert.ok(typeof pid === 'number');
