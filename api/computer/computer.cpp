@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <sstream>
 #include <string>
-#include <algorithm>
 #include "helpers.h"
 #include "errors.h"
 
