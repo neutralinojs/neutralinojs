@@ -125,7 +125,7 @@ describe('computer.spec: computer namespace tests', () => {
     });
 
     describe('computer.getConnectedDevices', () => {
-        it('returns connected input devices', async () => {
+        it('returns connected devices', async () => {
             runner.run(`
                 let devices = await Neutralino.computer.getConnectedDevices();
                 await __close(JSON.stringify(devices));

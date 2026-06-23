@@ -45,6 +45,7 @@ if(WIN32)
     lib/tinyprocess/process_win.cpp
     lib/clip/clip_win.cpp
     lib/efsw/src/efsw/platform/win/*.cpp
+    lib/hidapi/windows/hid.c
     lib/postject/windows_dummy.res
   )
   list(APPEND SOURCES ${OS_SOURCES})
@@ -69,6 +70,7 @@ elseif(APPLE)
     lib/clip/clip_osx.mm
     lib/webview/macwindow.mm
     lib/efsw/src/efsw/platform/posix/*.cpp
+    lib/hidapi/mac/hid.c
   )
   list(APPEND SOURCES ${OS_SOURCES})
 
@@ -97,6 +99,7 @@ elseif(UNIX)
     lib/tinyprocess/process_unix.cpp
     lib/clip/clip_x11.cpp
     lib/efsw/src/efsw/platform/posix/*.cpp
+    lib/hidapi/linux/hid.c
   )
   list(APPEND SOURCES ${OS_SOURCES})
 
@@ -169,6 +172,7 @@ endif()
 target_include_directories(${PROJECT_NAME} PUBLIC 
   ${PROJECT_SOURCE_DIR}
   ${PROJECT_SOURCE_DIR}/lib
+  ${PROJECT_SOURCE_DIR}/lib/hidapi
   ${PROJECT_SOURCE_DIR}/lib/asio/include
   ${PROJECT_SOURCE_DIR}/lib/infoware/include
   ${PROJECT_SOURCE_DIR}/lib/efsw/include
@@ -214,13 +218,17 @@ elseif(APPLE)
     find_library(WebKit_FRAMEWORK WebKit)
     find_library(COCOA_FRAMEWORK Cocoa)
     find_library(IOKIT_FRAMEWORK IOKit)
+    find_library(COREFOUNDATION_FRAMEWORK CoreFoundation)
     find_library(COREAUDIO_FRAMEWORK CoreAudio)
+    find_library(AUDIOTOOLBOX_FRAMEWORK AudioToolbox)
     find_library(SCREENCAPTUREKIT_FRAMEWORK ScreenCaptureKit)
     target_link_libraries(${PROJECT_NAME} PRIVATE
       ${WebKit_FRAMEWORK}
       ${COCOA_FRAMEWORK}
       ${IOKIT_FRAMEWORK}
+      ${COREFOUNDATION_FRAMEWORK}
       ${COREAUDIO_FRAMEWORK}
+      ${AUDIOTOOLBOX_FRAMEWORK}
     )
     if(SCREENCAPTUREKIT_FRAMEWORK)
       target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -243,6 +251,7 @@ elseif(UNIX)
     pkg_check_modules(X11 REQUIRED x11)
     pkg_check_modules(XRANDR REQUIRED xrandr)
     pkg_check_modules(XTST REQUIRED xtst)
+    pkg_check_modules(UDEV REQUIRED libudev)
     
     target_include_directories(${PROJECT_NAME} PRIVATE 
       ${GTK3_INCLUDE_DIRS}
@@ -251,6 +260,7 @@ elseif(UNIX)
       ${X11_INCLUDE_DIRS}
       ${XRANDR_INCLUDE_DIRS}
       ${XTST_INCLUDE_DIRS}
+      ${UDEV_INCLUDE_DIRS}
     )
     
     target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -260,10 +270,12 @@ elseif(UNIX)
       ${X11_LIBRARIES}
       ${XRANDR_LIBRARIES}
       ${XTST_LIBRARIES}
+      ${UDEV_LIBRARIES}
       pthread
       png
       stdc++fs
       dl
+      m
     )
     target_compile_options(${PROJECT_NAME} PRIVATE 
       -no-pie

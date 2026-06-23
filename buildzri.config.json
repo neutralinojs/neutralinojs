@@ -7,6 +7,7 @@
         "*": [
             ".",
             "lib",
+            "lib/hidapi",
             "lib/asio/include",
             "lib/infoware/include",
             "lib/efsw/include",
@@ -35,28 +36,33 @@
         "linux": [
             "lib/tinyprocess/process_unix.cpp",
             "lib/clip/clip_x11.cpp",
-            "lib/efsw/src/efsw/platform/posix/*.cpp"
+            "lib/efsw/src/efsw/platform/posix/*.cpp",
+            "lib/hidapi/linux/hid.c"
         ],
         "darwin": [
             "lib/tinyprocess/process_unix.cpp",
             "lib/clip/clip_osx.mm",
             "lib/webview/macwindow.mm",
-            "lib/efsw/src/efsw/platform/posix/*.cpp"
+            "lib/efsw/src/efsw/platform/posix/*.cpp",
+            "lib/hidapi/mac/hid.c"
         ],
         "windows": [
             "lib/tinyprocess/process_win.cpp",
             "lib/clip/clip_win.cpp",
             "lib/efsw/src/efsw/platform/win/*.cpp",
+            "lib/hidapi/windows/hid.c",
             "lib/postject/windows_dummy.res"
         ]
     },
     "options": {
         "linux": [
             "$(pkg-config --cflags --libs gtk+-3.0 glib-2.0 xcb x11 xrandr)",
+            "$(pkg-config --cflags --libs libudev)",
             "-pthread",
             "-lpng",
             "-lstdc++fs",
             "-ldl",
+            "-lm",
             "-no-pie",
             "-Os"
         ],
@@ -65,7 +71,9 @@
             "-framework WebKit",
             "-framework Cocoa",
             "-framework IOKit",
+            "-framework CoreFoundation",
             "-framework CoreAudio",
+            "-framework AudioToolbox",
             "-Os",
             "-mmacosx-version-min=11.01"
         ],
