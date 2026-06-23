@@ -54,6 +54,31 @@ describe('app.spec: app namespace tests', () => {
         });
     });
 
+    describe('app.singleInstance', () => {
+        it('returns the current instance state', async () => {
+            runner.run(`
+                let instance = await Neutralino.app.singleInstance();
+                await __close(JSON.stringify(instance));
+            `);
+            const instance = JSON.parse(runner.getOutput());
+            assert.strictEqual(instance.success, true);
+            assert.strictEqual(typeof instance.isFirstInstance, 'boolean');
+        });
+
+        it('returns the same state for repeated calls in the same process', async () => {
+            runner.run(`
+                let instance1 = await Neutralino.app.singleInstance();
+                let instance2 = await Neutralino.app.singleInstance();
+                await __close(JSON.stringify({
+                    first: instance1.isFirstInstance,
+                    second: instance2.isFirstInstance
+                }));
+            `);
+            const instance = JSON.parse(runner.getOutput());
+            assert.strictEqual(instance.first, instance.second);
+        });
+    });
+
     describe('app.getConfig', () => {
         it('JSON object contains the right fields', async () => {
             runner.run(`
