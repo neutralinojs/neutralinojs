@@ -16,9 +16,27 @@
 #include "infoware/detail/memory.hpp"
 #include "infoware/detail/winstring.hpp"
 #include "infoware/gpu.hpp"
-#include "infoware/pci.hpp"
 #include <d3d11.h>
 #include <memory>
+
+
+static iware::gpu::vendor_t vendor_from_id(const UINT id) {
+	switch(id) {
+		case 0x8086:
+			return iware::gpu::vendor_t::intel;
+		case 0x1002:
+		case 0x1022:
+			return iware::gpu::vendor_t::amd;
+		case 0x10DE:
+			return iware::gpu::vendor_t::nvidia;
+		case 0x1414:
+			return iware::gpu::vendor_t::microsoft;
+		case 0x5143:
+			return iware::gpu::vendor_t::qualcomm;
+		default:
+			return iware::gpu::vendor_t::unknown;
+	}
+}
 
 
 static iware::gpu::vendor_t vendor_from_name(const std::string& v) {
@@ -54,10 +72,15 @@ std::vector<iware::gpu::device_properties_t> iware::gpu::device_properties() {
 		DXGI_ADAPTER_DESC adapterdesc;
 		adapter->GetDesc(&adapterdesc);
 
-		const auto device       = iware::pci::identify_device(adapterdesc.VendorId, adapterdesc.DeviceId);
-		std::string device_name = device.device_name ? device.device_name : iware::detail::narrowen_winstring(adapterdesc.Description);
+		std::string device_name = iware::detail::narrowen_winstring(adapterdesc.Description);
+		if(device_name == "Microsoft Basic Render Driver")
+			continue;
 
-		devices.push_back({vendor_from_name(device.vendor_name), device_name, adapterdesc.DedicatedVideoMemory, adapterdesc.SharedSystemMemory,
+		auto vendor             = vendor_from_id(adapterdesc.VendorId);
+		if(vendor == iware::gpu::vendor_t::unknown)
+			vendor = vendor_from_name(device_name);
+
+		devices.push_back({vendor, device_name, adapterdesc.DedicatedVideoMemory, 0,
 		                   // TODO: there's purportedly (https://en.wikipedia.org/wiki/Windows_Display_Driver_Model#WDDM_2.3)
 		                   //       a Windows API for getting the max clock, but I haven't been able to find it or use it
 		                   0});

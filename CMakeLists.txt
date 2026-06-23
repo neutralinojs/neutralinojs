@@ -145,6 +145,7 @@ if(WIN32)
     _WEBSOCKETPP_CPP11_STL_
     _HAS_STD_BYTE=0
     TRAY_WINAPI=1
+    INFOWARE_USE_D3D
     UNICODE
     _UNICODE
   )
@@ -206,6 +207,7 @@ if(WIN32)
       wbemuuid
       ntdll
       dwmapi
+      dxgi
       iphlpapi
       ws2_32
     )
