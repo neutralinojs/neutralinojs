@@ -12,7 +12,7 @@
 #include <windows.h>
 #endif
 
-#include "hidapi/hidapi.h"
+#include "hidapi.h"
 
 #define MA_ENABLE_ONLY_SPECIFIC_BACKENDS
 #if defined(_WIN32)
