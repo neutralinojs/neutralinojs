@@ -414,19 +414,15 @@ json getGPUInfo(const json &input) {
     output["returnValue"] = json::array();
     const auto devices = iware::gpu::device_properties();
 
-    unsigned int deviceId = 0;
     for(const auto &device: devices) {
         json gpuInfo = {
-            { "id", deviceId },
-            { "vendor", __getGPUVendor(device.vendor) },
             { "name", device.name },
-            { "memorySize", device.memory_size },
-            { "cacheSize", device.cache_size },
-            { "maxFrequency", device.max_frequency }
+            { "vendor", __getGPUVendor(device.vendor) },
+            { "vramSize", device.memory_size / (1024 * 1024) },
+            { "driverVersion", "" }
         };
 
         output["returnValue"].push_back(gpuInfo);
-        deviceId++;
     }
     output["success"] = true;
     return output;
