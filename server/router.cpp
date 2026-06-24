@@ -139,6 +139,8 @@ map<string, router::NativeMethod> methodMap = {
     {"os.open", os::controllers::open},
     {"os.getPath", os::controllers::getPath},
     {"os.trashItem", os::controllers::trashItem},
+    {"os.preventSleep", os::controllers::preventSleep},
+    {"os.allowSleep", os::controllers::allowSleep},
     // Neutralino.storage
     {"storage.setData", storage::controllers::setData},
     {"storage.getData", storage::controllers::getData},

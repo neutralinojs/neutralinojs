@@ -29,6 +29,7 @@ void exit(int code) {
     if(neuserver::isInitialized()) {
         neuserver::stop();
     }
+    os::cleanupSleepPrevention();
     if(settings::getMode() == settings::AppModeWindow) {
         os::cleanupTray();
         window::_close(code);
@@ -58,6 +59,7 @@ json exit(const json &input) {
 }
 
 json killProcess(const json &input) {
+    os::cleanupSleepPrevention();
     os::cleanupTray();
     #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
     kill(getpid(),SIGINT);

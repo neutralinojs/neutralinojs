@@ -44,6 +44,7 @@ void __wait() {
 }
 
 void __cleanup() {
+    os::cleanupSleepPrevention();
     os::cleanupTray();
 }
 

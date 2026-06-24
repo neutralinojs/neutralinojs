@@ -562,6 +562,32 @@ describe('os.spec: os namespace tests', () => {
         });       
     });
 
+    describe('os.preventSleep', () => {
+        it('exports the function to the app', async () => {
+            runner.run(`
+                await __close(typeof Neutralino.os.preventSleep);
+            `);
+            assert.equal(runner.getOutput(), 'function');
+        });
+    });
+
+    describe('os.allowSleep', () => {
+        it('exports the function to the app', async () => {
+            runner.run(`
+                await __close(typeof Neutralino.os.allowSleep);
+            `);
+            assert.equal(runner.getOutput(), 'function');
+        });
+
+        it('works when sleep prevention is inactive', async () => {
+            runner.run(`
+                await Neutralino.os.allowSleep();
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+    });
+
     describe('os.getPath', () => {
         it('returns a known directory', async () => {
             runner.run(`
