@@ -49,6 +49,7 @@ bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt);
 string getPath(const string &name);
 os::LocaleInfo getLocale();
 string getEnv(const string &key);
+bool setEnv(const string &key, const string &value);
 bool trashItem(const string &path);
 
 namespace controllers {
@@ -58,6 +59,7 @@ json spawnProcess(const json &input);
 json updateSpawnedProcess(const json &input);
 json getSpawnedProcesses(const json &input);
 json getEnv(const json &input);
+json setEnv(const json &input);
 json getEnvs(const json &input);
 json getLocale(const json &input);
 json showOpenDialog(const json &input);
