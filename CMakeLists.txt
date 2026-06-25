@@ -23,6 +23,23 @@ execute_process(
 # =========================
 # Source files
 # =========================
+set(HWINFO_SHARED OFF CACHE BOOL "Build hwinfo as a shared library" FORCE)
+set(HWINFO_STATIC ON CACHE BOOL "Build hwinfo as a static library" FORCE)
+set(BUILD_EXAMPLES OFF CACHE BOOL "Build hwinfo examples" FORCE)
+set(BUILD_TESTING OFF CACHE BOOL "Build hwinfo tests" FORCE)
+set(HWINFO_OS OFF CACHE BOOL "Enable hwinfo OS information" FORCE)
+set(HWINFO_MAINBOARD OFF CACHE BOOL "Enable hwinfo mainboard information" FORCE)
+set(HWINFO_CPU OFF CACHE BOOL "Enable hwinfo CPU information" FORCE)
+set(HWINFO_DISK ON CACHE BOOL "Enable hwinfo disk information" FORCE)
+set(HWINFO_RAM OFF CACHE BOOL "Enable hwinfo RAM information" FORCE)
+set(HWINFO_GPU OFF CACHE BOOL "Enable hwinfo GPU information" FORCE)
+set(HWINFO_BATTERY OFF CACHE BOOL "Enable hwinfo battery information" FORCE)
+set(HWINFO_NETWORK OFF CACHE BOOL "Enable hwinfo network information" FORCE)
+add_subdirectory(lib/hwinfo)
+if(TARGET hwinfo_disk)
+  target_compile_definitions(hwinfo_disk PUBLIC HWINFO_STATIC)
+endif()
+
 file (GLOB SOURCES *.cpp)
 file(GLOB_RECURSE RECURSIVE_SOURCES
   auth/*.cpp
@@ -198,6 +215,7 @@ if(WIN32)
       /ENTRY:wWinMainCRTStartup
     )
     target_link_libraries(${PROJECT_NAME} PRIVATE
+      lfreist-hwinfo::hwinfo
       ${PROJECT_SOURCE_DIR}/lib/webview/windows/WebView2LoaderStatic.lib
       gdi32
       version
@@ -215,6 +233,7 @@ elseif(APPLE)
     find_library(COCOA_FRAMEWORK Cocoa)
     find_library(SCREENCAPTUREKIT_FRAMEWORK ScreenCaptureKit)
     target_link_libraries(${PROJECT_NAME} PRIVATE
+      lfreist-hwinfo::hwinfo
       ${WebKit_FRAMEWORK}
       ${COCOA_FRAMEWORK}
     )
@@ -250,6 +269,7 @@ elseif(UNIX)
     )
     
     target_link_libraries(${PROJECT_NAME} PRIVATE
+      lfreist-hwinfo::hwinfo
       ${GTK3_LIBRARIES}
       ${GLIB2_LIBRARIES}
       ${XCB_LIBRARIES}

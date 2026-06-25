@@ -42,6 +42,9 @@
 
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -52,6 +55,8 @@
 
 #include <infoware/system.hpp>
 #include <infoware/cpu.hpp>
+#include <hwinfo/disk.h>
+#include <hwinfo/monitoring/disk.h>
 #include "api/computer/computer.h"
 #include "helpers.h"
 #include "api/window/window.h"
@@ -416,25 +421,36 @@ json getDisplays(const json &input) {
 
 json getDiskInfo(const json &input) {
     json output;
-    const auto diskInfo = iware::system::disk_info();
+    const auto disks = hwinfo::getAllDisks();
 
-    if(diskInfo.mount_point.empty() || diskInfo.total == 0) {
-        output["error"] = errors::makeErrorPayload(errors::NE_CO_UNLTODI);
+    for(const auto &disk: disks) {
+        const auto &mountPoints = disk.mount_points();
+        if(mountPoints.empty() || disk.size() == 0) {
+            continue;
+        }
+
+        const string mountPoint = mountPoints.front();
+        const uint64_t total = disk.size();
+        const uint64_t free = hwinfo::monitoring::disk::get_free_size(disk);
+        const uint64_t used = total >= free ? total - free : 0;
+        const double usedPercent = total > 0 ? (static_cast<double>(used) / static_cast<double>(total)) * 100.0 : 0.0;
+
+        json diskInfoRes = {
+            { "name", disk.model() },
+            { "mountPoint", mountPoint },
+            { "fileSystem", "" },
+            { "total", total },
+            { "used", used },
+            { "free", free },
+            { "usedPercent", usedPercent }
+        };
+
+        output["returnValue"] = diskInfoRes;
+        output["success"] = true;
         return output;
     }
 
-    json diskInfoRes = {
-        { "name", diskInfo.name },
-        { "mountPoint", diskInfo.mount_point },
-        { "fileSystem", diskInfo.file_system },
-        { "total", diskInfo.total },
-        { "used", diskInfo.used },
-        { "free", diskInfo.free },
-        { "usedPercent", diskInfo.used_percent }
-    };
-
-    output["returnValue"] = diskInfoRes;
-    output["success"] = true;
+    output["error"] = errors::makeErrorPayload(errors::NE_CO_UNLTODI);
     return output;
 }
 
