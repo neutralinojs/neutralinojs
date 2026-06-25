@@ -562,6 +562,26 @@ describe('os.spec: os namespace tests', () => {
         });       
     });
 
+    describe('os.openWith', () => {
+        it('exports the function to the app', async () => {
+            runner.run(`
+                await __close(typeof Neutralino.os.openWith);
+            `);
+            assert.equal(runner.getOutput(), 'function');
+        });
+
+        it('throws an error for missing args', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.os.openWith();
+                } catch (error) {
+                    __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+        });
+    });
+
     describe('os.getPath', () => {
         it('returns a known directory', async () => {
             runner.run(`

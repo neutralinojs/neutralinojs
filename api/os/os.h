@@ -43,6 +43,7 @@ struct ChildProcessOptions {
 bool isTrayInitialized();
 void cleanupTray();
 void open(const string &url);
+bool openWith(const string &filePath, const string &appPath);
 os::CommandResult execCommand(string command, const os::ChildProcessOptions &options = {});
 pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &options = {});
 bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt);
@@ -67,6 +68,7 @@ json showNotification(const json &input);
 json showMessageBox(const json &input);
 json setTray(const json &input);
 json open(const json &input);
+json openWith(const json &input);
 json getPath(const json &input);
 json trashItem(const json &input);
 
