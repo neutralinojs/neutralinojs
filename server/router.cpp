@@ -137,6 +137,7 @@ map<string, router::NativeMethod> methodMap = {
     {"os.showMessageBox", os::controllers::showMessageBox},
     {"os.setTray", os::controllers::setTray},
     {"os.open", os::controllers::open},
+    {"os.openWith", os::controllers::openWith},
     {"os.getPath", os::controllers::getPath},
     {"os.trashItem", os::controllers::trashItem},
     // Neutralino.storage

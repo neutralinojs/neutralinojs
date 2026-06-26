@@ -125,6 +125,71 @@ void open(const string &url) {
     #endif
 }
 
+bool openWith(const string &filePath, const string &appPath) {
+    #if defined(__linux__) || defined(__FreeBSD__)
+    vector<TinyProcessLib::Process::string_type> args = {
+        CONVSTR(appPath),
+        CONVSTR(filePath)
+    };
+    TinyProcessLib::Process *childProcess =
+        new TinyProcessLib::Process(args, CONVSTR(""), nullptr, nullptr, false);
+
+    bool started = childProcess->get_id() > 0;
+    if(!started) {
+        delete childProcess;
+        return false;
+    }
+
+    thread processThread([=]() {
+        childProcess->get_exit_status();
+        delete childProcess;
+    });
+    processThread.detach();
+
+    return true;
+    #elif defined(__APPLE__)
+    id workspace = ((id (*)(id, SEL))objc_msgSend)(
+        "NSWorkspace"_cls, "sharedWorkspace"_sel);
+    id nsFilePath = ((id (*)(id, SEL, const char *))objc_msgSend)(
+        "NSString"_cls, "stringWithUTF8String:"_sel, filePath.c_str());
+    id nsAppPath = ((id (*)(id, SEL, const char *))objc_msgSend)(
+        "NSString"_cls, "stringWithUTF8String:"_sel, appPath.c_str());
+    id fileURL = ((id (*)(id, SEL, id))objc_msgSend)(
+        "NSURL"_cls, "fileURLWithPath:"_sel, nsFilePath);
+    id appURL = ((id (*)(id, SEL, id))objc_msgSend)(
+        "NSURL"_cls, "fileURLWithPath:"_sel, nsAppPath);
+    id urls = ((id (*)(id, SEL, id))objc_msgSend)(
+        "NSArray"_cls, "arrayWithObject:"_sel, fileURL);
+    id configuration = ((id (*)(id, SEL))objc_msgSend)(
+        "NSDictionary"_cls, "dictionary"_sel);
+
+    return ((BOOL (*)(id, SEL, id, id, unsigned long, id, id *))objc_msgSend)(
+        workspace,
+        "openURLs:withApplicationAtURL:options:configuration:error:"_sel,
+        urls,
+        appURL,
+        0,
+        configuration,
+        nullptr);
+    #elif defined(_WIN32)
+    wstring app = helpers::str2wstr(appPath);
+    wstring params = L"\"" + helpers::str2wstr(filePath) + L"\"";
+
+    HINSTANCE result = ShellExecuteW(
+        nullptr,
+        L"open",
+        app.c_str(),
+        params.c_str(),
+        nullptr,
+        SW_SHOW
+    );
+
+    return reinterpret_cast<INT_PTR>(result) > 32;
+    #else
+    return false;
+    #endif
+}
+
 os::CommandResult execCommand(string command, const os::ChildProcessOptions &options) {
     #if defined(_WIN32)
     command = "cmd.exe /c \"" + command + "\"";
@@ -923,6 +988,26 @@ json open(const json &input) {
     string url = input["url"].get<string>();
     os::open(url);
     output["success"] = true;
+    return output;
+}
+
+json openWith(const json &input) {
+    json output;
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"filePath", "appPath"});
+    if(missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
+        return output;
+    }
+
+    string filePath = input["filePath"].get<string>();
+    string appPath = input["appPath"].get<string>();
+
+    if(os::openWith(filePath, appPath)) {
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_UNLOPEN, filePath);
+    }
     return output;
 }
 
