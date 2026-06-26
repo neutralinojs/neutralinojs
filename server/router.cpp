@@ -66,6 +66,7 @@ map<string, router::NativeMethod> methodMap = {
     {"window.exitFullScreen", window::controllers::exitFullScreen},
     {"window.focus", window::controllers::focus},
     {"window.setIcon", window::controllers::setIcon},
+    {"window.setBadge", window::controllers::setBadge},
     {"window.move", window::controllers::move},
     {"window.beginDrag", window::controllers::beginDrag},
     {"window.center", window::controllers::center},
