@@ -17,6 +17,7 @@
 #include <climits>
 #include <algorithm>
 #include <clocale>
+#include <cctype>
 
 #include "resources.h"
 #include "lib/tinyprocess/process.hpp"
@@ -32,6 +33,7 @@ extern char **environ;
 
 #if defined(__APPLE__)
 #include <objc/objc-runtime.h>
+#include <IOKit/pwr_mgt/IOPMLib.h>
 #endif
 
 #if defined(_WIN32)
@@ -78,6 +80,16 @@ bool useOtherTempTrayIcon = true;
 map<int, TinyProcessLib::Process*> spawnedProcesses;
 mutex spawnedProcessesLock;
 atomic<int> nextVirtualPid(0);
+mutex sleepPreventionLock;
+#if defined(_WIN32)
+atomic<bool> sleepPreventionActive(false);
+HANDLE sleepPreventionRequest = nullptr;
+#endif
+#if defined(__APPLE__)
+IOPMAssertionID sleepAssertionId = kIOPMNullAssertionID;
+#elif defined(__linux__)
+unsigned int sleepInhibitCookie = 0;
+#endif
 
 void __dispatchSpawnedProcessEvt(int virtualPid, const string &action, const json &data) {
     json evt;
@@ -89,6 +101,19 @@ void __dispatchSpawnedProcessEvt(int virtualPid, const string &action, const jso
 
 bool isTrayInitialized() {
     return trayInitialized;
+}
+
+string __extractFirstInteger(const string &input) {
+    string value = "";
+    for(char ch: input) {
+        if(isdigit(static_cast<unsigned char>(ch))) {
+            value += ch;
+        }
+        else if(!value.empty()) {
+            break;
+        }
+    }
+    return value;
 }
 
 void cleanupTray() {
@@ -109,6 +134,126 @@ void cleanupTray() {
     delete[] tray.icon;
     tray.icon = nullptr;
     #endif
+}
+
+bool preventSleep() {
+    lock_guard<mutex> guard(sleepPreventionLock);
+
+    #if defined(_WIN32)
+    if(sleepPreventionActive) {
+        return true;
+    }
+
+    REASON_CONTEXT reasonContext;
+    ZeroMemory(&reasonContext, sizeof(reasonContext));
+    reasonContext.Version = POWER_REQUEST_CONTEXT_VERSION;
+    reasonContext.Flags = POWER_REQUEST_CONTEXT_SIMPLE_STRING;
+    reasonContext.Reason.SimpleReasonString = (LPWSTR)L"Neutralinojs sleep prevention";
+
+    sleepPreventionRequest = PowerCreateRequest(&reasonContext);
+    if(sleepPreventionRequest == nullptr || sleepPreventionRequest == INVALID_HANDLE_VALUE) {
+        sleepPreventionRequest = nullptr;
+        return false;
+    }
+
+    if(!PowerSetRequest(sleepPreventionRequest, PowerRequestSystemRequired) ||
+        !PowerSetRequest(sleepPreventionRequest, PowerRequestDisplayRequired)) {
+        PowerClearRequest(sleepPreventionRequest, PowerRequestSystemRequired);
+        PowerClearRequest(sleepPreventionRequest, PowerRequestDisplayRequired);
+        CloseHandle(sleepPreventionRequest);
+        sleepPreventionRequest = nullptr;
+        return false;
+    }
+
+    sleepPreventionActive = true;
+    return true;
+    #elif defined(__APPLE__)
+    if(sleepAssertionId != kIOPMNullAssertionID) {
+        return true;
+    }
+    IOReturn status = IOPMAssertionCreateWithName(
+        kIOPMAssertionTypeNoIdleSleep,
+        kIOPMAssertionLevelOn,
+        CFSTR("Neutralinojs sleep prevention"),
+        &sleepAssertionId
+    );
+    if(status != kIOReturnSuccess) {
+        sleepAssertionId = kIOPMNullAssertionID;
+        return false;
+    }
+    return true;
+    #elif defined(__linux__)
+    if(sleepInhibitCookie != 0) {
+        return true;
+    }
+
+    os::CommandResult result = os::execCommand(
+        "gdbus call --session --dest org.freedesktop.ScreenSaver "
+        "--object-path /org/freedesktop/ScreenSaver "
+        "--method org.freedesktop.ScreenSaver.Inhibit Neutralinojs \"Long running task\""
+    );
+    if(result.exitCode != 0 || result.stdOut.empty()) {
+        return false;
+    }
+
+    string cookie = __extractFirstInteger(result.stdOut);
+    if(cookie.empty()) {
+        return false;
+    }
+    sleepInhibitCookie = static_cast<unsigned int>(stoul(cookie));
+    return sleepInhibitCookie != 0;
+    #else
+    return false;
+    #endif
+}
+
+bool allowSleep() {
+    #if defined(_WIN32)
+    lock_guard<mutex> guard(sleepPreventionLock);
+    if(!sleepPreventionActive) {
+        return true;
+    }
+
+    bool clearedSystemRequest = PowerClearRequest(sleepPreventionRequest, PowerRequestSystemRequired);
+    bool clearedDisplayRequest = PowerClearRequest(sleepPreventionRequest, PowerRequestDisplayRequired);
+    if(sleepPreventionRequest != nullptr) {
+        CloseHandle(sleepPreventionRequest);
+        sleepPreventionRequest = nullptr;
+    }
+    sleepPreventionActive = false;
+
+    return clearedSystemRequest && clearedDisplayRequest;
+    #else
+    lock_guard<mutex> guard(sleepPreventionLock);
+    #if defined(__APPLE__)
+    if(sleepAssertionId == kIOPMNullAssertionID) {
+        return true;
+    }
+    IOReturn status = IOPMAssertionRelease(sleepAssertionId);
+    sleepAssertionId = kIOPMNullAssertionID;
+    return status == kIOReturnSuccess;
+    #elif defined(__linux__)
+    if(sleepInhibitCookie == 0) {
+        return true;
+    }
+    os::CommandResult result = os::execCommand(
+        "gdbus call --session --dest org.freedesktop.ScreenSaver "
+        "--object-path /org/freedesktop/ScreenSaver "
+        "--method org.freedesktop.ScreenSaver.UnInhibit " + to_string(sleepInhibitCookie)
+    );
+    if(result.exitCode != 0) {
+        return false;
+    }
+    sleepInhibitCookie = 0;
+    return true;
+    #else
+    return true;
+    #endif
+    #endif
+}
+
+void cleanupSleepPrevention() {
+    os::allowSleep();
 }
 
 void open(const string &url) {
@@ -958,6 +1103,28 @@ json trashItem(const json &input) {
     }
     else {
         output["error"] = errors::makeErrorPayload(errors::NE_OS_UNLTRAS, path);
+    }
+    return output;
+}
+
+json preventSleep(const json &input) {
+    json output;
+    if(os::preventSleep()) {
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_UNLTOPS);
+    }
+    return output;
+}
+
+json allowSleep(const json &input) {
+    json output;
+    if(os::allowSleep()) {
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_UNLTOPS);
     }
     return output;
 }

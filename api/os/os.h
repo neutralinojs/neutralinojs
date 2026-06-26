@@ -42,6 +42,7 @@ struct ChildProcessOptions {
 
 bool isTrayInitialized();
 void cleanupTray();
+void cleanupSleepPrevention();
 void open(const string &url);
 os::CommandResult execCommand(string command, const os::ChildProcessOptions &options = {});
 pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &options = {});
@@ -50,6 +51,8 @@ string getPath(const string &name);
 os::LocaleInfo getLocale();
 string getEnv(const string &key);
 bool trashItem(const string &path);
+bool preventSleep();
+bool allowSleep();
 
 namespace controllers {
 
@@ -69,6 +72,8 @@ json setTray(const json &input);
 json open(const json &input);
 json getPath(const json &input);
 json trashItem(const json &input);
+json preventSleep(const json &input);
+json allowSleep(const json &input);
 
 } // namespace controllers
 
