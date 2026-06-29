@@ -43,6 +43,7 @@ map<string, router::NativeMethod> methodMap = {
     // Neutralino.app
     {"app.exit", app::controllers::exit},
     {"app.killProcess", app::controllers::killProcess},
+    {"app.getProcessId", app::controllers::getProcessId},
     {"app.getConfig", app::controllers::getConfig},
     {"app.broadcast", app::controllers::broadcast},
     {"app.readProcessInput", app::controllers::readProcessInput},
@@ -65,6 +66,7 @@ map<string, router::NativeMethod> methodMap = {
     {"window.exitFullScreen", window::controllers::exitFullScreen},
     {"window.focus", window::controllers::focus},
     {"window.setIcon", window::controllers::setIcon},
+    {"window.setBadge", window::controllers::setBadge},
     {"window.move", window::controllers::move},
     {"window.beginDrag", window::controllers::beginDrag},
     {"window.center", window::controllers::center},
@@ -129,6 +131,7 @@ map<string, router::NativeMethod> methodMap = {
     {"os.getSpawnedProcesses", os::controllers::getSpawnedProcesses},
     {"os.getEnv", os::controllers::getEnv},
     {"os.getEnvs", os::controllers::getEnvs},
+    {"os.getLocale", os::controllers::getLocale},
     {"os.showOpenDialog", os::controllers::showOpenDialog},
     {"os.showFolderDialog", os::controllers::showFolderDialog},
     {"os.showSaveDialog", os::controllers::showSaveDialog},

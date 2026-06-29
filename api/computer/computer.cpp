@@ -56,6 +56,7 @@
 
 #include <infoware/system.hpp>
 #include <infoware/cpu.hpp>
+#include <hwinfo/hwinfo.h>
 #include "api/computer/computer.h"
 #include "helpers.h"
 #include "api/window/window.h"
