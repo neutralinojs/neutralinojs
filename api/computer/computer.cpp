@@ -55,7 +55,7 @@
 
 #include <infoware/system.hpp>
 #include <infoware/cpu.hpp>
-#include <hwinfo/hwinfo.h>
+#include <hwinfo/disk.h>
 #include <hwinfo/monitoring/disk.h>
 #include "api/computer/computer.h"
 #include "helpers.h"
