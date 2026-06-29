@@ -26,6 +26,8 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_OS_TRAYIER: return "NE_OS_TRAYIER";
         case errors::NE_OS_INVKNPT: return "NE_OS_INVKNPT";
         case errors::NE_OS_UNLTRAS: return "NE_OS_UNLTRAS";
+        // app
+        case errors::NE_APP_UNLSEAS: return "NE_APP_UNLSEAS";
         // computer
         case errors::NE_CO_UNLTOSC: return "NE_CO_UNLTOSC";
         case errors::NE_CO_UNLTOMG: return "NE_CO_UNLTOMG";
@@ -96,6 +98,8 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_OS_TRAYIER: return "Unable to initialize the tray menu";
         case errors::NE_OS_INVKNPT: return "Invalid platform path name: %1";
         case errors::NE_OS_UNLTRAS: return "Unable to move %1 item to trash";
+        // app
+        case errors::NE_APP_UNLSEAS: return "Unable to set application auto-start";
         // computer
         case errors::NE_CO_UNLTOSC: return "Unable to set mouse cursor";
         case errors::NE_CO_UNLTONI: return "Unable to retrieve network interfaces";
