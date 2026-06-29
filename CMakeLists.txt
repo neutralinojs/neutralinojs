@@ -146,6 +146,8 @@ if(WIN32)
     _WEBSOCKETPP_CPP11_STL_
     _HAS_STD_BYTE=0
     TRAY_WINAPI=1
+    NOMINMAX
+    HWINFO_EXPORTS
     UNICODE
     _UNICODE
   )
@@ -210,6 +212,7 @@ if(WIN32)
       dwmapi
       iphlpapi
       ws2_32
+      advapi32
     )
 elseif(APPLE)
     # macOS
