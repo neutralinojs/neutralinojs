@@ -382,6 +382,19 @@ describe('os.spec: os namespace tests', () => {
             assert.equal(runner.getOutput(), 'hello');
         });
 
+        it('sets and propagates unicode environment variable values', async () => {
+            runner.run(`
+                const expected = '\\u3053\\u3093\\u306b\\u3061\\u306f';
+                await Neutralino.os.setEnv('NL_SET_ENV_UNICODE_TEST', expected);
+                const value = await Neutralino.os.getEnv('NL_SET_ENV_UNICODE_TEST');
+                const info = await Neutralino.os.execCommand(
+                    'node -e "process.stdout.write(process.env.NL_SET_ENV_UNICODE_TEST)"'
+                );
+                await __close(JSON.stringify([value, info.stdOut]));
+            `);
+            assert.deepEqual(JSON.parse(runner.getOutput()), ['こんにちは', 'こんにちは']);
+        });
+
         it('throws an error for missing args', async () => {
             runner.run(`
                 try {

@@ -387,7 +387,9 @@ string getEnv(const string &key) {
 
 bool setEnv(const string &key, const string &value) {
     #if defined(_WIN32)
-    return _putenv_s(key.c_str(), value.c_str()) == 0;
+    wstring wideKey = helpers::str2wstr(key);
+    wstring wideValue = helpers::str2wstr(value);
+    return _wputenv_s(wideKey.c_str(), wideValue.c_str()) == 0;
     #else
     return setenv(key.c_str(), value.c_str(), 1) == 0;
     #endif
