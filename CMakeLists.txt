@@ -23,24 +23,10 @@ execute_process(
 # =========================
 # Source files
 # =========================
-set(HWINFO_SHARED OFF CACHE BOOL "Build hwinfo as a shared library" FORCE)
-set(HWINFO_STATIC ON CACHE BOOL "Build hwinfo as a static library" FORCE)
-set(BUILD_EXAMPLES OFF CACHE BOOL "Build hwinfo examples" FORCE)
-set(BUILD_TESTING OFF CACHE BOOL "Build hwinfo tests" FORCE)
-set(HWINFO_OS OFF CACHE BOOL "Enable hwinfo OS information" FORCE)
-set(HWINFO_MAINBOARD OFF CACHE BOOL "Enable hwinfo mainboard information" FORCE)
-set(HWINFO_CPU OFF CACHE BOOL "Enable hwinfo CPU information" FORCE)
-set(HWINFO_DISK ON CACHE BOOL "Enable hwinfo disk information" FORCE)
-set(HWINFO_RAM OFF CACHE BOOL "Enable hwinfo RAM information" FORCE)
-set(HWINFO_GPU OFF CACHE BOOL "Enable hwinfo GPU information" FORCE)
-set(HWINFO_BATTERY OFF CACHE BOOL "Enable hwinfo battery information" FORCE)
-set(HWINFO_NETWORK OFF CACHE BOOL "Enable hwinfo network information" FORCE)
 set(HWINFO_SOURCE_DIR "${PROJECT_SOURCE_DIR}/lib/hwinfo")
-
-add_subdirectory("${HWINFO_SOURCE_DIR}" "${CMAKE_BINARY_DIR}/hwinfo")
-if(TARGET hwinfo_disk)
-  target_compile_definitions(hwinfo_disk PUBLIC HWINFO_STATIC)
-endif()
+set(HWINFO_DISK_SOURCES
+  ${HWINFO_SOURCE_DIR}/src/disk.cpp
+)
 
 file (GLOB SOURCES *.cpp)
 file(GLOB_RECURSE RECURSIVE_SOURCES
@@ -55,9 +41,8 @@ file(GLOB_RECURSE RECURSIVE_SOURCES
   lib/infoware/src/**/*.cpp
   lib/efsw/src/efsw/*.cpp
   lib/trashcan/trashcan.c
-  lib/hwinfo/src/*.cpp
 )
-list(APPEND SOURCES ${RECURSIVE_SOURCES})
+list(APPEND SOURCES ${RECURSIVE_SOURCES} ${HWINFO_DISK_SOURCES})
 
 if(WIN32)
   set(NEU_OS_NAME "win")
@@ -66,6 +51,8 @@ if(WIN32)
     lib/clip/clip_win.cpp
     lib/efsw/src/efsw/platform/win/*.cpp
     lib/postject/windows_dummy.res
+    lib/hwinfo/src/windows/disk.cpp
+    lib/hwinfo/src/windows/monitoring/disk.cpp
   )
   list(APPEND SOURCES ${OS_SOURCES})
   
@@ -89,6 +76,8 @@ elseif(APPLE)
     lib/clip/clip_osx.mm
     lib/webview/macwindow.mm
     lib/efsw/src/efsw/platform/posix/*.cpp
+    lib/hwinfo/src/apple/disk.cpp
+    lib/hwinfo/src/apple/monitoring/disk.cpp
   )
   list(APPEND SOURCES ${OS_SOURCES})
 
@@ -117,6 +106,8 @@ elseif(UNIX)
     lib/tinyprocess/process_unix.cpp
     lib/clip/clip_x11.cpp
     lib/efsw/src/efsw/platform/posix/*.cpp
+    lib/hwinfo/src/linux/disk.cpp
+    lib/hwinfo/src/linux/monitoring/disk.cpp
   )
   list(APPEND SOURCES ${OS_SOURCES})
 
@@ -164,6 +155,7 @@ if(WIN32)
   target_compile_definitions(${PROJECT_NAME} PRIVATE 
     _WEBSOCKETPP_CPP11_STL_
     _HAS_STD_BYTE=0
+    HWINFO_EXPORTS
     TRAY_WINAPI=1
     UNICODE
     _UNICODE
@@ -219,7 +211,6 @@ if(WIN32)
       /ENTRY:wWinMainCRTStartup
     )
     target_link_libraries(${PROJECT_NAME} PRIVATE
-      lfreist-hwinfo::hwinfo
       ${PROJECT_SOURCE_DIR}/lib/webview/windows/WebView2LoaderStatic.lib
       gdi32
       version
@@ -235,11 +226,14 @@ elseif(APPLE)
     # macOS
     find_library(WebKit_FRAMEWORK WebKit)
     find_library(COCOA_FRAMEWORK Cocoa)
+    find_library(COREFOUNDATION_FRAMEWORK CoreFoundation)
+    find_library(IOKIT_FRAMEWORK IOKit)
     find_library(SCREENCAPTUREKIT_FRAMEWORK ScreenCaptureKit)
     target_link_libraries(${PROJECT_NAME} PRIVATE
-      lfreist-hwinfo::hwinfo
       ${WebKit_FRAMEWORK}
       ${COCOA_FRAMEWORK}
+      ${COREFOUNDATION_FRAMEWORK}
+      ${IOKIT_FRAMEWORK}
     )
     if(SCREENCAPTUREKIT_FRAMEWORK)
       target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -273,7 +267,6 @@ elseif(UNIX)
     )
     
     target_link_libraries(${PROJECT_NAME} PRIVATE
-      lfreist-hwinfo::hwinfo
       ${GTK3_LIBRARIES}
       ${GLIB2_LIBRARIES}
       ${XCB_LIBRARIES}
