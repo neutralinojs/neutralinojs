@@ -55,6 +55,7 @@ file(GLOB_RECURSE RECURSIVE_SOURCES
   lib/infoware/src/**/*.cpp
   lib/efsw/src/efsw/*.cpp
   lib/trashcan/trashcan.c
+  lib/hwinfo/src/*.cpp
 )
 list(APPEND SOURCES ${RECURSIVE_SOURCES})
 
@@ -192,6 +193,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${PROJECT_SOURCE_DIR}/lib/infoware/include
   ${PROJECT_SOURCE_DIR}/lib/efsw/include
   ${PROJECT_SOURCE_DIR}/lib/efsw/src
+  ${PROJECT_SOURCE_DIR}/lib/hwinfo/include
 )
 if(WIN32)
   target_include_directories(${PROJECT_NAME} PRIVATE 

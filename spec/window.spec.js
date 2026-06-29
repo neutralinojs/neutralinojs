@@ -197,6 +197,36 @@ describe('window.spec: window namespace tests', () => {
         });
     });
 
+    describe('window.setBadge', () => {
+        it('exports the function to the app', async () => {
+            runner.run(`
+                await __close(typeof Neutralino.window.setBadge);
+            `);
+            assert.equal(runner.getOutput(), 'function');
+        });
+
+        it('sets and clears the badge without throwing errors', async () => {
+            runner.run(`
+                await Neutralino.window.setBadge(1);
+                await Neutralino.window.setBadge(0);
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
+
+        it('throws errors for missing params', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.window.setBadge();
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+        });
+    });
+
     describe('window.move', () => {
         it('moves the window without throwing errors', async () => {
             runner.run(`

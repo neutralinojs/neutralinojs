@@ -70,6 +70,13 @@ json killProcess(const json &input) {
     return nullptr;
 }
 
+json getProcessId(const json &input) {
+    json output;
+    output["returnValue"] = app::getProcessId();
+    output["success"] = true;
+    return output;
+}
+
 json getConfig(const json &input) {
     json output;
     output["returnValue"] = settings::getConfig();
