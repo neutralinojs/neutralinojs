@@ -133,6 +133,8 @@ describe('computer.spec: computer namespace tests', () => {
             let diskInfo = JSON.parse(runner.getOutput());
             assert.ok(typeof diskInfo == 'object');
             assert.ok(typeof diskInfo.name == 'string');
+            assert.ok(typeof diskInfo.vendor == 'string');
+            assert.ok(typeof diskInfo.model == 'string');
             assert.ok(typeof diskInfo.mountPoint == 'string');
             assert.ok(typeof diskInfo.fileSystem == 'string');
             assert.ok(typeof diskInfo.total == 'number');

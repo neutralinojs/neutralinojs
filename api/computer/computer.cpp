@@ -55,7 +55,7 @@
 
 #include <infoware/system.hpp>
 #include <infoware/cpu.hpp>
-#include <hwinfo/disk.h>
+#include <hwinfo/hwinfo.h>
 #include <hwinfo/monitoring/disk.h>
 #include "api/computer/computer.h"
 #include "helpers.h"
@@ -437,6 +437,8 @@ json getDiskInfo(const json &input) {
 
         json diskInfoRes = {
             { "name", disk.model() },
+            { "vendor", disk.vendor() },
+            { "model", disk.model() },
             { "mountPoint", mountPoint },
             { "fileSystem", "" },
             { "total", total },

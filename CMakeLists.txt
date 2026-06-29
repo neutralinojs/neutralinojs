@@ -36,33 +36,6 @@ set(HWINFO_GPU OFF CACHE BOOL "Enable hwinfo GPU information" FORCE)
 set(HWINFO_BATTERY OFF CACHE BOOL "Enable hwinfo battery information" FORCE)
 set(HWINFO_NETWORK OFF CACHE BOOL "Enable hwinfo network information" FORCE)
 set(HWINFO_SOURCE_DIR "${PROJECT_SOURCE_DIR}/lib/hwinfo")
-if(NOT EXISTS "${HWINFO_SOURCE_DIR}/CMakeLists.txt")
-  include(FetchContent)
-  FetchContent_Declare(
-    lfreist_hwinfo
-    GIT_REPOSITORY https://github.com/lfreist/hwinfo.git
-    GIT_TAG main
-  )
-  FetchContent_GetProperties(lfreist_hwinfo)
-  if(NOT lfreist_hwinfo_POPULATED)
-    FetchContent_Populate(lfreist_hwinfo)
-    set(HWINFO_SOURCE_DIR "${lfreist_hwinfo_SOURCE_DIR}")
-  endif()
-endif()
-
-set(HWINFO_PLATFORM_HEADER "${HWINFO_SOURCE_DIR}/include/hwinfo/platform.h")
-if(EXISTS "${HWINFO_PLATFORM_HEADER}")
-  file(READ "${HWINFO_PLATFORM_HEADER}" HWINFO_PLATFORM_CONTENT)
-  if(HWINFO_PLATFORM_CONTENT MATCHES "#ifdef HWINFO_EXPORTS")
-    string(REPLACE
-      "#ifdef HWINFO_EXPORTS\n#define HWINFO_API __declspec(dllexport)\n#else"
-      "#ifdef HWINFO_STATIC\n#define HWINFO_API\n#elif defined(HWINFO_EXPORTS)\n#define HWINFO_API __declspec(dllexport)\n#else"
-      HWINFO_PLATFORM_CONTENT
-      "${HWINFO_PLATFORM_CONTENT}"
-    )
-    file(WRITE "${HWINFO_PLATFORM_HEADER}" "${HWINFO_PLATFORM_CONTENT}")
-  endif()
-endif()
 
 add_subdirectory("${HWINFO_SOURCE_DIR}" "${CMAKE_BINARY_DIR}/hwinfo")
 if(TARGET hwinfo_disk)
