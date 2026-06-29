@@ -42,6 +42,7 @@
 #include "webview2.h"
 #include <wrl.h>
 #include <ShlObj_core.h>
+#include <ShObjIdl_core.h>
 #include <shellapi.h>
 #endif
 
@@ -1014,6 +1015,79 @@ void setIcon(const string &iconFile) {
     #endif
 }
 
+void setBadge(int count) {
+    if(count < 0) {
+        count = 0;
+    }
+
+    #if defined(__linux__) || defined(__FreeBSD__)
+    (void)count;
+
+    #elif defined(__APPLE__)
+    id app = ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls,
+                                            "sharedApplication"_sel);
+    id dockTile = ((id(*)(id, SEL))objc_msgSend)(app, "dockTile"_sel);
+    id label = nullptr;
+
+    if(count > 0) {
+        string badge = to_string(count);
+        label = ((id(*)(id, SEL, const char*))objc_msgSend)(
+            "NSString"_cls, "stringWithUTF8String:"_sel, badge.c_str());
+    }
+
+    ((void(*)(id, SEL, id))objc_msgSend)(dockTile, "setBadgeLabel:"_sel, label);
+
+    #elif defined(_WIN32)
+    Microsoft::WRL::ComPtr<ITaskbarList3> taskbar;
+    if(FAILED(CoCreateInstance(CLSID_TaskbarList, nullptr,
+                                    CLSCTX_INPROC_SERVER,
+                                    IID_PPV_ARGS(&taskbar))) ||
+        FAILED(taskbar->HrInit()))
+        return;
+
+    if(count == 0) {
+        taskbar->SetOverlayIcon(windowHandle, nullptr, L"");
+        return;
+    }
+
+    string badge = count > 99 ? "99+" : to_string(count);
+
+    GdiplusStartupInput gdiplusStartupInput;
+    ULONG_PTR gdiplusToken;
+    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, nullptr);
+
+    HICON icon = nullptr;
+    {
+        Bitmap bitmap(32, 32, PixelFormat32bppARGB);
+        Graphics graphics(&bitmap);
+        graphics.SetSmoothingMode(SmoothingModeAntiAlias);
+        graphics.Clear(Color(0, 0, 0, 0));
+
+        SolidBrush badgeBrush(Color(255, 255, 193, 7));
+        graphics.FillEllipse(&badgeBrush, 0, 0, 31, 31);
+
+        FontFamily fontFamily(L"Arial");
+        Font font(&fontFamily, badge.length() > 2 ? 11.0f : 16.0f, FontStyleBold, UnitPixel);
+        SolidBrush textBrush(Color(255, 255, 255, 255));
+        StringFormat format;
+        format.SetAlignment(StringAlignmentCenter);
+        format.SetLineAlignment(StringAlignmentCenter);
+
+        wstring wBadge = helpers::str2wstr(badge);
+        RectF rect(0.0f, badge.length() > 2 ? 1.0f : 0.0f, 32.0f, 31.0f);
+        graphics.DrawString(wBadge.c_str(), -1, &font, rect, &format, &textBrush);
+        bitmap.GetHICON(&icon);
+    }
+
+    taskbar->SetOverlayIcon(windowHandle, icon, L"badge");
+
+    if(icon) {
+        DestroyIcon(icon);
+    }
+    GdiplusShutdown(gdiplusToken);
+    #endif
+}
+
 void move(int x, int y) {
     #if defined(__linux__) || defined(__FreeBSD__)
     gtk_window_move(GTK_WINDOW(windowHandle), x, y);
@@ -1538,6 +1612,23 @@ json setIcon(const json &input) {
     }
     string icon = input["icon"].get<string>();
     window::setIcon(icon);
+    output["success"] = true;
+    return output;
+}
+
+json setBadge(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"count"}) ||
+        !input["count"].is_number_integer()) {
+        output["error"] = errors::makeMissingArgErrorPayload("count");
+        return output;
+    }
+    int count = input["count"].get<int>();
+    if(count < 0) {
+        output["error"] = errors::makeMissingArgErrorPayload("count");
+        return output;
+    }
+    window::setBadge(count);
     output["success"] = true;
     return output;
 }
