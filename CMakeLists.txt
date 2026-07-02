@@ -23,11 +23,6 @@ execute_process(
 # =========================
 # Source files
 # =========================
-set(HWINFO_SOURCE_DIR "${PROJECT_SOURCE_DIR}/lib/hwinfo")
-set(HWINFO_DISK_SOURCES
-  ${HWINFO_SOURCE_DIR}/src/disk.cpp
-)
-
 file (GLOB SOURCES *.cpp)
 file(GLOB_RECURSE RECURSIVE_SOURCES
   auth/*.cpp
@@ -40,9 +35,10 @@ file(GLOB_RECURSE RECURSIVE_SOURCES
   lib/clip/image.cpp
   lib/infoware/src/**/*.cpp
   lib/efsw/src/efsw/*.cpp
+  lib/hwinfo/src/*.cpp
   lib/trashcan/trashcan.c
 )
-list(APPEND SOURCES ${RECURSIVE_SOURCES} ${HWINFO_DISK_SOURCES})
+list(APPEND SOURCES ${RECURSIVE_SOURCES})
 
 if(WIN32)
   set(NEU_OS_NAME "win")

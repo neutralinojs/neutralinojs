@@ -66,6 +66,7 @@
 #include "helpers.h"
 #include "api/window/window.h"
 #include "api/os/os.h"
+#include "api/fs/fs.h"
 #include "lib/json/json.hpp"
 
 using namespace std;
@@ -158,69 +159,19 @@ pair<int, int> getMousePosition() {
     return make_pair(x, y);
 }
 
-string __trim(string value) {
-    value.erase(value.begin(), find_if(value.begin(), value.end(), [](unsigned char ch) {
-        return !isspace(ch);
-    }));
-    value.erase(find_if(value.rbegin(), value.rend(), [](unsigned char ch) {
-        return !isspace(ch);
-    }).base(), value.end());
-    return value;
-}
 
-bool __isHexString(const string &value) {
-    return all_of(value.begin(), value.end(), [](unsigned char ch) {
-        return isxdigit(ch);
-    });
-}
+string getMachineId() {
+    string machineId = "";
 
-bool __isZeroString(const string &value) {
-    return all_of(value.begin(), value.end(), [](char ch) {
-        return ch == '0';
-    });
-}
-
-bool __isLinuxMachineId(const string &value) {
-    return value.size() == 32 && __isHexString(value) && !__isZeroString(value);
-}
-
-bool __isMacOSUUID(const string &value) {
-    if(value.size() != 36) return false;
-
-    for(size_t i = 0; i < value.size(); ++i) {
-        bool isHyphenPosition = i == 8 || i == 13 || i == 18 || i == 23;
-        if(isHyphenPosition) {
-            if(value[i] != '-') return false;
-        }
-        else if(!isxdigit(static_cast<unsigned char>(value[i]))) {
-            return false;
+    #if defined(__linux__)
+    vector<string> paths = {"/etc/machine-id", "/var/lib/dbus/machine-id"};
+    for(const string &path: paths) {
+        fs::FileReaderResult fileReaderResult = fs::readFile(path);
+        if(fileReaderResult.status == errors::NE_ST_OK) {
+            machineId = helpers::trimRight(fileReaderResult.data);
+            break;
         }
     }
-    return true;
-}
-
-string __readLinuxMachineId(const char *path) {
-    ifstream file(path);
-    if(!file.is_open()) return "";
-
-    string machineId;
-    getline(file, machineId);
-    machineId = __trim(machineId);
-
-    if(!__isLinuxMachineId(machineId)) return "";
-
-    transform(machineId.begin(), machineId.end(), machineId.begin(), [](unsigned char ch) {
-        return static_cast<char>(tolower(ch));
-    });
-    return machineId;
-}
-
-string __getMachineId() {
-    #if defined(__linux__)
-    const auto etcMachineId = __readLinuxMachineId("/etc/machine-id");
-    if(!etcMachineId.empty()) return etcMachineId;
-
-    return __readLinuxMachineId("/var/lib/dbus/machine-id");
 
     #elif defined(__APPLE__)
     io_service_t service = IOServiceGetMatchingService(
@@ -230,7 +181,6 @@ string __getMachineId() {
         kIOMasterPortDefault,
         #endif
         IOServiceMatching("IOPlatformExpertDevice"));
-
     if(!service) return "";
 
     CFTypeRef uuidRef = IORegistryEntryCreateCFProperty(
@@ -240,14 +190,11 @@ string __getMachineId() {
         0);
 
     IOObjectRelease(service);
-
     if(!uuidRef) return "";
-
     if(CFGetTypeID(uuidRef) != CFStringGetTypeID()) {
         CFRelease(uuidRef);
         return "";
     }
-
     char buffer[64] = {0};
     bool success = CFStringGetCString(
         (CFStringRef)uuidRef,
@@ -256,13 +203,8 @@ string __getMachineId() {
         kCFStringEncodingUTF8);
 
     CFRelease(uuidRef);
-
     if(!success) return "";
-
-    const auto uuid = __trim(buffer);
-    if(!__isMacOSUUID(uuid)) return "";
-
-    return uuid;
+    machineId = buffer;
 
     #elif defined(_WIN32)
     HKEY hKey;
@@ -289,12 +231,9 @@ string __getMachineId() {
     RegCloseKey(hKey);
 
     if(status != ERROR_SUCCESS) return "";
-
-    return value;
-
-    #else
-    return "";
+    machineId = value;
     #endif
+    return machineId;
 }
 
 bool setMousePosition(int x, int y) {
@@ -563,40 +502,24 @@ json getDisplays(const json &input) {
     return output;
 }
 
-json getDiskInfo(const json &input) {
+json getDisks(const json &input) {
     json output;
+    output["returnValue"] = json::array();
     const auto disks = hwinfo::getAllDisks();
 
     for(const auto &disk: disks) {
-        const auto &mountPoints = disk.mount_points();
-        if(mountPoints.empty() || disk.size() == 0) {
-            continue;
-        }
-
-        const string mountPoint = mountPoints.front();
-        const uint64_t total = disk.size();
-        const uint64_t free = hwinfo::monitoring::disk::get_free_size(disk);
-        const uint64_t used = total >= free ? total - free : 0;
-        const double usedPercent = total > 0 ? (static_cast<double>(used) / static_cast<double>(total)) * 100.0 : 0.0;
-
-        json diskInfoRes = {
-            { "name", disk.model() },
+        json diskInfo = {
+            { "id", disk.id() },
             { "vendor", disk.vendor() },
             { "model", disk.model() },
-            { "mountPoint", mountPoint },
-            { "fileSystem", "" },
-            { "total", total },
-            { "used", used },
-            { "free", free },
-            { "usedPercent", usedPercent }
+            { "serial", disk.serial_number() },
+            { "mountPoint", (disk.mount_points().size() > 0 ? disk.mount_points().front() : "") },
+            { "total", disk.size() },
+            { "free", hwinfo::monitoring::disk::get_free_size(disk) }
         };
-
-        output["returnValue"] = diskInfoRes;
-        output["success"] = true;
-        return output;
+        output["returnValue"].push_back(diskInfo);
     }
-
-    output["error"] = errors::makeErrorPayload(errors::NE_CO_UNLTODI);
+    output["success"] = true;
     return output;
 }
 
@@ -658,13 +581,9 @@ json setMousePosition(const json &input) {
     return output;
 }
 
-json getUUID(const json &input) {
+json getMachineId(const json &input) {
     json output;
-
-    output["returnValue"] = {
-        { "uuid", computer::__getMachineId() }
-    };
-
+    output["returnValue"] = computer::getMachineId();
     output["success"] = true;
     return output;
 }

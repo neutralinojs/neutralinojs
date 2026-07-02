@@ -47,7 +47,7 @@ os::CommandResult execCommand(string command, const os::ChildProcessOptions &opt
 pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &options = {});
 bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt);
 string getPath(const string &name);
-os::LocaleInfo getLocale();
+os::LocaleInfo getLocaleInfo();
 string getEnv(const string &key);
 bool setEnv(const string &key, const string &value);
 bool trashItem(const string &path);
@@ -61,7 +61,7 @@ json getSpawnedProcesses(const json &input);
 json getEnv(const json &input);
 json setEnv(const json &input);
 json getEnvs(const json &input);
-json getLocale(const json &input);
+json getLocaleInfo(const json &input);
 json showOpenDialog(const json &input);
 json showFolderDialog(const json &input);
 json showSaveDialog(const json &input);
