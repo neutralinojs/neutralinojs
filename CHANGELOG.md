@@ -6,6 +6,17 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: computer
+- Add `computer.getDisks()` to retrieve information for each connected disk, including vendor, model, mount point, size, free space, and serial number.
+- Add `compuer.getMachineId()` to get the platform-specific unique machine identifier.
+
+### API: app
+- Add `app.getProcessId()` to retrieve the app's process identifier.
+
+### API: os
+- Add `os.setEnv(key, value)` to update process environment variables.
+- Add `os.getLocaleInfo()` to get the current locale information, including the full standard, unparsed locale, parsed region, and language.
+
 ## v6.8.0
 
 ### Core: new window policy
