@@ -361,6 +361,53 @@ describe('os.spec: os namespace tests', () => {
         });
     });
 
+    describe('os.setEnv', () => {
+        it('sets an environment variable value', async () => {
+            runner.run(`
+                await Neutralino.os.setEnv('NL_SET_ENV_TEST', 'hello');
+                let value = await Neutralino.os.getEnv('NL_SET_ENV_TEST');
+                await __close(value);
+            `);
+            assert.equal(runner.getOutput(), 'hello');
+        });
+
+        it('propagates the value to child processes', async () => {
+            runner.run(`
+                await Neutralino.os.setEnv('NL_SET_ENV_CHILD_TEST', 'hello');
+                let info = await Neutralino.os.execCommand(
+                    'node -e "process.stdout.write(process.env.NL_SET_ENV_CHILD_TEST)"'
+                );
+                await __close(info.stdOut);
+            `);
+            assert.equal(runner.getOutput(), 'hello');
+        });
+
+        it('sets and propagates unicode environment variable values', async () => {
+            runner.run(`
+                const expected = '\\u3053\\u3093\\u306b\\u3061\\u306f';
+                await Neutralino.os.setEnv('NL_SET_ENV_UNICODE_TEST', expected);
+                const value = await Neutralino.os.getEnv('NL_SET_ENV_UNICODE_TEST');
+                const info = await Neutralino.os.execCommand(
+                    'node -e "process.stdout.write(process.env.NL_SET_ENV_UNICODE_TEST)"'
+                );
+                await __close(JSON.stringify([value, info.stdOut]));
+            `);
+            assert.deepEqual(JSON.parse(runner.getOutput()), ['こんにちは', 'こんにちは']);
+        });
+
+        it('throws an error for missing args', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.os.setEnv('NL_SET_ENV_MISSING_VALUE');
+                }
+                catch(err) {
+                    await __close(err.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+        });
+    });
+
     describe('os.getEnvs', () => {
         it('returns all environment variables', async () => {
             runner.run(`
