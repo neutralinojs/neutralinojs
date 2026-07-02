@@ -87,6 +87,32 @@ void __dispatchSpawnedProcessEvt(int virtualPid, const string &action, const jso
     events::dispatch("spawnedProcess", evt);
 }
 
+os::LocaleInfo __parseLocaleInfo(string localeName) {
+    size_t encodingIndex = localeName.find('.');
+    if(encodingIndex != string::npos) {
+        localeName = localeName.substr(0, encodingIndex);
+    }
+
+    size_t modifierIndex = localeName.find('@');
+    if(modifierIndex != string::npos) {
+        localeName = localeName.substr(0, modifierIndex);
+    }
+
+    replace(localeName.begin(), localeName.end(), '_', '-');
+
+    os::LocaleInfo localeInfo;
+    localeInfo.locale = localeName;
+
+    vector<string> localeParts = helpers::split(localeName, '-');
+    if(localeParts.size() > 0) {
+        localeInfo.language = localeParts[0];
+    }
+    if(localeParts.size() > 1) {
+        localeInfo.region = localeParts[localeParts.size() - 1];
+    }
+    return localeInfo;
+}
+
 bool isTrayInitialized() {
     return trayInitialized;
 }
@@ -259,9 +285,8 @@ bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt) {
     return true;
 }
 
-string __getLocaleName() {
+os::LocaleInfo getLocaleInfo() {
     string locale;
-
     #if defined(_WIN32)
     wchar_t localeName[LOCALE_NAME_MAX_LENGTH] = {0};
     if(GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) > 0) {
@@ -296,38 +321,8 @@ string __getLocaleName() {
         const char *currentLocale = setlocale(LC_ALL, nullptr);
         locale = currentLocale == nullptr ? "" : string(currentLocale);
     }
-    return locale;
-}
 
-os::LocaleInfo __parseLocaleInfo(string localeName) {
-    size_t encodingIndex = localeName.find('.');
-    if(encodingIndex != string::npos) {
-        localeName = localeName.substr(0, encodingIndex);
-    }
-
-    size_t modifierIndex = localeName.find('@');
-    if(modifierIndex != string::npos) {
-        localeName = localeName.substr(0, modifierIndex);
-    }
-
-    replace(localeName.begin(), localeName.end(), '_', '-');
-
-    os::LocaleInfo localeInfo;
-    localeInfo.locale = localeName;
-
-    vector<string> localeParts = helpers::split(localeName, '-');
-    if(localeParts.size() > 0) {
-        localeInfo.language = localeParts[0];
-    }
-    if(localeParts.size() > 1) {
-        localeInfo.region = localeParts[localeParts.size() - 1];
-    }
-
-    return localeInfo;
-}
-
-os::LocaleInfo getLocale() {
-    return __parseLocaleInfo(__getLocaleName());
+    return __parseLocaleInfo(locale);
 }
 
 string getPath(const string &name) {
@@ -552,7 +547,7 @@ json setEnv(const json &input) {
         output["success"] = true;
     }
     else {
-        output["error"] = errors::makeErrorPayload(errors::NE_RT_NATRTER);
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_UNLTOUV);
     }
     return output;
 }
@@ -591,9 +586,9 @@ json getEnvs(const json &input) {
     return output;
 }
 
-json getLocale(const json &input) {
+json getLocaleInfo(const json &input) {
     json output;
-    os::LocaleInfo localeInfo = os::getLocale();
+    os::LocaleInfo localeInfo = os::getLocaleInfo();
 
     json retVal;
     retVal["locale"] = localeInfo.locale;
