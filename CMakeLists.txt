@@ -146,6 +146,8 @@ if(WIN32)
     _WEBSOCKETPP_CPP11_STL_
     _HAS_STD_BYTE=0
     TRAY_WINAPI=1
+    HWINFO_EXPORTS
+    NOMINMAX
     UNICODE
     _UNICODE
   )
@@ -215,10 +217,14 @@ elseif(APPLE)
     # macOS
     find_library(WebKit_FRAMEWORK WebKit)
     find_library(COCOA_FRAMEWORK Cocoa)
+    find_library(COREFOUNDATION_FRAMEWORK CoreFoundation)
     find_library(SCREENCAPTUREKIT_FRAMEWORK ScreenCaptureKit)
+    find_library(IOKIT_FRAMEWORK IOKit)
     target_link_libraries(${PROJECT_NAME} PRIVATE
       ${WebKit_FRAMEWORK}
       ${COCOA_FRAMEWORK}
+      ${COREFOUNDATION_FRAMEWORK}
+      ${IOKIT_FRAMEWORK}
     )
     if(SCREENCAPTUREKIT_FRAMEWORK)
       target_link_libraries(${PROJECT_NAME} PRIVATE

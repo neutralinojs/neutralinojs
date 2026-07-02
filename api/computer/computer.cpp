@@ -1,6 +1,10 @@
 #include <stdint.h>
+#include <algorithm>
+#include <cctype>
+#include <fstream>
 #include <sstream>
 #include <string>
+#include <iomanip>
 #include "helpers.h"
 #include "errors.h"
 
@@ -35,6 +39,7 @@
 #include <sys/sysctl.h>
 #include <CoreGraphics/CoreGraphics.h>
 #include <CoreFoundation/CoreFoundation.h>
+#include <IOKit/IOKitLib.h>
 #include <ifaddrs.h>
 #include <arpa/inet.h>
 #include <net/if.h>
@@ -147,6 +152,145 @@ pair<int, int> getMousePosition() {
     #endif
 
     return make_pair(x, y);
+}
+
+string __trim(string value) {
+    value.erase(value.begin(), find_if(value.begin(), value.end(), [](unsigned char ch) {
+        return !isspace(ch);
+    }));
+    value.erase(find_if(value.rbegin(), value.rend(), [](unsigned char ch) {
+        return !isspace(ch);
+    }).base(), value.end());
+    return value;
+}
+
+bool __isHexString(const string &value) {
+    return all_of(value.begin(), value.end(), [](unsigned char ch) {
+        return isxdigit(ch);
+    });
+}
+
+bool __isZeroString(const string &value) {
+    return all_of(value.begin(), value.end(), [](char ch) {
+        return ch == '0';
+    });
+}
+
+bool __isLinuxMachineId(const string &value) {
+    return value.size() == 32 && __isHexString(value) && !__isZeroString(value);
+}
+
+bool __isMacOSUUID(const string &value) {
+    if(value.size() != 36) return false;
+
+    for(size_t i = 0; i < value.size(); ++i) {
+        bool isHyphenPosition = i == 8 || i == 13 || i == 18 || i == 23;
+        if(isHyphenPosition) {
+            if(value[i] != '-') return false;
+        }
+        else if(!isxdigit(static_cast<unsigned char>(value[i]))) {
+            return false;
+        }
+    }
+    return true;
+}
+
+string __readLinuxMachineId(const char *path) {
+    ifstream file(path);
+    if(!file.is_open()) return "";
+
+    string machineId;
+    getline(file, machineId);
+    machineId = __trim(machineId);
+
+    if(!__isLinuxMachineId(machineId)) return "";
+
+    transform(machineId.begin(), machineId.end(), machineId.begin(), [](unsigned char ch) {
+        return static_cast<char>(tolower(ch));
+    });
+    return machineId;
+}
+
+string __getMachineId() {
+    #if defined(__linux__)
+    const auto etcMachineId = __readLinuxMachineId("/etc/machine-id");
+    if(!etcMachineId.empty()) return etcMachineId;
+
+    return __readLinuxMachineId("/var/lib/dbus/machine-id");
+
+    #elif defined(__APPLE__)
+    io_service_t service = IOServiceGetMatchingService(
+        #if defined(kIOMainPortDefault)
+        kIOMainPortDefault,
+        #else
+        kIOMasterPortDefault,
+        #endif
+        IOServiceMatching("IOPlatformExpertDevice"));
+
+    if(!service) return "";
+
+    CFTypeRef uuidRef = IORegistryEntryCreateCFProperty(
+        service,
+        CFSTR("IOPlatformUUID"),
+        kCFAllocatorDefault,
+        0);
+
+    IOObjectRelease(service);
+
+    if(!uuidRef) return "";
+
+    if(CFGetTypeID(uuidRef) != CFStringGetTypeID()) {
+        CFRelease(uuidRef);
+        return "";
+    }
+
+    char buffer[64] = {0};
+    bool success = CFStringGetCString(
+        (CFStringRef)uuidRef,
+        buffer,
+        sizeof(buffer),
+        kCFStringEncodingUTF8);
+
+    CFRelease(uuidRef);
+
+    if(!success) return "";
+
+    const auto uuid = __trim(buffer);
+    if(!__isMacOSUUID(uuid)) return "";
+
+    return uuid;
+
+    #elif defined(_WIN32)
+    HKEY hKey;
+
+    if(RegOpenKeyExA(
+        HKEY_LOCAL_MACHINE,
+        "SOFTWARE\\Microsoft\\Cryptography",
+        0,
+        KEY_READ,
+        &hKey) != ERROR_SUCCESS)
+        return "";
+
+    char value[256] = {0};
+    DWORD valueSize = sizeof(value);
+
+    const auto status = RegQueryValueExA(
+        hKey,
+        "MachineGuid",
+        nullptr,
+        nullptr,
+        reinterpret_cast<LPBYTE>(value),
+        &valueSize);
+
+    RegCloseKey(hKey);
+
+    if(status != ERROR_SUCCESS) return "";
+
+    return value;
+
+    #else
+    return "";
+    #endif
 }
 
 bool setMousePosition(int x, int y) {
@@ -468,6 +612,17 @@ json setMousePosition(const json &input) {
         output["error"] = errors::makeErrorPayload(errors::NE_CO_UNLTOSC);
         return output;
     }
+
+    output["success"] = true;
+    return output;
+}
+
+json getUUID(const json &input) {
+    json output;
+
+    output["returnValue"] = {
+        { "uuid", computer::__getMachineId() }
+    };
 
     output["success"] = true;
     return output;
