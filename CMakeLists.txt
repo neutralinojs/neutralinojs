@@ -23,6 +23,11 @@ execute_process(
 # =========================
 # Source files
 # =========================
+set(HWINFO_SOURCE_DIR "${PROJECT_SOURCE_DIR}/lib/hwinfo")
+set(HWINFO_DISK_SOURCES
+  ${HWINFO_SOURCE_DIR}/src/disk.cpp
+)
+
 file (GLOB SOURCES *.cpp)
 file(GLOB_RECURSE RECURSIVE_SOURCES
   auth/*.cpp
@@ -36,9 +41,8 @@ file(GLOB_RECURSE RECURSIVE_SOURCES
   lib/infoware/src/**/*.cpp
   lib/efsw/src/efsw/*.cpp
   lib/trashcan/trashcan.c
-  lib/hwinfo/src/*.cpp
 )
-list(APPEND SOURCES ${RECURSIVE_SOURCES})
+list(APPEND SOURCES ${RECURSIVE_SOURCES} ${HWINFO_DISK_SOURCES})
 
 if(WIN32)
   set(NEU_OS_NAME "win")
@@ -47,6 +51,8 @@ if(WIN32)
     lib/clip/clip_win.cpp
     lib/efsw/src/efsw/platform/win/*.cpp
     lib/postject/windows_dummy.res
+    lib/hwinfo/src/windows/disk.cpp
+    lib/hwinfo/src/windows/monitoring/disk.cpp
   )
   list(APPEND SOURCES ${OS_SOURCES})
   
@@ -70,6 +76,8 @@ elseif(APPLE)
     lib/clip/clip_osx.mm
     lib/webview/macwindow.mm
     lib/efsw/src/efsw/platform/posix/*.cpp
+    lib/hwinfo/src/apple/disk.cpp
+    lib/hwinfo/src/apple/monitoring/disk.cpp
   )
   list(APPEND SOURCES ${OS_SOURCES})
 
@@ -98,6 +106,8 @@ elseif(UNIX)
     lib/tinyprocess/process_unix.cpp
     lib/clip/clip_x11.cpp
     lib/efsw/src/efsw/platform/posix/*.cpp
+    lib/hwinfo/src/linux/disk.cpp
+    lib/hwinfo/src/linux/monitoring/disk.cpp
   )
   list(APPEND SOURCES ${OS_SOURCES})
 
@@ -145,6 +155,7 @@ if(WIN32)
   target_compile_definitions(${PROJECT_NAME} PRIVATE 
     _WEBSOCKETPP_CPP11_STL_
     _HAS_STD_BYTE=0
+    HWINFO_EXPORTS
     TRAY_WINAPI=1
     HWINFO_EXPORTS
     NOMINMAX
@@ -218,6 +229,7 @@ elseif(APPLE)
     find_library(WebKit_FRAMEWORK WebKit)
     find_library(COCOA_FRAMEWORK Cocoa)
     find_library(COREFOUNDATION_FRAMEWORK CoreFoundation)
+    find_library(IOKIT_FRAMEWORK IOKit)
     find_library(SCREENCAPTUREKIT_FRAMEWORK ScreenCaptureKit)
     find_library(IOKIT_FRAMEWORK IOKit)
     target_link_libraries(${PROJECT_NAME} PRIVATE
