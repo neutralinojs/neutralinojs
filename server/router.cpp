@@ -44,6 +44,7 @@ map<string, router::NativeMethod> methodMap = {
     {"app.exit", app::controllers::exit},
     {"app.killProcess", app::controllers::killProcess},
     {"app.getProcessId", app::controllers::getProcessId},
+    {"app.singleInstance", app::controllers::singleInstance},
     {"app.getConfig", app::controllers::getConfig},
     {"app.broadcast", app::controllers::broadcast},
     {"app.readProcessInput", app::controllers::readProcessInput},

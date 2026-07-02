@@ -12,12 +12,14 @@ namespace app {
 
 void exit(int code = 0);
 unsigned int getProcessId();
+bool singleInstance();
 
 namespace controllers {
 
 json exit(const json &input);
 json killProcess(const json &input);
 json getProcessId(const json &input);
+json singleInstance(const json &input);
 json getConfig(const json &input);
 json broadcast(const json &input);
 json readProcessInput(const json &input);
