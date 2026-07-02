@@ -673,13 +673,6 @@ json sendKey(const json &input) {
 
 json getNetworkInterfaces(const json &input) {
     json output;
-    output["returnValue"] = json::array();
-
-    bool excludeLoopback = false;
-    if(helpers::hasField(input, "excludeLoopback")) {
-        excludeLoopback = input["excludeLoopback"].get<bool>();
-    }
-
     json interfaces = json::object();
     #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
     struct ifaddrs *ifap, *ifa;
