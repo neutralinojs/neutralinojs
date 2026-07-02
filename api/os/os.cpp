@@ -385,6 +385,16 @@ string getEnv(const string &key) {
     #endif
 }
 
+bool setEnv(const string &key, const string &value) {
+    #if defined(_WIN32)
+    wstring wideKey = helpers::str2wstr(key);
+    wstring wideValue = helpers::str2wstr(value);
+    return _wputenv_s(wideKey.c_str(), wideValue.c_str()) == 0;
+    #else
+    return setenv(key.c_str(), value.c_str(), 1) == 0;
+    #endif
+}
+
 namespace controllers {
 
 vector<string> __extensionsToVector(const json &filters) {
@@ -525,6 +535,25 @@ json getEnv(const json &input) {
 
     output["returnValue"] = os::getEnv(key);
     output["success"] = true;
+    return output;
+}
+
+json setEnv(const json &input) {
+    json output;
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"key", "value"});
+    if(missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
+        return output;
+    }
+    string key = input["key"].get<string>();
+    string value = input["value"].get<string>();
+
+    if(os::setEnv(key, value)) {
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_RT_NATRTER);
+    }
     return output;
 }
 

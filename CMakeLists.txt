@@ -157,6 +157,8 @@ if(WIN32)
     _HAS_STD_BYTE=0
     HWINFO_EXPORTS
     TRAY_WINAPI=1
+    HWINFO_EXPORTS
+    NOMINMAX
     UNICODE
     _UNICODE
   )
@@ -229,6 +231,7 @@ elseif(APPLE)
     find_library(COREFOUNDATION_FRAMEWORK CoreFoundation)
     find_library(IOKIT_FRAMEWORK IOKit)
     find_library(SCREENCAPTUREKIT_FRAMEWORK ScreenCaptureKit)
+    find_library(IOKIT_FRAMEWORK IOKit)
     target_link_libraries(${PROJECT_NAME} PRIVATE
       ${WebKit_FRAMEWORK}
       ${COCOA_FRAMEWORK}
