@@ -100,6 +100,5 @@ namespace iware {
 
 		/// Get information about available configurations for each display.
 		INFOWARE_API_LINKAGE std::vector<std::vector<display_config_t>> available_display_configurations();
-
 	}  // namespace system
 }  // namespace iware
