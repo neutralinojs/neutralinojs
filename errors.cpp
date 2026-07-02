@@ -54,6 +54,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_FS_CHWNERR: return "NE_FS_CHWNERR";
         // window
         case errors::NE_WI_UNBSWSR: return "NE_WI_UNBSWSR";
+        case errors::NE_WI_INVOPAC: return "NE_WI_INVOPAC";
         // router
         case errors::NE_RT_INVTOKN: return "NE_RT_INVTOKN";
         case errors::NE_RT_APIPRME: return "NE_RT_APIPRME";
@@ -125,6 +126,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_FS_CHWNERR: return "Unable to change ownership for %1";
         // window
         case errors::NE_WI_UNBSWSR: return "Unable to save window screenshot to %1";
+        case errors::NE_WI_INVOPAC: return "Invalid window opacity value: %1";
         // router
         case errors::NE_RT_INVTOKN: return "Invalid or expired NL_TOKEN value from client";
         case errors::NE_RT_APIPRME: return "Missing permission to access Native API";
