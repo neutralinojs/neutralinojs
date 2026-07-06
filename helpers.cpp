@@ -38,6 +38,14 @@ vector<string> splitTwo(const string &s, char delim) {
     return split(s, delim, 2);
 }
 
+string trimRight(string &s) {
+    s.erase(find_if(s.rbegin(), s.rend(),
+        [](unsigned char c) {
+            return !isspace(c);
+    }).base(), s.end());
+    return s;
+}
+
 string generateToken() {
     static const string characters =
         "-_"

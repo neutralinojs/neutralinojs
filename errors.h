@@ -26,6 +26,7 @@ enum StatusCode {
     NE_OS_TRAYIER,
     NE_OS_INVKNPT,
     NE_OS_UNLTRAS,
+    NE_OS_UNLTOUV,
     // app
     NE_APP_UNLSEAS,
     // computer
@@ -33,6 +34,7 @@ enum StatusCode {
     NE_CO_UNLTOMG,
     NE_CO_UNLTONI,
     NE_CO_UNLTOSK,
+    NE_CO_UNLTODI,
     // extensions
     NE_EX_EXTNOTC,
     // filesystem

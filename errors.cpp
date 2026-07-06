@@ -26,6 +26,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_OS_TRAYIER: return "NE_OS_TRAYIER";
         case errors::NE_OS_INVKNPT: return "NE_OS_INVKNPT";
         case errors::NE_OS_UNLTRAS: return "NE_OS_UNLTRAS";
+        case errors::NE_OS_UNLTOUV: return "NE_OS_UNLTOUV";
         // app
         case errors::NE_APP_UNLSEAS: return "NE_APP_UNLSEAS";
         // computer
@@ -33,6 +34,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_CO_UNLTOMG: return "NE_CO_UNLTOMG";
         case errors::NE_CO_UNLTONI: return "NE_CO_UNLTONI";
         case errors::NE_CO_UNLTOSK: return "NE_CO_UNLTOSK";
+        case errors::NE_CO_UNLTODI: return "NE_CO_UNLTODI";
         // extensions
         case errors::NE_EX_EXTNOTC: return "NE_EX_EXTNOTC";
         // filesystem
@@ -98,6 +100,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_OS_TRAYIER: return "Unable to initialize the tray menu";
         case errors::NE_OS_INVKNPT: return "Invalid platform path name: %1";
         case errors::NE_OS_UNLTRAS: return "Unable to move %1 item to trash";
+        case errors::NE_OS_UNLTOUV: return "Unable to set environment variable";
         // app
         case errors::NE_APP_UNLSEAS: return "Unable to set application auto-start";
         // computer
@@ -105,6 +108,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_CO_UNLTONI: return "Unable to retrieve network interfaces";
         case errors::NE_CO_UNLTOMG: return "Unable to set mouse grabbing";
         case errors::NE_CO_UNLTOSK: return "Unable to send keys";
+        case errors::NE_CO_UNLTODI: return "Unable to retrieve disk information";
         // extensions
         case errors::NE_EX_EXTNOTC: return "%1 is not connected yet";
         // filesystem

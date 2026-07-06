@@ -1,6 +1,10 @@
 #include <stdint.h>
+#include <algorithm>
+#include <cctype>
+#include <fstream>
 #include <sstream>
 #include <string>
+#include <iomanip>
 #include "helpers.h"
 #include "errors.h"
 
@@ -35,6 +39,7 @@
 #include <sys/sysctl.h>
 #include <CoreGraphics/CoreGraphics.h>
 #include <CoreFoundation/CoreFoundation.h>
+#include <IOKit/IOKitLib.h>
 #include <ifaddrs.h>
 #include <arpa/inet.h>
 #include <net/if.h>
@@ -42,6 +47,9 @@
 
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
 #include <windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -52,11 +60,13 @@
 
 #include <infoware/system.hpp>
 #include <infoware/cpu.hpp>
-#include <hwinfo/hwinfo.h>
+#include <hwinfo/disk.h>
+#include <hwinfo/monitoring/disk.h>
 #include "api/computer/computer.h"
 #include "helpers.h"
 #include "api/window/window.h"
 #include "api/os/os.h"
+#include "api/fs/fs.h"
 #include "lib/json/json.hpp"
 
 using namespace std;
@@ -147,6 +157,83 @@ pair<int, int> getMousePosition() {
     #endif
 
     return make_pair(x, y);
+}
+
+
+string getMachineId() {
+    string machineId = "";
+
+    #if defined(__linux__)
+    vector<string> paths = {"/etc/machine-id", "/var/lib/dbus/machine-id"};
+    for(const string &path: paths) {
+        fs::FileReaderResult fileReaderResult = fs::readFile(path);
+        if(fileReaderResult.status == errors::NE_ST_OK) {
+            machineId = helpers::trimRight(fileReaderResult.data);
+            break;
+        }
+    }
+
+    #elif defined(__APPLE__)
+    io_service_t service = IOServiceGetMatchingService(
+        #if defined(kIOMainPortDefault)
+        kIOMainPortDefault,
+        #else
+        kIOMasterPortDefault,
+        #endif
+        IOServiceMatching("IOPlatformExpertDevice"));
+    if(!service) return "";
+
+    CFTypeRef uuidRef = IORegistryEntryCreateCFProperty(
+        service,
+        CFSTR("IOPlatformUUID"),
+        kCFAllocatorDefault,
+        0);
+
+    IOObjectRelease(service);
+    if(!uuidRef) return "";
+    if(CFGetTypeID(uuidRef) != CFStringGetTypeID()) {
+        CFRelease(uuidRef);
+        return "";
+    }
+    char buffer[64] = {0};
+    bool success = CFStringGetCString(
+        (CFStringRef)uuidRef,
+        buffer,
+        sizeof(buffer),
+        kCFStringEncodingUTF8);
+
+    CFRelease(uuidRef);
+    if(!success) return "";
+    machineId = buffer;
+
+    #elif defined(_WIN32)
+    HKEY hKey;
+
+    if(RegOpenKeyExA(
+        HKEY_LOCAL_MACHINE,
+        "SOFTWARE\\Microsoft\\Cryptography",
+        0,
+        KEY_READ,
+        &hKey) != ERROR_SUCCESS)
+        return "";
+
+    char value[256] = {0};
+    DWORD valueSize = sizeof(value);
+
+    const auto status = RegQueryValueExA(
+        hKey,
+        "MachineGuid",
+        nullptr,
+        nullptr,
+        reinterpret_cast<LPBYTE>(value),
+        &valueSize);
+
+    RegCloseKey(hKey);
+
+    if(status != ERROR_SUCCESS) return "";
+    machineId = value;
+    #endif
+    return machineId;
 }
 
 bool setMousePosition(int x, int y) {
@@ -415,6 +502,27 @@ json getDisplays(const json &input) {
     return output;
 }
 
+json getDisks(const json &input) {
+    json output;
+    output["returnValue"] = json::array();
+    const auto disks = hwinfo::getAllDisks();
+
+    for(const auto &disk: disks) {
+        json diskInfo = {
+            { "id", disk.id() },
+            { "vendor", disk.vendor() },
+            { "model", disk.model() },
+            { "serial", disk.serial_number() },
+            { "mountPoint", (disk.mount_points().size() > 0 ? disk.mount_points().front() : "") },
+            { "total", disk.size() },
+            { "free", hwinfo::monitoring::disk::get_free_size(disk) }
+        };
+        output["returnValue"].push_back(diskInfo);
+    }
+    output["success"] = true;
+    return output;
+}
+
 json getMousePosition(const json &input) {
     json output;
     auto pos = computer::getMousePosition();
@@ -469,6 +577,13 @@ json setMousePosition(const json &input) {
         return output;
     }
 
+    output["success"] = true;
+    return output;
+}
+
+json getMachineId(const json &input) {
+    json output;
+    output["returnValue"] = computer::getMachineId();
     output["success"] = true;
     return output;
 }
