@@ -17,6 +17,7 @@ namespace controllers {
 
 json exit(const json &input);
 json killProcess(const json &input);
+json getProcessId(const json &input);
 json getConfig(const json &input);
 json broadcast(const json &input);
 json readProcessInput(const json &input);

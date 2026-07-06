@@ -1,6 +1,11 @@
 #include <stdint.h>
+#include <algorithm>
+#include <cctype>
+#include <fstream>
+#include <sstream>
 #include <string>
 #include <algorithm>
+#include <iomanip>
 #include "helpers.h"
 #include "errors.h"
 
@@ -13,6 +18,10 @@
 #include <X11/Xlib.h>
 #include <X11/extensions/XTest.h>
 #include <cstdlib>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <linux/if_packet.h>
 
 #elif defined(__FreeBSD__)
 #include <unistd.h>
@@ -20,6 +29,10 @@
 #include <sys/sysctl.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/XTest.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <net/if_dl.h>
 
 #elif defined(__APPLE__)
 #include <unistd.h>
@@ -27,20 +40,35 @@
 #include <sys/sysctl.h>
 #include <CoreGraphics/CoreGraphics.h>
 #include <CoreFoundation/CoreFoundation.h>
+#include <IOKit/IOKitLib.h>
+#include <ifaddrs.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <net/if_dl.h>
 
 #elif defined(_WIN32)
 #define _WINSOCKAPI_
-#include <windows.h>
+#ifndef NOMINMAX
+#define NOMINMAX
 #endif
-
+#include <windows.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <iphlpapi.h>
+#pragma comment(lib, "iphlpapi.lib")
+#pragma comment(lib, "ws2_32.lib")
+#endif
 
 #include <infoware/system.hpp>
 #include <infoware/cpu.hpp>
 #include <infoware/gpu.hpp>
+#include <hwinfo/disk.h>
+#include <hwinfo/monitoring/disk.h>
 #include "api/computer/computer.h"
 #include "helpers.h"
 #include "api/window/window.h"
 #include "api/os/os.h"
+#include "api/fs/fs.h"
 #include "lib/json/json.hpp"
 
 using namespace std;
@@ -131,6 +159,83 @@ pair<int, int> getMousePosition() {
     #endif
 
     return make_pair(x, y);
+}
+
+
+string getMachineId() {
+    string machineId = "";
+
+    #if defined(__linux__)
+    vector<string> paths = {"/etc/machine-id", "/var/lib/dbus/machine-id"};
+    for(const string &path: paths) {
+        fs::FileReaderResult fileReaderResult = fs::readFile(path);
+        if(fileReaderResult.status == errors::NE_ST_OK) {
+            machineId = helpers::trimRight(fileReaderResult.data);
+            break;
+        }
+    }
+
+    #elif defined(__APPLE__)
+    io_service_t service = IOServiceGetMatchingService(
+        #if defined(kIOMainPortDefault)
+        kIOMainPortDefault,
+        #else
+        kIOMasterPortDefault,
+        #endif
+        IOServiceMatching("IOPlatformExpertDevice"));
+    if(!service) return "";
+
+    CFTypeRef uuidRef = IORegistryEntryCreateCFProperty(
+        service,
+        CFSTR("IOPlatformUUID"),
+        kCFAllocatorDefault,
+        0);
+
+    IOObjectRelease(service);
+    if(!uuidRef) return "";
+    if(CFGetTypeID(uuidRef) != CFStringGetTypeID()) {
+        CFRelease(uuidRef);
+        return "";
+    }
+    char buffer[64] = {0};
+    bool success = CFStringGetCString(
+        (CFStringRef)uuidRef,
+        buffer,
+        sizeof(buffer),
+        kCFStringEncodingUTF8);
+
+    CFRelease(uuidRef);
+    if(!success) return "";
+    machineId = buffer;
+
+    #elif defined(_WIN32)
+    HKEY hKey;
+
+    if(RegOpenKeyExA(
+        HKEY_LOCAL_MACHINE,
+        "SOFTWARE\\Microsoft\\Cryptography",
+        0,
+        KEY_READ,
+        &hKey) != ERROR_SUCCESS)
+        return "";
+
+    char value[256] = {0};
+    DWORD valueSize = sizeof(value);
+
+    const auto status = RegQueryValueExA(
+        hKey,
+        "MachineGuid",
+        nullptr,
+        nullptr,
+        reinterpret_cast<LPBYTE>(value),
+        &valueSize);
+
+    RegCloseKey(hKey);
+
+    if(status != ERROR_SUCCESS) return "";
+    machineId = value;
+    #endif
+    return machineId;
 }
 
 bool setMousePosition(int x, int y) {
@@ -441,6 +546,27 @@ json getDisplays(const json &input) {
     return output;
 }
 
+json getDisks(const json &input) {
+    json output;
+    output["returnValue"] = json::array();
+    const auto disks = hwinfo::getAllDisks();
+
+    for(const auto &disk: disks) {
+        json diskInfo = {
+            { "id", disk.id() },
+            { "vendor", disk.vendor() },
+            { "model", disk.model() },
+            { "serial", disk.serial_number() },
+            { "mountPoint", (disk.mount_points().size() > 0 ? disk.mount_points().front() : "") },
+            { "total", disk.size() },
+            { "free", hwinfo::monitoring::disk::get_free_size(disk) }
+        };
+        output["returnValue"].push_back(diskInfo);
+    }
+    output["success"] = true;
+    return output;
+}
+
 json getMousePosition(const json &input) {
     json output;
     auto pos = computer::getMousePosition();
@@ -467,13 +593,15 @@ json getHostname(const json &input) {
         hostname = helpers::wstr2str(hostnameW);
     }
     #else
-    char hostnameBuffer[256] = { 0 };
+    char hostnameBuffer[255];
     if(gethostname(hostnameBuffer, sizeof(hostnameBuffer)) == 0) {
         hostname = string(hostnameBuffer);
     }
     #endif
 
     output["returnValue"] = hostname;
+    output["success"] = true;
+    return output;
 }
 
 json setMousePosition(const json &input) {
@@ -497,6 +625,13 @@ json setMousePosition(const json &input) {
     return output;
 }
 
+json getMachineId(const json &input) {
+    json output;
+    output["returnValue"] = computer::getMachineId();
+    output["success"] = true;
+    return output;
+}
+
 json setMouseGrabbing(const json &input) {
     json output;
 
@@ -515,7 +650,6 @@ json setMouseGrabbing(const json &input) {
 
 json sendKey(const json &input) {
     json output;
-    
     const auto missingRequiredField = helpers::missingRequiredField(input, {"key"});
     if(missingRequiredField) {
         output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
@@ -524,7 +658,7 @@ json sendKey(const json &input) {
 
     int key = input["key"].get<int>();
     computer::SendKeyState state = computer::SendKeyStatePress;
-    
+
     if(helpers::hasField(input, "state")) {
         string st = input["state"].get<string>();
         if(st == "press") state = computer::SendKeyStatePress;
@@ -537,6 +671,139 @@ json sendKey(const json &input) {
         return output;
     }
 
+    output["success"] = true;
+    return output;
+}
+
+json getNetworkInterfaces(const json &input) {
+    json output;
+    json interfaces = json::object();
+    #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
+    struct ifaddrs *ifap, *ifa;
+    if(getifaddrs(&ifap) == -1) {
+        output["error"] = errors::makeErrorPayload(errors::NE_CO_UNLTONI);
+        return output;
+    }
+
+    for(ifa = ifap; ifa != nullptr; ifa = ifa->ifa_next) {
+        if(!ifa->ifa_addr || (ifa->ifa_addr->sa_family != AF_INET && ifa->ifa_addr->sa_family != AF_INET6)) 
+            continue;
+    
+        json interfaceInfo = {
+            { "isInternal", (ifa->ifa_flags & IFF_LOOPBACK) != 0 }
+        };
+
+        if(ifa->ifa_addr->sa_family == AF_INET) {
+            char addr[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, &((struct sockaddr_in *)ifa->ifa_addr)->sin_addr, addr, sizeof(addr));
+            interfaceInfo["address"] = string(addr);
+            interfaceInfo["family"] = "ipv4";
+        }
+        else if(ifa->ifa_addr->sa_family == AF_INET6) {
+            char addr[INET6_ADDRSTRLEN];
+            inet_ntop(AF_INET6, &((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr, addr, sizeof(addr));
+            interfaceInfo["address"] = string(addr);
+            interfaceInfo["family"] = "ipv6";
+        }
+        interfaces[ifa->ifa_name].push_back(interfaceInfo);
+    }
+
+   auto __formatMac = [](const unsigned char* bytes) {
+        ostringstream oss;
+        oss << hex << setfill('0');
+        for(size_t i = 0; i < 6; ++i) {
+            oss << setw(2) << static_cast<int>(bytes[i]);
+            if(i < 5) {
+                oss << ":";
+            }
+        }
+        return oss.str();
+    };
+
+    auto __updateMac = [&](const string &name, const string &mac) {
+        for(const auto &[key, arr]: interfaces.items()) {
+            for(auto &item: arr) {
+                item["mac"] = mac;
+            }
+        }
+    };
+
+    for(ifa = ifap; ifa != nullptr; ifa = ifa->ifa_next) {
+        #if defined(__linux__)
+        if(ifa->ifa_addr->sa_family == AF_PACKET) {
+            struct sockaddr_ll *sll = (struct sockaddr_ll *)ifa->ifa_addr;
+            if(sll->sll_halen == 6) {
+                __updateMac(ifa->ifa_name, __formatMac(sll->sll_addr));
+            }
+        }
+        #elif defined(__APPLE__) || defined(__FreeBSD__)
+        if(ifa->ifa_addr->sa_family == AF_LINK) {
+            struct sockaddr_dl *sdl = (struct sockaddr_dl *)ifa->ifa_addr;
+            if(sdl->sdl_alen == 6) {
+                auto const* mac = reinterpret_cast<const unsigned char*>(LLADDR(sdl));
+                __updateMac(ifa->ifa_name, __formatMac(mac));
+            }
+        }
+        #endif
+    }
+    
+    freeifaddrs(ifap);
+    #elif defined(_WIN32)
+    ULONG flags = GAA_FLAG_INCLUDE_PREFIX;
+    ULONG family = AF_UNSPEC;
+    ULONG size = 0;
+
+    GetAdaptersAddresses(family, flags, nullptr, nullptr, &size);
+
+    vector<BYTE> buffer(size);
+    IP_ADAPTER_ADDRESSES* adapters =
+        reinterpret_cast<IP_ADAPTER_ADDRESSES*>(buffer.data());
+
+    DWORD ret = GetAdaptersAddresses(family, flags, nullptr, adapters, &size);
+    if(ret != NO_ERROR) {
+        output["error"] = errors::makeErrorPayload(errors::NE_CO_UNLTONI);
+        return output;
+    }
+
+    for(auto* adapter = adapters; adapter; adapter = adapter->Next) {
+        string name = helpers::wstr2str(adapter->FriendlyName);
+        ostringstream oss;
+        string mac = "";
+        for(UINT i = 0; i < adapter->PhysicalAddressLength; ++i) {
+            if(i) oss << ":";
+            oss << hex << setw(2) << setfill('0')<< (int)adapter->PhysicalAddress[i];
+            mac = oss.str();
+        }
+
+        for(auto* ua = adapter->FirstUnicastAddress; ua; ua = ua->Next) {
+            char ip[INET6_ADDRSTRLEN];
+            sockaddr* sa = ua->Address.lpSockaddr;
+            getnameinfo(
+                sa,
+                ua->Address.iSockaddrLength,
+                ip,
+                sizeof(ip),
+                nullptr,
+                0,
+                NI_NUMERICHOST);
+
+            json interfaceInfo = {
+                { "isInternal", adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK },
+                { "mac", mac }
+            };
+
+            if(sa->sa_family == AF_INET) {
+                interfaceInfo["ipv4"] = string(ip);
+            }
+            else if(sa->sa_family == AF_INET6) {
+                interfaceInfo["ipv6"] = string(ip);
+            }
+            interfaces[name].push_back(interfaceInfo);
+        }
+    }
+
+    #endif
+    output["returnValue"] = interfaces;
     output["success"] = true;
     return output;
 }

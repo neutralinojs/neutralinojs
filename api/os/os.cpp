@@ -15,6 +15,8 @@
 #include <functional>
 #include <atomic>
 #include <climits>
+#include <algorithm>
+#include <clocale>
 
 #include "resources.h"
 #include "lib/tinyprocess/process.hpp"
@@ -46,6 +48,7 @@ extern char **environ;
 
 #include "lib/json/json.hpp"
 #include "lib/tray/tray.h"
+#include "lib/trashcan/trashcan.h"
 #include "helpers.h"
 #include "errors.h"
 #include "settings.h"
@@ -84,6 +87,32 @@ void __dispatchSpawnedProcessEvt(int virtualPid, const string &action, const jso
     events::dispatch("spawnedProcess", evt);
 }
 
+os::LocaleInfo __parseLocaleInfo(string localeName) {
+    size_t encodingIndex = localeName.find('.');
+    if(encodingIndex != string::npos) {
+        localeName = localeName.substr(0, encodingIndex);
+    }
+
+    size_t modifierIndex = localeName.find('@');
+    if(modifierIndex != string::npos) {
+        localeName = localeName.substr(0, modifierIndex);
+    }
+
+    replace(localeName.begin(), localeName.end(), '_', '-');
+
+    os::LocaleInfo localeInfo;
+    localeInfo.locale = localeName;
+
+    vector<string> localeParts = helpers::split(localeName, '-');
+    if(localeParts.size() > 0) {
+        localeInfo.language = localeParts[0];
+    }
+    if(localeParts.size() > 1) {
+        localeInfo.region = localeParts[localeParts.size() - 1];
+    }
+    return localeInfo;
+}
+
 bool isTrayInitialized() {
     return trayInitialized;
 }
@@ -91,6 +120,7 @@ bool isTrayInitialized() {
 void cleanupTray() {
     if(!os::isTrayInitialized()) return;
         tray_exit();
+        trayInitialized = false;
     #if defined(_WIN32)
     if (tray.icon) {
         DestroyIcon(tray.icon);
@@ -255,6 +285,46 @@ bool updateSpawnedProcess(const os::SpawnedProcessEvent &evt) {
     return true;
 }
 
+os::LocaleInfo getLocaleInfo() {
+    string locale;
+    #if defined(_WIN32)
+    wchar_t localeName[LOCALE_NAME_MAX_LENGTH] = {0};
+    if(GetUserDefaultLocaleName(localeName, LOCALE_NAME_MAX_LENGTH) > 0) {
+        locale = helpers::wstr2str(localeName);
+    }
+    #elif defined(__APPLE__)
+    id currentLocale = ((id (*)(id, SEL))objc_msgSend)(
+        "NSLocale"_cls, "currentLocale"_sel);
+    id localeIdentifier = ((id (*)(id, SEL))objc_msgSend)(
+        currentLocale, "localeIdentifier"_sel);
+    if(localeIdentifier != nullptr) {
+        const char *localeIdentifierStr = ((const char * (*)(id, SEL))objc_msgSend)(
+            localeIdentifier, "UTF8String"_sel);
+        if(localeIdentifierStr != nullptr) {
+            locale = string(localeIdentifierStr);
+        }
+    }
+    #else
+    const char *envLocale = getenv("LC_ALL");
+    if(envLocale == nullptr || strlen(envLocale) == 0) {
+        envLocale = getenv("LC_MESSAGES");
+    }
+    if(envLocale == nullptr || strlen(envLocale) == 0) {
+        envLocale = getenv("LANG");
+    }
+    if(envLocale != nullptr) {
+        locale = string(envLocale);
+    }
+    #endif
+
+    if(locale.empty()) {
+        const char *currentLocale = setlocale(LC_ALL, nullptr);
+        locale = currentLocale == nullptr ? "" : string(currentLocale);
+    }
+
+    return __parseLocaleInfo(locale);
+}
+
 string getPath(const string &name) {
     string path = "";
     if(name == "config")
@@ -307,6 +377,16 @@ string getEnv(const string &key) {
     char *value;
     value = getenv(key.c_str());
     return value == nullptr ? "" : string(value);
+    #endif
+}
+
+bool setEnv(const string &key, const string &value) {
+    #if defined(_WIN32)
+    wstring wideKey = helpers::str2wstr(key);
+    wstring wideValue = helpers::str2wstr(value);
+    return _wputenv_s(wideKey.c_str(), wideValue.c_str()) == 0;
+    #else
+    return setenv(key.c_str(), value.c_str(), 1) == 0;
     #endif
 }
 
@@ -453,6 +533,25 @@ json getEnv(const json &input) {
     return output;
 }
 
+json setEnv(const json &input) {
+    json output;
+    const auto missingRequiredField = helpers::missingRequiredField(input, {"key", "value"});
+    if(missingRequiredField) {
+        output["error"] = errors::makeMissingArgErrorPayload(missingRequiredField.value());
+        return output;
+    }
+    string key = input["key"].get<string>();
+    string value = input["value"].get<string>();
+
+    if(os::setEnv(key, value)) {
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_UNLTOUV);
+    }
+    return output;
+}
+
 json getEnvs(const json &input) {
     json output;
     #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
@@ -483,6 +582,20 @@ json getEnvs(const json &input) {
     }
     FreeEnvironmentStrings((LPWCH) envsO);
     #endif
+    output["success"] = true;
+    return output;
+}
+
+json getLocaleInfo(const json &input) {
+    json output;
+    os::LocaleInfo localeInfo = os::getLocaleInfo();
+
+    json retVal;
+    retVal["locale"] = localeInfo.locale;
+    retVal["language"] = localeInfo.language;
+    retVal["region"] = localeInfo.region;
+
+    output["returnValue"] = retVal;
     output["success"] = true;
     return output;
 }
@@ -715,11 +828,15 @@ json setTray(const json &input) {
     json output;
 
     if(helpers::hasField(input, "menuItems")) {
-        int menuCount = input["menuItems"].size();
-        menus[menuCount - 1] = { nullptr, nullptr, 0, 0, nullptr, nullptr };
+        int menuCount = static_cast<int>(input["menuItems"].size());
+        if(menuCount > NEU_MAX_TRAY_MENU_ITEMS){
+            menuCount = NEU_MAX_TRAY_MENU_ITEMS;
+        }
+        
 
         int i = 0;
         for (const auto &menuItem: input["menuItems"]) {
+            if(i >= menuCount) break;
             char *id = nullptr;
             char *text = helpers::cStrCopy(menuItem["text"].get<string>());
             int disabled = 0;
@@ -738,6 +855,9 @@ json setTray(const json &input) {
             delete[] menus[i].text;
             menus[i] = { id, text, disabled, checked, __handleTrayMenuItem, nullptr };
             i++;
+        }
+        if(menuCount < NEU_MAX_TRAY_MENU_ITEMS){
+            menus[menuCount] = { nullptr, nullptr, 0, 0, nullptr,nullptr};
         }
     }
 
@@ -847,5 +967,24 @@ json getPath(const json &input) {
     }
     return output;
 }
+
+json trashItem(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload("path");
+        return output;
+    }
+    string path = input["path"].get<string>();
+
+    if(trashcan_soft_delete(path.c_str()) == 0) {
+        output["success"] = true;
+        output["message"] = path + " was moved to trash";
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_UNLTRAS, path);
+    }
+    return output;
+}
+
 } // namespace controllers
 } // namespace os

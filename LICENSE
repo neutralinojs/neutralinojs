@@ -815,3 +815,7 @@ The externally maintained libraries used by Postject are:
        See the License for the specific language governing permissions and
        limitations under the License.
   """
+
+  ================================================================================
+https://github.com/robertguetzkow/libtrashcan (Cross-platform C++ file and directory soft-deleting library) 
+is licensed for use as follows (from the original repository on GitHub):

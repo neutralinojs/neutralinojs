@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-set(NEU_VERSION "6.7.0")
+set(NEU_VERSION "6.8.0")
 set(NEU_CXX_STANDARD 17)
 if(APPLE)
   project(NeutralinoJS LANGUAGES C CXX OBJC OBJCXX)
@@ -35,6 +35,8 @@ file(GLOB_RECURSE RECURSIVE_SOURCES
   lib/clip/image.cpp
   lib/infoware/src/**/*.cpp
   lib/efsw/src/efsw/*.cpp
+  lib/hwinfo/src/*.cpp
+  lib/trashcan/trashcan.c
 )
 list(APPEND SOURCES ${RECURSIVE_SOURCES})
 
@@ -45,6 +47,8 @@ if(WIN32)
     lib/clip/clip_win.cpp
     lib/efsw/src/efsw/platform/win/*.cpp
     lib/postject/windows_dummy.res
+    lib/hwinfo/src/windows/disk.cpp
+    lib/hwinfo/src/windows/monitoring/disk.cpp
   )
   list(APPEND SOURCES ${OS_SOURCES})
   
@@ -68,6 +72,8 @@ elseif(APPLE)
     lib/clip/clip_osx.mm
     lib/webview/macwindow.mm
     lib/efsw/src/efsw/platform/posix/*.cpp
+    lib/hwinfo/src/apple/disk.cpp
+    lib/hwinfo/src/apple/monitoring/disk.cpp
   )
   list(APPEND SOURCES ${OS_SOURCES})
 
@@ -96,6 +102,8 @@ elseif(UNIX)
     lib/tinyprocess/process_unix.cpp
     lib/clip/clip_x11.cpp
     lib/efsw/src/efsw/platform/posix/*.cpp
+    lib/hwinfo/src/linux/disk.cpp
+    lib/hwinfo/src/linux/monitoring/disk.cpp
   )
   list(APPEND SOURCES ${OS_SOURCES})
 
@@ -143,8 +151,11 @@ if(WIN32)
   target_compile_definitions(${PROJECT_NAME} PRIVATE 
     _WEBSOCKETPP_CPP11_STL_
     _HAS_STD_BYTE=0
+    HWINFO_EXPORTS
     TRAY_WINAPI=1
     INFOWARE_USE_D3D
+    HWINFO_EXPORTS
+    NOMINMAX
     UNICODE
     _UNICODE
   )
@@ -173,6 +184,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${PROJECT_SOURCE_DIR}/lib/infoware/include
   ${PROJECT_SOURCE_DIR}/lib/efsw/include
   ${PROJECT_SOURCE_DIR}/lib/efsw/src
+  ${PROJECT_SOURCE_DIR}/lib/hwinfo/include
 )
 if(WIN32)
   target_include_directories(${PROJECT_NAME} PRIVATE 
@@ -207,16 +219,21 @@ if(WIN32)
       ntdll
       dwmapi
       dxgi
+      iphlpapi
+      ws2_32
     )
 elseif(APPLE)
     # macOS
     find_library(WebKit_FRAMEWORK WebKit)
     find_library(COCOA_FRAMEWORK Cocoa)
+    find_library(COREFOUNDATION_FRAMEWORK CoreFoundation)
+    find_library(IOKIT_FRAMEWORK IOKit)
     find_library(SCREENCAPTUREKIT_FRAMEWORK ScreenCaptureKit)
     find_library(IOKIT_FRAMEWORK IOKit)
     target_link_libraries(${PROJECT_NAME} PRIVATE
       ${WebKit_FRAMEWORK}
       ${COCOA_FRAMEWORK}
+      ${COREFOUNDATION_FRAMEWORK}
       ${IOKIT_FRAMEWORK}
     )
     if(SCREENCAPTUREKIT_FRAMEWORK)

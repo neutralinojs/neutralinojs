@@ -19,6 +19,7 @@ bool sendKey(const string &key, computer::SendKeyState keyState);
 
 string getArch();
 pair<int, int> getMousePosition();
+string getMachineId();
 
 namespace controllers {
 
@@ -29,11 +30,14 @@ json getOSInfo(const json &input);
 json getCPUInfo(const json &input);
 json getGPUInfo(const json &input);
 json getDisplays(const json &input);
+json getDisks(const json &input);
 json getMousePosition(const json &input);
 json getHostname(const json &input);
+json getMachineId(const json &input);
 json setMousePosition(const json &input);
 json setMouseGrabbing(const json &input);
 json sendKey(const json &input);;
+json getNetworkInterfaces(const json &input);
 
 } // namespace controllers
 } // namespace computer

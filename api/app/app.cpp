@@ -30,9 +30,7 @@ void exit(int code) {
         neuserver::stop();
     }
     if(settings::getMode() == settings::AppModeWindow) {
-        if(os::isTrayInitialized()) {
-            os::cleanupTray();
-        }
+        os::cleanupTray();
         window::_close(code);
     }
     else {
@@ -60,6 +58,7 @@ json exit(const json &input) {
 }
 
 json killProcess(const json &input) {
+    os::cleanupTray();
     #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
     kill(getpid(),SIGINT);
     #elif defined(_WIN32)
@@ -69,6 +68,13 @@ json killProcess(const json &input) {
     CloseHandle(hnd);
     #endif
     return nullptr;
+}
+
+json getProcessId(const json &input) {
+    json output;
+    output["returnValue"] = app::getProcessId();
+    output["success"] = true;
+    return output;
 }
 
 json getConfig(const json &input) {

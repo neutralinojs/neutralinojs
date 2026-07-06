@@ -149,6 +149,40 @@ describe('computer.spec: computer namespace tests', () => {
         });
     });
 
+    describe('computer.getDiskInfo', () => {
+        it('returns disk usage information', async () => {
+            runner.run(`
+                let diskInfo = await Neutralino.computer.getDiskInfo();
+                await __close(JSON.stringify(diskInfo));
+            `);
+            let diskInfo = JSON.parse(runner.getOutput());
+            assert.ok(typeof diskInfo == 'object');
+            assert.ok(typeof diskInfo.name == 'string');
+            assert.ok(typeof diskInfo.vendor == 'string');
+            assert.ok(typeof diskInfo.model == 'string');
+            assert.ok(typeof diskInfo.mountPoint == 'string');
+            assert.ok(typeof diskInfo.fileSystem == 'string');
+            assert.ok(typeof diskInfo.total == 'number');
+            assert.ok(typeof diskInfo.used == 'number');
+            assert.ok(typeof diskInfo.free == 'number');
+            assert.ok(typeof diskInfo.usedPercent == 'number');
+        });
+
+        it('returns consistent disk usage values', async () => {
+            runner.run(`
+                let diskInfo = await Neutralino.computer.getDiskInfo();
+                await __close(JSON.stringify(diskInfo));
+            `);
+            let diskInfo = JSON.parse(runner.getOutput());
+            assert.ok(diskInfo.total > 0, 'Disk total should be greater than zero');
+            assert.ok(diskInfo.free >= 0, 'Disk free space should not be negative');
+            assert.ok(diskInfo.used >= 0, 'Disk used space should not be negative');
+            assert.ok(diskInfo.total >= diskInfo.free, 'Disk free space should not be greater than total');
+            assert.ok(diskInfo.total >= diskInfo.used, 'Disk used space should not be greater than total');
+            assert.ok(diskInfo.usedPercent >= 0 && diskInfo.usedPercent <= 100, 'Disk used percent should be within 0..100');
+        });
+    });
+
 
     describe('computer.getMousePosition', () => {
         it('returns the current mouse cursor position and it is within screen bounds', async () => {
@@ -237,6 +271,50 @@ describe('computer.spec: computer namespace tests', () => {
 
             let out = runner.getOutput();
             assert.ok(out === "ok" || out === "skipped");
+        });
+    });
+
+    describe('computer.getNetworkInterfaces', () => {
+        it('returns an array of network interfaces', async () => {
+            runner.run(`
+                let interfaces = await Neutralino.computer.getNetworkInterfaces();
+                await __close(JSON.stringify(interfaces));
+            `);
+            let interfaces = JSON.parse(runner.getOutput());
+            assert.ok(Array.isArray(interfaces));
+
+            if(interfaces.length > 0) {
+                let iface = interfaces[0];
+                assert.ok(typeof iface == 'object');
+                assert.ok(typeof iface.name == 'string');
+                assert.ok(Array.isArray(iface.ipv4));
+                assert.ok(Array.isArray(iface.ipv6));
+                assert.ok(typeof iface.mac == 'string');
+                assert.ok(typeof iface.isUp == 'boolean');
+                assert.ok(typeof iface.isLoopback == 'boolean');
+            }
+        });
+
+        it('excludes loopback interfaces when excludeLoopback is true', async () => {
+            runner.run(`
+                let interfaces = await Neutralino.computer.getNetworkInterfaces({ excludeLoopback: true });
+                await __close(JSON.stringify(interfaces));
+            `);
+            let interfaces = JSON.parse(runner.getOutput());
+            assert.ok(Array.isArray(interfaces));
+            interfaces.forEach(iface => {
+                assert.ok(!iface.isLoopback, 'Loopback interface should be excluded');
+            });
+        });
+
+        it('includes loopback interfaces by default', async () => {
+            runner.run(`
+                let all = await Neutralino.computer.getNetworkInterfaces();
+                let noLoopback = await Neutralino.computer.getNetworkInterfaces({ excludeLoopback: true });
+                await __close(JSON.stringify({ all: all.length, noLoopback: noLoopback.length }));
+            `);
+            let result = JSON.parse(runner.getOutput());
+            assert.ok(result.all >= result.noLoopback, 'Default call should return at least as many interfaces as excludeLoopback:true');
         });
     });
 

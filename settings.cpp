@@ -13,6 +13,7 @@
 #include "helpers.h"
 #include "auth/authbasic.h"
 #include "api/fs/fs.h"
+#include "api/os/os.h"
 #include "api/debug/debug.h"
 #include "api/app/app.h"
 #include "api/custom/custom.h"
@@ -57,11 +58,8 @@ string getConfigFile() {
 }
 
 bool init() {
-    #if defined(_WIN32)
-    localeName = helpers::wstr2str(_wsetlocale(LC_ALL, L""));
-    #else
-    localeName = setlocale(LC_ALL, "");
-    #endif
+    os::LocaleInfo localeInfo = os::getLocaleInfo();
+    localeName = localeInfo.locale;
     options = json::object();
     json config;
     fs::FileReaderResult fileReaderResult = resources::getFile(configFile);

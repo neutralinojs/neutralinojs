@@ -38,6 +38,8 @@ namespace window {
 // TODO: remove extern and fix multiple include errors
 extern NEU_W_HANDLE windowHandle;
 
+enum NewWindowPolicy { NewWindowPolicySystem, NewWindowPolicyBrowser, NewWindowPolicyCustom };
+
 struct SizeOptions {
     int width = -1;
     int height = -1;
@@ -66,6 +68,7 @@ struct WindowOptions {
     bool injectClientLibrary = false;
     bool useLogicalPixels = false;
     bool skipTaskbar = false;
+    bool emitDropEvents = false;
     string webviewArgs = "";
     string title = "Neutralinojs";
     string url = "https://neutralino.js.org";
@@ -74,6 +77,7 @@ struct WindowOptions {
     string injectScript = "";
     int x = 0;
     int y = 0;
+    window::NewWindowPolicy newWindowPolicy = window::NewWindowPolicySystem;
 };
 
 struct WindowMenuItem {
@@ -121,6 +125,7 @@ void setFullScreen();
 void exitFullScreen();
 bool isFullScreen();
 void setIcon(const string &icon);
+void setBadge(int count);
 void move(int x, int y);
 window::SizeOptions getSize();
 pair<int, int> getPosition();
@@ -156,6 +161,7 @@ json exitFullScreen(const json &input);
 json isFullScreen(const json &input);
 json focus(const json &input);
 json setIcon(const json &input);
+json setBadge(const json &input);
 json move(const json &input);
 json center(const json &input);
 json setSize(const json &input);

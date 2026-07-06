@@ -219,6 +219,8 @@ static id _tray_menu(struct tray_menu *m) {
           sel_registerName("setRepresentedObject:"),
           ((id (*)(id, SEL, void*))objc_msgSend)((id)objc_getClass("NSValue"), sel_registerName("valueWithPointer:"), m));
 
+      ((id (*)(id, SEL, id))objc_msgSend)(menuItem, sel_registerName("setTarget:"), trayDelegate); 
+
       ((id (*)(id, SEL, id))objc_msgSend)(menu, sel_registerName("addItem:"), menuItem);
 
       if (m->submenu != NULL) {
@@ -253,13 +255,19 @@ static int tray_init(struct tray *tray) {
       (id)objc_getClass("NSApplication"),
       sel_registerName("sharedApplication"));
 
-  Class trayDelegateClass = objc_allocateClassPair(objc_getClass("NSObject"), "Tray", 0);
-  class_addMethod(trayDelegateClass, sel_registerName("menuCallback:"), (IMP)menu_callback, "v@:@");
-  objc_registerClassPair(trayDelegateClass);
+  Class trayDelegateClass = (Class)objc_getClass("Tray");
+  if (!trayDelegateClass) {
+    trayDelegateClass = objc_allocateClassPair(objc_getClass("NSObject"), "Tray", 0);
+    class_addProtocol(trayDelegateClass, objc_getProtocol("NSApplicationDelegate"));
+    class_addMethod(trayDelegateClass, sel_registerName("menuCallback:"), (IMP)menu_callback, "v@:@");
+    objc_registerClassPair(trayDelegateClass);
+  }
 
   trayDelegate = ((id (*)(id, SEL))objc_msgSend)(
       (id)trayDelegateClass,
       sel_registerName("new"));
+
+  ((id (*)(id, SEL))objc_msgSend)(trayDelegate, sel_registerName("retain"));
 
   app = ((id (*)(id, SEL))objc_msgSend)(
       (id)objc_getClass("NSApplication"),
@@ -327,7 +335,26 @@ static void tray_update(struct tray *tray) {
       _tray_menu(tray->menu));
 }
 
-static void tray_exit() {}
+static void tray_exit() {
+  if (statusItem) {
+    ((id (*)(id, SEL, id))objc_msgSend)(
+        statusBar,
+        sel_registerName("removeStatusItem:"),
+        statusItem);
+    ((id (*)(id, SEL))objc_msgSend)(statusItem, sel_registerName("release"));
+    statusItem = nil;
+  }
+
+  if (trayDelegate) {
+    ((id (*)(id, SEL))objc_msgSend)(trayDelegate, sel_registerName("release"));
+    trayDelegate = nil;
+  }
+
+  if (pool) {
+    ((id (*)(id, SEL))objc_msgSend)(pool, sel_registerName("drain"));
+    pool = nil;
+  }
+}
 
 #elif defined(TRAY_WINAPI)
 #include <windows.h>

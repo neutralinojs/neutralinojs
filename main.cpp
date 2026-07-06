@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <csignal>
 #include <string>
 #include <thread>
 #include <chrono>
@@ -40,6 +41,32 @@ void __wait() {
     while(true) {
         this_thread::sleep_for(chrono::milliseconds(NEU_APP_WAIT_INTERVAL_MS));
     }
+}
+
+void __cleanup() {
+    os::cleanupTray();
+}
+
+void __signalHandler(int signal) {
+    __cleanup();
+    _Exit(128 + signal);
+}
+
+#if defined(_WIN32)
+BOOL WINAPI __consoleCtrlHandler(DWORD ctrlType) {
+    __cleanup();
+    return FALSE;
+}
+#endif
+
+void __registerCleanupHandlers() {
+    signal(SIGINT, __signalHandler);
+    signal(SIGTERM, __signalHandler);
+    #if defined(_WIN32)
+    signal(SIGABRT, __signalHandler);
+    SetConsoleCtrlHandler(__consoleCtrlHandler, TRUE);
+    #endif
+    atexit(__cleanup);
 }
 
 void __startApp() {
@@ -203,6 +230,7 @@ int main(int argc, char ** argv)
     __attachConsole();
     #endif
     __initFramework(args);
+    __registerCleanupHandlers();
     __startServerAsync();
     __configureLogger();
     __initExtra();
