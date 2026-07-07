@@ -145,6 +145,7 @@ if(WIN32)
   target_compile_definitions(${PROJECT_NAME} PRIVATE 
     _WEBSOCKETPP_CPP11_STL_
     _HAS_STD_BYTE=0
+    HWINFO_EXPORTS
     TRAY_WINAPI=1
     UNICODE
     _UNICODE

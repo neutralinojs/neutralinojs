@@ -57,6 +57,11 @@ struct DirReaderResult {
     vector<DirReaderEntry> entries;
 };
 
+struct TempFileResult {
+    errors::StatusCode status = errors::NE_ST_OK;
+    string path;
+};
+
 fs::FileReaderResult readFile(const string &filename, const fs::FileReaderOptions &fileReaderOptions = {});
 bool writeFile(const fs::FileWriterOptions &fileWriterOptions);
 string getDirectoryName(const string &filename);
@@ -67,11 +72,13 @@ long createWatcher(const string &path);
 bool removeWatcher(long watcherId);
 fs::FileStats getStats(const string &path);
 fs::DirReaderResult readDirectory(const string &path, bool recursive = false);
+fs::TempFileResult createTempFile(const string &prefix = "", const string &extension = "");
 string applyPathConstants(const string &path);
 
 namespace controllers {
 
 json createDirectory(const json &input);
+json createTempFile(const json &input);
 json remove(const json &input);
 json writeFile(const json &input);
 json writeBinaryFile(const json &input);

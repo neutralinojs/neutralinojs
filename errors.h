@@ -51,6 +51,7 @@ enum StatusCode {
     NE_FS_ACSFAIL,
     NE_FS_CHMDERR,
     NE_FS_CHWNERR,
+    NE_FS_TMPCRER,
     // window
     NE_WI_UNBSWSR,
     // router
