@@ -231,11 +231,13 @@ elseif(APPLE)
     find_library(IOKIT_FRAMEWORK IOKit)
     find_library(SCREENCAPTUREKIT_FRAMEWORK ScreenCaptureKit)
     find_library(IOKIT_FRAMEWORK IOKit)
+    find_library(SECURITY_FRAMEWORK Security)
     target_link_libraries(${PROJECT_NAME} PRIVATE
       ${WebKit_FRAMEWORK}
       ${COCOA_FRAMEWORK}
       ${COREFOUNDATION_FRAMEWORK}
       ${IOKIT_FRAMEWORK}
+      ${SECURITY_FRAMEWORK}
     )
     if(SCREENCAPTUREKIT_FRAMEWORK)
       target_link_libraries(${PROJECT_NAME} PRIVATE

@@ -68,6 +68,7 @@
             "-framework Cocoa",
             "-framework CoreFoundation",
             "-framework IOKit",
+            "-framework Security",
             "-Os",
             "-mmacosx-version-min=11.01"
         ],
