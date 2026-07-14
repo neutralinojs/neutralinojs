@@ -159,9 +159,9 @@ namespace window {
             y = pos.second;
         }
         ShowWindow(windowHandle, SW_HIDE);
-        SetWindowLong(windowHandle, GWL_EXSTYLE, nativeWindow->m_originalStyleEx);
+        SetWindowLong(windowHandle, GWL_EXSTYLE, nativeWindow->m_originalStyleEx | WS_EX_APPWINDOW);
         SetWindowPos(windowHandle, nullptr,
-            x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+            x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_FRAMECHANGED);
         ShowWindow(windowHandle, SW_SHOW);
     }
 #endif
@@ -307,7 +307,8 @@ namespace window {
             ShowWindow(windowHandle, SW_SHOW);
         }
 
-        SetWindowPos(windowHandle, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+        SetWindowLong(windowHandle, GWL_EXSTYLE, nativeWindow->m_originalStyleEx | WS_EX_APPWINDOW);
+        SetWindowPos(windowHandle, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_FRAMECHANGED);
 
         if (!SetForegroundWindow(windowHandle))
         {
@@ -567,7 +568,7 @@ namespace window {
         void __createWindow() {
             savedState = windowProps.useSavedState && __loadSavedWindowProps();
 
-            nativeWindow = new webview::webview(windowProps.enableInspector, nullptr, windowProps.transparent);
+            nativeWindow = new webview::webview(windowProps.enableInspector, nullptr, windowProps.transparent, windowProps.hidden);
             nativeWindow->set_title(windowProps.title);
             if (windowProps.extendUserAgentWith != "")
             {

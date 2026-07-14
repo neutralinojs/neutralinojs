@@ -94,7 +94,7 @@ namespace webview {
 
     class gtk_webkit_engine {
     public:
-        gtk_webkit_engine(bool debug, void* window, bool transparent)
+        gtk_webkit_engine(bool debug, void* window, bool transparent, bool hidden = false)
             : m_window(static_cast<GtkWidget*>(window)) {
 
             XInitThreads();
@@ -316,7 +316,7 @@ namespace webview {
 
     class cocoa_wkwebview_engine {
     public:
-        cocoa_wkwebview_engine(bool debug, void* window, bool transparent) {
+        cocoa_wkwebview_engine(bool debug, void* window, bool transparent, bool hidden = false) {
             // Application
             id app = ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls,
                 "sharedApplication"_sel);
@@ -854,7 +854,8 @@ namespace webview {
 
     class win32_edge_engine {
     public:
-        win32_edge_engine(bool debug, void* window, bool transparent) {
+        win32_edge_engine(bool debug, void* window, bool transparent, bool hidden = false)
+            : m_hidden(hidden) {
             if (window == nullptr)
             {
                 HINSTANCE hInstance = GetModuleHandle(nullptr);
@@ -1006,8 +1007,14 @@ namespace webview {
             }
 
             // stop the taskbar icon from showing by removing WS_EX_APPWINDOW.
-            SetWindowLong(m_window, GWL_EXSTYLE, GetWindowLong(m_window, GWL_EXSTYLE) & ~WS_EX_APPWINDOW);
-            ShowWindow(m_window, SW_SHOW);
+            if (hidden) {
+                SetWindowLong(m_window, GWL_EXSTYLE, GetWindowLong(m_window, GWL_EXSTYLE) & ~WS_EX_APPWINDOW);
+                ShowWindow(m_window, SW_HIDE);
+            }
+            else
+            {
+                ShowWindow(m_window, SW_SHOW);
+            }
             UpdateWindow(m_window);
             SetForegroundWindow(m_window);
 
@@ -1132,6 +1139,7 @@ namespace webview {
         }
 
         DWORD m_originalStyleEx;
+        bool m_hidden;
 
     private:
 
@@ -1177,8 +1185,8 @@ namespace webview {
 
     class webview : public browser_engine {
     public:
-        webview(bool debug = false, void* wnd = nullptr, bool transparent = false)
-            : browser_engine(debug, wnd, transparent) {}
+        webview(bool debug = false, void* wnd = nullptr, bool transparent = false, bool hidden = false)
+            : browser_engine(debug, wnd, transparent, hidden) {}
 
         void navigate(const std::string url) {
             browser_engine::navigate(url);
