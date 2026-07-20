@@ -1,13 +1,6 @@
 #ifndef NEU_NET_H
 #define NEU_NET_H
 
-#include <string>
-#include <vector>
-#include <regex>
-#include <atomic>
-#include <map>
-#include <mutex>
-
 #include "lib/json/json.hpp"
 
 using json = nlohmann::json;
