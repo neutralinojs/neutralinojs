@@ -1,6 +1,8 @@
 #include <string>
 #include <vector>
-#include <iostream>
+#include <string>
+#include <vector>
+#include <regex>
 
 #include "helpers.h"
 #include "errors.h"
@@ -19,12 +21,13 @@ namespace controllers {
 json request(const json &input) {
     json output;
 
-    if(!helpers::hasRequiredFields(input, {"url", "method"})) {
-        output["error"] = errors::makeMissingArgErrorPayload("url or method");
+    if(!helpers::hasRequiredFields(input, {"url"})) {
+        output["error"] = errors::makeMissingArgErrorPayload("url");
         return output;
     }
 
     string url = input["url"].get<string>();
+    string method = "GET";
     regex url_regex(R"(^(https?)://([^/]+)(/.*)?$)");
     smatch match;
 
@@ -36,7 +39,6 @@ json request(const json &input) {
     string protocol = match[1];
     string host = match[2];
     string path = match[3].matched ? match[3].str() : "/";
-    string method = input["method"].get<string>();
 
     httplib::Client cli(protocol + "://" + host);
     httplib::Params params;
@@ -45,7 +47,6 @@ json request(const json &input) {
     string body, contentType;
 
     if(protocol == "https") {
-        // cli.enable_server_certificate_verification(false);
         cli.enable_system_ca(true);
     }
     if(helpers::hasField(input, "timeout")) {
@@ -88,6 +89,9 @@ json request(const json &input) {
         contentType = contentType.empty() ? "application/json" : contentType;
     }
 
+    if(helpers::hasField(input, "method")) {
+        method = input["method"].get<string>();
+    }
     if(method == "GET") {
         res = cli.Get(path, params, headers);
     }
@@ -132,45 +136,36 @@ json request(const json &input) {
             res = cli.Delete(path, headers);
         }
     }
-    else {
-        output["error"] = errors::makeMissingArgErrorPayload("method");
-        return output;
-    }
 
     if(!res) {
         const auto err = res.error();
-        switch (err) {
+        switch(err) {
             case httplib::Error::SSLConnection:
                 output["error"] = errors::makeErrorPayload(errors::NE_NW_SSLCONN, to_string(res.ssl_error()));
                 break;
-
             case httplib::Error::SSLLoadingCerts:
                 output["error"] = errors::makeErrorPayload(errors::NE_NW_SSLLOAD, to_string(res.ssl_backend_error()));
                 break;
-
             case httplib::Error::SSLServerVerification:
                 output["error"] = errors::makeErrorPayload(errors::NE_NW_SSLVERI, to_string(res.ssl_backend_error()));
                 break;
-
             case httplib::Error::SSLServerHostnameVerification:
                 output["error"] = errors::makeErrorPayload(errors::NE_NW_SSLHOST, to_string(res.ssl_backend_error()));
                 break;
-
             default:
                 output["error"] = errors::makeErrorPayload(errors::NE_NW_HTTPERR, httplib::to_string(err));
         }
     }
     else {
         output["returnValue"] = {
-            { "statusCode", res->status },
-            { "text", res->body },
+            { "status", res->status },
+            { "body", res->body },
             { "reason", res->reason },
             { "headers", res->headers },
             { "cookies", res->get_header_value("Set-Cookie") },
             { "version", res->version }
         };
         output["success"] = true;
-        // events::dispatch("netLoaded", evt);
     }
     return output;
 }
