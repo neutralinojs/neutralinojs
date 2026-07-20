@@ -76,7 +76,7 @@ If you like to support our work, you can donate to Neutralinojs via [Patreon](ht
 - Neutralinojs core: MIT. Copyright (c) 2025 Neutralinojs and contributors.
 - C++ websocket client/server library: BSD-3-Clause from [zaphoyd/websocketpp](https://github.com/zaphoyd/websocketpp). Copyright (c) 2014, Peter Thorson. All rights reserved.
 - HTTP/HTTPS server and client library: MIT from [yhirose/cpp-httplib](https://github.com/yhirose/cpp-httplib). Copyright (c) 2026, Yuji Hirose.
-- Mbed TLS cryptographic and SSL/TLS library: Apache-2.0 AND GPL-2.0-or-later (Neutralinojs chose Apache-2.0. Read more about dual-licensing from here) from [Mbed-TLS/mbedtls](https://github.com/Mbed-TLS/mbedtls). Copyright (c) 2026, The Mbed TLS Contributors.
+- Mbed TLS cryptographic and SSL/TLS library: Apache-2.0 AND GPL-2.0-or-later (Neutralinojs chose Apache-2.0. Read more about dual-licensing from [here](./LICENSE#L204)) from [Mbed-TLS/mbedtls](https://github.com/Mbed-TLS/mbedtls). Copyright (c) 2026, The Mbed TLS Contributors.
 - JSON parser library: MIT from [nlohmann/json](https://github.com/nlohmann/json). Copyright (c) 2013-2022 Niels Lohmann.
 - Cross-platform webview library: MIT from [webview/webview](https://github.com/webview/webview). Copyright (c) 2017 Serge Zaitsev.
 - Cross-platform tray library: MIT from [zserge/tray](https://github.com/zserge/tray). Copyright (c) 2017 Serge Zaitsev.
