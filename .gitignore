@@ -21,7 +21,3 @@
 # Platform specific 
 Thumbs.db
 .DS_Store
-
-# CMake files
-/CMakeFiles
-/cmake_install.cmake
