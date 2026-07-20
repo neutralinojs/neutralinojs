@@ -37,6 +37,7 @@ file(GLOB_RECURSE RECURSIVE_SOURCES
   lib/efsw/src/efsw/*.cpp
   lib/hwinfo/src/*.cpp
   lib/trashcan/trashcan.c
+  lib/mbedtls/library/*.c
 )
 list(APPEND SOURCES ${RECURSIVE_SOURCES})
 
@@ -145,6 +146,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
   INFOWARE_VERSION="0.6.0"
   INFOWARE_USE_X11
   CLIP_ENABLE_IMAGE
+  CPPHTTPLIB_MBEDTLS_SUPPORT
 )
 
 if(WIN32)
@@ -184,6 +186,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
   ${PROJECT_SOURCE_DIR}/lib/efsw/include
   ${PROJECT_SOURCE_DIR}/lib/efsw/src
   ${PROJECT_SOURCE_DIR}/lib/hwinfo/include
+  ${PROJECT_SOURCE_DIR}/lib/mbedtls/include
 )
 if(WIN32)
   target_include_directories(${PROJECT_NAME} PRIVATE 
@@ -228,11 +231,13 @@ elseif(APPLE)
     find_library(IOKIT_FRAMEWORK IOKit)
     find_library(SCREENCAPTUREKIT_FRAMEWORK ScreenCaptureKit)
     find_library(IOKIT_FRAMEWORK IOKit)
+    find_library(SECURITY_FRAMEWORK Security)
     target_link_libraries(${PROJECT_NAME} PRIVATE
       ${WebKit_FRAMEWORK}
       ${COCOA_FRAMEWORK}
       ${COREFOUNDATION_FRAMEWORK}
       ${IOKIT_FRAMEWORK}
+      ${SECURITY_FRAMEWORK}
     )
     if(SCREENCAPTUREKIT_FRAMEWORK)
       target_link_libraries(${PROJECT_NAME} PRIVATE

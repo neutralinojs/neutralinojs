@@ -11,7 +11,8 @@
             "lib/infoware/include",
             "lib/efsw/include",
             "lib/efsw/src",
-            "lib/trashcan"
+            "lib/trashcan",
+            "lib/mbedtls/include"
         ],
         "windows": [
             "lib/webview/windows"
@@ -30,7 +31,8 @@
             "lib/clip/image.cpp",
             "lib/infoware/src/**/*.cpp",
             "lib/efsw/src/efsw/*.cpp",
-            "lib/trashcan/trashcan.c"
+            "lib/trashcan/trashcan.c",
+            "lib/mbedtls/library/*.c"
         ],
         "linux": [
             "lib/tinyprocess/process_unix.cpp",
@@ -66,6 +68,7 @@
             "-framework Cocoa",
             "-framework CoreFoundation",
             "-framework IOKit",
+            "-framework Security",
             "-Os",
             "-mmacosx-version-min=11.01"
         ],
@@ -85,7 +88,8 @@
             "ASIO_STANDALONE",
             "INFOWARE_VERSION=\\\"0.6.0\\\"",
             "INFOWARE_USE_X11",
-            "CLIP_ENABLE_IMAGE"
+            "CLIP_ENABLE_IMAGE",
+            "CPPHTTPLIB_MBEDTLS_SUPPORT"
         ],
         "linux": [
             "HAVE_XCB_XLIB_H",

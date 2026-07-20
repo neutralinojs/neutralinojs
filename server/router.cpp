@@ -26,6 +26,7 @@
 #include "api/clipboard/clipboard.h"
 #include "api/res/res.h"
 #include "api/server/server.h"
+#include "api/net/net.h"
 #include "api/custom/custom.h"
 
 
@@ -175,6 +176,8 @@ map<string, router::NativeMethod> methodMap = {
     {"server.mount", server::controllers::mount},
     {"server.unmount", server::controllers::unmount},
     {"server.getMounts", server::controllers::getMounts},
+    // Neutralino.net
+    {"net.request", net::controllers::request},
     // Neutralino.custom
     {"custom.getMethods", custom::controllers::getMethods},
     // {"custom.add", custom::controllers::add} // Sample custom method
