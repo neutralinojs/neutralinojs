@@ -159,10 +159,12 @@ json request(const json &input) {
     else {
         output["returnValue"] = {
             { "status", res->status },
+            { "statusText", res->reason },
             { "body", res->body },
-            { "reason", res->reason },
             { "headers", res->headers },
             { "cookies", res->get_header_value("Set-Cookie") },
+            { "contentType", res->get_header_value("Content-Type") },
+            { "location", res->location },
             { "version", res->version }
         };
         output["success"] = true;
