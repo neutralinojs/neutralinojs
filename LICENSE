@@ -201,7 +201,11 @@ SOFTWARE.
 ================================================================================
 https://github.com/Mbed-TLS/mbedtls (HTTP/HTTPS server and client library)
 is licensed for use as follows (from the original repository on GitHub):
-Note: Mbed TLS code is distributed under a dual license (Apache-2.0 **or** GPL-2.0-or-later). Neutralinojs uses the library code under Apache-2.0 for MIT-license compatibility, so the library's GPL license copy isn't included here. However, you can still read the Mbed TLS GPL license from [here](./lib/mbedtls/LICENSE).
+
+Note: Mbed TLS code is distributed under a dual license (Apache-2.0 OR GPL-2.0-or-later). 
+Neutralinojs uses the library code under Apache-2.0 for MIT license compatibility, so the 
+library's GPL license copy isn't included here. The Mbed TLS GPL license is accessible 
+from lib/mbedtls/LICENSE, which contains the complete dual license copy from the library repository.
 
 Mbed TLS files are provided under a dual [Apache-2.0](https://spdx.org/licenses/Apache-2.0.html)
 OR [GPL-2.0-or-later](https://spdx.org/licenses/GPL-2.0-or-later.html) license.
