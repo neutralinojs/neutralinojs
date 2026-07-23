@@ -6,6 +6,18 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: net
+Neutralinojs apps can use the fetch API available in the webview for making network requests, but the CORS policy often becomes a barrier. The new network API offers functions to call network resources without disabling webview network security. Here is a list of all available net API functions:
+
+- `net.get(url, options)`: Sends a `GET` request.
+- `net.post(url, options)`: Sends a `POST` request.
+- `net.put(url, options)`: Sends a `PUT` request.
+- `net.patch(url, options)`: Sends a `PATCH` request.
+- `net.delete(url, options)`: Sends a `DELETE` request.
+- `net.options(url, options)`: Sends an `OPTIONS` request.
+- `net.head(url, options)`: Sends a `HEAD` request.
+- `net.request(url, options)`: Sends a request by specifying an HTTP method
+
 ### API: computer
 - Add `computer.getDisks()` to retrieve information for each connected disk, including vendor, model, mount point, size, free space, and serial number.
 - Add `compuer.getMachineId()` to get the platform-specific unique machine identifier.
