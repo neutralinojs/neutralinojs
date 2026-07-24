@@ -6,6 +6,8 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+## v6.9.0
+
 ### API: net
 Neutralinojs apps can use the fetch API available in the webview for making network requests, but the CORS policy often becomes a barrier. The new C++-based network API offers functions to call network resources without disabling webview network security. Here is a list of all available net API functions:
 
