@@ -5,12 +5,16 @@
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
+#include <cerrno>
+#include <random>
+#include <sstream>
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <libgen.h>
 #endif
 
@@ -46,6 +50,7 @@ map<efsw::WatchID, pair<efsw::FileWatchListener*, string>> watchListeners;
 mutex watcherLock;
 
 #define NEU_DEFAULT_STREAM_BUF_SIZE 256
+#define NEU_TEMP_FILE_CREATE_MAX_ATTEMPTS 100
 
 namespace fs {
 
@@ -119,6 +124,56 @@ void __readStream(const OpenedFileEvent &evt, ifstream *reader) {
     if(reader->eof()) {
         __dispatchOpenedFileEvt(evt.id, "end", nullptr);
     }
+}
+
+string __makeTempFileToken() {
+    static const char hexChars[] = "0123456789abcdef";
+    random_device randomDevice;
+    uniform_int_distribution<int> distribution(0, 15);
+    string token;
+    token.reserve(32);
+
+    for(int i = 0; i < 32; i++) {
+        token += hexChars[distribution(randomDevice)];
+    }
+    return token;
+}
+
+bool __hasUnsafeTempNameSegment(const string &value) {
+    return value.find('/') != string::npos ||
+           value.find('\\') != string::npos ||
+           value.find('\0') != string::npos;
+}
+
+bool __createFileExclusively(const filesystem::path &path, bool &alreadyExists) {
+    alreadyExists = false;
+    #if defined(_WIN32)
+    HANDLE hFile = CreateFileW(path.wstring().c_str(),
+        GENERIC_READ | GENERIC_WRITE,
+        0,
+        NULL,
+        CREATE_NEW,
+        FILE_ATTRIBUTE_TEMPORARY | FILE_ATTRIBUTE_NOT_CONTENT_INDEXED,
+        NULL);
+
+    if(hFile != INVALID_HANDLE_VALUE) {
+        CloseHandle(hFile);
+        return true;
+    }
+
+    DWORD error = GetLastError();
+    alreadyExists = error == ERROR_FILE_EXISTS || error == ERROR_ALREADY_EXISTS;
+    return false;
+    #else
+    int fd = ::open(path.c_str(), O_WRONLY | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
+    if(fd != -1) {
+        ::close(fd);
+        return true;
+    }
+
+    alreadyExists = errno == EEXIST;
+    return false;
+    #endif
 }
 
 #if defined(_WIN32)
@@ -353,6 +408,38 @@ fs::DirReaderResult readDirectory(const string &path, bool recursive) {
     return dirResult;
 }
 
+fs::TempFileResult createTempFile(const string &prefix, const string &extension) {
+    fs::TempFileResult result;
+
+    if(__hasUnsafeTempNameSegment(prefix) || __hasUnsafeTempNameSegment(extension)) {
+        result.status = errors::NE_FS_TMPCRER;
+        return result;
+    }
+
+    error_code ec;
+    filesystem::path tempDirectory = filesystem::temp_directory_path(ec);
+    if(ec) {
+        result.status = errors::NE_FS_TMPCRER;
+        return result;
+    }
+
+    for(int attempt = 0; attempt < NEU_TEMP_FILE_CREATE_MAX_ATTEMPTS; attempt++) {
+        filesystem::path tempPath = tempDirectory / filesystem::path(CONVSTR(prefix + __makeTempFileToken() + extension));
+        bool alreadyExists = false;
+        if(__createFileExclusively(tempPath, alreadyExists)) {
+            result.path = FS_CONVWSTRN(tempPath);
+            return result;
+        }
+        if(!alreadyExists) {
+            result.status = errors::NE_FS_TMPCRER;
+            return result;
+        }
+    }
+
+    result.status = errors::NE_FS_TMPCRER;
+    return result;
+}
+
 string applyPathConstants(const string &path) {
     string newPath = regex_replace(path, regex("\\$\\{NL_PATH\\}"), settings::getAppPath());
 
@@ -420,6 +507,29 @@ json createDirectory(const json &input) {
     }
     else {
         output["error"] = errors::makeErrorPayload(errors::NE_FS_DIRCRER, path);
+    }
+    return output;
+}
+
+json createTempFile(const json &input) {
+    json output;
+    string prefix;
+    string extension;
+
+    if(helpers::hasField(input, "prefix")) {
+        prefix = input["prefix"].get<string>();
+    }
+    if(helpers::hasField(input, "extension")) {
+        extension = input["extension"].get<string>();
+    }
+
+    fs::TempFileResult result = fs::createTempFile(prefix, extension);
+    if(result.status == errors::NE_ST_OK) {
+        output["returnValue"] = result.path;
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(result.status, prefix + extension);
     }
     return output;
 }

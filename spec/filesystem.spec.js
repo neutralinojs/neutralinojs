@@ -50,6 +50,77 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         });
     });
 
+    describe('filesystem.createTempFile', () => {
+        it('creates a temporary file with the provided prefix and extension', async () => {
+            runner.run(`
+                let tempFile = await Neutralino.filesystem.createTempFile({
+                    prefix: 'neu_',
+                    extension: '.tmp'
+                });
+                let tempDir = await Neutralino.os.getPath('temp');
+                let stats = await Neutralino.filesystem.getStats(tempFile);
+                await Neutralino.filesystem.remove(tempFile);
+                await __close(JSON.stringify({
+                    path: tempFile,
+                    tempDir,
+                    isFile: stats.isFile,
+                    size: stats.size
+                }));
+            `);
+            const output = JSON.parse(runner.getOutput());
+            const normalizedPath = output.path.split('\\\\').join('/');
+            const normalizedTempDir = output.tempDir.split('\\\\').join('/');
+            const filename = normalizedPath.split('/').pop();
+
+            assert.ok(normalizedPath.startsWith(normalizedTempDir));
+            assert.ok(filename.startsWith('neu_'));
+            assert.ok(filename.endsWith('.tmp'));
+            assert.equal(output.isFile, true);
+            assert.equal(output.size, 0);
+        });
+
+        it('creates unique temporary files', async () => {
+            runner.run(`
+                let first = await Neutralino.filesystem.createTempFile({
+                    prefix: 'neu_',
+                    extension: '.tmp'
+                });
+                let second = await Neutralino.filesystem.createTempFile({
+                    prefix: 'neu_',
+                    extension: '.tmp'
+                });
+                let firstStats = await Neutralino.filesystem.getStats(first);
+                let secondStats = await Neutralino.filesystem.getStats(second);
+                await Neutralino.filesystem.remove(first);
+                await Neutralino.filesystem.remove(second);
+                await __close(JSON.stringify({
+                    unique: first != second,
+                    firstIsFile: firstStats.isFile,
+                    secondIsFile: secondStats.isFile
+                }));
+            `);
+            const output = JSON.parse(runner.getOutput());
+
+            assert.equal(output.unique, true);
+            assert.equal(output.firstIsFile, true);
+            assert.equal(output.secondIsFile, true);
+        });
+
+        it('throws an error for unsafe name segments', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.createTempFile({
+                        prefix: '../neu_',
+                        extension: '.tmp'
+                    });
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_TMPCRER');
+        });
+    });
+
     describe('filesystem.remove', () => {
         it('works without throwing errors', async () => {
             runner.run(`
