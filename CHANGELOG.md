@@ -18,7 +18,7 @@ Neutralinojs apps can use the fetch API available in the webview for making netw
 - `net.delete(url, options)`: Sends a `DELETE` request.
 - `net.options(url, options)`: Sends an `OPTIONS` request.
 - `net.head(url, options)`: Sends a `HEAD` request.
-- `net.request(url, options)`: Sends a request by specifying an HTTP method
+- `net.request(url, method, options)`: Sends a request by specifying an HTTP method
 
 ### API: computer
 - Add `computer.getDisks()` to retrieve information for each connected disk, including vendor, model, mount point, size, free space, and serial number.
