@@ -31,7 +31,9 @@ extern char **environ;
 #endif
 
 #if defined(__APPLE__)
+#include <dispatch/dispatch.h>
 #include <objc/objc-runtime.h>
+extern "C" void *_NSConcreteStackBlock[];
 #endif
 
 #if defined(_WIN32)
@@ -78,6 +80,110 @@ bool useOtherTempTrayIcon = true;
 map<int, TinyProcessLib::Process*> spawnedProcesses;
 mutex spawnedProcessesLock;
 atomic<int> nextVirtualPid(0);
+
+#if defined(__APPLE__)
+namespace {
+
+struct ObjCBlockDescriptor {
+    unsigned long reserved;
+    unsigned long size;
+};
+
+struct OpenURLsCompletionBlock {
+    void *isa;
+    int flags;
+    int reserved;
+    void (*invoke)(OpenURLsCompletionBlock *block, id app, id error);
+    ObjCBlockDescriptor *descriptor;
+    bool *opened;
+    dispatch_semaphore_t semaphore;
+};
+
+void openURLsCompletion(OpenURLsCompletionBlock *block, id app, id error) {
+    *block->opened = app != nullptr && error == nullptr;
+    dispatch_semaphore_signal(block->semaphore);
+}
+
+bool openWithCommand(const string &filePath, const string &appPath) {
+    vector<TinyProcessLib::Process::string_type> args = {
+        CONVSTR("/usr/bin/open"),
+        CONVSTR("-a"),
+        CONVSTR(appPath),
+        CONVSTR(filePath)
+    };
+    TinyProcessLib::Process openProcess(args, CONVSTR(""), nullptr, nullptr, false);
+    return openProcess.get_id() > 0 && openProcess.get_exit_status() == 0;
+}
+
+bool openWithWorkspace(const string &filePath, const string &appPath) {
+    id workspace = ((id (*)(id, SEL))objc_msgSend)(
+        "NSWorkspace"_cls, "sharedWorkspace"_sel);
+    SEL openURLsSelector =
+        "openURLs:withApplicationAtURL:configuration:completionHandler:"_sel;
+    Class openConfigurationClass = objc_lookUpClass("NSWorkspaceOpenConfiguration");
+    if(!workspace || !openConfigurationClass ||
+        !((BOOL (*)(id, SEL, SEL))objc_msgSend)(
+            workspace, "respondsToSelector:"_sel, openURLsSelector)) {
+        return openWithCommand(filePath, appPath);
+    }
+
+    id nsFilePath = ((id (*)(id, SEL, const char *))objc_msgSend)(
+        "NSString"_cls, "stringWithUTF8String:"_sel, filePath.c_str());
+    id nsAppPath = ((id (*)(id, SEL, const char *))objc_msgSend)(
+        "NSString"_cls, "stringWithUTF8String:"_sel, appPath.c_str());
+    if(!nsFilePath || !nsAppPath) {
+        return false;
+    }
+
+    id fileURL = ((id (*)(id, SEL, id))objc_msgSend)(
+        "NSURL"_cls, "fileURLWithPath:"_sel, nsFilePath);
+    id appURL = ((id (*)(id, SEL, id))objc_msgSend)(
+        "NSURL"_cls, "fileURLWithPath:"_sel, nsAppPath);
+    if(!fileURL || !appURL) {
+        return false;
+    }
+
+    id urls = ((id (*)(id, SEL, id))objc_msgSend)(
+        "NSArray"_cls, "arrayWithObject:"_sel, fileURL);
+    id configuration = ((id (*)(id, SEL))objc_msgSend)(
+        (id)openConfigurationClass, "configuration"_sel);
+    if(!urls || !configuration) {
+        return false;
+    }
+
+    bool opened = false;
+    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+    static ObjCBlockDescriptor blockDescriptor = {
+        0,
+        sizeof(OpenURLsCompletionBlock)
+    };
+    OpenURLsCompletionBlock completionBlock = {
+        _NSConcreteStackBlock,
+        0,
+        0,
+        openURLsCompletion,
+        &blockDescriptor,
+        &opened,
+        semaphore
+    };
+
+    ((void (*)(id, SEL, id, id, id, OpenURLsCompletionBlock *))objc_msgSend)(
+        workspace,
+        openURLsSelector,
+        urls,
+        appURL,
+        configuration,
+        &completionBlock);
+
+    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    #if !OS_OBJECT_USE_OBJC
+    dispatch_release(semaphore);
+    #endif
+    return opened;
+}
+
+} // namespace
+#endif
 
 void __dispatchSpawnedProcessEvt(int virtualPid, const string &action, const json &data) {
     json evt;
@@ -148,29 +254,7 @@ bool openWith(const string &filePath, const string &appPath) {
 
     return true;
     #elif defined(__APPLE__)
-    id workspace = ((id (*)(id, SEL))objc_msgSend)(
-        "NSWorkspace"_cls, "sharedWorkspace"_sel);
-    id nsFilePath = ((id (*)(id, SEL, const char *))objc_msgSend)(
-        "NSString"_cls, "stringWithUTF8String:"_sel, filePath.c_str());
-    id nsAppPath = ((id (*)(id, SEL, const char *))objc_msgSend)(
-        "NSString"_cls, "stringWithUTF8String:"_sel, appPath.c_str());
-    id fileURL = ((id (*)(id, SEL, id))objc_msgSend)(
-        "NSURL"_cls, "fileURLWithPath:"_sel, nsFilePath);
-    id appURL = ((id (*)(id, SEL, id))objc_msgSend)(
-        "NSURL"_cls, "fileURLWithPath:"_sel, nsAppPath);
-    id urls = ((id (*)(id, SEL, id))objc_msgSend)(
-        "NSArray"_cls, "arrayWithObject:"_sel, fileURL);
-    id configuration = ((id (*)(id, SEL))objc_msgSend)(
-        "NSDictionary"_cls, "dictionary"_sel);
-
-    return ((BOOL (*)(id, SEL, id, id, unsigned long, id, id *))objc_msgSend)(
-        workspace,
-        "openURLs:withApplicationAtURL:options:configuration:error:"_sel,
-        urls,
-        appURL,
-        0,
-        configuration,
-        nullptr);
+    return openWithWorkspace(filePath, appPath);
     #elif defined(_WIN32)
     wstring app = helpers::str2wstr(appPath);
     wstring params = L"\"" + helpers::str2wstr(filePath) + L"\"";
