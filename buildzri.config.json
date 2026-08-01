@@ -11,6 +11,7 @@
             "lib/infoware/include",
             "lib/efsw/include",
             "lib/efsw/src",
+            "lib/hwinfo/include",
             "lib/trashcan"
         ],
         "windows": [
@@ -30,24 +31,34 @@
             "lib/clip/image.cpp",
             "lib/infoware/src/**/*.cpp",
             "lib/efsw/src/efsw/*.cpp",
+            "lib/hwinfo/src/*.cpp",
             "lib/trashcan/trashcan.c"
         ],
         "linux": [
             "lib/tinyprocess/process_unix.cpp",
             "lib/clip/clip_x11.cpp",
-            "lib/efsw/src/efsw/platform/posix/*.cpp"
+            "lib/efsw/src/efsw/platform/posix/*.cpp",
+            "lib/hwinfo/src/linux/disk.cpp",
+            "lib/hwinfo/src/linux/gpu.cpp",
+            "lib/hwinfo/src/linux/monitoring/disk.cpp"
         ],
         "darwin": [
             "lib/tinyprocess/process_unix.cpp",
             "lib/clip/clip_osx.mm",
             "lib/webview/macwindow.mm",
-            "lib/efsw/src/efsw/platform/posix/*.cpp"
+            "lib/efsw/src/efsw/platform/posix/*.cpp",
+            "lib/hwinfo/src/apple/disk.cpp",
+            "lib/hwinfo/src/apple/gpu.cpp",
+            "lib/hwinfo/src/apple/monitoring/disk.cpp"
         ],
         "windows": [
             "lib/tinyprocess/process_win.cpp",
             "lib/clip/clip_win.cpp",
             "lib/efsw/src/efsw/platform/win/*.cpp",
-            "lib/postject/windows_dummy.res"
+            "lib/postject/windows_dummy.res",
+            "lib/hwinfo/src/windows/disk.cpp",
+            "lib/hwinfo/src/windows/gpu.cpp",
+            "lib/hwinfo/src/windows/monitoring/disk.cpp"
         ]
     },
     "options": {
@@ -101,6 +112,7 @@
         "windows": [
             "_WEBSOCKETPP_CPP11_STL_",
             "_HAS_STD_BYTE=0",
+            "HWINFO_EXPORTS",
             "TRAY_WINAPI=1",
             "INFOWARE_USE_D3D",
             "UNICODE",
