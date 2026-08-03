@@ -98,6 +98,7 @@ map<string, router::NativeMethod> methodMap = {
     {"debug.log", debug::controllers::log},
     // Neutralino.filesystem
     {"filesystem.createDirectory", fs::controllers::createDirectory},
+    {"filesystem.createTempDirectory", fs::controllers::createTempDirectory},
     {"filesystem.remove", fs::controllers::remove},
     {"filesystem.readFile", fs::controllers::readFile},
     {"filesystem.readBinaryFile", fs::controllers::readBinaryFile},
