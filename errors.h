@@ -72,6 +72,12 @@ enum StatusCode {
     NE_SR_UNBPARS,
     NE_SR_MPINUSE,
     NE_SR_NOMTPTH,
+    // net
+    NE_NW_SSLCONN,
+    NE_NW_SSLLOAD,
+    NE_NW_SSLVERI,
+    NE_NW_SSLHOST,
+    NE_NW_HTTPERR,
     // config
     NE_CF_UNBLDCF,
     NE_CF_UNBPRCF,
