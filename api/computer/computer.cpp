@@ -337,7 +337,7 @@ bool setMouseGrabbing(bool grabbing = true) {
     #endif
 }
 
-bool sendKey(unsigned int keyCode, computer::SendKeyState keyState = computer::SendKeyStatePress) {
+bool sendKey(unsigned int keyCode, computer::SendKeyState keyState) {
     #if defined(_WIN32)
     INPUT in {};
     in.type = INPUT_KEYBOARD;
