@@ -34,6 +34,7 @@ file(GLOB_RECURSE RECURSIVE_SOURCES
   lib/clip/clip.cpp
   lib/clip/image.cpp
   lib/infoware/src/**/*.cpp
+  lib/system/*.cpp
   lib/efsw/src/efsw/*.cpp
   lib/trashcan/trashcan.c
 )
@@ -207,6 +208,8 @@ if(WIN32)
       ntdll
       dwmapi
       iphlpapi
+      setupapi
+      cfgmgr32
       ws2_32
     )
 elseif(APPLE)
@@ -214,13 +217,11 @@ elseif(APPLE)
     find_library(WebKit_FRAMEWORK WebKit)
     find_library(COCOA_FRAMEWORK Cocoa)
     find_library(IOKIT_FRAMEWORK IOKit)
-    find_library(COREAUDIO_FRAMEWORK CoreAudio)
     find_library(SCREENCAPTUREKIT_FRAMEWORK ScreenCaptureKit)
     target_link_libraries(${PROJECT_NAME} PRIVATE
       ${WebKit_FRAMEWORK}
       ${COCOA_FRAMEWORK}
       ${IOKIT_FRAMEWORK}
-      ${COREAUDIO_FRAMEWORK}
     )
     if(SCREENCAPTUREKIT_FRAMEWORK)
       target_link_libraries(${PROJECT_NAME} PRIVATE

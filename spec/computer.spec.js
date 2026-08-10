@@ -133,13 +133,17 @@ describe('computer.spec: computer namespace tests', () => {
             let devices = JSON.parse(runner.getOutput());
             assert.ok(Array.isArray(devices));
 
-            if(devices.length > 0) {
-                let device = devices[0];
+            for(let device of devices) {
                 assert.ok(typeof device == 'object');
                 assert.ok(typeof device.name == 'string');
-                assert.ok(['MOUSE', 'KEYBOARD', 'HID', 'AUDIO'].includes(device.type));
+                assert.ok(device.name.length > 0);
+                assert.ok(!device.name.startsWith('\\\\?\\'));
+                assert.ok(!device.name.startsWith('\\\\??\\'));
+                assert.ok(['MOUSE', 'KEYBOARD', 'HID'].includes(device.type));
                 assert.ok(typeof device.vendorId == 'string');
                 assert.ok(typeof device.productId == 'string');
+                assert.ok(device.vendorId == '' || /^[0-9a-f]{4}$/.test(device.vendorId));
+                assert.ok(device.productId == '' || /^[0-9a-f]{4}$/.test(device.productId));
             }
         });
     });

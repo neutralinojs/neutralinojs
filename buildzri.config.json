@@ -29,6 +29,7 @@
             "lib/clip/clip.cpp",
             "lib/clip/image.cpp",
             "lib/infoware/src/**/*.cpp",
+            "lib/system/*.cpp",
             "lib/efsw/src/efsw/*.cpp",
             "lib/trashcan/trashcan.c"
         ],
@@ -65,7 +66,6 @@
             "-framework WebKit",
             "-framework Cocoa",
             "-framework IOKit",
-            "-framework CoreAudio",
             "-Os",
             "-mmacosx-version-min=11.01"
         ],
@@ -74,7 +74,7 @@
             "/EHsc",
             "/Os",
             "/Fobin/",
-            "/link lib/webview/windows/WebView2LoaderStatic.lib gdi32.lib version.lib Ole32.lib OleAut32.lib wbemuuid.lib ntdll.lib dwmapi.lib"
+            "/link lib/webview/windows/WebView2LoaderStatic.lib gdi32.lib version.lib Ole32.lib OleAut32.lib wbemuuid.lib ntdll.lib dwmapi.lib setupapi.lib cfgmgr32.lib"
         ]
     },
     "definitions": {

@@ -53,7 +53,7 @@
 #include <infoware/system.hpp>
 #include <infoware/cpu.hpp>
 #include "api/computer/computer.h"
-#include "api/computer/connected_devices.h"
+#include "lib/system/input_devices.h"
 #include "helpers.h"
 #include "api/window/window.h"
 #include "api/os/os.h"
@@ -419,7 +419,7 @@ json getConnectedDevices(const json &input) {
     json output;
     output["returnValue"] = json::array();
 
-    const auto devices = computer::getConnectedDevices();
+    const auto devices = input_devices::getConnectedInputDevices();
     for(const auto &device: devices) {
         output["returnValue"].push_back({
             { "name", device.name },
