@@ -73,6 +73,25 @@ namespace iware {
 			std::vector<double> refresh_rates;
 		};
 
+		enum class connected_device_type_t {
+			mouse,
+			keyboard,
+			touchpad,
+			touchscreen,
+			gamepad,
+			joystick,
+			pen,
+			hid,
+			unknown,
+		};
+
+		struct connected_device_t {
+			std::string name;
+			connected_device_type_t type;
+			std::string vendor_id;
+			std::string product_id;
+		};
+
 		/// Get amount of connected mice.
 		INFOWARE_API_LINKAGE std::size_t mouse_amount() noexcept;
 
@@ -85,6 +104,9 @@ namespace iware {
 		///
 		/// Always returns 0 on Linuxish kernels, as it can not be detected there.
 		INFOWARE_API_LINKAGE std::size_t other_HID_amount() noexcept;
+
+		/// Get connected input/HID device details.
+		INFOWARE_API_LINKAGE std::vector<connected_device_t> connected_devices();
 
 		/// Get RAM statistics.
 		INFOWARE_API_LINKAGE memory_t memory() noexcept;

@@ -220,6 +220,7 @@ if(WIN32)
       wbemuuid
       ntdll
       dwmapi
+      hid
       iphlpapi
       ws2_32
     )
