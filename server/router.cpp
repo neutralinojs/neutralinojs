@@ -90,6 +90,7 @@ map<string, router::NativeMethod> methodMap = {
     {"computer.getMousePosition", computer::controllers::getMousePosition},
     {"computer.getHostname", computer::controllers::getHostname},
     {"computer.getMachineId", computer::controllers::getMachineId},
+    {"computer.getConnectedDevices", computer::controllers::getConnectedDevices},
     {"computer.setMousePosition", computer::controllers::setMousePosition},
     {"computer.setMouseGrabbing", computer::controllers::setMouseGrabbing},
     {"computer.sendKey", computer::controllers::sendKey},

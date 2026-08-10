@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <vector>
 #include <iomanip>
 #include "helpers.h"
 #include "errors.h"
@@ -406,6 +407,29 @@ string __getKernelVariant(const iware::system::kernel_t &variant) {
 	}
 }
 
+string __getConnectedDeviceType(const iware::system::connected_device_type_t &type) {
+    switch(type) {
+        case iware::system::connected_device_type_t::mouse:
+            return "MOUSE";
+        case iware::system::connected_device_type_t::keyboard:
+            return "KEYBOARD";
+        case iware::system::connected_device_type_t::touchpad:
+            return "TOUCHPAD";
+        case iware::system::connected_device_type_t::touchscreen:
+            return "TOUCHSCREEN";
+        case iware::system::connected_device_type_t::gamepad:
+            return "GAMEPAD";
+        case iware::system::connected_device_type_t::joystick:
+            return "JOYSTICK";
+        case iware::system::connected_device_type_t::pen:
+            return "PEN";
+        case iware::system::connected_device_type_t::hid:
+        case iware::system::connected_device_type_t::unknown:
+            return "HID";
+    }
+    return "HID";
+}
+
 json getMemoryInfo(const json &input) {
     json output;
     const auto memory = iware::system::memory();
@@ -584,6 +608,24 @@ json setMousePosition(const json &input) {
 json getMachineId(const json &input) {
     json output;
     output["returnValue"] = computer::getMachineId();
+    output["success"] = true;
+    return output;
+}
+
+json getConnectedDevices(const json &input) {
+    json output;
+    output["returnValue"] = json::array();
+    const auto devices = iware::system::connected_devices();
+
+    for(const auto &device: devices) {
+        output["returnValue"].push_back({
+            { "name", device.name },
+            { "type", __getConnectedDeviceType(device.type) },
+            { "vendorId", device.vendor_id },
+            { "productId", device.product_id }
+        });
+    }
+
     output["success"] = true;
     return output;
 }

@@ -15,7 +15,7 @@ enum SendKeyState { SendKeyStatePress, SendKeyStateDown, SendKeyStateUp };
 
 bool setMousePosition(int x, int y);
 bool setMouseGrabbing(bool grabbing);
-bool sendKey(const string &key, computer::SendKeyState keyState);
+bool sendKey(unsigned int keyCode, computer::SendKeyState keyState);
 
 string getArch();
 pair<int, int> getMousePosition();
@@ -33,9 +33,10 @@ json getDisks(const json &input);
 json getMousePosition(const json &input);
 json getHostname(const json &input);
 json getMachineId(const json &input);
+json getConnectedDevices(const json &input);
 json setMousePosition(const json &input);
 json setMouseGrabbing(const json &input);
-json sendKey(const json &input);;
+json sendKey(const json &input);
 json getNetworkInterfaces(const json &input);
 
 } // namespace controllers

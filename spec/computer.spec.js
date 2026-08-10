@@ -124,6 +124,35 @@ describe('computer.spec: computer namespace tests', () => {
         });
     });
 
+    describe('computer.getConnectedDevices', () => {
+        it('returns connected input devices', async () => {
+            runner.run(`
+                let devices = await Neutralino.computer.getConnectedDevices();
+                await __close(JSON.stringify(devices));
+            `);
+            let devices = JSON.parse(runner.getOutput());
+            assert.ok(Array.isArray(devices));
+
+            for(const device of devices) {
+                assert.ok(typeof device == 'object');
+                assert.ok(typeof device.name == 'string');
+                assert.ok(typeof device.type == 'string');
+                assert.ok(typeof device.vendorId == 'string');
+                assert.ok(typeof device.productId == 'string');
+                assert.ok([
+                    'MOUSE',
+                    'KEYBOARD',
+                    'TOUCHPAD',
+                    'TOUCHSCREEN',
+                    'GAMEPAD',
+                    'JOYSTICK',
+                    'PEN',
+                    'HID'
+                ].includes(device.type));
+            }
+        });
+    });
+
     describe('computer.getDiskInfo', () => {
         it('returns disk usage information', async () => {
             runner.run(`
