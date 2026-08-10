@@ -155,8 +155,8 @@ if(WIN32)
     _HAS_STD_BYTE=0
     HWINFO_EXPORTS
     TRAY_WINAPI=1
-    HWINFO_EXPORTS
     NOMINMAX
+    HWINFO_EXPORTS
     UNICODE
     _UNICODE
   )
@@ -222,6 +222,7 @@ if(WIN32)
       dwmapi
       iphlpapi
       ws2_32
+      advapi32
     )
 elseif(APPLE)
     # macOS
