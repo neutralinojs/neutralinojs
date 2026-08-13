@@ -227,6 +227,7 @@ elseif(APPLE)
     # macOS
     find_library(WebKit_FRAMEWORK WebKit)
     find_library(COCOA_FRAMEWORK Cocoa)
+    find_library(CARBON_FRAMEWORK Carbon)
     find_library(COREFOUNDATION_FRAMEWORK CoreFoundation)
     find_library(IOKIT_FRAMEWORK IOKit)
     find_library(SCREENCAPTUREKIT_FRAMEWORK ScreenCaptureKit)
@@ -235,6 +236,7 @@ elseif(APPLE)
     target_link_libraries(${PROJECT_NAME} PRIVATE
       ${WebKit_FRAMEWORK}
       ${COCOA_FRAMEWORK}
+      ${CARBON_FRAMEWORK}
       ${COREFOUNDATION_FRAMEWORK}
       ${IOKIT_FRAMEWORK}
       ${SECURITY_FRAMEWORK}
