@@ -1,0 +1,57 @@
+name: Bug Report
+description: Create a report to help us improve
+labels: bug
+body:
+  - type: textarea
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: To Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '....'
+        3. Scroll down to '....'
+        4. See error
+  - type: textarea
+    attributes:
+      label: Expected behavior
+      description: A clear and concise description of what you expected to happen
+  - type: markdown
+    attributes:
+      value: "# Specifications"
+  - type: input
+    attributes:
+      label: OS
+      placeholder: e.g. Windows 10 x64
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Neutralinojs version
+      placeholder: e.g. v4.3.0
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Neutralinojs client library version
+      placeholder: e.g. v3.3.0
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Neutralinojs CLI version
+      placeholder: e.g. v9.1.2
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: "*Note: you can enter the `neu version` command to find these details*"
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem here
