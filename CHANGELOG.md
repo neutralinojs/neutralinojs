@@ -6,6 +6,23 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: filesystem
+
+- Add filesystem scopes: Restrict filesystem access to a set of allowed paths via the new `filesystem.scopes` configuration option. When this option is set, the framework rejects any filesystem API call targeting a path outside the configured scopes with the new `NE_FS_SCOPERR` error. Scope entries support `NL_PATH` and `NL_OS_*PATH` constants, and each scope may reference a directory (any nested path is allowed) or a file (only the exact file is allowed).
+
+  Example configuration:
+
+  ```json
+  {
+    "filesystem": {
+      "scopes": [
+        "/path/to/location",
+        "/path/to/another/location"
+      ]
+    }
+  }
+  ```
+
 ## v6.9.0
 
 ### API: net

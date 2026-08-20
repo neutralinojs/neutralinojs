@@ -112,6 +112,19 @@
         }
       }
     },
+    "filesystem": {
+      "type": "object",
+      "description": "Filesystem-related configuration options.",
+      "properties": {
+        "scopes": {
+          "type": "array",
+          "description": "An array of allowed filesystem paths (scopes). When this option is set, the framework rejects any filesystem API call that targets a path outside the configured scopes with the 'NE_FS_SCOPERR' error. Each entry can be an absolute filesystem path or a path containing 'NL_PATH'/'NL_OS_*PATH' placeholders. A scope can point to a file (only that exact file is allowed) or a directory (anything within that directory is allowed). \n\n { \n   \"filesystem\": { \n     \"scopes\": [ \n       \"/home/user/documents\", \n       \"/tmp\", \n       \"${NL_PATH}/.tmp/notes.txt\" \n     ] \n   } \n }",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "applicationId": {
       "type": "string",
       "description": "Unique string to identify your application. \n Eg: js.neutralino.sample",
