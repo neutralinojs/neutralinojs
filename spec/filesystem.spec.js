@@ -50,6 +50,57 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         });
     });
 
+    describe('filesystem.createTempDirectory', () => {
+        it('works without options', async () => {
+            runner.run(`
+                let tempPath = await Neutralino.filesystem.createTempDirectory();
+                let tempRoot = await Neutralino.os.getPath('temp');
+                let stats = await Neutralino.filesystem.getStats(tempPath);
+                await Neutralino.filesystem.remove(tempPath);
+                await __close(JSON.stringify({
+                    inTemp: tempPath.startsWith(tempRoot + '/'),
+                    isDirectory: stats.isDirectory
+                }));
+            `);
+            const result = JSON.parse(runner.getOutput());
+            assert.equal(result.inTemp, true);
+            assert.equal(result.isDirectory, true);
+        });
+
+        it('uses a custom prefix', async () => {
+            runner.run(`
+                let tempPath = await Neutralino.filesystem.createTempDirectory({ prefix: 'neu_folder' });
+                let directoryName = tempPath.split('/').pop();
+                await Neutralino.filesystem.remove(tempPath);
+                await __close(directoryName);
+            `);
+            assert.equal(runner.getOutput().startsWith('neu_folder-'), true);
+        });
+
+        it('creates unique directories', async () => {
+            runner.run(`
+                let tempPath1 = await Neutralino.filesystem.createTempDirectory({ prefix: 'neu_folder' });
+                let tempPath2 = await Neutralino.filesystem.createTempDirectory({ prefix: 'neu_folder' });
+                let result = tempPath1 != tempPath2;
+                await Neutralino.filesystem.remove(tempPath1);
+                await Neutralino.filesystem.remove(tempPath2);
+                await __close(result.toString());
+            `);
+            assert.equal(runner.getOutput(), 'true');
+        });
+
+        it('throws an error for invalid prefixes', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.createTempDirectory({ prefix: '../neu_folder' });
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_FS_DIRCRER');
+        });
+    });
+
     describe('filesystem.remove', () => {
         it('works without throwing errors', async () => {
             runner.run(`

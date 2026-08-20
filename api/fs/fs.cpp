@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
+#include <random>
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 #include <unistd.h>
@@ -46,8 +47,37 @@ map<efsw::WatchID, pair<efsw::FileWatchListener*, string>> watchListeners;
 mutex watcherLock;
 
 #define NEU_DEFAULT_STREAM_BUF_SIZE 256
+#define NEU_TEMP_DIRECTORY_MAX_ATTEMPTS 100
 
 namespace fs {
+
+string __generateTempDirectoryName(const string &prefix) {
+    static const string characters =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+
+    random_device rd;
+    mt19937 generator(rd());
+    uniform_int_distribution<int> distribution(0, characters.size() - 1);
+
+    string name = prefix + "-";
+    for(int i = 0; i < 16; i++) {
+        name += characters[distribution(generator)];
+    }
+    return name;
+}
+
+bool __isValidTempDirectoryPrefix(const string &prefix) {
+    const string invalidCharacters = "<>:\"/\\|?*";
+
+    for(unsigned char ch: prefix) {
+        if(ch < 32 || invalidCharacters.find(ch) != string::npos) {
+            return false;
+        }
+    }
+    return true;
+}
 
 void __dispatchOpenedFileEvt(int virtualFileId, const string &action, const json &data) {
     json evt;
@@ -353,6 +383,41 @@ fs::DirReaderResult readDirectory(const string &path, bool recursive) {
     return dirResult;
 }
 
+fs::TempDirectoryResult createTempDirectory(const string &prefix) {
+    fs::TempDirectoryResult tempDirectoryResult;
+    if(!__isValidTempDirectoryPrefix(prefix)) {
+        tempDirectoryResult.status = errors::NE_FS_DIRCRER;
+        return tempDirectoryResult;
+    }
+
+    error_code ec;
+    filesystem::path tempPath = filesystem::temp_directory_path(ec);
+    if(ec) {
+        tempDirectoryResult.status = errors::NE_FS_DIRCRER;
+        return tempDirectoryResult;
+    }
+
+    for(int i = 0; i < NEU_TEMP_DIRECTORY_MAX_ATTEMPTS; i++) {
+        string tempDirectoryName = __generateTempDirectoryName(prefix);
+        filesystem::path tempDirectoryPath = tempPath / filesystem::path(CONVSTR(tempDirectoryName));
+
+        ec.clear();
+        if(filesystem::create_directory(tempDirectoryPath, ec)) {
+            string path = FS_CONVWSTR(tempDirectoryPath);
+            tempDirectoryResult.path = helpers::normalizePath(path);
+            return tempDirectoryResult;
+        }
+
+        if(ec) {
+            tempDirectoryResult.status = errors::NE_FS_DIRCRER;
+            return tempDirectoryResult;
+        }
+    }
+
+    tempDirectoryResult.status = errors::NE_FS_DIRCRER;
+    return tempDirectoryResult;
+}
+
 string applyPathConstants(const string &path) {
     string newPath = regex_replace(path, regex("\\$\\{NL_PATH\\}"), settings::getAppPath());
 
@@ -420,6 +485,28 @@ json createDirectory(const json &input) {
     }
     else {
         output["error"] = errors::makeErrorPayload(errors::NE_FS_DIRCRER, path);
+    }
+    return output;
+}
+
+json createTempDirectory(const json &input) {
+    json output;
+    string prefix = "neutralino";
+
+    if(helpers::hasField(input, "prefix")) {
+        prefix = input["prefix"].get<string>();
+        if(prefix.empty()) {
+            prefix = "neutralino";
+        }
+    }
+
+    fs::TempDirectoryResult tempDirectoryResult = fs::createTempDirectory(prefix);
+    if(tempDirectoryResult.status == errors::NE_ST_OK) {
+        output["returnValue"] = tempDirectoryResult.path;
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(tempDirectoryResult.status, prefix);
     }
     return output;
 }
