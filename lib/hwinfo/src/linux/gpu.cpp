@@ -79,6 +79,17 @@ std::vector<GPU> getAllGPUs() {
     }
     auto frequencies = get_frequencies(path);
     gpu._frequency_hz = frequencies[2];
+
+    if (gpu._vendor_id == "0x10de") {
+      gpu._vendor = "NVIDIA";
+    } else if (gpu._vendor_id == "0x1002" || gpu._vendor_id == "0x1022") {
+      gpu._vendor = "AMD";
+    } else if (gpu._vendor_id == "0x8086") {
+      gpu._vendor = "Intel";
+    } else {
+      gpu._vendor = "Unknown";
+    }
+
     gpus.push_back(std::move(gpu));
     id++;
   }
