@@ -112,6 +112,19 @@
         }
       }
     },
+    "os": {
+      "type": "object",
+      "description": "OS-related configuration options.",
+      "properties": {
+        "allowCommands": {
+          "type": "array",
+          "description": "An array of shell-command programs that can be executed through 'os.execCommand' and 'os.spawnProcess'. When this option is set with one or more entries, the framework rejects any command whose program name doesn't match an entry with the 'NE_OS_CMDNALLW' error. If the list is empty or omitted, no restriction is applied. Patterns support the '*' and '?' wildcards (applied only to the program's executable name — argv[0] — not the full command line). The command is parsed with simple shell-quote rules; unquoted shell metacharacters (';|&><$`(){}' and newline) reject the command outright so 'os.allowCommands' cannot be used to run piped/redirected commands. \n\n { \n   \"os\": { \n     \"allowCommands\": [ \n       \"git\", \n       \"node\", \n       \"python3 *\" \n     ] \n   } \n } \n\n A list containing only '*' (or any pattern that matches everything) behaves like 'no restriction' — equivalent to omitting the option.",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "applicationId": {
       "type": "string",
       "description": "Unique string to identify your application. \n Eg: js.neutralino.sample",
