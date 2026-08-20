@@ -22,7 +22,7 @@
     },
     "nativeBlockList": [],
     "filesystem": {
-        "scopes": []
+        "scopes": {}
     },
     "globalVariables": {
         "TEST1": "Hello",
