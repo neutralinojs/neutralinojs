@@ -3,7 +3,6 @@
 #include <cctype>
 #include <fstream>
 #include <iomanip>
-#include <set>
 #include <sstream>
 #include <string>
 #include "helpers.h"
@@ -408,67 +407,6 @@ string __getKernelVariant(const iware::system::kernel_t &variant) {
 	}
 }
 
-string __normalizeGPUId(string id) {
-    if(id.size() > 1 && id[0] == '0' && (id[1] == 'x' || id[1] == 'X')) {
-        id = id.substr(2);
-    }
-
-    transform(id.begin(), id.end(), id.begin(), [](unsigned char ch) {
-        return static_cast<char>(tolower(ch));
-    });
-
-    while(id.size() > 1 && id[0] == '0') {
-        id.erase(id.begin());
-    }
-
-    return id;
-}
-
-string __normalizeGPUValue(string value) {
-    transform(value.begin(), value.end(), value.begin(), [](unsigned char ch) {
-        return static_cast<char>(tolower(ch));
-    });
-    return value;
-}
-
-bool __isUnknownGPUValue(const string &value) {
-    return value.empty() || value == "Unknown" || value == "<unknown>" || value == "invalid";
-}
-
-string __getGPUVendor(const hwinfo::GPU &gpu) {
-    const string vendor = gpu.vendor();
-    if(!__isUnknownGPUValue(vendor)) return vendor;
-
-    const string vendorId = __normalizeGPUId(gpu.vendor_id());
-    if(vendorId == "8086") return "Intel";
-    if(vendorId == "1002" || vendorId == "1022") return "AMD";
-    if(vendorId == "10de") return "NVIDIA";
-    if(vendorId == "1414") return "Microsoft";
-    if(vendorId == "5143") return "Qualcomm";
-    if(vendorId == "106b") return "Apple";
-    return "Unknown";
-}
-
-string __getGPUName(const hwinfo::GPU &gpu) {
-    const string name = gpu.name();
-    if(!__isUnknownGPUValue(name)) return name;
-    if(!gpu.device_id().empty()) return gpu.device_id();
-    return "Unknown";
-}
-
-string __getGPUIdentity(const hwinfo::GPU &gpu) {
-    const string vendorId = __normalizeGPUId(gpu.vendor_id());
-    const string deviceId = __normalizeGPUId(gpu.device_id());
-    const string name = __normalizeGPUValue(__getGPUName(gpu));
-    const string memorySize = to_string(gpu.dedicated_memory_Bytes());
-
-    if(!vendorId.empty() && !deviceId.empty()) {
-        return "pci:" + vendorId + ":" + deviceId + ":" + name + ":" + memorySize;
-    }
-
-    return "name:" + __normalizeGPUValue(__getGPUVendor(gpu)) + ":" + name + ":" + memorySize;
-}
-
 json getMemoryInfo(const json &input) {
     json output;
     const auto memory = iware::system::memory();
@@ -543,29 +481,21 @@ json getCPUInfo(const json &input) {
 json getGPUInfo(const json &input) {
     json output;
     output["returnValue"] = json::array();
-    const auto devices = hwinfo::getAllGPUs();
+    const auto gpus = hwinfo::getAllGPUs();
 
-    uint32_t deviceId = 0;
-    set<string> gpuIdentities;
-    for(const auto &device: devices) {
-        const string gpuIdentity = __getGPUIdentity(device);
-        if(gpuIdentities.find(gpuIdentity) != gpuIdentities.end()) {
-            continue;
-        }
-        gpuIdentities.insert(gpuIdentity);
-
-        const uint32_t id = device.id() == hwinfo::GPU::invalid_id ? deviceId : device.id();
+    unsigned int gpuId = 0;
+    for(const auto &gpu: gpus) {
         json gpuInfo = {
-            { "id", id },
-            { "vendor", __getGPUVendor(device) },
-            { "name", __getGPUName(device) },
-            { "memorySize", device.dedicated_memory_Bytes() },
-            { "cacheSize", 0 },
-            { "maxFrequency", device.frequency_hz() }
+            { "id", gpuId },
+            { "deviceId", gpu.device_id() },
+            { "vendorId", gpu.vendor_id() },
+            { "vendor", gpu.vendor() },
+            { "dedicatedMemory", gpu.dedicated_memory_Bytes() },
+            { "sharedMemory", gpu.shared_memory_Bytes() }
         };
 
         output["returnValue"].push_back(gpuInfo);
-        deviceId++;
+        gpuId++;
     }
     output["success"] = true;
     return output;
