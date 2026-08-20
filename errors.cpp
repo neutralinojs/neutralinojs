@@ -53,6 +53,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_FS_ACSFAIL: return "NE_FS_ACSFAIL";
         case errors::NE_FS_CHMDERR: return "NE_FS_CHMDERR";
         case errors::NE_FS_CHWNERR: return "NE_FS_CHWNERR";
+        case errors::NE_FS_SCOPERR: return "NE_FS_SCOPERR";
         // window
         case errors::NE_WI_UNBSWSR: return "NE_WI_UNBSWSR";
         // router
@@ -131,6 +132,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_FS_ACSFAIL: return "File access check failed for %1";
         case errors::NE_FS_CHMDERR: return "Unable to change permissions for %1";
         case errors::NE_FS_CHWNERR: return "Unable to change ownership for %1";
+        case errors::NE_FS_SCOPERR: return "Cannot access path %1 outside configured filesystem scopes";
         // window
         case errors::NE_WI_UNBSWSR: return "Unable to save window screenshot to %1";
         // router

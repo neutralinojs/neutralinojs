@@ -112,6 +112,21 @@
         }
       }
     },
+    "filesystem": {
+      "type": "object",
+      "description": "Filesystem-related configuration options.",
+      "properties": {
+        "scopes": {
+          "type": "object",
+          "description": "A map of allowed filesystem paths to their access mode. Each key is an absolute filesystem path (or a path containing 'NL_PATH' / 'NL_OS_*PATH' placeholders) and each value is one of 'read', 'write' or 'read-write'. A scope can point to a file (only that exact file is allowed) or to a directory (anything within that directory is allowed). When this option is set, the framework rejects any filesystem API call whose target path is not covered by an entry whose mode permits that operation with the 'NE_FS_SCOPERR' error. If the map is empty or omitted, no restriction is applied. \n\n { \n   \"filesystem\": { \n     \"scopes\": { \n       \"/home/user/documents\": \"read\", \n       \"/tmp\": \"read-write\", \n       \"${NL_PATH}/.tmp/notes.txt\": \"write\" \n     } \n   } \n }",
+          "additionalProperties": {
+            "type": "string",
+            "enum": ["read", "write", "read-write"],
+            "description": "Access mode for the path. 'read' allows reading operations only, 'write' allows writing operations only, 'read-write' allows both."
+          }
+        }
+      }
+    },
     "applicationId": {
       "type": "string",
       "description": "Unique string to identify your application. \n Eg: js.neutralino.sample",
