@@ -27,6 +27,7 @@ enum StatusCode {
     NE_OS_INVKNPT,
     NE_OS_UNLTRAS,
     NE_OS_UNLTOUV,
+    NE_OS_CMDNALLW,
     // computer
     NE_CO_UNLTOSC,
     NE_CO_UNLTOMG,

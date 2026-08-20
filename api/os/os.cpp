@@ -390,6 +390,133 @@ bool setEnv(const string &key, const string &value) {
     #endif
 }
 
+bool __globMatch(const string &value, const string &pattern) {
+    string regexStr = "^";
+    for(const char c: pattern) {
+        switch(c) {
+            case '*': regexStr += ".*"; break;
+            case '?': regexStr += "."; break;
+            case '.': case '\\': case '+': case '(': case ')':
+            case '[': case ']': case '{': case '}': case '|':
+            case '^': case '$': case '#': regexStr += "\\"; [[fallthrough]];
+            default: regexStr += c; break;
+        }
+    }
+    regexStr += "$";
+    try {
+        return regex_match(value, regex(regexStr));
+    }
+    catch(const regex_error &) {
+        return false;
+    }
+}
+
+vector<string> __tokenizeCommand(const string &command) {
+    vector<string> tokens;
+    string current;
+    bool inSingle = false;
+    bool inDouble = false;
+
+    auto flushToken = [&](void) {
+        if(!current.empty()) {
+            tokens.push_back(current);
+            current.clear();
+        }
+    };
+
+    for(size_t i = 0; i < command.size(); i++) {
+        unsigned char c = static_cast<unsigned char>(command[i]);
+        if(!inSingle && !inDouble) {
+            if(isspace(c)) {
+                flushToken();
+            }
+            else if(c == '\'') {
+                inSingle = true;
+            }
+            else if(c == '"') {
+                inDouble = true;
+            }
+            else if(strchr(";|&><$`(){}\\\n\r", c) != nullptr) {
+                tokens.clear();
+                return tokens;
+            }
+            else {
+                current += static_cast<char>(c);
+            }
+        }
+        else if(inSingle) {
+            if(c == '\'') {
+                inSingle = false;
+            }
+            else if(c == '\\' && i + 1 < command.size()) {
+                current += command[++i];
+            }
+            else {
+                current += static_cast<char>(c);
+            }
+        }
+        else {
+            if(c == '"') {
+                inDouble = false;
+            }
+            else if(c == '\\' && i + 1 < command.size()) {
+                current += command[++i];
+            }
+            else {
+                current += static_cast<char>(c);
+            }
+        }
+    }
+    if(inSingle || inDouble) {
+        tokens.clear();
+        return tokens;
+    }
+    flushToken();
+    return tokens;
+}
+
+bool __isCommandAllowed(const string &command) {
+    static vector<string> allowedPatterns;
+    static bool patternsInitialized = false;
+
+    if(!patternsInitialized) {
+        patternsInitialized = true;
+        json jOs = settings::getOptionForCurrentMode("os");
+        if(jOs.is_object()) {
+            json jAllow = jOs["allowCommands"];
+            if(jAllow.is_array()) {
+                for(const auto &entry: jAllow) {
+                    if(entry.is_string()) {
+                        allowedPatterns.push_back(entry.get<string>());
+                    }
+                }
+            }
+        }
+    }
+
+    if(allowedPatterns.empty()) {
+        return true;
+    }
+
+    vector<string> tokens = __tokenizeCommand(command);
+    if(tokens.empty()) {
+        return false;
+    }
+
+    string program = tokens[0];
+    size_t slash = program.find_last_of("/\\");
+    if(slash != string::npos) {
+        program = program.substr(slash + 1);
+    }
+
+    for(const string &pattern: allowedPatterns) {
+        if(__globMatch(program, pattern)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 namespace controllers {
 
 vector<string> __extensionsToVector(const json &filters) {
@@ -416,6 +543,12 @@ json execCommand(const json &input) {
         return output;
     }
     string command = input["command"].get<string>();
+
+    if(!__isCommandAllowed(command)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_CMDNALLW, command);
+        return output;
+    }
+
     os::ChildProcessOptions processOptions;
 
     if(helpers::hasField(input, "stdIn")) {
@@ -456,6 +589,12 @@ json spawnProcess(const json &input) {
     }
     
     string command = input["command"].get<string>();
+
+    if(!__isCommandAllowed(command)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_CMDNALLW, command);
+        return output;
+    }
+
     os::ChildProcessOptions processOptions;
     
     if(helpers::hasField(input, "cwd")) {
