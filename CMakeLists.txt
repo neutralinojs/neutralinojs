@@ -222,7 +222,6 @@ if(WIN32)
       wbemuuid
       ntdll
       dwmapi
-      dxgi
       iphlpapi
       ws2_32
     )
