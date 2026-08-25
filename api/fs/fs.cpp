@@ -50,7 +50,7 @@ map<efsw::WatchID, pair<efsw::FileWatchListener*, string>> watchListeners;
 mutex watcherLock;
 
 #define NEU_DEFAULT_STREAM_BUF_SIZE 256
-#define NEU_TEMP_FILE_CREATE_MAX_ATTEMPTS 100
+#define NEU_TEMP_CREATE_MAX_ATTEMPTS 100
 
 namespace fs {
 
@@ -423,14 +423,48 @@ fs::TempFileResult createTempFile(const string &prefix, const string &extension)
         return result;
     }
 
-    for(int attempt = 0; attempt < NEU_TEMP_FILE_CREATE_MAX_ATTEMPTS; attempt++) {
+    for(int attempt = 0; attempt < NEU_TEMP_CREATE_MAX_ATTEMPTS; attempt++) {
         filesystem::path tempPath = tempDirectory / filesystem::path(CONVSTR(prefix + __makeTempFileToken() + extension));
         bool alreadyExists = false;
         if(__createFileExclusively(tempPath, alreadyExists)) {
-            result.path = FS_CONVWSTRN(tempPath);
+            string path = FS_CONVWSTR(tempPath);
+            result.path = helpers::normalizePath(path);
             return result;
         }
         if(!alreadyExists) {
+            result.status = errors::NE_FS_TMPCRER;
+            return result;
+        }
+    }
+
+    result.status = errors::NE_FS_TMPCRER;
+    return result;
+}
+
+fs::TempDirectoryResult createTempDirectory(const string &prefix) {
+    fs::TempDirectoryResult result;
+
+    if(__hasUnsafeTempNameSegment(prefix)) {
+        result.status = errors::NE_FS_TMPCRER;
+        return result;
+    }
+
+    error_code ec;
+    filesystem::path tempDirectory = filesystem::temp_directory_path(ec);
+    if(ec) {
+        result.status = errors::NE_FS_TMPCRER;
+        return result;
+    }
+
+    for(int attempt = 0; attempt < NEU_TEMP_CREATE_MAX_ATTEMPTS; attempt++) {
+        filesystem::path tempPath = tempDirectory / filesystem::path(CONVSTR(prefix + __makeTempFileToken()));
+        ec.clear();
+        if(filesystem::create_directory(tempPath, ec)) {
+            string path = FS_CONVWSTR(tempPath);
+            result.path = helpers::normalizePath(path);
+            return result;
+        }
+        if(ec) {
             result.status = errors::NE_FS_TMPCRER;
             return result;
         }
@@ -530,6 +564,25 @@ json createTempFile(const json &input) {
     }
     else {
         output["error"] = errors::makeErrorPayload(result.status, prefix + extension);
+    }
+    return output;
+}
+
+json createTempDirectory(const json &input) {
+    json output;
+    string prefix;
+
+    if(helpers::hasField(input, "prefix")) {
+        prefix = input["prefix"].get<string>();
+    }
+
+    fs::TempDirectoryResult result = fs::createTempDirectory(prefix);
+    if(result.status == errors::NE_ST_OK) {
+        output["returnValue"] = result.path;
+        output["success"] = true;
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(result.status, prefix);
     }
     return output;
 }

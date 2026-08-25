@@ -6,6 +6,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: filesystem
+- Implement `filesystem.createTempFile(options)` and `filesystem.createTempDirectory(options)` to create unique temporary filesystem entries in the operating system's temporary directory.
+
 ## v6.8.0
 
 ### Core: new window policy

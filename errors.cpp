@@ -122,7 +122,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_FS_ACSFAIL: return "File access check failed for %1";
         case errors::NE_FS_CHMDERR: return "Unable to change permissions for %1";
         case errors::NE_FS_CHWNERR: return "Unable to change ownership for %1";
-        case errors::NE_FS_TMPCRER: return "Unable to create temporary file: %1";
+        case errors::NE_FS_TMPCRER: return "Unable to create temporary filesystem entry: %1";
         // window
         case errors::NE_WI_UNBSWSR: return "Unable to save window screenshot to %1";
         // router

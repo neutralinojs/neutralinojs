@@ -96,6 +96,7 @@ map<string, router::NativeMethod> methodMap = {
     // Neutralino.filesystem
     {"filesystem.createDirectory", fs::controllers::createDirectory},
     {"filesystem.createTempFile", fs::controllers::createTempFile},
+    {"filesystem.createTempDirectory", fs::controllers::createTempDirectory},
     {"filesystem.remove", fs::controllers::remove},
     {"filesystem.readFile", fs::controllers::readFile},
     {"filesystem.readBinaryFile", fs::controllers::readBinaryFile},
