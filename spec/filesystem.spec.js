@@ -31,6 +31,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
                 try {
                     await Neutralino.filesystem.createDirectory(NL_PATH + '/.tmp/abc');
                     await Neutralino.filesystem.createDirectory(NL_PATH + '/.tmp/abc');
+                    await __close("NO_ERROR_THROWN");
                 } catch (error) {
                     await __close(error.code);
                 }
@@ -42,6 +43,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             runner.run(`
                 try {
                     await Neutralino.filesystem.createDirectory(NL_PATH + '/.tmp/\0invalidpath');
+                    await __close("NO_ERROR_THROWN");
                 } catch (error) {
                     await __close(error.code);
                 }
@@ -64,6 +66,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             runner.run(`
                 try {
                     await Neutralino.filesystem.remove(NL_PATH + '/.tmp/abcd');
+                    await __close("NO_ERROR_THROWN");
                 } catch (error) {
                     await __close(error.code);
                 }
@@ -235,6 +238,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             runner.run(`
                 try {
                     await Neutralino.filesystem.readFile(NL_PATH + '/.tmp/test.txt');
+                    await __close("NO_ERROR_THROWN");
                 } catch (error) {
                     await __close(error.code);
                 }
@@ -455,6 +459,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             runner.run(`
                 try {
                     await Neutralino.filesystem.openFile();
+                    await __close("NO_ERROR_THROWN");
                 }
                 catch(err) {
                     await __close(err.code);
@@ -467,6 +472,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             runner.run(`
                 try {
                     await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/nonexistent.txt');
+                    await __close("NO_ERROR_THROWN");
                 } catch (error) {
                     await __close(error.code);
                 }
@@ -566,6 +572,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
                 try {
                     let fileId = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/test.txt');
                     await Neutralino.filesystem.updateOpenedFile(fileId, 'invalid', 3);
+                    await __close("NO_ERROR_THROWN");
                 } catch (error) {
                     await __close(error.code);
                 }
@@ -602,6 +609,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             runner.run(`    
                 try {
                     await Neutralino.filesystem.updateOpenedFile(123, 'read', 3);
+                    await __close("NO_ERROR_THROWN");
                 } catch (error) {
                     await __close(error.code);
                 }
@@ -745,6 +753,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             runner.run(`
                 try {
                     await Neutralino.filesystem.readDirectory(NL_PATH + '/.tmp/nonExistentDir');
+                    await __close("NO_ERROR_THROWN");
                 } catch (error) {
                     await __close(error.code);
                 }
@@ -886,6 +895,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
                 await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test_new.txt', 'Hello');
                 try {
                     await Neutralino.filesystem.move(NL_PATH + '/.tmp/test_new.txt', NL_PATH + '/.tmp/nonexistent/test.txt');
+                    await __close("NO_ERROR_THROWN");
                 } catch (error) {
                     await __close(error.code);
                 }
@@ -935,6 +945,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             runner.run(`
                 try {
                     let stats = await Neutralino.filesystem.getStats(NL_PATH + '/invalid-path');
+                    await __close("NO_ERROR_THROWN");
                 }
                 catch(error) {
                     await __close(error.code);
@@ -1021,6 +1032,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             runner.run(`
                 try {
                     await Neutralino.filesystem.createWatcher();
+                    await __close("NO_ERROR_THROWN");
                 }
                 catch(err) {
                     await __close(err.code);
@@ -1033,6 +1045,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             runner.run(`
                 try {
                     await Neutralino.filesystem.createWatcher(NL_PATH + '/invalid-path');
+                    await __close("NO_ERROR_THROWN");
                 }
                 catch(err) {
                     await __close(err.code);
@@ -1057,6 +1070,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             runner.run(`
                 try {
                     await Neutralino.filesystem.removeWatcher();
+                    await __close("NO_ERROR_THROWN");
                 }
                 catch(err) {
                     await __close(err.code);
@@ -1069,6 +1083,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             runner.run(`
                 try {
                     await Neutralino.filesystem.removeWatcher(1000);
+                    await __close("NO_ERROR_THROWN");
                 }
                 catch(err) {
                     await __close(err.code);
@@ -1100,6 +1115,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             runner.run(`
                 try {
                     await Neutralino.filesystem.getRelativePath();
+                    await __close("NO_ERROR_THROWN");
                 } catch (error) {
                     await __close(error.code);
                 }
@@ -1288,6 +1304,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             runner.run(`
                 try {
                     await Neutralino.filesystem.getPermissions();
+                    await __close("NO_ERROR_THROWN");
                 } catch (error) {
                     await __close(error.code);
                 }
@@ -1299,6 +1316,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             runner.run(`
                 try {
                     await Neutralino.filesystem.getPermissions(NL_PATH + '/.tmp/test-dir');
+                    await __close("NO_ERROR_THROWN");
                 } catch (error) {
                     await __close(error.code);
                 }
@@ -1355,6 +1373,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             runner.run(`
                 try {
                     await Neutralino.filesystem.setPermissions();
+                    await __close("NO_ERROR_THROWN");
                 } catch (error) {
                     await __close(error.code);
                 }
@@ -1366,6 +1385,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             runner.run(`
                 try {
                     await Neutralino.filesystem.setPermissions(NL_PATH + '/.tmp/test-dir', {ownerRead: true});
+                    await __close("NO_ERROR_THROWN");
                 } catch (error) {
                     await __close(error.code);
                 }
@@ -1442,14 +1462,15 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         });
     });
 
-    describe('filesystem.moveToTrash', () => {
+    describe('os.trashItem', () => {
         it('moves a file to trash without throwing errors', async () => {
             runner.run(`
                 await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/trash-test.txt', 'Hello');
-                await Neutralino.filesystem.moveToTrash(NL_PATH + '/.tmp/trash-test.txt');
+                await Neutralino.os.trashItem(NL_PATH + '/.tmp/trash-test.txt');
                 try {
                     await Neutralino.filesystem.getStats(NL_PATH + '/.tmp/trash-test.txt');
                     await __close('still exists');
+                    await __close("NO_ERROR_THROWN");
                 } catch (error) {
                     await __close('moved');
                 }
@@ -1461,10 +1482,11 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             runner.run(`
                 await Neutralino.filesystem.createDirectory(NL_PATH + '/.tmp/trash-dir');
                 await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/trash-dir/file.txt', 'Hello');
-                await Neutralino.filesystem.moveToTrash(NL_PATH + '/.tmp/trash-dir');
+                await Neutralino.os.trashItem(NL_PATH + '/.tmp/trash-dir');
                 try {
                     await Neutralino.filesystem.getStats(NL_PATH + '/.tmp/trash-dir');
                     await __close('still exists');
+                    await __close("NO_ERROR_THROWN");
                 } catch (error) {
                     await __close('moved');
                 }
@@ -1475,12 +1497,13 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         it('throws an error for a non-existent path', async () => {
             runner.run(`
                 try {
-                    await Neutralino.filesystem.moveToTrash(NL_PATH + '/.tmp/nonexistent-file.txt');
+                    await Neutralino.os.trashItem(NL_PATH + '/.tmp/nonexistent-file.txt');
+                    await __close("NO_ERROR_THROWN");
                 } catch (error) {
                     await __close(error.code);
                 }
             `);
-            assert.equal(runner.getOutput(), 'NE_FS_TRSERR');
+            assert.equal(runner.getOutput(), 'NE_OS_UNLTRAS');
         });
     });
 });

@@ -14,7 +14,9 @@ Neutralino.events.on("ready", async () => {
 
 async function __close(data = "", exitCode = 0) {
     if(data) {
-        await Neutralino.filesystem.writeFile(NL_PATH + "/.tmp/output.txt", data);
+        try {
+            await Neutralino.filesystem.writeFile(NL_PATH + "/.tmp/output.txt", data);
+        } catch(e) {}
     }
     setTimeout(async () => {
         await Neutralino.app.exit(exitCode); // normal exit
@@ -29,7 +31,9 @@ async function __init() {
         // ignore
     }
     setTimeout(async () => {
-        await Neutralino.filesystem.writeFile(NL_PATH + "/.tmp/output.txt", 'NL_SP_MAXTIMT');
+        try {
+            await Neutralino.filesystem.writeFile(NL_PATH + "/.tmp/output.txt", 'NL_SP_MAXTIMT');
+        } catch(e) {}
         await Neutralino.app.exit(1); // max timeout force exit
     }, 20000);
 }
@@ -41,6 +45,7 @@ const SOURCE_FILE = '../bin/resources/js/main_spec.js';
 
 function run(code, options = {}) {
     cleanup();
+    fs.mkdirSync(TMP_DIR, { recursive: true });
     if(options.debug) {
         console.log('INFO: Preparing app source...');
     }
@@ -102,6 +107,9 @@ function makeAppSource(code, beforeInitCode = '') {
 }
 
 function cleanup() {
+    try {
+        fs.chmodSync(TMP_DIR + '/test-dir', 0o777);
+    } catch(err) {}
     try {
         fs.rmSync(TMP_DIR, { recursive: true });
         fs.unlinkSync(SOURCE_FILE);
