@@ -145,6 +145,9 @@ map<string, router::NativeMethod> methodMap = {
     {"os.open", os::controllers::open},
     {"os.getPath", os::controllers::getPath},
     {"os.trashItem", os::controllers::trashItem},
+    {"os.registerGlobalHotkey", os::controllers::registerGlobalHotkey},
+    {"os.unregisterGlobalHotkey", os::controllers::unregisterGlobalHotkey},
+    {"os.getRegisteredHotkeys", os::controllers::getRegisteredHotkeys},
     // Neutralino.storage
     {"storage.setData", storage::controllers::setData},
     {"storage.getData", storage::controllers::getData},
@@ -226,7 +229,9 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
             if(nativeMethodId == "os.showMessageBox" ||
                 regex_match(nativeMethodId, regex("^window.*")) ||
                 regex_match(nativeMethodId, regex("^computer.*")) ||
-                nativeMethodId == "os.setTray") {
+                nativeMethodId == "os.setTray" ||
+                nativeMethodId == "os.registerGlobalHotkey" ||
+                nativeMethodId == "os.unregisterGlobalHotkey") {
                 dispatch_sync(dispatch_get_main_queue(), ^{
                     apiOutput = (*nativeMethod)(request.data);
                 });

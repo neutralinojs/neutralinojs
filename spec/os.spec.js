@@ -589,6 +589,151 @@ describe('os.spec: os namespace tests', () => {
         });
     });
 
+    describe('os.registerGlobalHotkey', () => {
+        it('exports the function to the app', async () => {
+            runner.run(`
+                await __close(typeof Neutralino.os.registerGlobalHotkey);
+            `);
+            assert.equal(runner.getOutput(), 'function');
+        });
+
+        it('registers a global hotkey and returns true', async () => {
+            runner.run(`
+                const result = await Neutralino.os.registerGlobalHotkey('Ctrl+Alt+Shift+F9');
+                await __close(result.toString());
+            `);
+            assert.equal(runner.getOutput(), 'true');
+        });
+
+        it('returns registered global hotkeys', async () => {
+            runner.run(`
+                await Neutralino.os.registerGlobalHotkey('Ctrl+Alt+Shift+F9');
+                const hotkeys = await Neutralino.os.getRegisteredHotkeys();
+                await __close(JSON.stringify(hotkeys));
+            `);
+            const hotkeys = JSON.parse(runner.getOutput());
+            assert.ok(Array.isArray(hotkeys));
+            assert.ok(hotkeys.includes('Ctrl+Shift+Alt+F9'));
+        });
+
+        it('normalizes duplicate global hotkey registrations', async () => {
+            runner.run(`
+                await Neutralino.os.registerGlobalHotkey('Ctrl+Alt+Shift+F9');
+                await Neutralino.os.registerGlobalHotkey('shift + control + alt + f9');
+                const hotkeys = await Neutralino.os.getRegisteredHotkeys();
+                await __close(JSON.stringify(hotkeys.filter(hotkey => hotkey == 'Ctrl+Shift+Alt+F9')));
+            `);
+            assert.equal(JSON.parse(runner.getOutput()).length, 1);
+        });
+
+        it('throws an error for invalid global hotkeys', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.os.registerGlobalHotkey('Ctrl+Shift');
+                }
+                catch(error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_OS_INVHOTKY');
+        });
+
+        it('throws an error for missing args', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.os.registerGlobalHotkey();
+                }
+                catch(error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+        });
+    });
+
+    describe('os.getRegisteredHotkeys', () => {
+        it('exports the function to the app', async () => {
+            runner.run(`
+                await __close(typeof Neutralino.os.getRegisteredHotkeys);
+            `);
+            assert.equal(runner.getOutput(), 'function');
+        });
+
+        it('returns an empty array when no hotkeys are registered', async () => {
+            runner.run(`
+                const hotkeys = await Neutralino.os.getRegisteredHotkeys();
+                await __close(JSON.stringify(hotkeys));
+            `);
+            assert.deepEqual(JSON.parse(runner.getOutput()), []);
+        });
+    });
+
+    describe('os.unregisterGlobalHotkey', () => {
+        it('exports the function to the app', async () => {
+            runner.run(`
+                await __close(typeof Neutralino.os.unregisterGlobalHotkey);
+            `);
+            assert.equal(runner.getOutput(), 'function');
+        });
+
+        it('unregisters a previously registered global hotkey', async () => {
+            runner.run(`
+                await Neutralino.os.registerGlobalHotkey('Ctrl+Alt+Shift+F9');
+                const result = await Neutralino.os.unregisterGlobalHotkey('Ctrl+Alt+Shift+F9');
+                const hotkeys = await Neutralino.os.getRegisteredHotkeys();
+                await __close(JSON.stringify({
+                    result,
+                    exists: hotkeys.includes('Ctrl+Shift+Alt+F9')
+                }));
+            `);
+            const output = JSON.parse(runner.getOutput());
+            assert.equal(output.result, true);
+            assert.equal(output.exists, false);
+        });
+
+        it('normalizes global hotkeys before unregistering', async () => {
+            runner.run(`
+                await Neutralino.os.registerGlobalHotkey('Ctrl+Alt+Shift+F9');
+                await Neutralino.os.unregisterGlobalHotkey('shift + control + alt + f9');
+                const hotkeys = await Neutralino.os.getRegisteredHotkeys();
+                await __close(JSON.stringify(hotkeys));
+            `);
+            assert.equal(JSON.parse(runner.getOutput()).includes('Ctrl+Shift+Alt+F9'), false);
+        });
+
+        it('returns true for unregistered but valid global hotkeys', async () => {
+            runner.run(`
+                const result = await Neutralino.os.unregisterGlobalHotkey('Ctrl+Alt+Shift+F9');
+                await __close(result.toString());
+            `);
+            assert.equal(runner.getOutput(), 'true');
+        });
+
+        it('throws an error for invalid global hotkeys', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.os.unregisterGlobalHotkey('Ctrl+Shift');
+                }
+                catch(error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_OS_INVHOTKY');
+        });
+
+        it('throws an error for missing args', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.os.unregisterGlobalHotkey();
+                }
+                catch(error) {
+                    await __close(error.code);
+                }
+            `);
+            assert.equal(runner.getOutput(), 'NE_RT_NATRTER');
+        });
+    });
+
     describe('os.open', () => {
         it('exports the function to the app', async () => {
             runner.run(`

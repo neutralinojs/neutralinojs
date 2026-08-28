@@ -3,8 +3,11 @@
 
 #include <string>
 #include <functional>
+#include <map>
+#include <vector>
 
 #include "lib/json/json.hpp"
+#include "errors.h"
 
 using json = nlohmann::json;
 using namespace std;
@@ -40,8 +43,14 @@ struct ChildProcessOptions {
     function<void(const char *bytes, size_t n)> stdErrHandler;
 };
 
+struct GlobalHotkeyResult {
+    bool success = false;
+    errors::StatusCode status = errors::NE_ST_OK;
+};
+
 bool isTrayInitialized();
 void cleanupTray();
+void cleanupGlobalHotkeys();
 void open(const string &url);
 os::CommandResult execCommand(string command, const os::ChildProcessOptions &options = {});
 pair<int, int> spawnProcess(string command, const os::ChildProcessOptions &options = {});
@@ -51,6 +60,9 @@ os::LocaleInfo getLocaleInfo();
 string getEnv(const string &key);
 bool setEnv(const string &key, const string &value);
 bool trashItem(const string &path);
+os::GlobalHotkeyResult registerGlobalHotkey(const string &hotkey);
+os::GlobalHotkeyResult unregisterGlobalHotkey(const string &hotkey);
+vector<string> getRegisteredHotkeys();
 
 namespace controllers {
 
@@ -71,6 +83,9 @@ json setTray(const json &input);
 json open(const json &input);
 json getPath(const json &input);
 json trashItem(const json &input);
+json registerGlobalHotkey(const json &input);
+json unregisterGlobalHotkey(const json &input);
+json getRegisteredHotkeys(const json &input);
 
 } // namespace controllers
 
