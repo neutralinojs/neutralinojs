@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 #include <regex>
+#include <algorithm>
+#include <cctype>
 
 #include "helpers.h"
 #include "errors.h"
@@ -88,10 +90,22 @@ json request(const json &input) {
         contentType = input["contentType"].get<string>();
         contentType = contentType.empty() ? "application/json" : contentType;
     }
+    if(contentType.empty()) {
+        auto contentTypeHeader = headers.find("Content-Type");
+        if(contentTypeHeader == headers.end()) {
+            contentTypeHeader = headers.find("content-type");
+        }
+        if(contentTypeHeader != headers.end()) {
+            contentType = contentTypeHeader->second;
+        }
+    }
 
     if(helpers::hasField(input, "method")) {
         method = input["method"].get<string>();
     }
+    transform(method.begin(), method.end(), method.begin(), [](unsigned char c) {
+        return toupper(c);
+    });
     if(method == "GET") {
         res = cli.Get(path, params, headers);
     }
@@ -159,8 +173,11 @@ json request(const json &input) {
     else {
         output["returnValue"] = {
             { "status", res->status },
+            { "statusCode", res->status },
             { "statusText", res->reason },
+            { "reason", res->reason },
             { "body", res->body },
+            { "text", res->body },
             { "headers", res->headers },
             { "cookies", res->get_header_value("Set-Cookie") },
             { "contentType", res->get_header_value("Content-Type") },
@@ -170,6 +187,40 @@ json request(const json &input) {
         output["success"] = true;
     }
     return output;
+}
+
+json __requestWithMethod(const json &input, const string &method) {
+    json requestInput = input.is_object() ? input : json::object();
+    requestInput["method"] = method;
+    return request(requestInput);
+}
+
+json get(const json &input) {
+    return __requestWithMethod(input, "GET");
+}
+
+json post(const json &input) {
+    return __requestWithMethod(input, "POST");
+}
+
+json put(const json &input) {
+    return __requestWithMethod(input, "PUT");
+}
+
+json del(const json &input) {
+    return __requestWithMethod(input, "DELETE");
+}
+
+json patch(const json &input) {
+    return __requestWithMethod(input, "PATCH");
+}
+
+json head(const json &input) {
+    return __requestWithMethod(input, "HEAD");
+}
+
+json options(const json &input) {
+    return __requestWithMethod(input, "OPTIONS");
 }
 
 } // namespace controllers
