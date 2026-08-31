@@ -49,6 +49,7 @@ if(WIN32)
     lib/efsw/src/efsw/platform/win/*.cpp
     lib/postject/windows_dummy.res
     lib/hwinfo/src/windows/disk.cpp
+    lib/hwinfo/src/windows/gpu.cpp
     lib/hwinfo/src/windows/monitoring/disk.cpp
   )
   list(APPEND SOURCES ${OS_SOURCES})
@@ -74,6 +75,7 @@ elseif(APPLE)
     lib/webview/macwindow.mm
     lib/efsw/src/efsw/platform/posix/*.cpp
     lib/hwinfo/src/apple/disk.cpp
+    lib/hwinfo/src/apple/gpu.cpp
     lib/hwinfo/src/apple/monitoring/disk.cpp
   )
   list(APPEND SOURCES ${OS_SOURCES})
@@ -104,6 +106,7 @@ elseif(UNIX)
     lib/clip/clip_x11.cpp
     lib/efsw/src/efsw/platform/posix/*.cpp
     lib/hwinfo/src/linux/disk.cpp
+    lib/hwinfo/src/linux/gpu.cpp
     lib/hwinfo/src/linux/monitoring/disk.cpp
   )
   list(APPEND SOURCES ${OS_SOURCES})
@@ -155,7 +158,6 @@ if(WIN32)
     _HAS_STD_BYTE=0
     HWINFO_EXPORTS
     TRAY_WINAPI=1
-    HWINFO_EXPORTS
     NOMINMAX
     UNICODE
     _UNICODE

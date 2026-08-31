@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cctype>
 #include <fstream>
+#include <iomanip>
 #include <sstream>
 #include <string>
 #include <iomanip>
@@ -476,6 +477,29 @@ json getCPUInfo(const json &input) {
         { "physicalCores", quantities.physical },
         { "physicalUnits", quantities.packages }
     };
+    output["success"] = true;
+    return output;
+}
+
+json getGPUInfo(const json &input) {
+    json output;
+    output["returnValue"] = json::array();
+    const auto gpus = hwinfo::getAllGPUs();
+
+    unsigned int gpuId = 0;
+    for(const auto &gpu: gpus) {
+        json gpuInfo = {
+            { "id", gpuId },
+            { "deviceId", gpu.device_id() },
+            { "vendorId", gpu.vendor_id() },
+            { "vendor", gpu.vendor() },
+            { "dedicatedMemory", gpu.dedicated_memory_Bytes() },
+            { "sharedMemory", gpu.shared_memory_Bytes() }
+        };
+
+        output["returnValue"].push_back(gpuInfo);
+        gpuId++;
+    }
     output["success"] = true;
     return output;
 }
