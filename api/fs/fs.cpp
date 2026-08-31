@@ -29,6 +29,7 @@
 #include <efsw/efsw.hpp>
 #include "lib/json/json.hpp"
 #include "lib/base64/base64.hpp"
+#include "lib/trashcan/trashcan.h"
 #include "settings.h"
 #include "helpers.h"
 #include "errors.h"
@@ -686,6 +687,25 @@ json move(const json &input) {
     }
     else{
         output["error"] = errors::makeErrorPayload(errors::NE_FS_MOVEERR, source + " -> " + destination);
+    }
+    return output;
+}
+
+json moveToTrash(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"path"})) {
+        output["error"] = errors::makeMissingArgErrorPayload("path");
+        return output;
+    }
+
+    string path = input["path"].get<string>();
+
+    if(trashcan_soft_delete(path.c_str()) == 0) {
+        output["success"] = true;
+        output["message"] = path + " was moved to trash";
+    }
+    else {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_TRSERR, path);
     }
     return output;
 }

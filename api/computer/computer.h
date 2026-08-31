@@ -31,6 +31,8 @@ json getCPUInfo(const json &input);
 json getGPUInfo(const json &input);
 json getDisplays(const json &input);
 json getDisks(const json &input);
+json getDiskInfo(const json &input);
+json getGPUInfo(const json &input);
 json getMousePosition(const json &input);
 json getHostname(const json &input);
 json getMachineId(const json &input);

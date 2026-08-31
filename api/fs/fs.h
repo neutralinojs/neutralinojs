@@ -85,6 +85,7 @@ json getOpenedFileInfo(const json &input);
 json readDirectory(const json &input);
 json copy(const json &input);
 json move(const json &input);
+json moveToTrash(const json &input);
 json getStats(const json &input);
 json createWatcher(const json &input);
 json removeWatcher(const json &input);

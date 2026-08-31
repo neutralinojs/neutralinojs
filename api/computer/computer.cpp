@@ -5,6 +5,9 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <iomanip>
+#include <filesystem>
+#include <system_error>
 #include "helpers.h"
 #include "errors.h"
 
@@ -526,23 +529,105 @@ json getDisplays(const json &input) {
     return output;
 }
 
+json __makeDiskInfo(const hwinfo::Disk &disk) {
+    const auto mountPoints = disk.mount_points();
+    string mountPoint = mountPoints.size() > 0 ? mountPoints.front() : "";
+    string diskInterface;
+    stringstream diskInterfaceStream;
+    diskInterfaceStream << disk.disk_interface();
+    diskInterface = diskInterfaceStream.str();
+
+    uint64_t total = disk.size();
+    uint64_t free = hwinfo::monitoring::disk::get_free_size(disk);
+
+    if(!mountPoint.empty()) {
+        error_code ec;
+        auto spaceInfo = filesystem::space(CONVSTR(mountPoint), ec);
+        if(!ec && spaceInfo.capacity > 0) {
+            total = spaceInfo.capacity;
+            free = spaceInfo.free;
+        }
+    }
+
+    uint64_t used = total >= free ? total - free : 0;
+    double usedPercent = total > 0 ? (static_cast<double>(used) / static_cast<double>(total)) * 100 : 0;
+
+    return {
+        { "id", disk.id() },
+        { "name", disk.model() },
+        { "vendor", disk.vendor() },
+        { "model", disk.model() },
+        { "serial", disk.serial_number() },
+        { "mountPoint", mountPoint },
+        { "fileSystem", "" },
+        { "interface", diskInterface },
+        { "total", total },
+        { "used", used },
+        { "free", free },
+        { "usedPercent", usedPercent }
+    };
+}
+
 json getDisks(const json &input) {
     json output;
     output["returnValue"] = json::array();
     const auto disks = hwinfo::getAllDisks();
 
     for(const auto &disk: disks) {
-        json diskInfo = {
-            { "id", disk.id() },
-            { "vendor", disk.vendor() },
-            { "model", disk.model() },
-            { "serial", disk.serial_number() },
-            { "mountPoint", (disk.mount_points().size() > 0 ? disk.mount_points().front() : "") },
-            { "total", disk.size() },
-            { "free", hwinfo::monitoring::disk::get_free_size(disk) }
-        };
-        output["returnValue"].push_back(diskInfo);
+        output["returnValue"].push_back(__makeDiskInfo(disk));
     }
+    output["success"] = true;
+    return output;
+}
+
+json getDiskInfo(const json &input) {
+    json output;
+    const auto disks = hwinfo::getAllDisks();
+
+    for(const auto &disk: disks) {
+        if(disk.size() > 0 && disk.mount_points().size() > 0) {
+            output["returnValue"] = __makeDiskInfo(disk);
+            output["success"] = true;
+            return output;
+        }
+    }
+
+    if(disks.size() > 0) {
+        output["returnValue"] = __makeDiskInfo(disks.front());
+        output["success"] = true;
+        return output;
+    }
+
+    output["error"] = errors::makeErrorPayload(errors::NE_CO_UNLTODI);
+    return output;
+}
+
+json getGPUInfo(const json &input) {
+    json output;
+    output["returnValue"] = json::array();
+    const auto gpus = hwinfo::getAllGPUs();
+
+    for(const auto &gpu: gpus) {
+        json gpuInfo = {
+            { "id", gpu.id() },
+            { "vendor", gpu.vendor() },
+            { "name", gpu.name() },
+            { "memorySize", gpu.dedicated_memory_Bytes() },
+            { "cacheSize", 0 },
+            { "maxFrequency", gpu.frequency_hz() },
+            { "driverVersion", gpu.driverVersion() },
+            { "dedicatedMemory", gpu.dedicated_memory_Bytes() },
+            { "sharedMemory", gpu.shared_memory_Bytes() },
+            { "memory", gpu.dedicated_memory_Bytes() + gpu.shared_memory_Bytes() },
+            { "frequency", gpu.frequency_hz() },
+            { "cores", gpu.num_cores() },
+            { "vendorId", gpu.vendor_id() },
+            { "deviceId", gpu.device_id() }
+        };
+
+        output["returnValue"].push_back(gpuInfo);
+    }
+
     output["success"] = true;
     return output;
 }
@@ -658,6 +743,26 @@ json sendKey(const json &input) {
 json getNetworkInterfaces(const json &input) {
     json output;
     json interfaces = json::object();
+    bool excludeLoopback = helpers::hasField(input, "excludeLoopback") &&
+        input["excludeLoopback"].get<bool>();
+
+    auto __ensureInterface = [&](const string &name, bool isLoopback, bool isUp) {
+        if(!interfaces.contains(name)) {
+            interfaces[name] = {
+                { "name", name },
+                { "ipv4", json::array() },
+                { "ipv6", json::array() },
+                { "mac", "" },
+                { "isUp", false },
+                { "isLoopback", false },
+                { "isInternal", false }
+            };
+        }
+        interfaces[name]["isUp"] = interfaces[name]["isUp"].get<bool>() || isUp;
+        interfaces[name]["isLoopback"] = interfaces[name]["isLoopback"].get<bool>() || isLoopback;
+        interfaces[name]["isInternal"] = interfaces[name]["isLoopback"];
+    };
+
     #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
     struct ifaddrs *ifap, *ifa;
     if(getifaddrs(&ifap) == -1) {
@@ -669,23 +774,21 @@ json getNetworkInterfaces(const json &input) {
         if(!ifa->ifa_addr || (ifa->ifa_addr->sa_family != AF_INET && ifa->ifa_addr->sa_family != AF_INET6)) 
             continue;
     
-        json interfaceInfo = {
-            { "isInternal", (ifa->ifa_flags & IFF_LOOPBACK) != 0 }
-        };
+        string name = ifa->ifa_name;
+        bool isLoopback = (ifa->ifa_flags & IFF_LOOPBACK) != 0;
+        bool isUp = (ifa->ifa_flags & IFF_UP) != 0;
+        __ensureInterface(name, isLoopback, isUp);
 
         if(ifa->ifa_addr->sa_family == AF_INET) {
             char addr[INET_ADDRSTRLEN];
             inet_ntop(AF_INET, &((struct sockaddr_in *)ifa->ifa_addr)->sin_addr, addr, sizeof(addr));
-            interfaceInfo["address"] = string(addr);
-            interfaceInfo["family"] = "ipv4";
+            interfaces[name]["ipv4"].push_back(string(addr));
         }
         else if(ifa->ifa_addr->sa_family == AF_INET6) {
             char addr[INET6_ADDRSTRLEN];
             inet_ntop(AF_INET6, &((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr, addr, sizeof(addr));
-            interfaceInfo["address"] = string(addr);
-            interfaceInfo["family"] = "ipv6";
+            interfaces[name]["ipv6"].push_back(string(addr));
         }
-        interfaces[ifa->ifa_name].push_back(interfaceInfo);
     }
 
    auto __formatMac = [](const unsigned char* bytes) {
@@ -701,10 +804,8 @@ json getNetworkInterfaces(const json &input) {
     };
 
     auto __updateMac = [&](const string &name, const string &mac) {
-        for(const auto &[key, arr]: interfaces.items()) {
-            for(auto &item: arr) {
-                item["mac"] = mac;
-            }
+        if(interfaces.contains(name)) {
+            interfaces[name]["mac"] = mac;
         }
     };
 
@@ -747,6 +848,10 @@ json getNetworkInterfaces(const json &input) {
 
     for(auto* adapter = adapters; adapter; adapter = adapter->Next) {
         string name = helpers::wstr2str(adapter->FriendlyName);
+        bool isLoopback = adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK;
+        bool isUp = adapter->OperStatus == IfOperStatusUp;
+        __ensureInterface(name, isLoopback, isUp);
+
         ostringstream oss;
         string mac = "";
         for(UINT i = 0; i < adapter->PhysicalAddressLength; ++i) {
@@ -754,6 +859,7 @@ json getNetworkInterfaces(const json &input) {
             oss << hex << setw(2) << setfill('0')<< (int)adapter->PhysicalAddress[i];
             mac = oss.str();
         }
+        interfaces[name]["mac"] = mac;
 
         for(auto* ua = adapter->FirstUnicastAddress; ua; ua = ua->Next) {
             char ip[INET6_ADDRSTRLEN];
@@ -767,23 +873,23 @@ json getNetworkInterfaces(const json &input) {
                 0,
                 NI_NUMERICHOST);
 
-            json interfaceInfo = {
-                { "isInternal", adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK },
-                { "mac", mac }
-            };
-
             if(sa->sa_family == AF_INET) {
-                interfaceInfo["ipv4"] = string(ip);
+                interfaces[name]["ipv4"].push_back(string(ip));
             }
             else if(sa->sa_family == AF_INET6) {
-                interfaceInfo["ipv6"] = string(ip);
+                interfaces[name]["ipv6"].push_back(string(ip));
             }
-            interfaces[name].push_back(interfaceInfo);
         }
     }
 
     #endif
-    output["returnValue"] = interfaces;
+    output["returnValue"] = json::array();
+    for(auto &[name, interfaceInfo]: interfaces.items()) {
+        if(excludeLoopback && interfaceInfo["isLoopback"].get<bool>()) {
+            continue;
+        }
+        output["returnValue"].push_back(interfaceInfo);
+    }
     output["success"] = true;
     return output;
 }
