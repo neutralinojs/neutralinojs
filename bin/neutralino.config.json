@@ -21,9 +21,7 @@
         "writeToLogFile": true
     },
     "nativeBlockList": [],
-    "os": {
-        "allowCommands": []
-    },
+    "commandAllowList": ["node"],
     "globalVariables": {
         "TEST1": "Hello",
         "TEST2": [2, 4, 5],

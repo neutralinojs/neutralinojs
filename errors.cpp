@@ -27,7 +27,7 @@ string __getStatusCodeString(const errors::StatusCode code) {
         case errors::NE_OS_INVKNPT: return "NE_OS_INVKNPT";
         case errors::NE_OS_UNLTRAS: return "NE_OS_UNLTRAS";
         case errors::NE_OS_UNLTOUV: return "NE_OS_UNLTOUV";
-        case errors::NE_OS_CMDNALLW: return "NE_OS_CMDNALLW";
+        case errors::NE_OS_CMDNALW: return "NE_OS_CMDNALW";
         // computer
         case errors::NE_CO_UNLTOSC: return "NE_CO_UNLTOSC";
         case errors::NE_CO_UNLTOMG: return "NE_CO_UNLTOMG";
@@ -106,7 +106,7 @@ string __findStatusCodeDesc(errors::StatusCode code) {
         case errors::NE_OS_INVKNPT: return "Invalid platform path name: %1";
         case errors::NE_OS_UNLTRAS: return "Unable to move %1 item to trash";
         case errors::NE_OS_UNLTOUV: return "Unable to set environment variable";
-        case errors::NE_OS_CMDNALLW: return "Command %1 is not allowed by the os.allowCommands policy";
+        case errors::NE_OS_CMDNALW: return "Shell command \"%1\" is not allowed";
         // computer
         case errors::NE_CO_UNLTOSC: return "Unable to set mouse cursor";
         case errors::NE_CO_UNLTONI: return "Unable to retrieve network interfaces";

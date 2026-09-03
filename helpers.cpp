@@ -7,6 +7,7 @@
 #include <ctype.h>
 #include <random>
 #include <optional>
+#include <regex>
 
 #include "helpers.h"
 #include "lib/json/json.hpp"
@@ -209,5 +210,90 @@ string wcstr2str(const wchar_t* wstr) {
     return str;
 }
 #endif
+
+bool globalMatch(const string &value, const string &pattern) {
+    string regexStr = "^";
+    for(const char c: pattern) {
+        switch(c) {
+            case '*': regexStr += ".*"; break;
+            case '?': regexStr += "."; break;
+            case '.': case '\\': case '+': case '(': case ')':
+            case '[': case ']': case '{': case '}': case '|':
+            case '^': case '$': case '#': regexStr += "\\"; [[fallthrough]];
+            default: regexStr += c; break;
+        }
+    }
+    regexStr += "$";
+    try {
+        return regex_match(value, regex(regexStr));
+    }
+    catch(const regex_error &) {
+        return false;
+    }
+}
+
+vector<string> tokenizeCommand(const string &command) {
+    vector<string> tokens;
+    string current;
+    bool inSingle = false;
+    bool inDouble = false;
+
+    auto flushToken = [&](void) {
+        if(!current.empty()) {
+            tokens.push_back(current);
+            current.clear();
+        }
+    };
+
+    for(size_t i = 0; i < command.size(); i++) {
+        unsigned char c = static_cast<unsigned char>(command[i]);
+        if(!inSingle && !inDouble) {
+            if(isspace(c)) {
+                flushToken();
+            }
+            else if(c == '\'') {
+                inSingle = true;
+            }
+            else if(c == '"') {
+                inDouble = true;
+            }
+            else if(strchr(";|&><$`(){}\\\n\r", c) != nullptr) {
+                tokens.clear();
+                return tokens;
+            }
+            else {
+                current += static_cast<char>(c);
+            }
+        }
+        else if(inSingle) {
+            if(c == '\'') {
+                inSingle = false;
+            }
+            else if(c == '\\' && i + 1 < command.size()) {
+                current += command[++i];
+            }
+            else {
+                current += static_cast<char>(c);
+            }
+        }
+        else {
+            if(c == '"') {
+                inDouble = false;
+            }
+            else if(c == '\\' && i + 1 < command.size()) {
+                current += command[++i];
+            }
+            else {
+                current += static_cast<char>(c);
+            }
+        }
+    }
+    if(inSingle || inDouble) {
+        tokens.clear();
+        return tokens;
+    }
+    flushToken();
+    return tokens;
+}
 
 } // namespace helpers

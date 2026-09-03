@@ -91,6 +91,13 @@
         "type": "string"
       }
     },
+    "commandAllowList": {
+      "type": "array",
+      "description": "An array of shell-command programs that can be executed through 'os.execCommand' and 'os.spawnProcess'. When this option is set with one or more entries, the framework rejects any command whose program name doesn't match an entry with the 'NE_OS_CMDNALLW' error. If the list is empty or omitted, no restriction is applied. Patterns support the '*' and '?' wildcards (applied only to the program's executable name — argv[0] — not the full command line). The command is parsed with simple shell-quote rules; unquoted shell metacharacters (';|&><$`(){}' and newline) reject the command outright so 'os.allowCommands' cannot be used to run piped/redirected commands. \n\n { \n   \"os\": { \n     \"allowCommands\": [ \n       \"git\", \n       \"node\", \n       \"python3 *\" \n     ] \n   } \n } \n\n A list containing only '*' (or any pattern that matches everything) behaves like 'no restriction' — equivalent to omitting the option.",
+      "items": {
+        "type": "string"
+      }
+    },
     "globalVariables": {
       "type": "object",
       "description": "A key-value-based JavaScript object of custom global variables. \n\n You can make custom global variables too via 'neutralino.config.json', as shown below. \n\n \"globalVariables\": { \n   \"TEST\": \"Test Value\" \n } \n\n The above custom global variable's value can be accessed with 'NL_TEST'. You can set any data type for custom global variables. Look at the following examples. \n\n \"globalVariables\": { \n   \"TEST_1\": 1, \n   \"TEST_2\": null, \n   \"TEST_3\": 3.5, \n   \"TEST_4\": [3, 5, 4, 5], \n   \"TEST_5\": { \n     \"key\": \"value\", \n     \"anotherKey\": 100 \n   } \n } \n\n Avoid overriding predefined global variables. \n\n Learn more about this option here: \n https://github.com/neutralinojs/neutralinojs.github.io/blob/main/docs/api/global-variables.md#custom-global-variables"
@@ -109,19 +116,6 @@
         "serverHeaders": {
           "type": "object",
           "description": "Custom headers for the static server and Websocket handshake process. For example, the following configuration sends a custom header with every outgoing HTTP response. \n\n { \n   \"serverHeaders\": { \n     \"Test-Header-Option\": \"Value\" \n   } \n }"
-        }
-      }
-    },
-    "os": {
-      "type": "object",
-      "description": "OS-related configuration options.",
-      "properties": {
-        "allowCommands": {
-          "type": "array",
-          "description": "An array of shell-command programs that can be executed through 'os.execCommand' and 'os.spawnProcess'. When this option is set with one or more entries, the framework rejects any command whose program name doesn't match an entry with the 'NE_OS_CMDNALLW' error. If the list is empty or omitted, no restriction is applied. Patterns support the '*' and '?' wildcards (applied only to the program's executable name — argv[0] — not the full command line). The command is parsed with simple shell-quote rules; unquoted shell metacharacters (';|&><$`(){}' and newline) reject the command outright so 'os.allowCommands' cannot be used to run piped/redirected commands. \n\n { \n   \"os\": { \n     \"allowCommands\": [ \n       \"git\", \n       \"node\", \n       \"python3 *\" \n     ] \n   } \n } \n\n A list containing only '*' (or any pattern that matches everything) behaves like 'no restriction' — equivalent to omitting the option.",
-          "items": {
-            "type": "string"
-          }
         }
       }
     },
