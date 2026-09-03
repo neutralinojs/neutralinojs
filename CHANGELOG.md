@@ -6,20 +6,14 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
-### API: os
-- Add command allow-listing: Restrict `os.execCommand` and `os.spawnProcess` to a configurable set of allowed programs via the new `os.allowCommands` configuration option. When this option is set with one or more entries, the framework rejects any command whose program name (argv[0]) does not match an entry with the new `NE_OS_CMDNALLW` error. Patterns support `*` and `?` wildcards. The command is parsed with simple shell-quote rules; unquoted shell metacharacters (`;|&><$`(){}` and newline) reject the command outright so `os.allowCommands` cannot be used to run piped or redirected commands.
+### Core: Shell command allow list
+The shell command allow-listing feature restricts `os.execCommand` and `os.spawnProcess` to a configurable set of allowed programs via the new `commandAllowList` configuration option. When this option is set with one or more entries, the framework rejects any command whose program name (`argv[0]`) does not match an entry with the new `NE_OS_CMDNALW` error. Patterns support `*` and `?` wildcards. The command is parsed with simple shell-quote rules; unquoted shell metacharacters (``;|&><$`(){}`` and newline) reject the command outright, so `commandAllowList` cannot be used to run piped or redirected commands, but it's very helpful for strengthening command execution security for simple commands that Neutralinojs apps execute or spawn.
 
   Example configuration:
 
   ```json
   {
-    "os": {
-      "allowCommands": [
-        "git",
-        "node",
-        "python3 *"
-      ]
-    }
+    "commandAllowList": ["node", "python*", "gcc"]
   }
   ```
 
