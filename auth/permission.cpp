@@ -16,8 +16,10 @@ vector<string> blockedMethods;
 vector<string> blockedModules;
 vector<string> allowedMethods;
 vector<string> allowedModules;
+vector<string> allowedCommandPatterns;
 bool shouldCheckBlockList = false;
 bool shouldCheckAllowList = false;
+bool shouldCheckCommandAllowList = false;
 
 bool __isWildcardMatch(const string &methodMatch) {
     return regex_match(methodMatch, regex(".*\\.\\*"));
@@ -66,6 +68,14 @@ void __registerAllowList() {
     shouldCheckAllowList = true;
 }
 
+void __regiserCommandAllowList() {
+    json jCommandAllowList = settings::getOptionForCurrentMode("commandAllowList");
+    if(jCommandAllowList.is_null())
+        return;
+    allowedCommandPatterns = jCommandAllowList.get<vector<string>>();
+    shouldCheckCommandAllowList = true;
+}
+
 bool hasMethodAccess(const string &nativeMethod) {
     string module = __getModuleFromMethod(nativeMethod);
     if(shouldCheckBlockList) {
@@ -106,9 +116,29 @@ bool hasAPIAccess() {
     return false;
 }
 
+bool hasCommandExecutionAccess(const string &command) {
+    if(!shouldCheckCommandAllowList || allowedCommandPatterns.empty()) {
+        return true;
+    }
+
+    vector<string> tokens = helpers::tokenizeCommand(command);
+    if(tokens.empty()) {
+        return false;
+    }
+
+    string program = tokens[0];
+    for(const string &pattern: allowedCommandPatterns) {
+        if(helpers::globalMatch(program, pattern)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void init() {
     __registerAllowList();
     __registerBlockList();
+    __regiserCommandAllowList();
 }
 
 } // namespace permission
