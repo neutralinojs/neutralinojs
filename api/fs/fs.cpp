@@ -367,6 +367,36 @@ string applyPathConstants(const string &path) {
     return newPath;
 }
 
+bool hasPathScopeAccess(const string &path) {
+    json fsConfig = settings::getOptionForCurrentMode("filesystem");
+    if(fsConfig.is_null() || fsConfig["scopes"].is_null()) {
+        return true;
+    }
+
+    try {
+        std::filesystem::path requestedPath = std::filesystem::weakly_canonical(CONVSTR(path));
+
+        for(const auto &scope: fsConfig["scopes"]) {
+            string appliedScope = applyPathConstants(scope.get<string>());
+            std::filesystem::path scopePath = std::filesystem::weakly_canonical(CONVSTR(appliedScope));
+            
+            auto [scopeIt, reqIt] = std::mismatch(scopePath.begin(), scopePath.end(), requestedPath.begin(), requestedPath.end());
+            
+            if (scopeIt != scopePath.end() && scopeIt->empty()) {
+                ++scopeIt;
+            }
+
+            if(scopeIt == scopePath.end()) {
+                return true;
+            }
+        }
+    }
+    catch (const std::exception& e) {
+        return false;
+    }
+    return false;
+}
+
 namespace controllers {
 
 json __writeOrAppendFile(const json &input, bool append = false) {
@@ -378,6 +408,12 @@ json __writeOrAppendFile(const json &input, bool append = false) {
     }
     fs::FileWriterOptions fileWriterOptions;
     fileWriterOptions.filename = input["path"].get<string>();
+
+    if(!fs::hasPathScopeAccess(fileWriterOptions.filename)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, fileWriterOptions.filename);
+        return output;
+    }
+
     fileWriterOptions.data = input["data"].get<string>();
     fileWriterOptions.append = append;
 
@@ -397,6 +433,12 @@ json __writeOrAppendBinaryFile(const json &input, bool append = false) {
     }
     fs::FileWriterOptions fileWriterOptions;
     fileWriterOptions.filename = input["path"].get<string>();
+
+    if(!fs::hasPathScopeAccess(fileWriterOptions.filename)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, fileWriterOptions.filename);
+        return output;
+    }
+
     fileWriterOptions.data = base64::from_base64(input["data"].get<string>());
     fileWriterOptions.append = append;
 
@@ -414,6 +456,12 @@ json createDirectory(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
+
+    if(!fs::hasPathScopeAccess(path)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, path);
+        return output;
+    }
+
     if(filesystem::create_directories(CONVSTR(path))) {
         output["success"] = true;
         output["message"] = "Directory " + path + " was created";
@@ -433,6 +481,11 @@ json remove(const json& input) {
     }
 
     std::string path = input["path"].get<std::string>();
+
+    if(!fs::hasPathScopeAccess(path)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, path);
+        return output;
+    }
 
     if(filesystem::remove_all(CONVSTR(path))) {
         output["success"] = true;
@@ -459,6 +512,12 @@ json readFile(const json &input) {
         readerOptions.size = input["size"].get<long long>();
     }
     string path = input["path"].get<string>();
+
+    if(!fs::hasPathScopeAccess(path)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, path);
+        return output;
+    }
+
     fs::FileReaderResult fileReaderResult;
     fileReaderResult = fs::readFile(path, readerOptions);
     if(fileReaderResult.status != errors::NE_ST_OK) {
@@ -485,6 +544,12 @@ json readBinaryFile(const json &input) {
         readerOptions.size = input["size"].get<long long>();
     }
     string path = input["path"].get<string>();
+
+    if(!fs::hasPathScopeAccess(path)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, path);
+        return output;
+    }
+
     fs::FileReaderResult fileReaderResult;
     fileReaderResult = fs::readFile(path, readerOptions);
     if(fileReaderResult.status != errors::NE_ST_OK) {
@@ -520,6 +585,12 @@ json openFile(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
+
+    if(!fs::hasPathScopeAccess(path)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, path);
+        return output;
+    }
+
     int fileId = fs::openFile(path);
     if(fileId == -1) {
         output["error"] = errors::makeErrorPayload(errors::NE_FS_FILOPER, path);
@@ -598,6 +669,12 @@ json readDirectory(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
+
+    if(!fs::hasPathScopeAccess(path)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, path);
+        return output;
+    }
+
     bool recursive = false;
 
     if(helpers::hasField(input, "recursive")) {
@@ -640,6 +717,15 @@ json copy(const json &input) {
     string source = input["source"].get<string>();
     string destination = input["destination"].get<string>();
 
+    if(!fs::hasPathScopeAccess(source)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, source);
+        return output;
+    }
+    if(!fs::hasPathScopeAccess(destination)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, destination);
+        return output;
+    }
+
     error_code ec;
     auto copyOptions = filesystem::copy_options::none;
 
@@ -677,6 +763,15 @@ json move(const json &input) {
     string source = input["source"].get<string>();
     string destination = input["destination"].get<string>();
 
+    if(!fs::hasPathScopeAccess(source)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, source);
+        return output;
+    }
+    if(!fs::hasPathScopeAccess(destination)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, destination);
+        return output;
+    }
+
     error_code ec;
     filesystem::rename(CONVSTR(source), CONVSTR(destination), ec);
 
@@ -697,6 +792,12 @@ json getStats(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
+
+    if(!fs::hasPathScopeAccess(path)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, path);
+        return output;
+    }
+
     fs::FileStats fileStats = fs::getStats(path);
     if(fileStats.status == errors::NE_ST_OK) {
         json stats;
@@ -721,6 +822,12 @@ json createWatcher(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
+
+    if(!fs::hasPathScopeAccess(path)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, path);
+        return output;
+    }
+
     long watcherId = fs::createWatcher(path);
 
     if(watcherId <= 0) {
@@ -828,6 +935,11 @@ json getPermissions(const json &input) {
     }
     string path = input["path"].get<string>();
     
+    if(!fs::hasPathScopeAccess(path)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, path);
+        return output;
+    }
+
     fs::FileStats fileStats = fs::getStats(path);
     if(fileStats.status != errors::NE_ST_OK) {
         output["error"] = errors::makeErrorPayload(fileStats.status, path);
@@ -864,6 +976,11 @@ json setPermissions(const json &input) {
     }
     string path = input["path"].get<string>();
     
+    if(!fs::hasPathScopeAccess(path)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, path);
+        return output;
+    }
+
     error_code ec;
     filesystem::perms permissions = filesystem::perms::none;
     filesystem::perm_options permMode = filesystem::perm_options::replace;
@@ -922,6 +1039,11 @@ json access(const json &input) {
     }
     string path = input["path"].get<string>();
 
+    if(!fs::hasPathScopeAccess(path)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, path);
+        return output;
+    }
+
     int mode = 0; // F_OK
     if(helpers::hasField(input, "mode")) {
         mode = input["mode"].get<int>();
@@ -950,6 +1072,12 @@ json chmod(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
+
+    if(!fs::hasPathScopeAccess(path)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, path);
+        return output;
+    }
+
     int mode = input["mode"].get<int>();
 
     #if defined(_WIN32)
@@ -975,6 +1103,12 @@ json chown(const json &input) {
         return output;
     }
     string path = input["path"].get<string>();
+
+    if(!fs::hasPathScopeAccess(path)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_FS_SCOPERR, path);
+        return output;
+    }
+
     int uid = input["uid"].get<int>();
     int gid = input["gid"].get<int>();
 
