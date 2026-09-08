@@ -1483,4 +1483,238 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             assert.equal(runner.getOutput(), 'NE_FS_TRSERR');
         });
     });
+
+    describe('filesystem scopes (filesystem.scopes)', () => {
+        const nodePath = require('path');
+        const fsSpec = require('fs');
+        const baseConfig = require('../bin/neutralino.config.json');
+        const SCOPED_CONFIG_PATH = nodePath.join(__dirname, '..', 'bin', '_scoped_test.config.json');
+        const SCOPED_CONFIG_FILE = '/_scoped_test.config.json';
+        const SCOPES = { '${NL_PATH}/.tmp': 'read-write' };
+
+        before(() => {
+            const configCopy = JSON.parse(JSON.stringify(baseConfig));
+            configCopy.filesystem = { scopes: SCOPES };
+            configCopy.documentRoot = '/resources/';
+            configCopy.enableNativeAPI = true;
+            fsSpec.writeFileSync(SCOPED_CONFIG_PATH, JSON.stringify(configCopy, null, 4));
+        });
+
+        after(() => {
+            try {
+                fsSpec.unlinkSync(SCOPED_CONFIG_PATH);
+            }
+            catch (err) {
+                // ignore
+            }
+        });
+
+        const scopedArgs = '--config-file=' + SCOPED_CONFIG_FILE;
+
+        it('rejects writeFile outside of configured scopes', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.writeFile('C:/Windows/scopes_outside.txt', 'data');
+                    await __close('no-error');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `, { args: scopedArgs });
+            assert.equal(runner.getOutput(), 'NE_FS_SCOPERR');
+        });
+
+        it('allows writeFile inside a configured scope', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/scopes_inside.txt', 'Hello');
+                await __close('done');
+            `, { args: scopedArgs });
+            assert.equal(runner.getOutput(), 'done');
+        });
+
+        it('rejects readFile outside of configured scopes', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.readFile('C:/Windows/scopes_outside_read.txt');
+                    await __close('no-error');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `, { args: scopedArgs });
+            assert.equal(runner.getOutput(), 'NE_FS_SCOPERR');
+        });
+
+        it('rejects createDirectory outside of configured scopes', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.createDirectory('C:/Windows/scopes_outside_dir');
+                    await __close('no-error');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `, { args: scopedArgs });
+            assert.equal(runner.getOutput(), 'NE_FS_SCOPERR');
+        });
+
+        it('rejects remove outside of configured scopes', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.remove('C:/Windows/scopes_remove_target');
+                    await __close('no-error');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `, { args: scopedArgs });
+            assert.equal(runner.getOutput(), 'NE_FS_SCOPERR');
+        });
+
+        it('rejects readDirectory outside of configured scopes', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.readDirectory('C:/Windows');
+                    await __close('no-error');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `, { args: scopedArgs });
+            assert.equal(runner.getOutput(), 'NE_FS_SCOPERR');
+        });
+
+        it('rejects getStats outside of configured scopes', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.getStats('C:/Windows/notepad.exe');
+                    await __close('no-error');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `, { args: scopedArgs });
+            assert.equal(runner.getOutput(), 'NE_FS_SCOPERR');
+        });
+
+        it('rejects copy when source is outside of configured scopes', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.copy('C:/Windows/copy_source.txt',
+                        NL_PATH + '/.tmp/copy_dest.txt');
+                    await __close('no-error');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `, { args: scopedArgs });
+            assert.equal(runner.getOutput(), 'NE_FS_SCOPERR');
+        });
+
+        it('rejects copy when destination is outside of configured scopes', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.copy(NL_PATH + '/.tmp/copy_src.txt',
+                        'C:/Windows/copy_dest.txt');
+                    await __close('no-error');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `, { args: scopedArgs });
+            assert.equal(runner.getOutput(), 'NE_FS_SCOPERR');
+        });
+
+        it('rejects attempts to escape scope via ".."', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/../scopes_escape.txt', 'data');
+                    await __close('no-error');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `, { args: scopedArgs });
+            assert.equal(runner.getOutput(), 'NE_FS_SCOPERR');
+        });
+    });
+
+    describe('filesystem scopes — read/write modes', () => {
+        const nodePath = require('path');
+        const fsSpec = require('fs');
+        const baseConfig = require('../bin/neutralino.config.json');
+        const scopedConfigPath = nodePath.join(__dirname, '..', 'bin', '_scoped_modes_test.config.json');
+
+        function writeScopedConfig(scopes) {
+            const configCopy = JSON.parse(JSON.stringify(baseConfig));
+            configCopy.filesystem = { scopes };
+            configCopy.documentRoot = '/resources/';
+            configCopy.enableNativeAPI = true;
+            fsSpec.writeFileSync(scopedConfigPath, JSON.stringify(configCopy, null, 4));
+        }
+
+        function rm() {
+            try { fsSpec.unlinkSync(scopedConfigPath); } catch (err) {}
+        }
+
+        const INSIDE = "'NL_PATH + \\'/.tmp/scope_mode_test.txt\\''";
+
+        it('read-only scope rejects writeFile', async () => {
+            writeScopedConfig({ '${NL_PATH}/.tmp': 'read' });
+            try {
+                runner.run(`
+                    let result;
+                    try {
+                        await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/scope_mode_readonly.txt', 'data');
+                        result = 'no-error';
+                    } catch (error) {
+                        result = error.code;
+                    }
+                    await __close(result);
+                `, { args: '--config-file=/_scoped_modes_test.config.json' });
+                assert.equal(runner.getOutput(), 'NE_FS_SCOPERR');
+            }
+            finally { rm(); }
+        });
+
+        it('write-only scope rejects readFile', async () => {
+            writeScopedConfig({ '${NL_PATH}/.tmp': 'write' });
+            try {
+                runner.run(`
+                    let result;
+                    try {
+                        await Neutralino.filesystem.readFile(NL_PATH + '/.tmp/scope_mode_writeonly.txt');
+                        result = 'no-error';
+                    } catch (error) {
+                        result = error.code;
+                    }
+                    await __close(result);
+                `, { args: '--config-file=/_scoped_modes_test.config.json' });
+                assert.equal(runner.getOutput(), 'NE_FS_SCOPERR');
+            }
+            finally { rm(); }
+        });
+
+        it('read-write scope allows writeFile', async () => {
+            writeScopedConfig({ '${NL_PATH}/.tmp': 'read-write' });
+            try {
+                runner.run(`
+                    try {
+                        await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/scope_mode_rw.txt', 'x');
+                    } catch (error) {}
+                    await __close('done');
+                `, { args: '--config-file=/_scoped_modes_test.config.json' });
+                assert.equal(runner.getOutput(), 'done');
+            }
+            finally { rm(); }
+        });
+
+        it('read-write scope allows readFile', async () => {
+            writeScopedConfig({ '${NL_PATH}/.tmp': 'read-write' });
+            try {
+                runner.run(`
+                    try {
+                        await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/scope_mode_rw2.txt', 'x');
+                        const data = await Neutralino.filesystem.readFile(NL_PATH + '/.tmp/scope_mode_rw2.txt');
+                        await __close('done:' + data.length);
+                        return;
+                    } catch (error) {}
+                    await __close('error');
+                `, { args: '--config-file=/_scoped_modes_test.config.json' });
+                assert.equal(runner.getOutput(), 'done:1');
+            }
+            finally { rm(); }
+        });
+    });
 });
