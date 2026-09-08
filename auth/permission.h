@@ -10,6 +10,7 @@ namespace permission {
 void init();
 bool hasMethodAccess(const string &func);
 bool hasAPIAccess();
+bool hasCommandExecutionAccess(const string &command);
 
 } // namespace permission
 

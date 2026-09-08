@@ -642,4 +642,128 @@ describe('os.spec: os namespace tests', () => {
             assert.equal(runner.getOutput(), 'NE_OS_INVKNPT');
         });
     });
+
+    describe('os.allowCommands', () => {
+        const nodePath = require('path');
+        const fsSpec = require('fs');
+        const baseConfig = require('../bin/neutralino.config.json');
+        const SCOPED_CONFIG_PATH = nodePath.join(__dirname, '..', 'bin', '_os_allow_test.config.json');
+        const SCOPED_CONFIG_FILE = '/_os_allow_test.config.json';
+
+        before(() => {
+            const configCopy = JSON.parse(JSON.stringify(baseConfig));
+            configCopy.os = { allowCommands: ['node'] };
+            configCopy.applicationId = 'js.neutralino.allowcommands';
+            configCopy.enableNativeAPI = true;
+            fsSpec.writeFileSync(SCOPED_CONFIG_PATH, JSON.stringify(configCopy, null, 4));
+        });
+
+        after(() => {
+            try {
+                fsSpec.unlinkSync(SCOPED_CONFIG_PATH);
+            }
+            catch (err) {
+                // ignore
+            }
+        });
+
+        const scopedArgs = '--config-file=' + SCOPED_CONFIG_FILE;
+
+        it('allows execCommand for an allowed program', async () => {
+            runner.run(`
+                try {
+                    const r = await Neutralino.os.execCommand('node --version');
+                    await __close('OK:' + r.exitCode);
+                } catch (error) {
+                    await __close('ERR:' + error.code);
+                }
+            `, { args: scopedArgs });
+            assert.match(runner.getOutput(), /^OK:\d+$/);
+        });
+
+        it('rejects execCommand for a non-allowed program', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.os.execCommand('cmd /c exit 0');
+                    await __close('no-error');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `, { args: scopedArgs });
+            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+        });
+
+        it('rejects execCommand when the program does not match the allow-list', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.os.execCommand('python3 --version');
+                    await __close('no-error');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `, { args: scopedArgs });
+            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+        });
+
+        it('rejects execCommand that contains a shell pipe outside quotes', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.os.execCommand('node --version | echo hi');
+                    await __close('no-error');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `, { args: scopedArgs });
+            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+        });
+
+        it('rejects execCommand that contains a shell semicolon outside quotes', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.os.execCommand('node --version; echo hi');
+                    await __close('no-error');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `, { args: scopedArgs });
+            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+        });
+
+        it('allows execCommand with quoted arguments containing spaces', async () => {
+            runner.run(`
+                try {
+                    const r = await Neutralino.os.execCommand('node -e "console.log(42)"');
+                    await __close('OK:' + r.exitCode);
+                } catch (error) {
+                    await __close('ERR:' + error.code);
+                }
+            `, { args: scopedArgs });
+            assert.match(runner.getOutput(), /^OK:\d+$/);
+        });
+
+        it('rejects spawnProcess for a non-allowed program', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.os.spawnProcess('cmd /c exit 0');
+                    await __close('no-error');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `, { args: scopedArgs });
+            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+        });
+
+        it('allows spawnProcess for an allowed program', async () => {
+            runner.run(`
+                try {
+                    const r = await Neutralino.os.spawnProcess('node');
+                    await Neutralino.os.updateSpawnedProcess(r.id, 'exit');
+                    await __close('OK:' + r.id);
+                } catch (error) {
+                    await __close('ERR:' + error.code);
+                }
+            `, { args: scopedArgs });
+            assert.match(runner.getOutput(), /^OK:-?\d+$/);
+        });
+    });
 });

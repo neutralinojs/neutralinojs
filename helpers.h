@@ -46,6 +46,9 @@ string wstr2str(const wstring &str);
 string wcstr2str(const wchar_t* wstr);
 #endif
 
+bool globalMatch(const string &value, const string &pattern);
+vector<string> tokenizeCommand(const string &command);
+
 } // namespace helpers
 
 #endif // #define NEU_HELPERS_H

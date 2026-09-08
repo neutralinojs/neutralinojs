@@ -19,6 +19,7 @@
 #include <clocale>
 
 #include "resources.h"
+#include "auth/permission.h"
 #include "lib/tinyprocess/process.hpp"
 #include "lib/platformfolders/platform_folders.h"
 #include "lib/filedialogs/portable-file-dialogs.h"
@@ -416,6 +417,12 @@ json execCommand(const json &input) {
         return output;
     }
     string command = input["command"].get<string>();
+
+    if(!permission::hasCommandExecutionAccess(command)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_CMDNALW, command);
+        return output;
+    }
+
     os::ChildProcessOptions processOptions;
 
     if(helpers::hasField(input, "stdIn")) {
@@ -456,6 +463,12 @@ json spawnProcess(const json &input) {
     }
     
     string command = input["command"].get<string>();
+
+    if(!permission::hasCommandExecutionAccess(command)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_CMDNALW, command);
+        return output;
+    }
+
     os::ChildProcessOptions processOptions;
     
     if(helpers::hasField(input, "cwd")) {
