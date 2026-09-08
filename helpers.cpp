@@ -269,9 +269,6 @@ vector<string> tokenizeCommand(const string &command) {
             if(c == '\'') {
                 inSingle = false;
             }
-            else if(c == '\\' && i + 1 < command.size()) {
-                current += command[++i];
-            }
             else {
                 current += static_cast<char>(c);
             }
