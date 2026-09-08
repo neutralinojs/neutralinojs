@@ -57,6 +57,7 @@ enum StatusCode {
     NE_FS_SCOPERR,
     // window
     NE_WI_UNBSWSR,
+    NE_WI_INVOPAC,
     // router
     NE_RT_INVTOKN,
     NE_RT_APIPRME,

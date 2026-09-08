@@ -2,11 +2,14 @@
 #include <iostream>
 #include <filesystem>
 #include <regex>
+#include <cmath>
 
 #if defined(__linux__) || defined(__FreeBSD__)
 #include <type_traits>
 #include <dlfcn.h>
 #include <gtk/gtk.h>
+#include <gdk/gdkx.h>
+#include <X11/Xatom.h>
 #include <glib.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 
@@ -1210,6 +1213,43 @@ void setAlwaysOnTop(bool onTop) {
     #endif
 }
 
+void setOpacity(double opacity) {
+    if(!windowHandle) return;
+
+    #if defined(__linux__) || defined(__FreeBSD__)
+    gtk_widget_set_opacity(windowHandle, opacity);
+
+    GdkWindow *gdkWindow = gtk_widget_get_window(windowHandle);
+    if(!gdkWindow) return;
+
+    GdkDisplay *gdkDisplay = gdk_window_get_display(gdkWindow);
+    if(!GDK_IS_X11_DISPLAY(gdkDisplay)) return;
+
+    Display *display = GDK_DISPLAY_XDISPLAY(gdkDisplay);
+    Window xid = GDK_WINDOW_XID(gdkWindow);
+    Atom opacityAtom = XInternAtom(display, "_NET_WM_WINDOW_OPACITY", False);
+
+    if(opacity >= 1.0) {
+        XDeleteProperty(display, xid, opacityAtom);
+    }
+    else {
+        unsigned long opacityValue = (unsigned long)round(opacity * 0xffffffffUL);
+        XChangeProperty(display, xid, opacityAtom, XA_CARDINAL, 32,
+                        PropModeReplace, (unsigned char *)&opacityValue, 1);
+    }
+    XFlush(display);
+
+    #elif defined(__APPLE__)
+    ((void (*)(id, SEL, double))objc_msgSend)((id) windowHandle,
+            "setAlphaValue:"_sel, opacity);
+
+    #elif defined(_WIN32)
+    LONG exStyle = GetWindowLong(windowHandle, GWL_EXSTYLE);
+    SetWindowLong(windowHandle, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
+    SetLayeredWindowAttributes(windowHandle, 0, (BYTE)(opacity * 255), LWA_ALPHA);
+    #endif
+}
+
 void setBorderless(bool borderless) {
     #if defined(__linux__) || defined(__FreeBSD__)
     gtk_window_set_decorated(GTK_WINDOW(windowHandle), !borderless);
@@ -1698,6 +1738,72 @@ json setAlwaysOnTop(const json &input) {
         onTop = input["onTop"].get<bool>();
     }
     window::setAlwaysOnTop(onTop);
+    output["success"] = true;
+    return output;
+}
+
+json setOpacity(const json &input) {
+    json output;
+    if(!helpers::hasRequiredFields(input, {"opacity"})) {
+        output["error"] = errors::makeMissingArgErrorPayload("opacity");
+        return output;
+    }
+
+    if(!input["opacity"].is_number()) {
+        output["error"] = errors::makeErrorPayload(errors::NE_WI_INVOPAC, "opacity");
+        return output;
+    }
+
+    double opacity = input["opacity"].get<double>();
+    if(opacity < 0 || opacity > 1) {
+        output["error"] = errors::makeErrorPayload(errors::NE_WI_INVOPAC, "opacity");
+        return output;
+    }
+
+    #if defined(__linux__) || defined(__FreeBSD__)
+    if(g_main_context_is_owner(g_main_context_default())) {
+        window::setOpacity(opacity);
+    }
+    else {
+        GMutex mutex;
+        GCond cond;
+        bool completed = false;
+
+        g_mutex_init(&mutex);
+        g_cond_init(&cond);
+        g_mutex_lock(&mutex);
+
+        nativeWindow->dispatch([&]() {
+            window::setOpacity(opacity);
+            g_mutex_lock(&mutex);
+            completed = true;
+            g_cond_signal(&cond);
+            g_mutex_unlock(&mutex);
+        });
+
+        while(!completed) {
+            g_cond_wait(&cond, &mutex);
+        }
+
+        g_mutex_unlock(&mutex);
+        g_cond_clear(&cond);
+        g_mutex_clear(&mutex);
+    }
+    #elif defined(__APPLE__)
+    bool isMainThread = ((bool (*)(id, SEL))objc_msgSend)(
+        "NSThread"_cls, "isMainThread"_sel);
+    if(isMainThread) {
+        window::setOpacity(opacity);
+    }
+    else {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            window::setOpacity(opacity);
+        });
+    }
+    #else
+    window::setOpacity(opacity);
+    #endif
+
     output["success"] = true;
     return output;
 }
