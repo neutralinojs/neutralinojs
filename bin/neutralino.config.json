@@ -23,8 +23,8 @@
     "nativeBlockList": [],
     "commandAllowList": ["node"],
     "filesystemScopes": {
-        "${NL_PATH}/resources": "read",
-        "${NL_OSHOMEPATH}": "read-write"
+        "${NL_PATH}": "read-write",
+        "${NL_OSHOMEPATH}": "read"
     },
     "globalVariables": {
         "TEST1": "Hello",
