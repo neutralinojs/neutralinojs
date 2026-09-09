@@ -22,6 +22,10 @@
     },
     "nativeBlockList": [],
     "commandAllowList": ["node"],
+    "filesystemScopes": {
+        "${NL_PATH}": "read-write",
+        "${NL_OSHOMEPATH}": "read"
+    },
     "globalVariables": {
         "TEST1": "Hello",
         "TEST2": [2, 4, 5],

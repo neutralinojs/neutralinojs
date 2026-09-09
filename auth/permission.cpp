@@ -2,10 +2,13 @@
 #include <vector>
 #include <regex>
 #include <algorithm>
+#include <filesystem>
 
 #include "lib/json/json.hpp"
 #include "settings.h"
+#include "auth/permission.h"
 #include "helpers.h"
+#include "api/fs/fs.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -17,9 +20,12 @@ vector<string> blockedModules;
 vector<string> allowedMethods;
 vector<string> allowedModules;
 vector<string> allowedCommandPatterns;
+vector<string> fileSystemReadScopes;
+vector<string> fileSystemWriteScopes;
 bool shouldCheckBlockList = false;
 bool shouldCheckAllowList = false;
 bool shouldCheckCommandAllowList = false;
+bool shouldCheckScopesLists = false;
 
 bool __isWildcardMatch(const string &methodMatch) {
     return regex_match(methodMatch, regex(".*\\.\\*"));
@@ -28,6 +34,27 @@ bool __isWildcardMatch(const string &methodMatch) {
 string __getModuleFromMethod(const string &nativeMethod) {
     vector<string> methodParts = helpers::splitTwo(nativeMethod, '.');
     return methodParts[0];
+}
+
+string __normalizeScopePath(const string &path) {
+    string resolved = fs::applyPathConstants(path);
+    string norm = resolved;
+    norm = FS_CONVWSTRN(filesystem::weakly_canonical(norm));
+    norm = FS_CONVWSTRN(filesystem::absolute(norm));
+    return helpers::normalizePath(norm);
+}
+
+bool __isPathInScope(const string &originalPath, const string &scope) {
+    const string path = __normalizeScopePath(originalPath);
+    if(path == scope) {
+        return true;
+    }
+    if(path.size() > scope.size()
+            && path.compare(0, scope.size(), scope) == 0
+            && path[scope.size()] == '/') {
+        return true;
+    }
+    return false;
 }
 
 void __registerBlockList() {
@@ -74,6 +101,25 @@ void __regiserCommandAllowList() {
         return;
     allowedCommandPatterns = jCommandAllowList.get<vector<string>>();
     shouldCheckCommandAllowList = true;
+}
+
+void __registerScopesLists() {
+    json jScopes = settings::getOptionForCurrentMode("filesystemScopes");
+    if(jScopes.is_null())
+        return;
+
+    for(const auto &entry: jScopes.items()) {
+        string perm = entry.value().get<string>();
+        string normalizedScope = __normalizeScopePath(entry.key());
+        if(perm == "read-write" || perm == "read") {
+            fileSystemReadScopes.push_back(normalizedScope);
+        }
+        if(perm == "read-write" || perm == "write") {
+            fileSystemWriteScopes.push_back(normalizedScope);
+        }
+    }
+
+    shouldCheckScopesLists = true;
 }
 
 bool hasMethodAccess(const string &nativeMethod) {
@@ -135,10 +181,32 @@ bool hasCommandExecutionAccess(const string &command) {
     return false;
 }
 
+
+bool hasFileSystemPathAccess(const string &path, permission::FileSystemAccessPermission perm) {
+    if(!shouldCheckScopesLists) {
+        return true;
+    }
+
+    const auto activeScopes = (perm == permission::FileSystemAccessPermissionWrite)
+        ? fileSystemWriteScopes : fileSystemReadScopes;
+
+    if(activeScopes.empty()) {
+        return false;
+    }
+
+    for(const string &scope: activeScopes) {
+        if(__isPathInScope(path, scope)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void init() {
     __registerAllowList();
     __registerBlockList();
     __regiserCommandAllowList();
+    __registerScopesLists();
 }
 
 } // namespace permission
