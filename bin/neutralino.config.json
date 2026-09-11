@@ -34,6 +34,10 @@
             "value2": {}
         }
     },
+    "systemEnvs": {
+        "ENVTEST1": "Hello",
+        "ENVTEST2": "World"
+    },
     "modes": {
         "window": {
             "title": "Neutralinojs app",
