@@ -325,28 +325,43 @@ void broadcast(const json &message) {
 
 bool sendToExtension(const string &extensionId, const json &message) {
     if(extConnections.find(extensionId) != extConnections.end()) {
-        auto hdl = extConnections[extensionId];
-        auto op = wsMode.count(hdl)
-              ? wsMode[hdl]
-              : websocketpp::frame::opcode::text;
-        server->send(hdl, helpers::jsonToString(message), op);
-        return true;
+        try {
+            auto hdl = extConnections[extensionId];
+            auto op = wsMode.count(hdl)
+                  ? wsMode[hdl]
+                  : websocketpp::frame::opcode::text;
+            server->send(hdl, helpers::jsonToString(message), op);
+            return true;
+        }
+        catch(const std::exception &e) {
+            return false;
+        }
     }
     return false;
 }
 
 void broadcastToAllExtensions(const json &message) {
     for (const auto &[_, connection]: extConnections) {
-        auto op = wsMode.count(connection)
-            ? wsMode[connection]
-            : websocketpp::frame::opcode::text;
-        server->send(connection, helpers::jsonToString(message), op);
+        try {
+            auto op = wsMode.count(connection)
+                ? wsMode[connection]
+                : websocketpp::frame::opcode::text;
+            server->send(connection, helpers::jsonToString(message), op);
+        }
+        catch(const std::exception &e) {
+            // connection might have closed
+        }
     }
 }
 
 void broadcastToAllApps(const json &message) {
     for (const auto &connection: appConnections) {
-        server->send(connection, helpers::jsonToString(message), websocketpp::frame::opcode::text);
+        try {
+            server->send(connection, helpers::jsonToString(message), websocketpp::frame::opcode::text);
+        }
+        catch(const std::exception &e) {
+            // connection might have closed
+        }
     }
 }
 

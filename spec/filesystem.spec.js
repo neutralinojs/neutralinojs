@@ -1495,6 +1495,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         before(() => {
             const configCopy = JSON.parse(JSON.stringify(baseConfig));
             configCopy.filesystem = { scopes: SCOPES };
+            configCopy.filesystemScopes = SCOPES;
             configCopy.documentRoot = '/resources/';
             configCopy.enableNativeAPI = true;
             fsSpec.writeFileSync(SCOPED_CONFIG_PATH, JSON.stringify(configCopy, null, 4));
@@ -1639,6 +1640,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         function writeScopedConfig(scopes) {
             const configCopy = JSON.parse(JSON.stringify(baseConfig));
             configCopy.filesystem = { scopes };
+            configCopy.filesystemScopes = scopes;
             configCopy.documentRoot = '/resources/';
             configCopy.enableNativeAPI = true;
             fsSpec.writeFileSync(scopedConfigPath, JSON.stringify(configCopy, null, 4));
