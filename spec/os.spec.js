@@ -741,6 +741,18 @@ describe('os.spec: os namespace tests', () => {
             assert.match(runner.getOutput(), /^OK:\d+$/);
         });
 
+        it('rejects execCommand that attempts shell injection via single quotes with backslash', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.os.execCommand("node -e 'console.log(\\\\' ; echo hi ; true # )'");
+                    await __close('done');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `, { args: scopedArgs });
+            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+        });
+
         it('rejects spawnProcess for a non-allowed program', async () => {
             runner.run(`
                 try {
