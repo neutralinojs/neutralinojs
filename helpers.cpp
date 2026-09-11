@@ -277,6 +277,10 @@ vector<string> tokenizeCommand(const string &command) {
             if(c == '"') {
                 inDouble = false;
             }
+            else if(c == '$' || c == '`') {
+                tokens.clear();
+                return tokens;
+            }
             else {
                 current += static_cast<char>(c);
             }
