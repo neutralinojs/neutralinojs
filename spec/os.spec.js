@@ -690,7 +690,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.equal(runner.getOutput(), 'NE_OS_CMDNALW');
         });
 
         it('rejects execCommand when the program does not match the allow-list', async () => {
@@ -702,7 +702,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.equal(runner.getOutput(), 'NE_OS_CMDNALW');
         });
 
         it('rejects execCommand that contains a shell pipe outside quotes', async () => {
@@ -714,7 +714,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.equal(runner.getOutput(), 'NE_OS_CMDNALW');
         });
 
         it('rejects execCommand that contains a shell semicolon outside quotes', async () => {
@@ -726,7 +726,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.equal(runner.getOutput(), 'NE_OS_CMDNALW');
         });
 
         it('allows execCommand with quoted arguments containing spaces', async () => {
@@ -750,7 +750,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.equal(runner.getOutput(), 'NE_OS_CMDNALW');
         });
 
         it('rejects execCommand that attempts shell injection via command substitution in double quotes', async () => {
@@ -762,7 +762,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.equal(runner.getOutput(), 'NE_OS_CMDNALW');
         });
 
         it('rejects execCommand that attempts shell injection via backticks in double quotes', async () => {
@@ -774,7 +774,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.equal(runner.getOutput(), 'NE_OS_CMDNALW');
         });
 
         it('rejects spawnProcess for a non-allowed program', async () => {
@@ -786,7 +786,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.equal(runner.getOutput(), 'NE_OS_CMDNALW');
         });
 
         it('allows spawnProcess for an allowed program', async () => {
