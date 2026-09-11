@@ -745,7 +745,7 @@ describe('os.spec: os namespace tests', () => {
             runner.run(`
                 try {
                     await Neutralino.os.execCommand("node -e 'console.log(\\\\' ; echo hi ; true # )'");
-                    await __close('no-error');
+                    await __close('done');
                 } catch (error) {
                     await __close(error.code);
                 }
