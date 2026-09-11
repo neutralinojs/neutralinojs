@@ -35,6 +35,17 @@ Restrict filesystem access to a set of allowed paths via the new `filesystemScop
   }
   ```
 
+### Configuration
+- Add the `systemEnvs` config option to update or use custom environment variables. These environment variables are activated at the framework initialization stage, so developers can add GTK, webview-specific, or other library/system configurations here.
+```json
+{
+  "systemEnvs": {
+      "WEBKIT_DISABLE_COMPOSITING_MODE": "1",
+      "GDK_BACKEND": "x11"
+  }
+}
+```
+
 ## v6.9.0
 
 ### API: net
