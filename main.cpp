@@ -176,6 +176,14 @@ void __initFramework(const json &args) {
     authbasic::init();
     permission::init();
     storage::init();
+    json jEnvs = settings::getOptionForCurrentMode("systemEnvs");
+    if(!jEnvs.is_null()) {
+        for(const auto &entry: jEnvs.items()) {
+            string key = entry.key();
+            string value = entry.value().get<string>();
+            os::setEnv(key, value);
+        }
+    }
 }
 
 void __initExtra() {
