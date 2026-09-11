@@ -777,6 +777,18 @@ describe('os.spec: os namespace tests', () => {
             assert.equal(runner.getOutput(), 'NE_OS_CMDNALW');
         });
 
+        it('allows execCommand with escaped double quotes inside double quotes', async () => {
+            runner.run(`
+                try {
+                    const r = await Neutralino.os.execCommand('node -e "console.log(\\\\"done\\\\")"');
+                    await __close('OK:' + r.stdOut.trim());
+                } catch (error) {
+                    await __close('ERR:' + error.code);
+                }
+            `, { args: scopedArgs });
+            assert.equal(runner.getOutput(), 'OK:done');
+        });
+
         it('rejects spawnProcess for a non-allowed program', async () => {
             runner.run(`
                 try {

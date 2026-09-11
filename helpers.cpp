@@ -277,6 +277,19 @@ vector<string> tokenizeCommand(const string &command) {
             if(c == '"') {
                 inDouble = false;
             }
+            else if(c == '\\' && i + 1 < command.size()) {
+                if(command[i + 1] == '"') {
+                    current += '"';
+                    i++;
+                }
+                else if(command[i + 1] == '\\') {
+                    current += '\\';
+                    i++;
+                }
+                else {
+                    current += static_cast<char>(c);
+                }
+            }
             else if(c == '$' || c == '`') {
                 tokens.clear();
                 return tokens;
