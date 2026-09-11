@@ -183,6 +183,32 @@ describe('computer.spec: computer namespace tests', () => {
         });
     });
 
+    describe('computer.getDisks', () => {
+        it('returns an array of physical disks without throwing errors', async () => {
+            runner.run(`
+                try {
+                    let disks = await Neutralino.computer.getDisks();
+                    await __close(JSON.stringify(disks));
+                } catch(e) {
+                    await __close("ERR:" + (e.message || e.code));
+                }
+            `);
+            let output = runner.getOutput();
+            assert.ok(!output.startsWith("ERR:"), "getDisks threw: " + output);
+            let disks = JSON.parse(output);
+            assert.ok(Array.isArray(disks));
+            disks.forEach(disk => {
+                assert.ok(typeof disk.id == 'number');
+                assert.ok(typeof disk.vendor == 'string');
+                assert.ok(typeof disk.model == 'string');
+                assert.ok(typeof disk.serial == 'string');
+                assert.ok(typeof disk.mountPoint == 'string');
+                assert.ok(typeof disk.total == 'number');
+                assert.ok(typeof disk.free == 'number');
+            });
+        });
+    });
+
 
     describe('computer.getMousePosition', () => {
         it('returns the current mouse cursor position and it is within screen bounds', async () => {
