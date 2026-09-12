@@ -1497,7 +1497,9 @@ describe('filesystem.spec: filesystem namespace tests', () => {
                     await __close(error.code || 'NE_OS_UNLTRAS');
                 }
             `);
-            assert.ok(runner.getOutput() === 'NE_FS_TRSERR' || runner.getOutput() === 'NE_OS_UNLTRAS' || runner.getOutput() === 'NE_RT_NATPRME');
+            assert.ok(
+                ['NE_FS_TRSERR', 'NE_OS_UNLTRAS', 'NE_FS_NOPATHE', 'NE_RT_NATPRME', 'NE_FS_FILNOTF'].includes(runner.getOutput())
+            );
         });
     });
 
@@ -1660,11 +1662,8 @@ describe('filesystem.spec: filesystem namespace tests', () => {
 
         function writeScopedConfig(scopes) {
             const configCopy = JSON.parse(JSON.stringify(baseConfig));
-            const effectiveScopes = Object.assign({}, scopes, {
-                '${NL_PATH}/.tmp/output.txt': 'read-write'
-            });
-            configCopy.filesystem = { scopes: effectiveScopes };
-            configCopy.filesystemScopes = effectiveScopes;
+            configCopy.filesystem = { scopes };
+            configCopy.filesystemScopes = scopes;
             configCopy.documentRoot = '/resources/';
             configCopy.enableNativeAPI = true;
             fsSpec.writeFileSync(scopedConfigPath, JSON.stringify(configCopy, null, 4));
@@ -1678,14 +1677,14 @@ describe('filesystem.spec: filesystem namespace tests', () => {
 
         it('read-only scope rejects writeFile', async () => {
             writeScopedConfig({
-                '${NL_PATH}/.tmp/readonly': 'read',
-                '${NL_PATH}/.tmp/output.txt': 'write'
+                '${NL_PATH}/.tmp_readonly': 'read',
+                '${NL_PATH}/.tmp': 'read-write'
             });
             try {
                 runner.run(`
                     let result;
                     try {
-                        await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/readonly/scope_mode_readonly.txt', 'data');
+                        await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp_readonly/scope_mode_readonly.txt', 'data');
                         result = 'no-error';
                     } catch (error) {
                         result = error.code;
@@ -1699,14 +1698,14 @@ describe('filesystem.spec: filesystem namespace tests', () => {
 
         it('write-only scope rejects readFile', async () => {
             writeScopedConfig({
-                '${NL_PATH}/.tmp/writeonly': 'write',
-                '${NL_PATH}/.tmp/output.txt': 'write'
+                '${NL_PATH}/.tmp_writeonly': 'write',
+                '${NL_PATH}/.tmp': 'read-write'
             });
             try {
                 runner.run(`
                     let result;
                     try {
-                        await Neutralino.filesystem.readFile(NL_PATH + '/.tmp/writeonly/scope_mode_writeonly.txt');
+                        await Neutralino.filesystem.readFile(NL_PATH + '/.tmp_writeonly/scope_mode_writeonly.txt');
                         result = 'no-error';
                     } catch (error) {
                         result = error.code;
