@@ -1677,7 +1677,10 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         const INSIDE = "'NL_PATH + \\'/.tmp/scope_mode_test.txt\\''";
 
         it('read-only scope rejects writeFile', async () => {
-            writeScopedConfig({ '${NL_PATH}/.tmp/readonly': 'read' });
+            writeScopedConfig({
+                '${NL_PATH}/.tmp/readonly': 'read',
+                '${NL_PATH}/.tmp/output.txt': 'write'
+            });
             try {
                 runner.run(`
                     let result;
@@ -1695,7 +1698,10 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         });
 
         it('write-only scope rejects readFile', async () => {
-            writeScopedConfig({ '${NL_PATH}/.tmp/writeonly': 'write' });
+            writeScopedConfig({
+                '${NL_PATH}/.tmp/writeonly': 'write',
+                '${NL_PATH}/.tmp/output.txt': 'write'
+            });
             try {
                 runner.run(`
                     let result;

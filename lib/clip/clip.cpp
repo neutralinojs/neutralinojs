@@ -132,7 +132,10 @@ bool get_text(std::string& value) {
   if (len > 0) {
     std::vector<char> buf(len);
     l.get_data(f, &buf[0], len);
-    value = &buf[0];
+    while (len > 0 && buf[len - 1] == '\0') {
+      len--;
+    }
+    value.assign(&buf[0], len);
     return true;
   }
   else {
@@ -165,7 +168,10 @@ bool get_html(std::string& value) {
   if (len > 0) {
     std::vector<char> buf(len);
     l.get_data(f, &buf[0], len);
-    value = &buf[0];
+    while (len > 0 && buf[len - 1] == '\0') {
+      len--;
+    }
+    value.assign(&buf[0], len);
     return true;
   }
   else {

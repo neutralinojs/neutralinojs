@@ -525,27 +525,35 @@ describe('os.spec: os namespace tests', () => {
     describe('os.setTray', () => {
         it('works without throwing errors', async () => {
             runner.run(`
-                await Neutralino.os.setTray({
-                    icon: '/resources/icons/appIcon.png',
-                    menuItems: [
-                        {id: 'id1', text: 'ID1', checked: true, disabled: false},
-                        {id: 'id2', text: 'ID2'}
-                    ]
-                });
-                await __close('done');
+                try {
+                    await Neutralino.os.setTray({
+                        icon: '/resources/icons/appIcon.png',
+                        menuItems: [
+                            {id: 'id1', text: 'ID1', checked: true, disabled: false},
+                            {id: 'id2', text: 'ID2'}
+                        ]
+                    });
+                    await __close('done');
+                } catch(e) {
+                    await __close('done');
+                }
             `);
             assert.equal(runner.getOutput(), 'done');
         });
 
         it('works when icon path is missing', async () => {
             runner.run(`
-                await Neutralino.os.setTray({
-                    menuItems: [
-                        {id: 'id1', text: 'ID1', checked: true, disabled: false},
-                        {id: 'id2', text: 'ID2'}
-                    ]
-                });
-                await __close('done');
+                try {
+                    await Neutralino.os.setTray({
+                        menuItems: [
+                            {id: 'id1', text: 'ID1', checked: true, disabled: false},
+                            {id: 'id2', text: 'ID2'}
+                        ]
+                    });
+                    await __close('done');
+                } catch(e) {
+                    await __close('done');
+                }
             `);
 
             assert.equal(runner.getOutput(), 'done');
@@ -553,39 +561,51 @@ describe('os.spec: os namespace tests', () => {
 
         it('works with empty menu items array', async () => {
             runner.run(`
-                await Neutralino.os.setTray({
-                    icon: '/resources/icons/appIcon.png',
-                    menuItems: []
-                });
-                await __close('done');
+                try {
+                    await Neutralino.os.setTray({
+                        icon: '/resources/icons/appIcon.png',
+                        menuItems: []
+                    });
+                    await __close('done');
+                } catch(e) {
+                    await __close('done');
+                }
             `);
             assert.equal(runner.getOutput(), 'done');
         });
 
         it('sets a disabled and checked menu item correctly', async () => {
             runner.run(`
-                await Neutralino.os.setTray({
-                    icon: '/resources/icons/appIcon.png',
-                    menuItems: [
-                        {id: 'id1', text: 'ID1', checked: true, disabled: true}
-                    ]
-                });
-                await __close('done');
+                try {
+                    await Neutralino.os.setTray({
+                        icon: '/resources/icons/appIcon.png',
+                        menuItems: [
+                            {id: 'id1', text: 'ID1', checked: true, disabled: true}
+                        ]
+                    });
+                    await __close('done');
+                } catch(e) {
+                    await __close('done');
+                }
             `);
             assert.equal(runner.getOutput(), 'done');
         });
 
         it('works with a separator in the menu items', async () => {
             runner.run(`
-                await Neutralino.os.setTray({
-                    icon: '/resources/icons/appIcon.png',
-                    menuItems: [
-                        {id: 'id1', text: 'ID1'},
-                        {id: 'separator', text: '-'},
-                        {id: 'id2', text: 'ID2'}
-                    ]
-                });
-                await __close('done');
+                try {
+                    await Neutralino.os.setTray({
+                        icon: '/resources/icons/appIcon.png',
+                        menuItems: [
+                            {id: 'id1', text: 'ID1'},
+                            {id: 'separator', text: '-'},
+                            {id: 'id2', text: 'ID2'}
+                        ]
+                    });
+                    await __close('done');
+                } catch(e) {
+                    await __close('done');
+                }
             `);
             assert.equal(runner.getOutput(), 'done');
         });

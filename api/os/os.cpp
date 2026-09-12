@@ -990,6 +990,12 @@ json trashItem(const json &input) {
     }
     string path = input["path"].get<string>();
 
+    std::error_code ec;
+    if(!std::filesystem::exists(path, ec)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_UNLTRAS, path);
+        return output;
+    }
+
     bool trashed = false;
     #if defined(_WIN32)
     wstring widePath = helpers::str2wstr(path);
