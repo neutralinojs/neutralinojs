@@ -1265,7 +1265,13 @@ bool snapshot(const string &filename) {
 
     long winId = ((long(*)(id, SEL))objc_msgSend)(windowHandle, "windowNumber"_sel);
     
-    CGImageRef imgRef = CGWindowListCreateImage(clientRect, kCGWindowListOptionIncludingWindow, winId, kCGWindowImageBoundsIgnoreFraming);
+    typedef CGImageRef (*CGWindowListCreateImageFunc)(CGRect, CGWindowListOption, CGWindowID, CGWindowImageOption);
+    CGWindowListCreateImageFunc dynamicCGWindowListCreateImage =
+        (CGWindowListCreateImageFunc)dlsym(RTLD_DEFAULT, "CGWindowListCreateImage");
+
+    CGImageRef imgRef = dynamicCGWindowListCreateImage
+        ? dynamicCGWindowListCreateImage(clientRect, kCGWindowListOptionIncludingWindow, (CGWindowID)winId, kCGWindowImageBoundsIgnoreFraming)
+        : nullptr;
     if (!imgRef) {
         return false;
     }

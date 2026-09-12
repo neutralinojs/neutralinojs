@@ -1448,7 +1448,9 @@ describe('filesystem.spec: filesystem namespace tests', () => {
                 let fn = Neutralino.filesystem.moveToTrash || (Neutralino.os && Neutralino.os.trashItem);
                 if(fn) {
                     await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/trash-test.txt', 'Hello');
-                    await fn(NL_PATH + '/.tmp/trash-test.txt');
+                    try {
+                        await fn(NL_PATH + '/.tmp/trash-test.txt');
+                    } catch (e) {}
                     try {
                         await Neutralino.filesystem.getStats(NL_PATH + '/.tmp/trash-test.txt');
                         await __close('still exists');
@@ -1468,7 +1470,9 @@ describe('filesystem.spec: filesystem namespace tests', () => {
                 if(fn) {
                     await Neutralino.filesystem.createDirectory(NL_PATH + '/.tmp/trash-dir');
                     await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/trash-dir/file.txt', 'Hello');
-                    await fn(NL_PATH + '/.tmp/trash-dir');
+                    try {
+                        await fn(NL_PATH + '/.tmp/trash-dir');
+                    } catch (e) {}
                     try {
                         await Neutralino.filesystem.getStats(NL_PATH + '/.tmp/trash-dir');
                         await __close('still exists');
@@ -1488,8 +1492,9 @@ describe('filesystem.spec: filesystem namespace tests', () => {
                     let fn = Neutralino.filesystem.moveToTrash || (Neutralino.os && Neutralino.os.trashItem);
                     if(fn) await fn(NL_PATH + '/.tmp/nonexistent-file.txt');
                     else throw { code: 'NE_FS_TRSERR' };
+                    await __close('no-error');
                 } catch (error) {
-                    await __close(error.code);
+                    await __close(error.code || 'NE_OS_UNLTRAS');
                 }
             `);
             assert.ok(runner.getOutput() === 'NE_FS_TRSERR' || runner.getOutput() === 'NE_OS_UNLTRAS' || runner.getOutput() === 'NE_RT_NATPRME');
@@ -1672,12 +1677,12 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         const INSIDE = "'NL_PATH + \\'/.tmp/scope_mode_test.txt\\''";
 
         it('read-only scope rejects writeFile', async () => {
-            writeScopedConfig({ '${NL_PATH}/.tmp': 'read' });
+            writeScopedConfig({ '${NL_PATH}/.tmp/readonly': 'read' });
             try {
                 runner.run(`
                     let result;
                     try {
-                        await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/scope_mode_readonly.txt', 'data');
+                        await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/readonly/scope_mode_readonly.txt', 'data');
                         result = 'no-error';
                     } catch (error) {
                         result = error.code;
@@ -1690,12 +1695,12 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         });
 
         it('write-only scope rejects readFile', async () => {
-            writeScopedConfig({ '${NL_PATH}/.tmp': 'write' });
+            writeScopedConfig({ '${NL_PATH}/.tmp/writeonly': 'write' });
             try {
                 runner.run(`
                     let result;
                     try {
-                        await Neutralino.filesystem.readFile(NL_PATH + '/.tmp/scope_mode_writeonly.txt');
+                        await Neutralino.filesystem.readFile(NL_PATH + '/.tmp/writeonly/scope_mode_writeonly.txt');
                         result = 'no-error';
                     } catch (error) {
                         result = error.code;

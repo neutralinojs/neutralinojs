@@ -216,12 +216,24 @@ bool isInitialized() {
 }
 
 void startAsync() {
-    thread serverThread([&](){ server->run(); });
+    thread serverThread([&](){
+        try {
+            server->run();
+        }
+        catch(const std::exception &e) {
+            debug::log(debug::LogTypeError, e.what());
+        }
+        catch(...) {}
+    });
     serverThread.detach();
 }
 
 void stop() {
-    server->stop_listening();
+    try {
+        server->stop_listening();
+        server->stop();
+    }
+    catch(...) {}
 }
 
 void handleMessage(websocketpp::connection_hdl handler, websocketserver::message_ptr msg) {

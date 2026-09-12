@@ -487,6 +487,7 @@ json getGPUInfo(const json &input) {
     for(const auto &gpu: gpus) {
         json gpuInfo = {
             { "id", gpuId },
+            { "name", gpu.name() },
             { "deviceId", gpu.device_id() },
             { "vendorId", gpu.vendor_id() },
             { "vendor", gpu.vendor() },
