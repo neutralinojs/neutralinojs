@@ -14,7 +14,9 @@ Neutralino.events.on("ready", async () => {
 
 async function __close(data = "", exitCode = 0) {
     if(data) {
-        await Neutralino.filesystem.writeFile(NL_PATH + "/.tmp/output.txt", data);
+        try {
+            await Neutralino.filesystem.writeFile(NL_PATH + "/.tmp/output.txt", data);
+        } catch(e) {}
     }
     setTimeout(async () => {
         await Neutralino.app.exit(exitCode); // normal exit
@@ -29,7 +31,9 @@ async function __init() {
         // ignore
     }
     setTimeout(async () => {
-        await Neutralino.filesystem.writeFile(NL_PATH + "/.tmp/output.txt", 'NL_SP_MAXTIMT');
+        try {
+            await Neutralino.filesystem.writeFile(NL_PATH + "/.tmp/output.txt", 'NL_SP_MAXTIMT');
+        } catch(e) {}
         await Neutralino.app.exit(1); // max timeout force exit
     }, 20000);
 }
@@ -55,10 +59,10 @@ function run(code, options = {}) {
         if(options.debug) {
             console.log('INFO: Running command: ' + command);
         }
-        execSync(command);
+        execSync(command, { timeout: 25000 });
     }
     catch(err) {
-        exitCode = err.status;
+        exitCode = err.status || 1;
     }
 
     if(options.debug) {
