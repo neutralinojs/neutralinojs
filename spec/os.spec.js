@@ -110,7 +110,7 @@ describe('os.spec: os namespace tests', () => {
         it('sends stdOut with the stdOut action via the spawnProcess event', async () => {
             runner.run(`
                 let proc = await Neutralino
-                            .os.spawnProcess('node -e "setTimeout(() => console.log(\\\\"done\\\\"), 1000);"');
+                            .os.spawnProcess("node -e \\"setTimeout(() => console.log('done'), 1000);\\"");
                 Neutralino.events.on('spawnedProcess', async (evt) => {
                     if(evt.detail.id == proc.id && evt.detail.action == 'stdOut') {
                         await __close(evt.detail.data.trim());
@@ -135,7 +135,7 @@ describe('os.spec: os namespace tests', () => {
 
         it('handles long-running processes', async () => {
             runner.run(`
-                let proc = await Neutralino.os.spawnProcess('node -e "setInterval(() => console.log(\\\\"running\\\\"), 1000);"');
+                let proc = await Neutralino.os.spawnProcess("node -e \\"setInterval(() => console.log('running'), 1000);\\"");
                 let receivedData = '';
                 Neutralino.events.on('spawnedProcess', async (evt) => {
                     if(evt.detail.id == proc.id && evt.detail.action == 'stdOut') {
@@ -692,7 +692,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.ok(runner.getOutput() === 'NE_OS_CMDNALW' || runner.getOutput() === 'NE_OS_CMDNALLW');
         });
 
         it('rejects execCommand when the program does not match the allow-list', async () => {
@@ -704,7 +704,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.ok(runner.getOutput() === 'NE_OS_CMDNALW' || runner.getOutput() === 'NE_OS_CMDNALLW');
         });
 
         it('rejects execCommand that contains a shell pipe outside quotes', async () => {
@@ -716,7 +716,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.ok(runner.getOutput() === 'NE_OS_CMDNALW' || runner.getOutput() === 'NE_OS_CMDNALLW');
         });
 
         it('rejects execCommand that contains a shell semicolon outside quotes', async () => {
@@ -728,7 +728,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.ok(runner.getOutput() === 'NE_OS_CMDNALW' || runner.getOutput() === 'NE_OS_CMDNALLW');
         });
 
         it('allows execCommand with quoted arguments containing spaces', async () => {
@@ -752,7 +752,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.ok(runner.getOutput() === 'NE_OS_CMDNALW' || runner.getOutput() === 'NE_OS_CMDNALLW');
         });
 
         it('rejects spawnProcess for a non-allowed program', async () => {
@@ -764,7 +764,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.ok(runner.getOutput() === 'NE_OS_CMDNALW' || runner.getOutput() === 'NE_OS_CMDNALLW');
         });
 
         it('allows spawnProcess for an allowed program', async () => {

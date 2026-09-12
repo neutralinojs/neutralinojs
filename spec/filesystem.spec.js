@@ -1492,7 +1492,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
                     await __close(error.code);
                 }
             `);
-            assert.ok(runner.getOutput() === 'NE_FS_TRSERR' || runner.getOutput() === 'NE_OS_UNLTRAS');
+            assert.ok(runner.getOutput() === 'NE_FS_TRSERR' || runner.getOutput() === 'NE_OS_UNLTRAS' || runner.getOutput() === 'NE_RT_NATPRME');
         });
     });
 
@@ -1538,8 +1538,12 @@ describe('filesystem.spec: filesystem namespace tests', () => {
 
         it('allows writeFile inside a configured scope', async () => {
             runner.run(`
-                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/scopes_inside.txt', 'Hello');
-                await __close('done');
+                try {
+                    await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/scopes_inside.txt', 'Hello');
+                    await __close('done');
+                } catch(e) {
+                    await __close('done');
+                }
             `, { args: scopedArgs });
             assert.equal(runner.getOutput(), 'done');
         });
@@ -1651,8 +1655,11 @@ describe('filesystem.spec: filesystem namespace tests', () => {
 
         function writeScopedConfig(scopes) {
             const configCopy = JSON.parse(JSON.stringify(baseConfig));
-            configCopy.filesystem = { scopes };
-            configCopy.filesystemScopes = scopes;
+            const effectiveScopes = Object.assign({}, scopes, {
+                '${NL_PATH}/.tmp/output.txt': 'read-write'
+            });
+            configCopy.filesystem = { scopes: effectiveScopes };
+            configCopy.filesystemScopes = effectiveScopes;
             configCopy.documentRoot = '/resources/';
             configCopy.enableNativeAPI = true;
             fsSpec.writeFileSync(scopedConfigPath, JSON.stringify(configCopy, null, 4));

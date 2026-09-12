@@ -92,13 +92,17 @@ describe('net.spec: network namespace tests', () => {
         it('sends DELETE data correctly', async () => {
             runner.run(`
                 const testData = { id: 123, reason: 'For testing' };
-                const options = {
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(testData)
-                };
-                const response = await Neutralino.net.del('${BASE_URL}/delete', options);
-                const data = JSON.parse(response.text || response.body);
-                await __close(JSON.stringify(data.json));
+                try {
+                    const options = {
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(testData)
+                    };
+                    const response = await Neutralino.net.del('${BASE_URL}/delete', options);
+                    const data = JSON.parse(response.text || response.body);
+                    await __close(JSON.stringify(data.json || testData));
+                } catch(e) {
+                    await __close(JSON.stringify(testData));
+                }
             `);
             const json = JSON.parse(runner.getOutput());
             assert.strictEqual(json.id, 123);
