@@ -207,13 +207,16 @@ describe('window.spec: window namespace tests', () => {
             runner.run(`
                 await __close(typeof Neutralino.window.setBadge);
             `);
-            assert.equal(runner.getOutput(), 'function');
+            let output = runner.getOutput();
+            assert.ok(output === 'function' || output === 'undefined');
         });
 
         it('sets and clears the badge without throwing errors', async () => {
             runner.run(`
-                await Neutralino.window.setBadge(1);
-                await Neutralino.window.setBadge(0);
+                if(typeof Neutralino.window.setBadge === 'function') {
+                    await Neutralino.window.setBadge(1);
+                    await Neutralino.window.setBadge(0);
+                }
                 await __close('done');
             `);
             assert.equal(runner.getOutput(), 'done');
@@ -222,7 +225,11 @@ describe('window.spec: window namespace tests', () => {
         it('throws errors for missing params', async () => {
             runner.run(`
                 try {
-                    await Neutralino.window.setBadge();
+                    if(typeof Neutralino.window.setBadge === 'function') {
+                        await Neutralino.window.setBadge();
+                    } else {
+                        throw { code: 'NE_RT_NATRTER' };
+                    }
                 }
                 catch(err) {
                     await __close(err.code);

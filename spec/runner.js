@@ -9,59 +9,6 @@ Neutralino.init();
 
 Neutralino.events.on("ready", async () => {
     await __init();
-    if(typeof Neutralino !== 'undefined') {
-        if(Neutralino.os && !Neutralino.os.getLocale && Neutralino.os.getLocaleInfo) {
-            Neutralino.os.getLocale = Neutralino.os.getLocaleInfo;
-        }
-        if(Neutralino.computer && !Neutralino.computer.getDiskInfo && Neutralino.computer.getDisks) {
-            Neutralino.computer.getDiskInfo = async function() {
-                let disks = await Neutralino.computer.getDisks();
-                let d = (Array.isArray(disks) && disks.length > 0) ? disks[0] : {};
-                return {
-                    name: d.model || 'disk0',
-                    vendor: d.vendor || '',
-                    model: d.model || '',
-                    mountPoint: d.mountPoint || '/',
-                    fileSystem: 'unknown',
-                    total: d.total || 1000000000,
-                    used: (d.total || 1000000000) - (d.free || 500000000),
-                    free: d.free || 500000000,
-                    usedPercent: 50
-                };
-            };
-        }
-        if(Neutralino.filesystem && !Neutralino.filesystem.moveToTrash) {
-            Neutralino.filesystem.moveToTrash = async function(p) {
-                if(Neutralino.os && Neutralino.os.trashItem) {
-                    return await Neutralino.os.trashItem(p);
-                }
-                return await Neutralino.filesystem.remove(p);
-            };
-        }
-        if(Neutralino.net) {
-            ['get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'request'].forEach(m => {
-                if(typeof Neutralino.net[m] === 'function') {
-                    const orig = Neutralino.net[m];
-                    Neutralino.net[m] = async function(...args) {
-                        const res = await orig.apply(this, args);
-                        if(res && res.body !== undefined && res.text === undefined) {
-                            res.text = res.body;
-                        }
-                        return res;
-                    };
-                }
-            });
-        }
-        if(Neutralino.window && !Neutralino.window.setBadge) {
-            Neutralino.window.setBadge = async function(count) {
-                if(count === undefined) {
-                    let err = new Error("Missing count");
-                    err.code = "NE_RT_NATRTER";
-                    throw err;
-                }
-            };
-        }
-    }
     {CODE}
 });
 
@@ -108,10 +55,10 @@ function run(code, options = {}) {
         if(options.debug) {
             console.log('INFO: Running command: ' + command);
         }
-        execSync(command);
+        execSync(command, { timeout: 25000 });
     }
     catch(err) {
-        exitCode = err.status;
+        exitCode = err.status || 1;
     }
 
     if(options.debug) {
