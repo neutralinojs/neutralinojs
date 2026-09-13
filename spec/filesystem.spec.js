@@ -639,6 +639,27 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             assert.equal(info.id, 0);
         });
 
+        it('assigns unique IDs when files are opened and closed out of sequence', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/fileA.txt', 'ContentA');
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/fileB.txt', 'ContentB');
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/fileC.txt', 'ContentC');
+
+                let idA = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/fileA.txt');
+                let idB = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/fileB.txt');
+                await Neutralino.filesystem.updateOpenedFile(idA, 'close');
+                let idC = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/fileC.txt');
+
+                let isUnique = (idB !== idC);
+                await Neutralino.filesystem.updateOpenedFile(idB, 'close');
+                await Neutralino.filesystem.updateOpenedFile(idC, 'close');
+                await __close(JSON.stringify({ idA, idB, idC, isUnique }));
+            `);
+            let res = JSON.parse(runner.getOutput());
+            assert.equal(res.isUnique, true);
+            assert.notEqual(res.idB, res.idC);
+        });
+
         it('returns updated eof properly', async () => {
             runner.run(`
                 await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Hello');
