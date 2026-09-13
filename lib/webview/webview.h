@@ -543,6 +543,10 @@ public:
     class_addProtocol(cls, objc_getProtocol("NSApplicationDelegate"));
     class_addMethod(cls, "applicationShouldTerminateAfterLastWindowClosed:"_sel,
                     (IMP)(+[](id, SEL, id) -> BOOL { return 0; }), "c@:@");
+    class_addMethod(cls, "applicationWillTerminate:"_sel,
+                    (IMP)(+[](id, SEL, id) -> void {
+                        std::exit(processExitCode);
+                    }), "v@:@");
     class_addMethod(cls, "applicationShouldHandleReopen:hasVisibleWindows:"_sel,
                     (IMP)(+[](id, SEL, id, BOOL hasVisibleWindows) -> BOOL {
                         if(windowStateChange)
