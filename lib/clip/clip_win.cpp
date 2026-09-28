@@ -402,9 +402,14 @@ bool lock::impl::get_data(format f, char* buf, size_t len) const {
           if(sMatches.size() > 1 && eMatches.size() > 1) {
             size_t fragmentStart = std::stoi(sMatches[1]);
             size_t fragmentEnd = std::stoi(eMatches[1]);
-            std::string fragment = html.substr(fragmentStart, fragmentEnd - fragmentStart);
-            memcpy(buf, fragment.c_str(), len);
-            result = true;
+            if (fragmentEnd >= fragmentStart && fragmentStart < html.size()) {
+              size_t fragLen = (std::min)(fragmentEnd - fragmentStart, html.size() - fragmentStart);
+              std::string fragment = html.substr(fragmentStart, fragLen);
+              size_t copyLen = (len > 0 && fragment.size() >= len) ? len - 1 : fragment.size();
+              memcpy(buf, fragment.c_str(), copyLen);
+              buf[copyLen] = '\0';
+              result = true;
+            }
           }
           GlobalUnlock(hglobal);
         }

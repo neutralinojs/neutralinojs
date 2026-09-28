@@ -230,6 +230,10 @@
             "webviewArgs": {
                 "type": "string",
                 "description": "Additional command-line arguments for the WebView2 process."
+            },
+            "emitDropEvents": {
+                "type": "boolean",
+                "description": "If this setting is 'true', file drop events will be emitted via 'filesDropped' event with full file paths instead of standard browser drag and drop."
             }
           }
         },

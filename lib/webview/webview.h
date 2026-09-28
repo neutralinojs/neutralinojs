@@ -529,6 +529,53 @@ id operator"" _str(const char *s, std::size_t) {
 
 class cocoa_wkwebview_engine {
 public:
+  static std::vector<std::string> __extractDroppedPaths(id sender) {
+    std::vector<std::string> droppedPaths;
+    id pasteboard = ((id(*)(id,SEL))objc_msgSend)(sender, "draggingPasteboard"_sel);
+    id filenamesType = ((id(*)(id, SEL, const char *))objc_msgSend)(
+        "NSString"_cls, "stringWithUTF8String:"_sel, "NSFilenamesPboardType");
+    id files = ((id(*)(id, SEL, id))objc_msgSend)(pasteboard, "propertyListForType:"_sel, filenamesType);
+
+    if (files) {
+        unsigned long count = ((unsigned long (*)(id, SEL))objc_msgSend)(
+            files, "count"_sel);
+        for(unsigned long i = 0; i < count; i++) {
+            id path = ((id(*)(id, SEL, unsigned long))objc_msgSend)(
+                files, "objectAtIndex:"_sel, i);
+            const char *cpath = ((const char *(*)(id, SEL))objc_msgSend)(
+                path, "UTF8String"_sel);
+            if(cpath) {
+                droppedPaths.push_back(cpath);
+            }
+        }
+    }
+    if (droppedPaths.empty()) {
+        id urlCls = (id)"NSURL"_cls;
+        id classes = ((id(*)(id, SEL, id))objc_msgSend)(
+            "NSArray"_cls, "arrayWithObject:"_sel, urlCls);
+        id readUrls = ((id(*)(id, SEL, id, id))objc_msgSend)(
+            pasteboard, "readObjectsForClasses:options:"_sel, classes, nullptr);
+        if (readUrls) {
+            unsigned long count = ((unsigned long (*)(id, SEL))objc_msgSend)(
+                readUrls, "count"_sel);
+            for(unsigned long i = 0; i < count; i++) {
+                id url = ((id(*)(id, SEL, unsigned long))objc_msgSend)(
+                    readUrls, "objectAtIndex:"_sel, i);
+                BOOL isFile = ((BOOL(*)(id, SEL))objc_msgSend)(url, "isFileURL"_sel);
+                if (isFile) {
+                    id path = ((id(*)(id, SEL))objc_msgSend)(url, "path"_sel);
+                    const char *cpath = ((const char *(*)(id, SEL))objc_msgSend)(
+                        path, "UTF8String"_sel);
+                    if(cpath) {
+                        droppedPaths.push_back(cpath);
+                    }
+                }
+            }
+        }
+    }
+    return droppedPaths;
+  }
+
   cocoa_wkwebview_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string &args, bool emitDropEvents) {
     // Application
     id app = ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls,
@@ -639,6 +686,11 @@ public:
                           return NSDragOperationCopy;
                       }),
                       "L@:@");
+      class_addMethod(wcls, "draggingUpdated:"_sel,
+                      (IMP)(+[](id, SEL, id) -> unsigned long {
+                          return NSDragOperationCopy;
+                      }),
+                      "L@:@");
       class_addMethod(wcls, "prepareForDragOperation:"_sel,
                       (IMP)(+[](id, SEL, id) -> BOOL {
                           return YES;
@@ -648,24 +700,7 @@ public:
         wcls,
         "performDragOperation:"_sel,
         (IMP)+[](id self, SEL, id sender) -> BOOL {
-            std::vector<std::string> droppedPaths;
-            id pasteboard = ((id(*)(id,SEL))objc_msgSend)(sender, "draggingPasteboard"_sel);
-            id filenamesType = ((id(*)(id, SEL, const char *))objc_msgSend)(
-                "NSString"_cls, "stringWithUTF8String:"_sel, "NSFilenamesPboardType");
-            id files = ((id(*)(id, SEL, id))objc_msgSend)(pasteboard, "propertyListForType:"_sel, filenamesType);
-
-            unsigned long count = ((unsigned long (*)(id, SEL))objc_msgSend)(
-                files, "count"_sel);
-            for(unsigned long i = 0; i < count; i++) {
-                id path = ((id(*)(id, SEL, unsigned long))objc_msgSend)(
-                    files, "objectAtIndex:"_sel, i);
-                const char *cpath = ((const char *(*)(id, SEL))objc_msgSend)(
-                    path, "UTF8String"_sel);
-                if(cpath) {
-                    droppedPaths.push_back(cpath);
-                }
-            }
-            filesDropped(droppedPaths);
+            filesDropped(__extractDroppedPaths(sender));
             return YES;
         },
         "B@:@"
@@ -692,7 +727,46 @@ public:
         ((id(*)(id, SEL))objc_msgSend)("WKWebViewConfiguration"_cls, "new"_sel);
     m_manager =
         ((id(*)(id, SEL))objc_msgSend)(config, "userContentController"_sel);
-    m_webview = ((id(*)(id, SEL))objc_msgSend)("WKWebView"_cls, "alloc"_sel);
+
+    Class wkViewCls = (Class)"WKWebView"_cls;
+    if(emitDropEvents) {
+      Class dropViewCls = objc_lookUpClass("NeuWKWebView");
+      if(!dropViewCls) {
+        dropViewCls = objc_allocateClassPair(wkViewCls, "NeuWKWebView", 0);
+        class_addProtocol(dropViewCls, objc_getProtocol("NSDraggingDestination"));
+        class_addMethod(
+            dropViewCls, "draggingEntered:"_sel,
+            (IMP)(+[](id, SEL, id) -> unsigned long {
+                return NSDragOperationCopy;
+            }),
+            "L@:@");
+        class_addMethod(
+            dropViewCls, "draggingUpdated:"_sel,
+            (IMP)(+[](id, SEL, id) -> unsigned long {
+                return NSDragOperationCopy;
+            }),
+            "L@:@");
+        class_addMethod(
+            dropViewCls, "prepareForDragOperation:"_sel,
+            (IMP)(+[](id, SEL, id) -> BOOL {
+                return YES;
+            }),
+            "B@:@");
+        class_addMethod(
+            dropViewCls,
+            "performDragOperation:"_sel,
+            (IMP)+[](id self, SEL, id sender) -> BOOL {
+                filesDropped(__extractDroppedPaths(sender));
+                return YES;
+            },
+            "B@:@"
+        );
+        objc_registerClassPair(dropViewCls);
+      }
+      wkViewCls = dropViewCls;
+    }
+
+    m_webview = ((id(*)(id, SEL))objc_msgSend)((id)wkViewCls, "alloc"_sel);
 
     if (debug) {
       // Equivalent Obj-C:
@@ -708,29 +782,29 @@ public:
     // Equivalent Obj-C:
     // [[config preferences] setValue:@YES forKey:@"fullScreenEnabled"];
     ((id(*)(id, SEL, id, id))objc_msgSend)(
-        ((id(*)(id, SEL))objc_msgSend)(config, "preferences"_sel),
-        "setValue:forKey:"_sel,
-        ((id(*)(id, SEL, BOOL))objc_msgSend)("NSNumber"_cls,
-                                             "numberWithBool:"_sel, 1),
-        "fullScreenEnabled"_str);
+          ((id(*)(id, SEL))objc_msgSend)(config, "preferences"_sel),
+          "setValue:forKey:"_sel,
+          ((id(*)(id, SEL, BOOL))objc_msgSend)("NSNumber"_cls,
+                                               "numberWithBool:"_sel, 1),
+          "fullScreenEnabled"_str);
 
     // Equivalent Obj-C:
     // [[config preferences] setValue:@YES forKey:@"javaScriptCanAccessClipboard"];
     ((id(*)(id, SEL, id, id))objc_msgSend)(
-        ((id(*)(id, SEL))objc_msgSend)(config, "preferences"_sel),
-        "setValue:forKey:"_sel,
-        ((id(*)(id, SEL, BOOL))objc_msgSend)("NSNumber"_cls,
-                                             "numberWithBool:"_sel, 1),
-        "javaScriptCanAccessClipboard"_str);
+          ((id(*)(id, SEL))objc_msgSend)(config, "preferences"_sel),
+          "setValue:forKey:"_sel,
+          ((id(*)(id, SEL, BOOL))objc_msgSend)("NSNumber"_cls,
+                                               "numberWithBool:"_sel, 1),
+          "javaScriptCanAccessClipboard"_str);
 
     // Equivalent Obj-C:
     // [[config preferences] setValue:@YES forKey:@"DOMPasteAllowed"];
     ((id(*)(id, SEL, id, id))objc_msgSend)(
-        ((id(*)(id, SEL))objc_msgSend)(config, "preferences"_sel),
-        "setValue:forKey:"_sel,
-        ((id(*)(id, SEL, BOOL))objc_msgSend)("NSNumber"_cls,
-                                             "numberWithBool:"_sel, 1),
-        "DOMPasteAllowed"_str);
+          ((id(*)(id, SEL))objc_msgSend)(config, "preferences"_sel),
+          "setValue:forKey:"_sel,
+          ((id(*)(id, SEL, BOOL))objc_msgSend)("NSNumber"_cls,
+                                               "numberWithBool:"_sel, 1),
+          "DOMPasteAllowed"_str);
 
     ((void (*)(id, SEL, CGRect, id))objc_msgSend)(
         m_webview, "initWithFrame:configuration:"_sel, CGRectMake(0, 0, 0, 0),
@@ -738,6 +812,15 @@ public:
     ((void (*)(id, SEL, id, id))objc_msgSend)(
         m_manager, "addScriptMessageHandler:name:"_sel, delegate,
         "external"_str);
+
+    if(emitDropEvents) {
+      id filenamesType = ((id(*)(id, SEL, const char *))objc_msgSend)(
+          "NSString"_cls, "stringWithUTF8String:"_sel, "NSFilenamesPboardType");
+      id draggedTypes = ((id(*)(id, SEL, id))objc_msgSend)(
+          "NSArray"_cls, "arrayWithObject:"_sel, filenamesType);
+      ((void (*)(id, SEL, id))objc_msgSend)(
+          m_webview, "registerForDraggedTypes:"_sel, draggedTypes);
+    }
 
     if(transparent) {
       ((id (*)(id, SEL, id, id))objc_msgSend)((id) m_webview, "setValue:forKey:"_sel,
@@ -969,6 +1052,7 @@ namespace webview {
 
 class DropTarget : public IDropTarget {
   ULONG ref = 1;
+  bool hasFiles = false;
 
   public:
     HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppv) override {
@@ -994,16 +1078,19 @@ class DropTarget : public IDropTarget {
       DWORD,
       POINTL,
       DWORD* effect) override {
-        *effect = DROPEFFECT_COPY;
+        FORMATETC fmt = { CF_HDROP, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+        hasFiles = (data && data->QueryGetData(&fmt) == S_OK);
+        *effect = hasFiles ? DROPEFFECT_COPY : DROPEFFECT_NONE;
         return S_OK;
     }
 
     HRESULT STDMETHODCALLTYPE DragOver(DWORD, POINTL, DWORD* effect) override {
-      *effect = DROPEFFECT_COPY;
+      *effect = hasFiles ? DROPEFFECT_COPY : DROPEFFECT_NONE;
       return S_OK;
     }
 
     HRESULT STDMETHODCALLTYPE DragLeave() override {
+      hasFiles = false;
       return S_OK;
     }
 
@@ -1019,9 +1106,12 @@ class DropTarget : public IDropTarget {
             HDROP hDrop = (HDROP)GlobalLock(medium.hGlobal);
             UINT count = DragQueryFileW(hDrop, 0xFFFFFFFF, nullptr, 0);
             for(UINT i = 0; i < count; i++) {
-                wchar_t path[MAX_PATH];
-                DragQueryFileW(hDrop, i, path, MAX_PATH);
-                droppedPaths.push_back(wstr2str(path));
+                UINT len = DragQueryFileW(hDrop, i, nullptr, 0);
+                if (len > 0) {
+                    std::vector<wchar_t> path(len + 1);
+                    DragQueryFileW(hDrop, i, path.data(), len + 1);
+                    droppedPaths.push_back(wstr2str(path.data()));
+                }
             }
             GlobalUnlock(medium.hGlobal);
             ReleaseStgMedium(&medium);
@@ -1264,6 +1354,7 @@ public:
             switch (msg) {
             case WM_SIZE:
               w->m_browser->resize(hwnd);
+              w->registerDropTargets();
               if(!windowStateChange) break;
               if(wp == SIZE_MINIMIZED) 
                 windowStateChange(WEBVIEW_WINDOW_MINIMIZED);
@@ -1404,10 +1495,8 @@ public:
 
     if(emitDropEvents) {
       OleInitialize(nullptr);
-      RevokeDragDrop(m_window);
-      ComPtr<DropTarget> dropTarget = new DropTarget();
-      RegisterDragDrop(m_window, dropTarget.Get());
-      DragAcceptFiles(m_window, TRUE);
+      m_dropTarget = new DropTarget();
+      registerDropTargets();
     }
   }
 
@@ -1508,6 +1597,20 @@ public:
   void init(const std::string js) { m_browser->init(js); }
   void extend_user_agent(const std::string customAgent) { m_browser->extend_user_agent(customAgent); }
 
+  void registerDropTargets() {
+    if(!m_dropTarget) return;
+    RevokeDragDrop(m_window);
+    RegisterDragDrop(m_window, m_dropTarget.Get());
+    DragAcceptFiles(m_window, TRUE);
+    EnumChildWindows(m_window, [](HWND childHwnd, LPARAM lParam) -> BOOL {
+      IDropTarget* target = reinterpret_cast<IDropTarget*>(lParam);
+      RevokeDragDrop(childHwnd);
+      RegisterDragDrop(childHwnd, target);
+      DragAcceptFiles(childHwnd, TRUE);
+      return TRUE;
+    }, reinterpret_cast<LPARAM>(m_dropTarget.Get()));
+  }
+
   DWORD m_originalStyleEx;
 
 protected:
@@ -1531,6 +1634,7 @@ private:
   DWORD m_main_thread = GetCurrentThreadId();
   std::unique_ptr<webview::edge_chromium> m_browser =
       std::make_unique<webview::edge_chromium>();
+  ComPtr<DropTarget> m_dropTarget;
 
 };
 

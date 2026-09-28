@@ -306,6 +306,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
         {"--window-inject-globals", {"/modes/window/injectGlobals", "bool"}},
         {"--window-inject-client-library", {"/modes/window/injectClientLibrary", "bool"}},
         {"--window-inject-script", {"/modes/window/injectScript", "string"}},
+        {"--window-emit-drop-events", {"/modes/window/emitDropEvents", "bool"}},
         // Chrome mode
         {"--chrome-width", {"/modes/chrome/width", "int"}},
         {"--chrome-height", {"/modes/chrome/height", "int"}},

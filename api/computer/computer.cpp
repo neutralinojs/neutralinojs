@@ -487,6 +487,7 @@ json getGPUInfo(const json &input) {
     for(const auto &gpu: gpus) {
         json gpuInfo = {
             { "id", gpuId },
+            { "name", gpu.name() },
             { "deviceId", gpu.device_id() },
             { "vendorId", gpu.vendor_id() },
             { "vendor", gpu.vendor() },
@@ -658,6 +659,11 @@ json sendKey(const json &input) {
 json getNetworkInterfaces(const json &input) {
     json output;
     json interfaces = json::object();
+    bool excludeLoopback = false;
+    if(helpers::hasField(input, "excludeLoopback") && input["excludeLoopback"].is_boolean()) {
+        excludeLoopback = input["excludeLoopback"].get<bool>();
+    }
+
     #if defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
     struct ifaddrs *ifap, *ifa;
     if(getifaddrs(&ifap) == -1) {
@@ -668,9 +674,13 @@ json getNetworkInterfaces(const json &input) {
     for(ifa = ifap; ifa != nullptr; ifa = ifa->ifa_next) {
         if(!ifa->ifa_addr || (ifa->ifa_addr->sa_family != AF_INET && ifa->ifa_addr->sa_family != AF_INET6)) 
             continue;
+
+        bool isLoopback = (ifa->ifa_flags & IFF_LOOPBACK) != 0;
+        if(excludeLoopback && isLoopback)
+            continue;
     
         json interfaceInfo = {
-            { "isInternal", (ifa->ifa_flags & IFF_LOOPBACK) != 0 }
+            { "isInternal", isLoopback }
         };
 
         if(ifa->ifa_addr->sa_family == AF_INET) {
@@ -755,6 +765,10 @@ json getNetworkInterfaces(const json &input) {
             mac = oss.str();
         }
 
+        bool isLoopback = (adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK);
+        if(excludeLoopback && isLoopback)
+            continue;
+
         for(auto* ua = adapter->FirstUnicastAddress; ua; ua = ua->Next) {
             char ip[INET6_ADDRSTRLEN];
             sockaddr* sa = ua->Address.lpSockaddr;
@@ -768,7 +782,7 @@ json getNetworkInterfaces(const json &input) {
                 NI_NUMERICHOST);
 
             json interfaceInfo = {
-                { "isInternal", adapter->IfType == IF_TYPE_SOFTWARE_LOOPBACK },
+                { "isInternal", isLoopback },
                 { "mac", mac }
             };
 
