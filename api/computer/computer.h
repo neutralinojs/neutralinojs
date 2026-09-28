@@ -28,7 +28,7 @@ json getArch(const json &input);
 json getKernelInfo(const json &input);
 json getOSInfo(const json &input);
 json getCPUInfo(const json &input);
-json getGPUInfo(const json &input);
+json getGPUs(const json &input);
 json getDisplays(const json &input);
 json getDisks(const json &input);
 json getMousePosition(const json &input);

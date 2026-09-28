@@ -46,6 +46,9 @@ Restrict filesystem access to a set of allowed paths via the new `filesystemScop
 }
 ```
 
+### API: computer
+- Add `computer.getGPUs()` to get a list of all GPUs in the computer.
+
 ## v6.9.0
 
 ### API: net
