@@ -478,7 +478,7 @@ json getCPUInfo(const json &input) {
     return output;
 }
 
-json getGPUInfo(const json &input) {
+json getGPUs(const json &input) {
     json output;
     output["returnValue"] = json::array();
     const auto gpus = hwinfo::getAllGPUs();
