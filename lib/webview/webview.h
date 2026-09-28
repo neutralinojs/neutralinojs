@@ -543,6 +543,10 @@ public:
     class_addProtocol(cls, objc_getProtocol("NSApplicationDelegate"));
     class_addMethod(cls, "applicationShouldTerminateAfterLastWindowClosed:"_sel,
                     (IMP)(+[](id, SEL, id) -> BOOL { return 0; }), "c@:@");
+    class_addMethod(cls, "applicationWillTerminate:"_sel,
+                    (IMP)(+[](id, SEL, id) -> void {
+                        std::exit(processExitCode);
+                    }), "v@:@");
     class_addMethod(cls, "applicationShouldHandleReopen:hasVisibleWindows:"_sel,
                     (IMP)(+[](id, SEL, id, BOOL hasVisibleWindows) -> BOOL {
                         if(windowStateChange)
@@ -791,10 +795,10 @@ public:
   void *window() { return (void *)m_window; }
   void *wv() { return (void *)m_webview; }
   void terminate(int exitCode = 0) {
+    processExitCode = exitCode;
     close();
     ((void (*)(id, SEL, id))objc_msgSend)("NSApp"_cls, "terminate:"_sel,
                                           nullptr);
-    std::exit(exitCode);
   }
   void run() {
     id app = ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls,
