@@ -11,6 +11,7 @@
 
 #include "lib/json/json.hpp"
 #include "settings.h"
+#include "single_instance.h"
 #include "helpers.h"
 #include "errors.h"
 #include "extensions_loader.h"
@@ -182,6 +183,14 @@ bool isInitialized() {
     return initialized;
 }
 
+bool runOnServerThread(const function<void()> &callback) {
+    if(!initialized || !server) {
+        return false;
+    }
+    server->get_io_service().post(callback);
+    return true;
+}
+
 void startAsync() {
     thread serverThread([&](){ server->run(); });
     serverThread.detach();
@@ -267,6 +276,7 @@ void handleConnect(websocketpp::connection_hdl handler) {
     else {
         appConnections.insert(handler);
         events::dispatch("appClientConnect", appConnections.size());
+        single_instance::onAppClientConnect();
     }
     events::dispatch("clientConnect", appConnections.size() + extConnections.size());
 }
@@ -284,6 +294,9 @@ void handleDisconnect(websocketpp::connection_hdl handler) {
     else {
         settings::AppMode mode = settings::getMode();
         appConnections.erase(handler);
+        if(appConnections.empty()) {
+            single_instance::onAppClientDisconnect();
+        }
         if(mode == settings::AppModeBrowser || mode == settings::AppModeChrome) {
             __exitProcessIfIdle();
         }

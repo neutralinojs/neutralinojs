@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <csignal>
+#include <iostream>
 #include <string>
 #include <thread>
 #include <chrono>
@@ -19,6 +20,7 @@
 #include "helpers.h"
 #include "chrome.h"
 #include "extensions_loader.h"
+#include "single_instance.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
 #include "api/os/os.h"
@@ -44,6 +46,7 @@ void __wait() {
 }
 
 void __cleanup() {
+    single_instance::shutdown();
     os::cleanupTray();
 }
 
@@ -162,7 +165,7 @@ void __startServerAsync() {
     }
 }
 
-void __initFramework(const json &args) {
+void __loadFrameworkConfiguration(const json &args) {
     settings::setGlobalArgs(args);
     resources::init();
     bool settingsStatus = settings::init();
@@ -173,6 +176,9 @@ void __initFramework(const json &args) {
             pfd::icon::error);
         std::exit(1);
     }
+}
+
+void __initFrameworkServices() {
     authbasic::init();
     permission::init();
     storage::init();
@@ -237,8 +243,25 @@ int main(int argc, char ** argv)
     #if defined(_WIN32)
     __attachConsole();
     #endif
-    __initFramework(args);
+    __loadFrameworkConfiguration(args);
+    string singleInstanceError;
+    single_instance::StartResult singleInstanceResult =
+        single_instance::start(args, singleInstanceError);
+    if(singleInstanceResult == single_instance::StartResult::Forwarded) {
+        return 0;
+    }
+    if(singleInstanceResult == single_instance::StartResult::Error) {
+        cerr << "Neutralinojs single-instance error: " << singleInstanceError << endl;
+        if(settings::getMode() == settings::AppModeWindow) {
+            pfd::message("Unable to notify the running application",
+                singleInstanceError,
+                pfd::choice::ok,
+                pfd::icon::error);
+        }
+        return 1;
+    }
     __registerCleanupHandlers();
+    __initFrameworkServices();
     __startServerAsync();
     __configureLogger();
     __initExtra();
