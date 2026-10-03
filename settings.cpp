@@ -277,6 +277,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
         {"--export-auth-info", {"/exportAuthInfo", "bool"}},
         {"--data-location", {"/dataLocation", "string"}},
         {"--storage-location", {"/storageLocation", "string"}},
+        {"--single-instance", {"/singleInstance", "bool"}},
         // Window mode
         {"--window-title", {"/modes/window/title", "string"}},
         {"--window-width", {"/modes/window/width", "int"}},
@@ -325,7 +326,8 @@ void applyConfigOverride(const settings::CliArg &arg) {
         "/enableNativeAPI",
         "/singlePageServe",
         "/enableExtensions",
-        "/exportAuthInfo"
+        "/exportAuthInfo",
+        "/singleInstance"
     };
 
     if(cliMappings.find(arg.key) != cliMappings.end()) {
