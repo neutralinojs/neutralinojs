@@ -45,13 +45,18 @@ string __normalizeScopePath(const string &path) {
 }
 
 bool __isPathInScope(const string &originalPath, const string &scope) {
-    const string path = __normalizeScopePath(originalPath);
-    if(path == scope) {
+    string path = __normalizeScopePath(originalPath);
+    string targetScope = scope;
+    #if defined(_WIN32)
+    transform(path.begin(), path.end(), path.begin(), ::tolower);
+    transform(targetScope.begin(), targetScope.end(), targetScope.begin(), ::tolower);
+    #endif
+    if(path == targetScope) {
         return true;
     }
-    if(path.size() > scope.size()
-            && path.compare(0, scope.size(), scope) == 0
-            && path[scope.size()] == '/') {
+    if(path.size() > targetScope.size()
+            && path.compare(0, targetScope.size(), targetScope) == 0
+            && path[targetScope.size()] == '/') {
         return true;
     }
     return false;
