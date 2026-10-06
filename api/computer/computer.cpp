@@ -670,7 +670,8 @@ json getNetworkInterfaces(const json &input) {
             continue;
     
         json interfaceInfo = {
-            { "isInternal", (ifa->ifa_flags & IFF_LOOPBACK) != 0 }
+            { "isInternal", (ifa->ifa_flags & IFF_LOOPBACK) != 0 },
+            { "mac", "" }
         };
 
         if(ifa->ifa_addr->sa_family == AF_INET) {
@@ -701,14 +702,17 @@ json getNetworkInterfaces(const json &input) {
     };
 
     auto __updateMac = [&](const string &name, const string &mac) {
-        for(const auto &[key, arr]: interfaces.items()) {
-            for(auto &item: arr) {
-                item["mac"] = mac;
-            }
+        if(!interfaces.contains(name)) {
+            return;
+        }
+        for(auto &item: interfaces[name]) {
+            item["mac"] = mac;
         }
     };
 
     for(ifa = ifap; ifa != nullptr; ifa = ifa->ifa_next) {
+        if(!ifa->ifa_addr)
+            continue;
         #if defined(__linux__)
         if(ifa->ifa_addr->sa_family == AF_PACKET) {
             struct sockaddr_ll *sll = (struct sockaddr_ll *)ifa->ifa_addr;
@@ -773,10 +777,12 @@ json getNetworkInterfaces(const json &input) {
             };
 
             if(sa->sa_family == AF_INET) {
-                interfaceInfo["ipv4"] = string(ip);
+                interfaceInfo["address"] = string(ip);
+                interfaceInfo["family"] = "ipv4";
             }
             else if(sa->sa_family == AF_INET6) {
-                interfaceInfo["ipv6"] = string(ip);
+                interfaceInfo["address"] = string(ip);
+                interfaceInfo["family"] = "ipv6";
             }
             interfaces[name].push_back(interfaceInfo);
         }

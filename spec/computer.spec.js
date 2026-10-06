@@ -275,46 +275,52 @@ describe('computer.spec: computer namespace tests', () => {
     });
 
     describe('computer.getNetworkInterfaces', () => {
-        it('returns an array of network interfaces', async () => {
+        it('returns a map of interface names to address arrays', async () => {
             runner.run(`
                 let interfaces = await Neutralino.computer.getNetworkInterfaces();
                 await __close(JSON.stringify(interfaces));
             `);
             let interfaces = JSON.parse(runner.getOutput());
-            assert.ok(Array.isArray(interfaces));
+            assert.ok(typeof interfaces == 'object' && !Array.isArray(interfaces));
 
-            if(interfaces.length > 0) {
-                let iface = interfaces[0];
-                assert.ok(typeof iface == 'object');
-                assert.ok(typeof iface.name == 'string');
-                assert.ok(Array.isArray(iface.ipv4));
-                assert.ok(Array.isArray(iface.ipv6));
-                assert.ok(typeof iface.mac == 'string');
-                assert.ok(typeof iface.isUp == 'boolean');
-                assert.ok(typeof iface.isLoopback == 'boolean');
+            for(let [name, addresses] of Object.entries(interfaces)) {
+                assert.ok(typeof name == 'string');
+                assert.ok(Array.isArray(addresses));
+                for(let info of addresses) {
+                    assert.ok(typeof info.address == 'string');
+                    assert.ok(info.family == 'ipv4' || info.family == 'ipv6');
+                    assert.ok(typeof info.mac == 'string');
+                    assert.ok(typeof info.isInternal == 'boolean');
+                }
             }
         });
 
-        it('excludes loopback interfaces when excludeLoopback is true', async () => {
+        it('assigns each interface its own MAC address', async () => {
             runner.run(`
-                let interfaces = await Neutralino.computer.getNetworkInterfaces({ excludeLoopback: true });
-                await __close(JSON.stringify(interfaces));
+                let interfaces = await Neutralino.computer.getNetworkInterfaces();
+                await __close(JSON.stringify({ os: NL_OS, interfaces }));
             `);
-            let interfaces = JSON.parse(runner.getOutput());
-            assert.ok(Array.isArray(interfaces));
-            interfaces.forEach(iface => {
-                assert.ok(!iface.isLoopback, 'Loopback interface should be excluded');
-            });
-        });
+            let { os, interfaces } = JSON.parse(runner.getOutput());
+            let internal = [];
+            let external = [];
+            for(let addresses of Object.values(interfaces)) {
+                for(let info of addresses) {
+                    (info.isInternal ? internal : external).push(info);
+                }
+            }
 
-        it('includes loopback interfaces by default', async () => {
-            runner.run(`
-                let all = await Neutralino.computer.getNetworkInterfaces();
-                let noLoopback = await Neutralino.computer.getNetworkInterfaces({ excludeLoopback: true });
-                await __close(JSON.stringify({ all: all.length, noLoopback: noLoopback.length }));
-            `);
-            let result = JSON.parse(runner.getOutput());
-            assert.ok(result.all >= result.noLoopback, 'Default call should return at least as many interfaces as excludeLoopback:true');
+            for(let info of internal) {
+                if(os == 'Linux') {
+                    assert.equal(info.mac, '00:00:00:00:00:00',
+                        'Loopback interface should report its own (all-zero) MAC address');
+                }
+                for(let other of external) {
+                    if(other.mac) {
+                        assert.notEqual(info.mac, other.mac,
+                            'Loopback interface should not inherit another interface\'s MAC address');
+                    }
+                }
+            }
         });
     });
 
