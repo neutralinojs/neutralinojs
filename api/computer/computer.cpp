@@ -701,8 +701,8 @@ json getNetworkInterfaces(const json &input) {
     };
 
     auto __updateMac = [&](const string &name, const string &mac) {
-        for(const auto &[key, arr]: interfaces.items()) {
-            for(auto &item: arr) {
+        if(interfaces.contains(name)) {
+            for(auto &item: interfaces[name]) {
                 item["mac"] = mac;
             }
         }
@@ -773,9 +773,13 @@ json getNetworkInterfaces(const json &input) {
             };
 
             if(sa->sa_family == AF_INET) {
+                interfaceInfo["address"] = string(ip);
+                interfaceInfo["family"] = "ipv4";
                 interfaceInfo["ipv4"] = string(ip);
             }
             else if(sa->sa_family == AF_INET6) {
+                interfaceInfo["address"] = string(ip);
+                interfaceInfo["family"] = "ipv6";
                 interfaceInfo["ipv6"] = string(ip);
             }
             interfaces[name].push_back(interfaceInfo);
