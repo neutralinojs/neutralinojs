@@ -1,6 +1,7 @@
 {
     "$schema": "https://raw.githubusercontent.com/neutralinojs/neutralinojs/main/schemas/neutralino.config.schema.json",
     "applicationId": "js.neutralino.sample",
+    "singleInstance": false,
     "version": "0.0.1",
     "defaultMode": "window",
     "port": 0,
