@@ -130,7 +130,7 @@ bool get_text(std::string& value) {
 
   size_t len = l.get_data_length(f);
   if (len > 0) {
-    std::vector<char> buf(len);
+    std::vector<char> buf(len + 1, 0);
     l.get_data(f, &buf[0], len);
     value = &buf[0];
     return true;
@@ -163,7 +163,7 @@ bool get_html(std::string& value) {
 
   size_t len = l.get_data_length(f);
   if (len > 0) {
-    std::vector<char> buf(len);
+    std::vector<char> buf(len + 1, 0);
     l.get_data(f, &buf[0], len);
     value = &buf[0];
     return true;
