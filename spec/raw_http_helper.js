@@ -1,3 +1,22 @@
+/**
+ * raw_http_helper.js
+ *
+ * Utility for sending raw HTTP requests over raw TCP sockets.
+ *
+ * Why this is needed for security regression testing:
+ * Standard HTTP client implementations (such as fetch, axios, or curl without --path-as-is)
+ * automatically normalize and collapse relative path segments (e.g. converting "/../secret.txt"
+ * or "/%2e%2e/secret.txt" into "/secret.txt" or rejecting them locally before sending).
+ *
+ * Because the browser/client intercepts and sanitizes the path client-side, tests using standard
+ * clients produce false-negative results: an unpatched server appears to return 404 (because
+ * /secret.txt does not exist) even though a malicious raw socket client can easily send raw ".."
+ * and traverse directories.
+ *
+ * By writing directly to a net.Socket, this helper guarantees that the exact request bytes
+ * (including raw `..` and encoded `%2e%2e`) reach the Neutralino C++ HTTP server unaltered,
+ * allowing us to reliably verify that server-side traversal protection is effective.
+ */
 const net = require('net');
 
 function rawGet(port, path) {

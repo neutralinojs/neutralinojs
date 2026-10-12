@@ -293,11 +293,25 @@ vector<string> tokenizeCommand(const string &command) {
 
 /**
  * Checks whether targetPath is strictly inside (or equal to) baseDirectory after
- * resolving relative segments and normalising paths.
+ * resolving relative segments, canonicalizing symlinks, and normalizing path syntax.
  *
- * Security rationale (GHSA-645w-p5gr-j5xm / CWE-22, GHSA-vc3q-6mj2-qfg6 / CWE-59):
- * Used to prevent path traversal escapes in the HTTP static file server, server mounts,
- * and filesystem API boundary checks.
+ * Security Rationale:
+ * - GHSA-645w-p5gr-j5xm (CWE-22): Path traversal via `..` and encoded `%2e%2e` in static HTTP server.
+ * - GHSA-vc3q-6mj2-qfg6 (CWE-59): Path traversal via symbolic links pointing outside app directories.
+ * - GHSA-x53c-rxmx-mg69 (CWE-22): Path traversal in endpoints mounted via `server.mount`.
+ *
+ * Design & Architecture:
+ * Rather than scattering ad-hoc lexical string checks (which are prone to bypasses such as
+ * mixed forward/backward slashes, case normalization quirks, or symlinks on disk), this function
+ * establishes a single, robust abstraction boundary using C++17 `std::filesystem`.
+ *
+ * Why `std::filesystem::weakly_canonical`?
+ * 1. Standard `canonical()` throws if the target path does not exist on disk.
+ *    `weakly_canonical()` resolves all existing parent components (including symlinks and `..` segments)
+ *    and normalizes any non-existent tail components without throwing an exception.
+ * 2. It resolves relative `.` and `..` components cleanly across all platforms.
+ * 3. It unwinds symlinks up to the existing filesystem node, ensuring a symlink inside baseDirectory
+ *    cannot secretly resolve to a location outside baseDirectory.
  */
 bool isPathInsideDirectory(const string &targetPath, const string &baseDirectory) {
     if (baseDirectory.empty() || targetPath.empty()) {
@@ -305,37 +319,44 @@ bool isPathInsideDirectory(const string &targetPath, const string &baseDirectory
     }
 
     error_code ecBase, ecTarget;
-    // Canonicalize base directory
+
+    // 1. Resolve base directory to its canonical form so we have a reliable reference root.
     filesystem::path base = filesystem::weakly_canonical(filesystem::path(CONVSTR(baseDirectory)), ecBase);
     if (ecBase) {
+        // If the base directory path is invalid or inaccessible, deny access by default.
         return false;
     }
 
-    // Canonicalize target path
+    // 2. Resolve the target path (canonicalizing all symlinks and collapsing '..' segments).
     filesystem::path target = filesystem::weakly_canonical(filesystem::path(CONVSTR(targetPath)), ecTarget);
     if (ecTarget) {
+        // Failed to resolve target path (e.g. permission or platform filesystem error).
         return false;
     }
 
+    // 3. Convert both paths to unified string representations and normalize slashes.
+    // On Windows, FS_CONVWSTRN / helpers::normalizePath convert backslashes to forward slashes.
     string normBase = FS_CONVWSTRN(base);
     string normTarget = FS_CONVWSTRN(target);
 
-    // Normalize slashes
     helpers::normalizePath(normBase);
     helpers::normalizePath(normTarget);
 
-    // Exact match
+    // 4. Exact match: target is the base directory itself.
     if (normTarget == normBase) {
         return true;
     }
 
-    // Must start with base directory followed by slash
+    // 5. Prefix containment check:
+    // Ensure target begins with normBase followed immediately by a directory separator ('/').
+    // This prevents false positives where base is "/app" and target is "/app-leak/secret.txt".
     if (normTarget.size() > normBase.size() &&
         normTarget.compare(0, normBase.size(), normBase) == 0 &&
         normTarget[normBase.size()] == '/') {
         return true;
     }
 
+    // The target path resolves outside baseDirectory.
     return false;
 }
 
