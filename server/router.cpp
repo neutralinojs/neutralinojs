@@ -372,13 +372,66 @@ router::Response getAsset(string path, const string &prependData, const fs::File
         if(!documentRoot.empty()) {
             pathname = path.substr(documentRoot.length());
         }
+
+        // Security fix for GHSA-x53c-rxmx-mg69 (CWE-22): Path traversal in server.mount
+        //
+        // Problem 1 (Prefix Boundary Flaw):
+        // Previously, `pathname.find(mountedPath) == 0` was used to match the mounted prefix.
+        // Because this only performed a raw string prefix check, a mount at `/mnt` incorrectly matched
+        // requests to `/mntx/test.txt`, stripping `/mnt` and reading `{mountTarget}/x/test.txt`.
+        // Mount paths represent directory hierarchies: `/mnt` must only match `/mnt` or `/mnt/...`,
+        // never `/mntx`.
+        //
+        // Problem 2 (Path Traversal Flaw):
+        // The remaining request path was directly concatenated with `mountTarget + "/" + ...` and read
+        // from the host filesystem without any canonical path boundary verification.
+        // Because HTTP requests to Neutralino do not require WebSocket auth tokens, any client capable
+        // of sending HTTP requests could escape `mountTarget` via `..` or URL-encoded `%2e%2e`
+        // (e.g. `/mnt/../sensitive/data.txt`) or outbound symbolic links.
+        //
+        // Resolution:
+        // 1. Enforce strict directory boundary matching when finding the mounted path. If multiple
+        //    mounts match, select the longest matching prefix (most specific mount point).
+        // 2. Safely resolve the relative path under `mountTarget`.
+        // 3. Verify via `helpers::isPathInsideDirectory` that the canonical target path remains
+        //    strictly within `mountTarget`. Any escaping attempt returns 403 Forbidden.
+        string matchedPrefix = "";
+        string matchedTarget = "";
         for(const auto& [mountedPath, mountTarget] : mountedPaths) {
-            if(pathname.find(mountedPath) == 0) {
-                string adjustedPath = mountTarget + "/" + pathname.substr(mountedPath.length());
-                fileReaderResult = fs::readFile(adjustedPath, fileReaderOptions);
-                foundMountedPath = true;
-                break;
+            bool isPrefixMatch = (pathname == mountedPath) ||
+                (pathname.size() > mountedPath.size() &&
+                 (mountedPath.back() == '/' || pathname[mountedPath.size()] == '/') &&
+                 pathname.compare(0, mountedPath.size(), mountedPath) == 0);
+
+            if(isPrefixMatch && mountedPath.length() > matchedPrefix.length()) {
+                matchedPrefix = mountedPath;
+                matchedTarget = mountTarget;
             }
+        }
+
+        if(!matchedPrefix.empty()) {
+            foundMountedPath = true;
+
+            string relativePath = (pathname == matchedPrefix) ? "" :
+                (matchedPrefix.back() == '/' ? pathname.substr(matchedPrefix.length()) :
+                                               pathname.substr(matchedPrefix.length() + 1));
+
+            // Strip any superfluous leading separators so filesystem::path / does not treat it as root
+            while(!relativePath.empty() && (relativePath.front() == '/' || relativePath.front() == '\\')) {
+                relativePath.erase(0, 1);
+            }
+
+            filesystem::path fullTargetPath = filesystem::path(CONVSTR(matchedTarget)) / filesystem::path(CONVSTR(relativePath));
+            string adjustedPath = FS_CONVWSTR(fullTargetPath);
+
+            if(!helpers::isPathInsideDirectory(adjustedPath, matchedTarget)) {
+                debug::log(debug::LogTypeError, "Blocked server.mount path traversal attempt: " + pathname + " outside " + matchedTarget);
+                response.status = websocketpp::http::status_code::forbidden;
+                response.data = "403 Forbidden";
+                return response;
+            }
+
+            fileReaderResult = fs::readFile(adjustedPath, fileReaderOptions);
         }
     }
 
