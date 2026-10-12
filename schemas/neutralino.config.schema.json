@@ -11,8 +11,7 @@
     },
     "host": {
       "type": "string",
-      "description": "The listening host IP address for the application server (defaults to '127.0.0.1' across all modes including cloud mode). Set to '0.0.0.0' only if you explicitly intend to expose the server to external devices on the local network.",
-      "default": "127.0.0.1"
+      "description": "The listening host IP address for the background application server. Defaults to '127.0.0.1' for window, browser, and chrome modes, and '0.0.0.0' for cloud mode. Set to '127.0.0.1' in cloud mode to restrict access strictly to the local machine."
     },
     "enableServer": {
       "type": "boolean",

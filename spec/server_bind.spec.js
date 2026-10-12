@@ -33,15 +33,44 @@ describe('server binding address security (CWE-1327 / GHSA-fp96-mrqq-p5rq)', () 
         throw new Error('Server process failed to bind port');
     }
 
-    it('binds to loopback 127.0.0.1 by default in cloud mode', async function() {
+    it('binds to 0.0.0.0 by default in cloud mode and logs a security warning', async function() {
         this.timeout(10000);
+        let capturedLogs = '';
         const child = spawn(binPath, ['--mode=cloud', '--window-enable-inspector=false'], {
             cwd: path.resolve(__dirname, '../bin')
         });
 
+        child.stdout.on('data', d => { capturedLogs += d.toString(); });
+        child.stderr.on('data', d => { capturedLogs += d.toString(); });
+
         try {
             const listenInfo = await waitForListen(child);
-            assert.strictEqual(listenInfo.ip, '127.0.0.1', 'Cloud mode must default to 127.0.0.1 for local isolation');
+            // On macOS/Linux lsof, 0.0.0.0 is displayed as '*' or '0.0.0.0'
+            assert.ok(listenInfo.ip === '*' || listenInfo.ip === '0.0.0.0', 'Cloud mode must bind 0.0.0.0 by default');
+
+            await new Promise(r => setTimeout(r, 200));
+            assert.ok(capturedLogs.includes('SECURITY WARNING'), 'Cloud mode must log security warning when binding 0.0.0.0');
+        } finally {
+            child.kill();
+        }
+    });
+
+    it('allows restricting cloud mode to loopback 127.0.0.1 via --host=127.0.0.1', async function() {
+        this.timeout(10000);
+        let capturedLogs = '';
+        const child = spawn(binPath, ['--mode=cloud', '--host=127.0.0.1', '--window-enable-inspector=false'], {
+            cwd: path.resolve(__dirname, '../bin')
+        });
+
+        child.stdout.on('data', d => { capturedLogs += d.toString(); });
+        child.stderr.on('data', d => { capturedLogs += d.toString(); });
+
+        try {
+            const listenInfo = await waitForListen(child);
+            assert.strictEqual(listenInfo.ip, '127.0.0.1', 'Cloud mode must restrict to 127.0.0.1 when configured');
+
+            await new Promise(r => setTimeout(r, 200));
+            assert.ok(!capturedLogs.includes('SECURITY WARNING'), 'No security warning should be logged for 127.0.0.1');
         } finally {
             child.kill();
         }
@@ -55,16 +84,16 @@ describe('server binding address security (CWE-1327 / GHSA-fp96-mrqq-p5rq)', () 
 
         try {
             const listenInfo = await waitForListen(child);
-            assert.strictEqual(listenInfo.ip, '127.0.0.1', 'Window mode must bind to 127.0.0.1');
+            assert.strictEqual(listenInfo.ip, '127.0.0.1', 'Window mode must bind to 127.0.0.1 by default');
         } finally {
             child.kill();
         }
     });
 
-    it('binds to 0.0.0.0 when explicitly configured via --host=0.0.0.0', async function() {
+    it('allows binding to 0.0.0.0 in window mode via --host=0.0.0.0 and logs warning', async function() {
         this.timeout(10000);
         let capturedLogs = '';
-        const child = spawn(binPath, ['--mode=cloud', '--host=0.0.0.0', '--window-enable-inspector=false'], {
+        const child = spawn(binPath, ['--load-dir-res', '--host=0.0.0.0', '--window-enable-inspector=false'], {
             cwd: path.resolve(__dirname, '../bin')
         });
 
@@ -73,11 +102,10 @@ describe('server binding address security (CWE-1327 / GHSA-fp96-mrqq-p5rq)', () 
 
         try {
             const listenInfo = await waitForListen(child);
-            // On macOS/Linux lsof, 0.0.0.0 is shown as '*' or '0.0.0.0'
-            assert.ok(listenInfo.ip === '*' || listenInfo.ip === '0.0.0.0', 'Must bind to 0.0.0.0 (*)');
+            assert.ok(listenInfo.ip === '*' || listenInfo.ip === '0.0.0.0', 'Must bind to 0.0.0.0');
 
             await new Promise(r => setTimeout(r, 200));
-            assert.ok(capturedLogs.includes('Security warning'), 'Must log security warning when binding non-loopback');
+            assert.ok(capturedLogs.includes('SECURITY WARNING'), 'Must log security warning when window mode binds 0.0.0.0');
         } finally {
             child.kill();
         }

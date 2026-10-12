@@ -144,20 +144,18 @@ string init() {
     // Security fix for GHSA-fp96-mrqq-p5rq (CWE-1327): Binding to an Unrestricted IP Address
     //
     // Threat Model:
-    // Previously, cloud mode unconditionally bound the background server to 0.0.0.0 (all network
-    // interfaces) without any configuration setting to choose a specific bind address, and without
-    // any startup warning. Because static HTTP file serving does not require a WebSocket token,
-    // listening on 0.0.0.0 exposes the app's local assets and mounted directories to all devices
-    // on the local network (LAN / Wi-Fi).
+    // In cloud mode, Neutralino acts as a headless server, defaulting to listening on all interfaces
+    // (0.0.0.0) so external devices (mobile phones, IoT, Docker hosts) can connect. However,
+    // because static HTTP file serving does not require a WebSocket token, listening on 0.0.0.0
+    // exposes the app's local assets and endpoints to any device on the network without any warning.
     //
     // Defense:
-    // 1. By default, bind to 127.0.0.1 (loopback) across all modes, including cloud mode, to maintain
-    //    strict local isolation.
-    // 2. Allow developers to explicitly opt in to binding 0.0.0.0 or a specific network interface via
-    //    the "host" configuration property or "--host" command-line option.
-    // 3. If the server is configured to bind to a non-loopback address (e.g. 0.0.0.0), log a clear,
-    //    prominent security warning advising developers to verify firewall rules and network safety.
-    string hostAddress = "127.0.0.1";
+    // 1. Maintain 127.0.0.1 (loopback) default for desktop modes (window, browser, chrome).
+    // 2. Allow developers to explicitly configure the bind interface via "host" in config or "--host" CLI option
+    //    (e.g. allowing developers to restrict cloud mode to 127.0.0.1 for local container/daemon isolation).
+    // 3. When binding to an external/unrestricted interface (0.0.0.0 or non-loopback), emit a bold security
+    //    warning recommending caution and informing developers how to restrict it.
+    string hostAddress = (settings::getMode() == settings::AppModeCloud) ? "0.0.0.0" : "127.0.0.1";
     json jHost = settings::getOptionForCurrentMode("host");
     if(!jHost.is_null() && !jHost.get<string>().empty()) {
         hostAddress = jHost.get<string>();
@@ -172,8 +170,8 @@ string init() {
     }
 
     if(hostAddress != "127.0.0.1" && hostAddress != "localhost" && hostAddress != "::1") {
-        debug::log(debug::LogTypeWarning, "Security warning: Server is listening on an external network interface (" + hostAddress +
-            "). Static files and endpoints are accessible to other devices on the network.");
+        debug::log(debug::LogTypeWarning, "SECURITY WARNING: Server is listening on an external network interface (" + hostAddress +
+            "). Static files and server endpoints are accessible to other devices on the network. Configure firewall rules or use '--host=127.0.0.1' for local isolation.");
     }
     serverHost = hostAddress;
 
