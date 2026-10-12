@@ -140,6 +140,39 @@ describe('server.spec: server namespace tests', () => {
             assert.equal(res.statusCode, 403);
             assert.ok(!res.body.includes(markerContent), 'Secret marker must not be leaked');
         });
+
+        it('blocks outbound symbolic links pointing outside documentRoot with 403 Forbidden (CWE-59 / GHSA-vc3q-6mj2-qfg6)', async () => {
+            const resDir = path.resolve(__dirname, '../bin/resources');
+            const outboundSymlink = path.join(resDir, 'test-symlink-outbound.txt');
+            try { fs.unlinkSync(outboundSymlink); } catch (e) {}
+
+            // Create symbolic link inside documentRoot pointing to the external marker file
+            fs.symlinkSync(markerFile, outboundSymlink);
+
+            try {
+                const res = await rawGet(serverPort, '/test-symlink-outbound.txt');
+                assert.equal(res.statusCode, 403);
+                assert.ok(!res.body.includes(markerContent), 'External file through symlink must not be leaked');
+            } finally {
+                try { fs.unlinkSync(outboundSymlink); } catch (e) {}
+            }
+        });
+
+        it('allows internal symbolic links pointing within documentRoot with 200 OK', async () => {
+            const resDir = path.resolve(__dirname, '../bin/resources');
+            const internalSymlink = path.join(resDir, 'test-symlink-internal.png');
+            try { fs.unlinkSync(internalSymlink); } catch (e) {}
+
+            // Create symbolic link inside documentRoot pointing to another file inside documentRoot
+            fs.symlinkSync(path.join(resDir, 'icons/appIcon.png'), internalSymlink);
+
+            try {
+                const res = await rawGet(serverPort, '/test-symlink-internal.png');
+                assert.equal(res.statusCode, 200);
+            } finally {
+                try { fs.unlinkSync(internalSymlink); } catch (e) {}
+            }
+        });
     });
 
 });
