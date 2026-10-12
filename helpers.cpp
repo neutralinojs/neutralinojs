@@ -8,6 +8,7 @@
 #include <random>
 #include <optional>
 #include <regex>
+#include <filesystem>
 
 #include "helpers.h"
 #include "lib/json/json.hpp"
@@ -288,6 +289,54 @@ vector<string> tokenizeCommand(const string &command) {
     }
     flushToken();
     return tokens;
+}
+
+/**
+ * Checks whether targetPath is strictly inside (or equal to) baseDirectory after
+ * resolving relative segments and normalising paths.
+ *
+ * Security rationale (GHSA-645w-p5gr-j5xm / CWE-22, GHSA-vc3q-6mj2-qfg6 / CWE-59):
+ * Used to prevent path traversal escapes in the HTTP static file server, server mounts,
+ * and filesystem API boundary checks.
+ */
+bool isPathInsideDirectory(const string &targetPath, const string &baseDirectory) {
+    if (baseDirectory.empty() || targetPath.empty()) {
+        return false;
+    }
+
+    error_code ecBase, ecTarget;
+    // Canonicalize base directory
+    filesystem::path base = filesystem::weakly_canonical(filesystem::path(CONVSTR(baseDirectory)), ecBase);
+    if (ecBase) {
+        return false;
+    }
+
+    // Canonicalize target path
+    filesystem::path target = filesystem::weakly_canonical(filesystem::path(CONVSTR(targetPath)), ecTarget);
+    if (ecTarget) {
+        return false;
+    }
+
+    string normBase = FS_CONVWSTRN(base);
+    string normTarget = FS_CONVWSTRN(target);
+
+    // Normalize slashes
+    helpers::normalizePath(normBase);
+    helpers::normalizePath(normTarget);
+
+    // Exact match
+    if (normTarget == normBase) {
+        return true;
+    }
+
+    // Must start with base directory followed by slash
+    if (normTarget.size() > normBase.size() &&
+        normTarget.compare(0, normBase.size(), normBase) == 0 &&
+        normTarget[normBase.size()] == '/') {
+        return true;
+    }
+
+    return false;
 }
 
 } // namespace helpers

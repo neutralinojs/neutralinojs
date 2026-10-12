@@ -383,6 +383,19 @@ router::Response getAsset(string path, const string &prependData, const fs::File
     }
 
     if(!foundMountedPath) {
+        // Security check: In directory resource mode, ensure requested static file
+        // stays strictly within documentRoot to prevent path traversal (GHSA-645w-p5gr-j5xm / CWE-22).
+        string documentRoot = neuserver::getDocumentRoot();
+        if(resources::isDirMode() && !documentRoot.empty()) {
+            string fullDocRoot = settings::joinAppPath(documentRoot);
+            string fullTargetFile = settings::joinAppPath(path);
+            if(!helpers::isPathInsideDirectory(fullTargetFile, fullDocRoot)) {
+                debug::log(debug::LogTypeError, "Blocked static server path traversal attempt outside documentRoot: " + path);
+                response.status = websocketpp::http::status_code::forbidden;
+                response.data = "403 Forbidden";
+                return response;
+            }
+        }
         fileReaderResult = resources::getFile(path, fileReaderOptions);
     }
     
