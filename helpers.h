@@ -48,6 +48,7 @@ string wcstr2str(const wchar_t* wstr);
 
 bool globalMatch(const string &value, const string &pattern);
 vector<string> tokenizeCommand(const string &command);
+bool isPathInsideDirectory(const string &targetPath, const string &baseDirectory);
 
 } // namespace helpers
 
