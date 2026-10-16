@@ -22,7 +22,7 @@ string connectToken = "";
 authbasic::TokenSecurity tokenSecurity = authbasic::TokenSecurityOneTime;
 bool tokenSent = false;
 
-json __makeAuthInfoPayload() {
+json makeAuthInfoPayload() {
     json info;
     info["nlToken"] = authbasic::getTokenInternal();
     info["nlConnectToken"] = authbasic::getConnectTokenInternal();
@@ -79,7 +79,7 @@ void exportAuthInfo() {
     chmod(tempDirPath.c_str(), S_IRWXU);
 
     string tempAuthInfoPath = settings::joinAppDataPath("/.tmp/auth_info.json");
-    string payload = __makeAuthInfoPayload().dump();
+    string payload = makeAuthInfoPayload().dump();
 
     // Create or truncate the file atomically with S_IRUSR | S_IWUSR (0600)
     int fd = open(tempAuthInfoPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
@@ -109,7 +109,7 @@ void exportAuthInfo() {
     string tempAuthInfoPath = settings::joinAppDataPath("/.tmp/auth_info.json");
     fs::FileWriterOptions fileWriterOptions = {
         tempAuthInfoPath,
-        __makeAuthInfoPayload().dump()
+        makeAuthInfoPayload().dump()
     };
     fs::writeFile(fileWriterOptions);
 
