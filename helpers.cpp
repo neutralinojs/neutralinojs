@@ -349,10 +349,11 @@ bool isPathInsideDirectory(const string &targetPath, const string &baseDirectory
 
     // 5. Prefix containment check:
     // Ensure target begins with normBase followed immediately by a directory separator ('/').
+    // If normBase already ends with '/' (such as root "/"), the prefix match already covers the boundary.
     // This prevents false positives where base is "/app" and target is "/app-leak/secret.txt".
     if (normTarget.size() > normBase.size() &&
         normTarget.compare(0, normBase.size(), normBase) == 0 &&
-        normTarget[normBase.size()] == '/') {
+        (normBase.back() == '/' || normTarget[normBase.size()] == '/')) {
         return true;
     }
 

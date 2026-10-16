@@ -94,21 +94,20 @@ describe('server.spec: server namespace tests', () => {
                 (process.platform === 'darwin' ? 'mac_' + process.arch :
                  process.platform === 'linux' ? 'linux_' + process.arch : 'win_x64.exe'));
 
-            serverProcess = spawn(binPath, ['--load-dir-res', '--window-enable-inspector=false'], {
+            serverProcess = spawn(binPath, ['--load-dir-res', '--window-enable-inspector=false', '--export-auth-info'], {
                 cwd: path.resolve(__dirname, '../bin')
             });
 
-            const { execSync } = require('child_process');
-            for (let i = 0; i < 30; i++) {
+            const authFile = path.resolve(__dirname, '../bin/.tmp/auth_info.json');
+            for (let i = 0; i < 40; i++) {
+                await new Promise(r => setTimeout(r, 200));
                 try {
-                    const lsofOut = execSync(`lsof -Pan -p ${serverProcess.pid} -i`).toString();
-                    const match = lsofOut.match(/:(\d{4,5})\s+\(LISTEN\)/);
-                    if (match) {
-                        serverPort = parseInt(match[1], 10);
-                        break;
+                    if (fs.existsSync(authFile)) {
+                        const authData = JSON.parse(fs.readFileSync(authFile, 'utf8'));
+                        serverPort = authData.nlPort || authData.port;
+                        if (serverPort) break;
                     }
                 } catch (e) {}
-                await new Promise(r => setTimeout(r, 200));
             }
 
             assert.ok(serverPort, 'Failed to obtain Neutralino server port');
@@ -120,6 +119,8 @@ describe('server.spec: server namespace tests', () => {
             }
             try {
                 fs.rmSync(testOutsideDir, { recursive: true, force: true });
+                const authFile = path.resolve(__dirname, '../bin/.tmp/auth_info.json');
+                if (fs.existsSync(authFile)) fs.unlinkSync(authFile);
             } catch (e) {}
         });
 
