@@ -308,7 +308,7 @@ fs::FileStats getStats(const string &path) {
             fileStats.entryType = fs::EntryTypeDir;
         }
         fileStats.createdAt = __winTickToUnixMS(basicInfo.CreationTime.QuadPart);
-        fileStats.modifiedAt = __winTickToUnixMS(basicInfo.ChangeTime.QuadPart);
+        fileStats.modifiedAt = __winTickToUnixMS(basicInfo.LastWriteTime.QuadPart);
     }
 
     #endif
