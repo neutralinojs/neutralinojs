@@ -15,7 +15,7 @@ describe('config.spec: App configuration tests', () => {
     describe('exportAuthInfo permissions (CWE-732 / GHSA-jrpq-x4rc-3w47)', () => {
         const fs = require('fs');
         const path = require('path');
-        const { spawn } = require('child_process');
+        const { spawn, execSync } = require('child_process');
 
         const tmpDir = path.resolve(__dirname, '../bin/.tmp');
         const authFile = path.join(tmpDir, 'auth_info.json');
@@ -70,6 +70,16 @@ describe('config.spec: App configuration tests', () => {
                 const dirStat = fs.statSync(tmpDir);
                 const dirMode = (dirStat.mode & 0o777).toString(8);
                 assert.strictEqual(dirMode, '700', `Expected .tmp dir mode 0700, got ${dirMode}`);
+            } else {
+                const fileAcl = execSync(`icacls "${authFile}"`).toString();
+                assert.ok(!fileAcl.includes('BUILTIN\\Users') && !fileAcl.includes('Users:'), 'auth_info.json must not allow Users');
+                assert.ok(!fileAcl.includes('Everyone'), 'auth_info.json must not allow Everyone');
+                assert.ok(fileAcl.includes('OWNER RIGHTS'), 'auth_info.json must grant access to OWNER RIGHTS');
+
+                const dirAcl = execSync(`icacls "${tmpDir}"`).toString();
+                assert.ok(!dirAcl.includes('BUILTIN\\Users') && !dirAcl.includes('Users:'), '.tmp dir must not allow Users');
+                assert.ok(!dirAcl.includes('Everyone'), '.tmp dir must not allow Everyone');
+                assert.ok(dirAcl.includes('OWNER RIGHTS'), '.tmp dir must grant access to OWNER RIGHTS');
             }
         });
 
@@ -81,6 +91,10 @@ describe('config.spec: App configuration tests', () => {
             if (process.platform !== 'win32') {
                 fs.chmodSync(tmpDir, 0o755);
                 fs.chmodSync(authFile, 0o644);
+            } else {
+                // Grant read access to BUILTIN\Users via SID *S-1-5-32-545 (locale-independent)
+                execSync(`icacls "${tmpDir}" /grant *S-1-5-32-545:(OI)(CI)(R)`);
+                execSync(`icacls "${authFile}" /grant *S-1-5-32-545:R`);
             }
 
             const child = spawn(binPath, ['--load-dir-res', '--window-enable-inspector=false', '--export-auth-info'], {
@@ -104,6 +118,16 @@ describe('config.spec: App configuration tests', () => {
                 const dirStat = fs.statSync(tmpDir);
                 const dirMode = (dirStat.mode & 0o777).toString(8);
                 assert.strictEqual(dirMode, '700', `Expected .tmp dir mode tightened to 0700, got ${dirMode}`);
+            } else {
+                const fileAcl = execSync(`icacls "${authFile}"`).toString();
+                assert.ok(!fileAcl.includes('BUILTIN\\Users') && !fileAcl.includes('Users:'), 'auth_info.json permissions should be tightened to exclude Users');
+                assert.ok(!fileAcl.includes('Everyone'), 'auth_info.json must not allow Everyone');
+                assert.ok(fileAcl.includes('OWNER RIGHTS'), 'auth_info.json must grant access to OWNER RIGHTS');
+
+                const dirAcl = execSync(`icacls "${tmpDir}"`).toString();
+                assert.ok(!dirAcl.includes('BUILTIN\\Users') && !dirAcl.includes('Users:'), '.tmp dir permissions should be tightened to exclude Users');
+                assert.ok(!dirAcl.includes('Everyone'), '.tmp dir must not allow Everyone');
+                assert.ok(dirAcl.includes('OWNER RIGHTS'), '.tmp dir must grant access to OWNER RIGHTS');
             }
         });
     });

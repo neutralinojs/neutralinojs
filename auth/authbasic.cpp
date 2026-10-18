@@ -7,6 +7,13 @@
 #include <unistd.h>
 #endif
 
+#if defined(_WIN32)
+#define _WINSOCKAPI_
+#include <windows.h>
+#include <sddl.h>
+#include <aclapi.h>
+#endif
+
 #include "helpers.h"
 #include "settings.h"
 #include "auth/authbasic.h"
@@ -98,6 +105,83 @@ void exportAuthInfo() {
         debug::log(debug::LogTypeError, "Failed to write complete auth info to " + tempAuthInfoPath);
         return;
     }
+#elif defined(_WIN32)
+    // On Windows NTFS, std::filesystem::permissions only modifies the FILE_ATTRIBUTE_READONLY
+    // flag and does NOT alter the Discretionary Access Control List (DACL). Default inherited
+    // permissions grant BUILTIN\Users read access.
+    // We explicitly set a protected DACL restricting access to Object Owner (OW),
+    // BUILTIN\Administrators (BA), and NT AUTHORITY\SYSTEM (SY).
+    auto setWindowsAcl = [](const wstring &path, LPCWSTR sddl, HANDLE hExistingFile = INVALID_HANDLE_VALUE) {
+        PSECURITY_DESCRIPTOR pSD = nullptr;
+        if(!ConvertStringSecurityDescriptorToSecurityDescriptorW(sddl, SDDL_REVISION_1, &pSD, nullptr)) {
+            return;
+        }
+        PACL pAcl = nullptr;
+        BOOL daclPresent = FALSE, daclDefaulted = FALSE;
+        if(GetSecurityDescriptorDacl(pSD, &daclPresent, &pAcl, &daclDefaulted)) {
+            if(hExistingFile != INVALID_HANDLE_VALUE) {
+                SetSecurityInfo(hExistingFile, SE_FILE_OBJECT,
+                    DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
+                    nullptr, nullptr, pAcl, nullptr);
+            }
+            SetNamedSecurityInfoW(const_cast<LPWSTR>(path.c_str()), SE_FILE_OBJECT,
+                DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
+                nullptr, nullptr, pAcl, nullptr);
+        }
+        LocalFree(pSD);
+    };
+
+    wstring wTempDirPath = CONVSTR(tempDirPath);
+    string tempAuthInfoPath = settings::joinAppDataPath("/.tmp/auth_info.json");
+    wstring wTempAuthInfoPath = CONVSTR(tempAuthInfoPath);
+
+    LPCWSTR dirSddl = L"D:P(A;OICI;GA;;;OW)(A;OICI;GA;;;BA)(A;OICI;GA;;;SY)";
+    PSECURITY_DESCRIPTOR pDirSD = nullptr;
+    SECURITY_ATTRIBUTES dirSA = { sizeof(SECURITY_ATTRIBUTES), nullptr, FALSE };
+    if(ConvertStringSecurityDescriptorToSecurityDescriptorW(dirSddl, SDDL_REVISION_1, &pDirSD, nullptr)) {
+        dirSA.lpSecurityDescriptor = pDirSD;
+    }
+
+    if(!CreateDirectoryW(wTempDirPath.c_str(), pDirSD ? &dirSA : nullptr)) {
+        if(GetLastError() != ERROR_ALREADY_EXISTS) {
+            error_code ec;
+            filesystem::create_directories(CONVSTR(tempDirPath), ec);
+        }
+    }
+    setWindowsAcl(wTempDirPath, dirSddl);
+    if(pDirSD) {
+        LocalFree(pDirSD);
+    }
+
+    LPCWSTR fileSddl = L"D:P(A;;GA;;;OW)(A;;GA;;;BA)(A;;GA;;;SY)";
+    PSECURITY_DESCRIPTOR pFileSD = nullptr;
+    SECURITY_ATTRIBUTES fileSA = { sizeof(SECURITY_ATTRIBUTES), nullptr, FALSE };
+    if(ConvertStringSecurityDescriptorToSecurityDescriptorW(fileSddl, SDDL_REVISION_1, &pFileSD, nullptr)) {
+        fileSA.lpSecurityDescriptor = pFileSD;
+    }
+
+    HANDLE hFile = CreateFileW(wTempAuthInfoPath.c_str(), GENERIC_WRITE, 0,
+                               pFileSD ? &fileSA : nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if(hFile == INVALID_HANDLE_VALUE) {
+        if(pFileSD) LocalFree(pFileSD);
+        debug::log(debug::LogTypeError, "Failed to create auth info file: " + tempAuthInfoPath);
+        return;
+    }
+
+    setWindowsAcl(wTempAuthInfoPath, fileSddl, hFile);
+    if(pFileSD) {
+        LocalFree(pFileSD);
+    }
+
+    string payload = makeAuthInfoPayload().dump();
+    DWORD bytesWritten = 0;
+    BOOL writeSuccess = WriteFile(hFile, payload.c_str(), static_cast<DWORD>(payload.size()), &bytesWritten, nullptr);
+    CloseHandle(hFile);
+
+    if(!writeSuccess || bytesWritten != payload.size()) {
+        debug::log(debug::LogTypeError, "Failed to write complete auth info to " + tempAuthInfoPath);
+        return;
+    }
 #else
     try {
         filesystem::create_directories(CONVSTR(tempDirPath));
@@ -112,13 +196,6 @@ void exportAuthInfo() {
         makeAuthInfoPayload().dump()
     };
     fs::writeFile(fileWriterOptions);
-
-#if defined(_WIN32)
-    error_code ec;
-    filesystem::permissions(CONVSTR(tempDirPath), filesystem::perms::owner_all, filesystem::perm_options::replace, ec);
-    filesystem::permissions(CONVSTR(tempAuthInfoPath), filesystem::perms::owner_read | filesystem::perms::owner_write, filesystem::perm_options::replace, ec);
-#endif
-
 #endif
 
     debug::log(debug::LogTypeInfo, "Auth info was exported to " + tempAuthInfoPath);
