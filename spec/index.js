@@ -1,4 +1,4 @@
-const Mocha = require('mocha');
+const { Mocha } = require('mocha');
 const fs = require('fs');
 const path = require('path');
 
