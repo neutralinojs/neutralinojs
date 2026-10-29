@@ -115,23 +115,56 @@ string init() {
     server = new websocketserver();
 
     server->set_message_handler([&](websocketpp::connection_hdl handler, websocketserver::message_ptr msg) {
-        neuserver::handleMessage(handler, msg);
+        try {
+            neuserver::handleMessage(handler, msg);
+        }
+        catch(const std::exception &e) {
+            debug::log(debug::LogTypeError, e.what());
+        }
+        catch(...) {}
     });
 
     server->set_http_handler([&](websocketpp::connection_hdl handler) {
-        neuserver::handleHTTP(handler);
+        try {
+            neuserver::handleHTTP(handler);
+        }
+        catch(const std::exception &e) {
+            debug::log(debug::LogTypeError, e.what());
+        }
+        catch(...) {}
     });
 
     server->set_open_handler([&](websocketpp::connection_hdl handler) {
-        neuserver::handleConnect(handler);
+        try {
+            neuserver::handleConnect(handler);
+        }
+        catch(const std::exception &e) {
+            debug::log(debug::LogTypeError, e.what());
+        }
+        catch(...) {}
     });
 
     server->set_close_handler([&](websocketpp::connection_hdl handler) {
-        neuserver::handleDisconnect(handler);
+        try {
+            neuserver::handleDisconnect(handler);
+        }
+        catch(const std::exception &e) {
+            debug::log(debug::LogTypeError, e.what());
+        }
+        catch(...) {}
     });
 
     server->set_validate_handler([&](websocketpp::connection_hdl handler) {
-        return neuserver::handleValidate(handler);
+        try {
+            return neuserver::handleValidate(handler);
+        }
+        catch(const std::exception &e) {
+            debug::log(debug::LogTypeError, e.what());
+            return false;
+        }
+        catch(...) {
+            return false;
+        }
     });
 
     server->set_access_channels(websocketpp::log::alevel::none);
@@ -183,12 +216,24 @@ bool isInitialized() {
 }
 
 void startAsync() {
-    thread serverThread([&](){ server->run(); });
+    thread serverThread([&](){
+        try {
+            server->run();
+        }
+        catch(const std::exception &e) {
+            debug::log(debug::LogTypeError, e.what());
+        }
+        catch(...) {}
+    });
     serverThread.detach();
 }
 
 void stop() {
-    server->stop_listening();
+    try {
+        server->stop_listening();
+        server->stop();
+    }
+    catch(...) {}
 }
 
 void handleMessage(websocketpp::connection_hdl handler, websocketserver::message_ptr msg) {
@@ -235,61 +280,79 @@ void handleMessage(websocketpp::connection_hdl handler, websocketserver::message
 }
 
 void handleHTTP(websocketpp::connection_hdl handler) {
-    websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
-    string resource = con->get_resource();
-    string documentRoot = neuserver::getDocumentRoot();
-    if(!documentRoot.empty()) {
-        resource = documentRoot + resource;
+    try {
+        websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
+        string resource = con->get_resource();
+        string documentRoot = neuserver::getDocumentRoot();
+        if(!documentRoot.empty()) {
+            resource = documentRoot + resource;
+        }
+        fs::FileReaderOptions fileReaderOptions =
+            __getFileReaderOptionsFromHeaders(con->get_request().get_headers());
+        router::Response routerResponse = router::serve(resource, fileReaderOptions);
+        con->set_status(routerResponse.status);
+        con->set_body(routerResponse.data);
+        con->replace_header("Content-Type",routerResponse.contentType);
+        for(const auto &[header, value]: routerResponse.headers) {
+            con->replace_header(header, value);
+        }
+        
+        if(applyConfigHeaders){
+            __applyConfigHeaders(con);
+        }
     }
-    fs::FileReaderOptions fileReaderOptions =
-        __getFileReaderOptionsFromHeaders(con->get_request().get_headers());
-    router::Response routerResponse = router::serve(resource, fileReaderOptions);
-    con->set_status(routerResponse.status);
-    con->set_body(routerResponse.data);
-    con->replace_header("Content-Type",routerResponse.contentType);
-    for(const auto &[header, value]: routerResponse.headers) {
-        con->replace_header(header, value);
+    catch(const std::exception &e) {
+        debug::log(debug::LogTypeError, e.what());
     }
-    
-    if(applyConfigHeaders){
-        __applyConfigHeaders(con);
-    }
+    catch(...) {}
 }
 
 void handleConnect(websocketpp::connection_hdl handler) {
-    websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
-    string url = con->get_resource();
-    if(__isExtensionEndpoint(url)) {
-        string extensionId = __getExtensionIdFromUrl(url);
-        extConnections[extensionId] = handler;
-        events::dispatch("extClientConnect", extensionId);
+    try {
+        websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
+        string url = con->get_resource();
+        if(__isExtensionEndpoint(url)) {
+            string extensionId = __getExtensionIdFromUrl(url);
+            extConnections[extensionId] = handler;
+            events::dispatch("extClientConnect", extensionId);
+        }
+        else {
+            appConnections.insert(handler);
+            events::dispatch("appClientConnect", appConnections.size());
+        }
+        events::dispatch("clientConnect", appConnections.size() + extConnections.size());
     }
-    else {
-        appConnections.insert(handler);
-        events::dispatch("appClientConnect", appConnections.size());
+    catch(const std::exception &e) {
+        debug::log(debug::LogTypeError, e.what());
     }
-    events::dispatch("clientConnect", appConnections.size() + extConnections.size());
+    catch(...) {}
 }
 
 void handleDisconnect(websocketpp::connection_hdl handler) {
-    wsMode.erase(handler);
-    
-    websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
-    string url = con->get_resource();
-    if(__isExtensionEndpoint(url)) {
-        string extensionId = __getExtensionIdFromUrl(url);
-        extConnections.erase(extensionId);
-        events::dispatch("extClientDisconnect", extensionId);
-    }
-    else {
-        settings::AppMode mode = settings::getMode();
-        appConnections.erase(handler);
-        if(mode == settings::AppModeBrowser || mode == settings::AppModeChrome) {
-            __exitProcessIfIdle();
+    try {
+        wsMode.erase(handler);
+        
+        websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
+        string url = con->get_resource();
+        if(__isExtensionEndpoint(url)) {
+            string extensionId = __getExtensionIdFromUrl(url);
+            extConnections.erase(extensionId);
+            events::dispatch("extClientDisconnect", extensionId);
         }
-        events::dispatch("appClientDisconnect", appConnections.size());
+        else {
+            settings::AppMode mode = settings::getMode();
+            appConnections.erase(handler);
+            if(mode == settings::AppModeBrowser || mode == settings::AppModeChrome) {
+                __exitProcessIfIdle();
+            }
+            events::dispatch("appClientDisconnect", appConnections.size());
+        }
+        events::dispatch("clientDisconnect", appConnections.size() + extConnections.size());
     }
-    events::dispatch("clientDisconnect", appConnections.size() + extConnections.size());
+    catch(const std::exception &e) {
+        debug::log(debug::LogTypeError, e.what());
+    }
+    catch(...) {}
 }
 
 bool handleValidate(websocketpp::connection_hdl handler) {
@@ -325,28 +388,48 @@ void broadcast(const json &message) {
 
 bool sendToExtension(const string &extensionId, const json &message) {
     if(extConnections.find(extensionId) != extConnections.end()) {
-        auto hdl = extConnections[extensionId];
-        auto op = wsMode.count(hdl)
-              ? wsMode[hdl]
-              : websocketpp::frame::opcode::text;
-        server->send(hdl, helpers::jsonToString(message), op);
-        return true;
+        try {
+            auto hdl = extConnections[extensionId];
+            auto op = wsMode.count(hdl)
+                  ? wsMode[hdl]
+                  : websocketpp::frame::opcode::text;
+            server->send(hdl, helpers::jsonToString(message), op);
+            return true;
+        }
+        catch(const std::exception &e) {
+            return false;
+        }
+        catch(...) {
+            return false;
+        }
     }
     return false;
 }
 
 void broadcastToAllExtensions(const json &message) {
     for (const auto &[_, connection]: extConnections) {
-        auto op = wsMode.count(connection)
-            ? wsMode[connection]
-            : websocketpp::frame::opcode::text;
-        server->send(connection, helpers::jsonToString(message), op);
+        try {
+            auto op = wsMode.count(connection)
+                ? wsMode[connection]
+                : websocketpp::frame::opcode::text;
+            server->send(connection, helpers::jsonToString(message), op);
+        }
+        catch(const std::exception &e) {
+            // connection might have closed
+        }
+        catch(...) {}
     }
 }
 
 void broadcastToAllApps(const json &message) {
     for (const auto &connection: appConnections) {
-        server->send(connection, helpers::jsonToString(message), websocketpp::frame::opcode::text);
+        try {
+            server->send(connection, helpers::jsonToString(message), websocketpp::frame::opcode::text);
+        }
+        catch(const std::exception &e) {
+            // connection might have closed
+        }
+        catch(...) {}
     }
 }
 
