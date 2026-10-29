@@ -18,7 +18,8 @@
     "singlePageServe": false,
     "logging": {
         "enabled": true,
-        "writeToLogFile": true
+        "writeToLogFile": true,
+        "format": "%level %datetime: %msg"
     },
     "nativeBlockList": [],
     "commandAllowList": ["node"],
