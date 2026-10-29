@@ -956,6 +956,21 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             assert.ok(after.modifiedAt > before.modifiedAt);
         });
 
+        it('does not update modifiedAt after renaming a file', async () => {
+            runner.run(`
+                let source = NL_PATH + '/.tmp/test-file-rename-' + Date.now() + '.txt';
+                let destination = source + '.moved';
+                await Neutralino.filesystem.writeFile(source, 'Hello World');
+                let statsBefore = await Neutralino.filesystem.getStats(source);
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                await Neutralino.filesystem.move(source, destination);
+                let statsAfter = await Neutralino.filesystem.getStats(destination);
+                await __close(JSON.stringify({ before: statsBefore, after: statsAfter }));
+            `);
+            let { before, after } = JSON.parse(runner.getOutput());
+            assert.equal(after.modifiedAt, before.modifiedAt);
+        });
+
         it('returns stats for hidden files', async () => {
             runner.run(`
                 await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/.hidden-file', 'Hidden Content');
