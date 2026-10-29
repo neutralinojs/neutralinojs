@@ -383,6 +383,30 @@ router::Response getAsset(string path, const string &prependData, const fs::File
     }
 
     if(!foundMountedPath) {
+        // Security check: Directory Resource Mode Path Traversal Protection
+        // Advisory: GHSA-645w-p5gr-j5xm (CWE-22)
+        //
+        // Rationale:
+        // In directory resource mode (`neu run` or unpacked apps), the HTTP server serves files
+        // directly from the host filesystem without requiring a native WebSocket auth token.
+        // If a client sends relative segments (such as "/../secret.txt" or "/%2e%2e/secret.txt"),
+        // naive concatenation with documentRoot allows escaping the intended folder.
+        //
+        // In bundle or embedded mode, resources are resolved from an in-memory or archive table,
+        // so filesystem escaping does not apply. In directory mode, however, we must ensure the
+        // canonicalized physical target remains strictly within the canonical documentRoot.
+        string documentRoot = neuserver::getDocumentRoot();
+        if(resources::isDirMode() && !documentRoot.empty()) {
+            string fullDocRoot = settings::joinAppPath(documentRoot);
+            string fullTargetFile = settings::joinAppPath(path);
+
+            if(!helpers::isPathInsideDirectory(fullTargetFile, fullDocRoot)) {
+                debug::log(debug::LogTypeError, "Blocked static server path traversal attempt outside documentRoot: " + path);
+                response.status = websocketpp::http::status_code::forbidden;
+                response.data = "403 Forbidden";
+                return response;
+            }
+        }
         fileReaderResult = resources::getFile(path, fileReaderOptions);
     }
     
