@@ -112,6 +112,7 @@ void __startApp() {
 void __configureLogger() {
     bool enableLogging = true;
     bool enableLogFile = true;
+    string format = NEU_APP_LOG_FORMAT;
 
     json logging = settings::getOptionForCurrentMode("logging");
     if(!logging["enabled"].is_null()) {
@@ -120,11 +121,14 @@ void __configureLogger() {
     if(!logging["writeToLogFile"].is_null()) {
         enableLogFile = logging["writeToLogFile"].get<bool>();
     }
+    if(!logging["format"].is_null()) {
+        format = logging["format"].get<string>();
+    }
 
     el::Configurations defaultConf;
     defaultConf.setToDefault();
     defaultConf.setGlobally(
-            el::ConfigurationType::Format, NEU_APP_LOG_FORMAT);
+            el::ConfigurationType::Format, format);
 
     if(enableLogFile) {
         defaultConf.setGlobally(
