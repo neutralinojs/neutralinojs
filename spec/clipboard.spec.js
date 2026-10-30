@@ -364,6 +364,7 @@ describe('clipboard.spec: clipboard namespace tests', () => {
     
             runner.run(`
                 await Neutralino.clipboard.writeHTML(${JSON.stringify(htmlWithSvg)});
+                await new Promise(r => setTimeout(r, 100));
                 let clipboardHtml = await Neutralino.clipboard.readHTML();
                 await __close(clipboardHtml);
             `);
