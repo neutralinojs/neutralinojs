@@ -139,6 +139,11 @@
       "description": "Unique string to identify your application. \n Eg: js.neutralino.sample",
       "pattern": "^[a-zA-Z0-9]+(\\.[a-zA-Z0-9]+)*$"
     },
+    "singleInstance": {
+      "type": "boolean",
+      "description": "Allows only one application process for this applicationId. Later launches forward their command-line arguments and working directory to the primary process through the secondInstance event, then exit before starting the server or creating a window. Apps without a connected native app client still receive single-instance enforcement and window activation, but cannot observe the event.",
+      "default": false
+    },
     "version": {
       "type": "string",
       "description": "Application version. \n Eg: 2.4.22"
