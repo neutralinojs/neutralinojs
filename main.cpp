@@ -5,6 +5,7 @@
 #include <chrono>
 #if defined(_WIN32)
 #include <winsock2.h>
+#include <shobjidl_core.h>
 #include <websocketpp/error.hpp>
 #endif
 
@@ -177,6 +178,9 @@ void __initFramework(const json &args) {
             pfd::icon::error);
         std::exit(1);
     }
+    #if defined(_WIN32)
+    SetCurrentProcessExplicitAppUserModelID(helpers::str2wstr(settings::getAppId()).c_str());
+    #endif
     authbasic::init();
     permission::init();
     storage::init();

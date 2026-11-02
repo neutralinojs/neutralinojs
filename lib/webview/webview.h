@@ -186,7 +186,7 @@ static void *dlib = nullptr;
 
 class gtk_webkit_engine {
 public:
-  gtk_webkit_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string &args, bool emitDropEvents)
+  gtk_webkit_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string &args, bool emitDropEvents, int initWidth = 640, int initHeight = 480)
       : m_window(static_cast<GtkWidget *>(window)) {
         
     setlocale(LC_ALL, "");
@@ -422,6 +422,7 @@ public:
                       WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START, NULL, NULL));
   }
 
+  void resize() {}
   void set_title(const std::string title) {
     gtk_window_set_title(GTK_WINDOW(m_window), title.c_str());
 
@@ -467,6 +468,7 @@ public:
     }
   }
 
+  void resize() {}
   void navigate(const std::string url) {
     webkit_web_view_load_uri((WebKitWebView*)(m_webview), url.c_str());
   }
@@ -529,7 +531,7 @@ id operator"" _str(const char *s, std::size_t) {
 
 class cocoa_wkwebview_engine {
 public:
-  cocoa_wkwebview_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string &args, bool emitDropEvents) {
+  cocoa_wkwebview_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string &args, bool emitDropEvents, int initWidth = 640, int initHeight = 480) {
     // Application
     id app = ((id(*)(id, SEL))objc_msgSend)("NSApplication"_cls,
                                             "sharedApplication"_sel);
@@ -1238,16 +1240,48 @@ private:
 
 class win32_edge_engine {
 public:
-  win32_edge_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string& args, bool emitDropEvents) {
+  win32_edge_engine(bool debug, bool openInspector, void *window, bool transparent, const std::string& args, bool emitDropEvents, int initWidth = 640, int initHeight = 480) {
     if(args != "") {
         std::wstring wargs = str2wstr(args);
         SetEnvironmentVariableW(L"WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", wargs.c_str());
     }
     if (window == nullptr) {
       HINSTANCE hInstance = GetModuleHandle(nullptr);
-      HICON icon = (HICON)LoadImage(
-          hInstance, IDI_APPLICATION, IMAGE_ICON, GetSystemMetrics(SM_CXSMICON),
-          GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
+      WCHAR exePath[MAX_PATH];
+      GetModuleFileNameW(nullptr, exePath, MAX_PATH);
+      HICON icon = nullptr;
+      HICON iconSm = nullptr;
+      ExtractIconExW(exePath, 0, &icon, &iconSm, 1);
+      if (!icon) {
+          icon = (HICON)LoadImage(
+              hInstance, MAKEINTRESOURCE(0), IMAGE_ICON, GetSystemMetrics(SM_CXICON),
+              GetSystemMetrics(SM_CYICON), LR_DEFAULTCOLOR);
+      }
+      if (!icon) {
+          icon = (HICON)LoadImage(
+              hInstance, MAKEINTRESOURCE(1), IMAGE_ICON, GetSystemMetrics(SM_CXICON),
+              GetSystemMetrics(SM_CYICON), LR_DEFAULTCOLOR);
+      }
+      if (!icon) {
+          icon = (HICON)LoadImage(
+              nullptr, IDI_APPLICATION, IMAGE_ICON, GetSystemMetrics(SM_CXICON),
+              GetSystemMetrics(SM_CYICON), LR_DEFAULTCOLOR);
+      }
+      if (!iconSm) {
+          iconSm = (HICON)LoadImage(
+              hInstance, MAKEINTRESOURCE(0), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON),
+              GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
+      }
+      if (!iconSm) {
+          iconSm = (HICON)LoadImage(
+              hInstance, MAKEINTRESOURCE(1), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON),
+              GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
+      }
+      if (!iconSm) {
+          iconSm = (HICON)LoadImage(
+              nullptr, IDI_APPLICATION, IMAGE_ICON, GetSystemMetrics(SM_CXSMICON),
+              GetSystemMetrics(SM_CYSMICON), LR_DEFAULTCOLOR);
+      }
       static UINT WM_TASKBAR_CREATED = RegisterWindowMessage(L"TaskbarCreated");
       WNDCLASSEX wc;
       ZeroMemory(&wc, sizeof(WNDCLASSEX));
@@ -1255,13 +1289,30 @@ public:
       wc.hInstance = hInstance;
       wc.lpszClassName = L"Neutralinojs_webview";
       wc.hIcon = icon;
-      wc.hIconSm = icon;
+      wc.hIconSm = iconSm;
+      wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
       wc.lpfnWndProc =
           (WNDPROC)(+[](HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) -> int {
             auto w = (win32_edge_engine *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
             static HMENU menuRef;
             static std::vector<HMENU> menuRefs;
             switch (msg) {
+            case WM_GETICON: {
+              if (w) {
+                if (wp == ICON_SMALL || wp == 2 /* ICON_SMALL2 */) {
+                  return (LRESULT)w->m_hIconSm;
+                }
+                return (LRESULT)w->m_hIcon;
+              }
+              return DefWindowProc(hwnd, msg, wp, lp);
+            }
+            case WM_SETICON: {
+              if (w) {
+                if (wp == ICON_SMALL) w->m_hIconSm = (HICON)lp;
+                else w->m_hIcon = (HICON)lp;
+              }
+              return DefWindowProc(hwnd, msg, wp, lp);
+            }
             case WM_SIZE:
               w->m_browser->resize(hwnd);
               if(!windowStateChange) break;
@@ -1366,12 +1417,16 @@ public:
             return 0;
           });
       RegisterClassEx(&wc);
-      int width = transparent ? 8000 : 640;
-      int height = transparent ? 8000 : 480;
+      int width = transparent ? 8000 : (initWidth > 0 ? initWidth : 640);
+      int height = transparent ? 8000 : (initHeight > 0 ? initHeight : 480);
       m_window = CreateWindow(L"Neutralinojs_webview", L"", WS_OVERLAPPEDWINDOW, 99999999,
                               CW_USEDEFAULT, width, height, nullptr, nullptr,
                               GetModuleHandle(nullptr), nullptr);
       SetWindowLongPtr(m_window, GWLP_USERDATA, (LONG_PTR)this);
+      m_hIcon = icon;
+      m_hIconSm = iconSm;
+      SendMessage(m_window, WM_SETICON, ICON_BIG, (LPARAM)icon);
+      SendMessage(m_window, WM_SETICON, ICON_SMALL, (LPARAM)iconSm);
     } else {
       m_window = *(static_cast<HWND *>(window));
     }
@@ -1382,16 +1437,16 @@ public:
       SetWindowLong(m_window, GWL_EXSTYLE, GetWindowLong(m_window, GWL_EXSTYLE) | WS_EX_LAYERED);
       // transparent white, use of environment variable prevents flashing on show
       SetEnvironmentVariable(L"WEBVIEW2_DEFAULT_BACKGROUND_COLOR", L"00FFFFFF");
+    } else {
+      SetEnvironmentVariable(L"WEBVIEW2_DEFAULT_BACKGROUND_COLOR", L"FFFFFFFF");
     }
 
-    // stop the taskbar icon from showing by removing WS_EX_APPWINDOW.
-    SetWindowLong(m_window, GWL_EXSTYLE, GetWindowLong(m_window, GWL_EXSTYLE) & ~WS_EX_APPWINDOW);
+    // preserve WS_EX_APPWINDOW so taskbar icon remains registered
+    m_originalStyleEx = GetWindowLong(m_window, GWL_EXSTYLE) | WS_EX_APPWINDOW;
+    SetWindowLong(m_window, GWL_EXSTYLE, m_originalStyleEx);
     ShowWindow(m_window, SW_SHOW);
     UpdateWindow(m_window);
     SetForegroundWindow(m_window);
-
-    // store the original initial window style
-    m_originalStyleEx = GetWindowLong(m_window, GWL_EXSTYLE);
 
     // set dark mode of title bar according to system theme
     TrySetWindowTheme(m_window);
@@ -1504,6 +1559,7 @@ public:
     }
   }
 
+  void resize() { m_browser->resize(m_window); }
   void navigate(const std::string url) { m_browser->navigate(url); }
   void init(const std::string js) { m_browser->init(js); }
   void extend_user_agent(const std::string customAgent) { m_browser->extend_user_agent(customAgent); }
@@ -1525,6 +1581,8 @@ private:
     }
   }
 
+  HICON m_hIcon = nullptr;
+  HICON m_hIconSm = nullptr;
   HWND m_window;
   POINT m_minsz = POINT{0, 0};
   POINT m_maxsz = POINT{0, 0};
@@ -1543,8 +1601,12 @@ namespace webview {
 
 class webview : public browser_engine {
 public:
-  webview(bool debug = false, bool openInspector = true, void *wnd = nullptr, bool transparent = false, const std::string& args = "", bool emitDropEvents = false)
-      : browser_engine(debug, openInspector, wnd, transparent, args, emitDropEvents) {}
+  webview(bool debug = false, bool openInspector = true, void *wnd = nullptr, bool transparent = false, const std::string& args = "", bool emitDropEvents = false, int initWidth = 640, int initHeight = 480)
+      : browser_engine(debug, openInspector, wnd, transparent, args, emitDropEvents, initWidth, initHeight) {}
+
+  void resize() {
+    browser_engine::resize();
+  }
 
   void navigate(const std::string url) {
     browser_engine::navigate(url);
