@@ -232,11 +232,10 @@ void __undoFakeHidden() {
         x = pos.first;
         y = pos.second;
     }
-	ShowWindow(windowHandle, SW_HIDE);
-	SetWindowLong(windowHandle, GWL_EXSTYLE, nativeWindow->m_originalStyleEx);
-	SetWindowPos(windowHandle, nullptr,
-        x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
-	ShowWindow(windowHandle, SW_SHOW);
+    SetWindowLong(windowHandle, GWL_EXSTYLE, nativeWindow->m_originalStyleEx | WS_EX_APPWINDOW);
+    SetWindowPos(windowHandle, HWND_TOP,
+        x, y, 0, 0, SWP_NOZORDER | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_FRAMECHANGED);
+    nativeWindow->resize();
 }
 
 bool __getEncoderClsid(const WCHAR *format, CLSID *pClsid) {
@@ -635,8 +634,16 @@ void __injectScript() {
 bool __createWindow() {
     savedState = windowProps.useSavedState && __loadSavedWindowProps();
 
+    int width = windowProps.sizeOptions.width;
+    int height = windowProps.sizeOptions.height;
+    if(windowProps.useLogicalPixels) {
+        double scale = __getScaleFactor();
+        if(width > 0)  width  = (int)(width  * scale);
+        if(height > 0) height = (int)(height * scale);
+    }
+
     nativeWindow = new webview::webview(windowProps.enableInspector, windowProps.openInspectorOnStartup, 
-        nullptr, windowProps.transparent, windowProps.webviewArgs, windowProps.emitDropEvents);
+        nullptr, windowProps.transparent, windowProps.webviewArgs, windowProps.emitDropEvents, width, height);
     
     if(nativeWindow->get_init_code() == 1) {
         return false;
@@ -645,14 +652,6 @@ bool __createWindow() {
     nativeWindow->set_title(windowProps.title);
     if(windowProps.extendUserAgentWith != "") {
         nativeWindow->extend_user_agent(windowProps.extendUserAgentWith);
-    }
-
-    int width = windowProps.sizeOptions.width;
-    int height = windowProps.sizeOptions.height;
-    if(windowProps.useLogicalPixels) {
-        double scale = __getScaleFactor();
-        if(width > 0)  width  = (int)(width  * scale);
-        if(height > 0) height = (int)(height * scale);
     }
 
     nativeWindow->set_size(
@@ -847,7 +846,12 @@ void show() {
                 "setIsVisible:"_sel, true);
     #elif defined(_WIN32)
     ShowWindow(windowHandle, SW_SHOW);
-    SetWindowPos(windowHandle, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+    if (!windowProps.skipTaskbar) {
+        SetWindowLong(windowHandle, GWL_EXSTYLE, GetWindowLong(windowHandle, GWL_EXSTYLE) | WS_EX_APPWINDOW);
+        SetWindowPos(windowHandle, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_FRAMECHANGED);
+    } else {
+        SetWindowPos(windowHandle, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+    }
 
     if (!SetForegroundWindow(windowHandle)) {
         FLASHWINFO fi;
@@ -969,6 +973,9 @@ void exitFullScreen() {
 
 void setIcon(const string &iconFile) {
     fs::FileReaderResult fileReaderResult = resources::getFile(iconFile);
+    if(fileReaderResult.status != errors::NE_ST_OK || fileReaderResult.data.empty()) {
+        return;
+    }
     string iconDataStr = fileReaderResult.data;
     #if defined(__linux__) || defined(__FreeBSD__)
     GdkPixbuf *icon = nullptr;
@@ -1001,16 +1008,39 @@ void setIcon(const string &iconFile) {
     ULONG_PTR gdiplusToken;
     GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
-    HICON icon = nullptr;
     const char *iconData = iconDataStr.c_str();
     unsigned char *uiconData = reinterpret_cast<unsigned char*>(const_cast<char*>(iconData));
     IStream *pStream = SHCreateMemStream((BYTE *) uiconData, iconDataStr.length());
-    Gdiplus::Bitmap* bitmap = Gdiplus::Bitmap::FromStream(pStream);
-    bitmap->GetHICON(&icon);
-    pStream->Release();
+    if (pStream) {
+        Gdiplus::Bitmap* bitmap = Gdiplus::Bitmap::FromStream(pStream);
+        if (bitmap && bitmap->GetLastStatus() == Gdiplus::Ok) {
+            int smW = GetSystemMetrics(SM_CXSMICON);
+            int smH = GetSystemMetrics(SM_CYSMICON);
+            int bgW = GetSystemMetrics(SM_CXICON);
+            int bgH = GetSystemMetrics(SM_CYICON);
 
-    SendMessage(windowHandle, WM_SETICON, ICON_SMALL, (LPARAM)icon);
-    SendMessage(windowHandle, WM_SETICON, ICON_BIG, (LPARAM)icon);
+            Gdiplus::Bitmap* smBitmap = (Gdiplus::Bitmap*)bitmap->GetThumbnailImage(smW, smH, nullptr, nullptr);
+            Gdiplus::Bitmap* bgBitmap = (Gdiplus::Bitmap*)bitmap->GetThumbnailImage(bgW, bgH, nullptr, nullptr);
+
+            HICON hIconSm = nullptr;
+            HICON hIconBg = nullptr;
+            if (smBitmap) smBitmap->GetHICON(&hIconSm);
+            if (bgBitmap) bgBitmap->GetHICON(&hIconBg);
+            if (!hIconBg) bitmap->GetHICON(&hIconBg);
+            if (!hIconSm) hIconSm = hIconBg;
+
+            if (hIconBg && hIconSm) {
+                SendMessage(windowHandle, WM_SETICON, ICON_SMALL, (LPARAM)hIconSm);
+                SendMessage(windowHandle, WM_SETICON, ICON_BIG, (LPARAM)hIconBg);
+                SetClassLongPtr(windowHandle, GCLP_HICON, (LONG_PTR)hIconBg);
+                SetClassLongPtr(windowHandle, GCLP_HICONSM, (LONG_PTR)hIconSm);
+            }
+            delete smBitmap;
+            delete bgBitmap;
+            delete bitmap;
+        }
+        pStream->Release();
+    }
     GdiplusShutdown(gdiplusToken);
     #endif
 }
@@ -1245,10 +1275,14 @@ void setSkipTaskbar(bool skip) {
                                     IID_PPV_ARGS(&taskbar))) ||
         FAILED(taskbar->HrInit()))
         return;
-    if(skip)
+    if(skip) {
         taskbar->DeleteTab(windowHandle);
-    else
+        SetWindowLong(windowHandle, GWL_EXSTYLE, GetWindowLong(windowHandle, GWL_EXSTYLE) & ~WS_EX_APPWINDOW);
+    } else {
+        SetWindowLong(windowHandle, GWL_EXSTYLE, GetWindowLong(windowHandle, GWL_EXSTYLE) | WS_EX_APPWINDOW);
         taskbar->AddTab(windowHandle);
+    }
+    SetWindowPos(windowHandle, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
     #endif
 }
 
