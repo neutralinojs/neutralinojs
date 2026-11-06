@@ -17,7 +17,7 @@ vector<string> getLoaded();
 bool isLoaded(const string &extensionId);
 bool isInitialized();
 
-} // namesapce extensions
+} // namespace extensions
 
 #endif // #define NEU_EXTENSIONS_H
 
