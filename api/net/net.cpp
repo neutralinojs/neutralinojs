@@ -1,9 +1,6 @@
 #include <string>
 #include <vector>
-#include <string>
-#include <vector>
 #include <regex>
-
 #include "helpers.h"
 #include "errors.h"
 #include "api/net/net.h"
@@ -28,7 +25,7 @@ json request(const json &input) {
 
     string url = input["url"].get<string>();
     string method = "GET";
-    regex url_regex(R"(^(https?)://([^/]+)(/.*)?$)");
+    regex url_regex(R"(^(https?)://([^/?#]+)([^#]*)?(?:#.*)?$)");
     smatch match;
 
     if(!regex_match(url, match, url_regex)) {
@@ -38,7 +35,10 @@ json request(const json &input) {
 
     string protocol = match[1];
     string host = match[2];
-    string path = match[3].matched ? match[3].str() : "/";
+    string rawPath = match[3].matched ? match[3].str() : "";
+    string path = rawPath.empty()
+        ? "/"
+        : (rawPath[0] == '?' ? "/" + rawPath : rawPath);
 
     httplib::Client cli(protocol + "://" + host);
     httplib::Params params;

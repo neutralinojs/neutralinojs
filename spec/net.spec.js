@@ -209,4 +209,45 @@ describe('net.spec: network namespace tests', () => {
             assert.strictEqual(JSON.parse(runner.getOutput()), true);
         });
     });
+
+    describe('net URL parsing', () => {
+        it('parses host correctly when query has no explicit path', async () => {
+            runner.run(`
+                try {
+                    const response = await Neutralino.net.get('${BASE_URL}?foo=bar');
+                    await __close(JSON.stringify({ status: response.statusCode }));
+                } catch (err) {
+                    await __close(JSON.stringify({ error: err.code || 'unknown' }));
+                }
+            `);
+            const result = JSON.parse(runner.getOutput());
+            assert.strictEqual(result.status, 200,
+                `Expected request to succeed, got: ${JSON.stringify(result)}`);
+        });
+
+        it('strips fragment when a path is present', async () => {
+            runner.run(`
+                const response = await Neutralino.net.get('${BASE_URL}/get#section');
+                const data = JSON.parse(response.text);
+                await __close(JSON.stringify(data.url));
+            `);
+            const url = JSON.parse(runner.getOutput());
+            assert.ok(!url.includes('#'),
+                `Expected URL to not contain fragment, got: ${url}`);
+        });
+
+        it('parses host correctly when fragment has no explicit path', async () => {
+            runner.run(`
+                try {
+                    const response = await Neutralino.net.get('${BASE_URL}#section');
+                    await __close(JSON.stringify({ status: response.statusCode }));
+                } catch (err) {
+                    await __close(JSON.stringify({ error: err.code || 'unknown' }));
+                }
+            `);
+            const result = JSON.parse(runner.getOutput());
+            assert.strictEqual(result.status, 200,
+                `Expected request to succeed, got: ${JSON.stringify(result)}`);
+        });
+    });
 });
