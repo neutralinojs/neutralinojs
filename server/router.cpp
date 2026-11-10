@@ -2,6 +2,7 @@
 #include <regex>
 #include <vector>
 #include <filesystem>
+#include <algorithm>
 
 #include <websocketpp/server.hpp>
 
@@ -127,6 +128,7 @@ map<string, router::NativeMethod> methodMap = {
     {"filesystem.access", fs::controllers::access},
     {"filesystem.chmod", fs::controllers::chmod},
     {"filesystem.chown", fs::controllers::chown},
+    {"filesystem.moveToTrash", os::controllers::trashItem},
     // Neutralino.os
     {"os.execCommand", os::controllers::execCommand},
     {"os.spawnProcess", os::controllers::spawnProcess},
@@ -375,6 +377,34 @@ router::Response getAsset(string path, const string &prependData, const fs::File
         for(const auto& [mountedPath, mountTarget] : mountedPaths) {
             if(pathname.find(mountedPath) == 0) {
                 string adjustedPath = mountTarget + "/" + pathname.substr(mountedPath.length());
+
+                // Validate mounted path doesn't escape the mount target (issue #1846)
+                if(resources::isDirMode()) {
+                    namespace fs_path = std::filesystem;
+                    try {
+                        auto canonicalMount = fs_path::weakly_canonical(mountTarget);
+                        auto canonicalTarget = fs_path::weakly_canonical(adjustedPath);
+
+                        auto [mountEnd, _] = std::mismatch(
+                            canonicalMount.begin(), canonicalMount.end(),
+                            canonicalTarget.begin(), canonicalTarget.end()
+                        );
+
+                        if (mountEnd != canonicalMount.end()) {
+                            response.status = websocketpp::http::status_code::forbidden;
+                            response.contentType = "text/plain";
+                            response.data = "Forbidden";
+                            return response;
+                        }
+                    }
+                    catch(const exception& e) {
+                        response.status = websocketpp::http::status_code::forbidden;
+                        response.contentType = "text/plain";
+                        response.data = "Forbidden";
+                        return response;
+                    }
+                }
+
                 fileReaderResult = fs::readFile(adjustedPath, fileReaderOptions);
                 foundMountedPath = true;
                 break;
@@ -447,6 +477,41 @@ router::Response serve(string path, const fs::FileReaderOptions &fileReaderOptio
 
     // Ignore query params
     path = path.substr(0, path.find("?"));
+
+    // Sanitize path to prevent directory traversal (issue #1846)
+    // Canonicalize the URL path by resolving ".." and "." segments,
+    // then verify the result stays within the document root.
+    namespace fs_path = std::filesystem;
+    string documentRoot = neuserver::getDocumentRoot();
+
+    if(resources::isDirMode()) {
+        try {
+            fs_path::path canonicalRoot = fs_path::weakly_canonical(
+                settings::joinAppPath(documentRoot.empty() ? "/" : documentRoot));
+            fs_path::path canonicalTarget = fs_path::weakly_canonical(
+                settings::joinAppPath(path));
+
+            auto [rootEnd, _] = std::mismatch(
+                canonicalRoot.begin(), canonicalRoot.end(),
+                canonicalTarget.begin(), canonicalTarget.end()
+            );
+
+            if (rootEnd != canonicalRoot.end()) {
+                return router::Response {
+                    websocketpp::http::status_code::forbidden,
+                    "text/plain",
+                    "Forbidden"
+                };
+            }
+        }
+        catch(const exception& e) {
+            return router::Response {
+                websocketpp::http::status_code::forbidden,
+                "text/plain",
+                "Forbidden"
+            };
+        }
+    }
 
     bool isClientLibrary = regex_match(path, regex(".*neutralino.js$"));
     bool isGlobalsRequest = regex_match(path, regex(".*__neutralino_globals.js$"));
