@@ -383,6 +383,36 @@ router::Response getAsset(string path, const string &prependData, const fs::File
     }
 
     if(!foundMountedPath) {
+        // Security check: Directory Resource Mode Path & Symlink Traversal Protection
+        // Advisories:
+        // - GHSA-645w-p5gr-j5xm (CWE-22): Path traversal via relative URL paths (".." and "%2e%2e").
+        // - GHSA-vc3q-6mj2-qfg6 (CWE-59): Path traversal via outbound symbolic links inside documentRoot.
+        //
+        // Rationale:
+        // In directory resource mode (`neu run` or unpacked apps), the HTTP server serves files
+        // directly from the host filesystem without requiring a native WebSocket auth token.
+        // Without canonical path boundary verification:
+        // 1. Relative segments (e.g. "/../secret.txt") escape documentRoot.
+        // 2. Symbolic links inside documentRoot that point to arbitrary locations on disk
+        //    (e.g. "/symlink.txt" -> "/etc/secret") will be followed by filesystem reads.
+        //
+        // In bundle or embedded mode, resources are resolved from an in-memory/archive index table,
+        // so filesystem escaping does not apply. In directory mode, `helpers::isPathInsideDirectory`
+        // canonicalizes both the base root and the target path (resolving all symbolic links and
+        // relative components) and verifies that the canonical target resides strictly inside
+        // canonical documentRoot. Any out-of-boundary access is rejected with 403 Forbidden.
+        string documentRoot = neuserver::getDocumentRoot();
+        if(resources::isDirMode() && !documentRoot.empty()) {
+            string fullDocRoot = settings::joinAppPath(documentRoot);
+            string fullTargetFile = settings::joinAppPath(path);
+
+            if(!helpers::isPathInsideDirectory(fullTargetFile, fullDocRoot)) {
+                debug::log(debug::LogTypeError, "Blocked static server path/symlink traversal attempt outside documentRoot: " + path);
+                response.status = websocketpp::http::status_code::forbidden;
+                response.data = "403 Forbidden";
+                return response;
+            }
+        }
         fileReaderResult = resources::getFile(path, fileReaderOptions);
     }
     
