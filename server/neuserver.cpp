@@ -39,6 +39,7 @@ map<websocketpp::connection_hdl,
     websocketpp::frame::opcode::value,
     owner_less<websocketpp::connection_hdl>> wsMode;
 
+string serverHost = "127.0.0.1";
 bool initialized = false;
 bool applyConfigHeaders = false;
 
@@ -140,12 +141,41 @@ string init() {
     server->init_asio();
     server->set_reuse_addr(true);
 
-    string hostAddress = "127.0.0.1";
-    if(settings::getMode() == settings::AppModeCloud) {
-        hostAddress = "0.0.0.0";
+    // Security fix for GHSA-fp96-mrqq-p5rq (CWE-1327): Binding to an Unrestricted IP Address
+    //
+    // Threat Model:
+    // In cloud mode, Neutralino acts as a headless server, defaulting to listening on all interfaces
+    // (0.0.0.0) so external devices (mobile phones, IoT, Docker hosts) can connect. However,
+    // because static HTTP file serving does not require a WebSocket token, listening on 0.0.0.0
+    // exposes the app's local assets and endpoints to any device on the network without any warning.
+    //
+    // Defense:
+    // 1. Maintain 127.0.0.1 (loopback) default for desktop modes (window, browser, chrome).
+    // 2. Allow developers to explicitly configure the bind interface via "host" in config or "--host" CLI option
+    //    (e.g. allowing developers to restrict cloud mode to 127.0.0.1 for local container/daemon isolation).
+    // 3. When binding to an external/unrestricted interface (0.0.0.0 or non-loopback), emit a bold security
+    //    warning recommending caution and informing developers how to restrict it.
+    string hostAddress = (settings::getMode() == settings::AppModeCloud) ? "0.0.0.0" : "127.0.0.1";
+    json jHost = settings::getOptionForCurrentMode("host");
+    if(!jHost.is_null() && !jHost.get<string>().empty()) {
+        hostAddress = jHost.get<string>();
     }
-    websocketpp::lib::asio::ip::tcp::endpoint
-        endpoint(websocketpp::lib::asio::ip::address::from_string(hostAddress), port);
+
+    websocketpp::lib::asio::error_code addrError;
+    auto ipAddress = websocketpp::lib::asio::ip::address::from_string(hostAddress, addrError);
+    if(addrError) {
+        debug::log(debug::LogTypeError, "Invalid host address '" + hostAddress + "'; falling back to 127.0.0.1");
+        hostAddress = "127.0.0.1";
+        ipAddress = websocketpp::lib::asio::ip::address::from_string("127.0.0.1");
+    }
+
+    if(hostAddress != "127.0.0.1" && hostAddress != "localhost" && hostAddress != "::1") {
+        debug::log(debug::LogTypeWarning, "SECURITY WARNING: Server is listening on an external network interface (" + hostAddress +
+            "). Static files and server endpoints are accessible to other devices on the network. Configure firewall rules or use '--host=127.0.0.1' for local isolation.");
+    }
+    serverHost = hostAddress;
+
+    websocketpp::lib::asio::ip::tcp::endpoint endpoint(ipAddress, port);
 
     server->listen(endpoint);
     server->start_accept();
@@ -297,7 +327,7 @@ bool handleValidate(websocketpp::connection_hdl handler) {
     string url = con->get_resource();
     string host = con->get_host();
 
-    if(!(host == "localhost" || host == "127.0.0.1") && settings::getMode() != settings::AppModeCloud) {
+    if(!(host == "localhost" || host == "127.0.0.1" || host == serverHost || serverHost == "0.0.0.0") && settings::getMode() != settings::AppModeCloud) {
         return false;
     }
 
@@ -369,6 +399,10 @@ string getDocumentRoot() {
         }
     }
     return documentRoot;
+}
+
+string getHostAddress() {
+    return serverHost;
 }
 
 } // namespace neuserver

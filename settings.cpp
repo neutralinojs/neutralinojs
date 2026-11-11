@@ -268,6 +268,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
         {"--url", {"/url", "string"}},
         {"--document-root", {"/documentRoot", "string"}},
         {"--port", {"/port", "int"}},
+        {"--host", {"/host", "string"}},
         {"--logging-enabled", {"/logging/enabled", "bool"}},
         {"--logging-write-to-log-file", {"/logging/writeToLogFile", "bool"}},
         {"--enable-server", {"/enableServer", "bool"}},
@@ -317,6 +318,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
     // So, update all modes' values from CLI args
     set<string> cliMappingAliases = {
         "/port",
+        "/host",
         "/url",
         "/documentRoot",
         "/logging/enabled",

@@ -29,6 +29,7 @@ void broadcastToAllApps(const json &message);
 bool sendToExtension(const string &extensionId, const json &message);
 vector<string> getConnectedExtensions();
 string getDocumentRoot();
+string getHostAddress();
 
 } // namespace neuserver
 
