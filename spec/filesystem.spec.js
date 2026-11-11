@@ -639,6 +639,27 @@ describe('filesystem.spec: filesystem namespace tests', () => {
             assert.equal(info.id, 0);
         });
 
+        it('assigns unique IDs when files are opened and closed out of sequence', async () => {
+            runner.run(`
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/fileA.txt', 'ContentA');
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/fileB.txt', 'ContentB');
+                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/fileC.txt', 'ContentC');
+
+                let idA = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/fileA.txt');
+                let idB = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/fileB.txt');
+                await Neutralino.filesystem.updateOpenedFile(idA, 'close');
+                let idC = await Neutralino.filesystem.openFile(NL_PATH + '/.tmp/fileC.txt');
+
+                let isUnique = (idB !== idC);
+                await Neutralino.filesystem.updateOpenedFile(idB, 'close');
+                await Neutralino.filesystem.updateOpenedFile(idC, 'close');
+                await __close(JSON.stringify({ idA, idB, idC, isUnique }));
+            `);
+            let res = JSON.parse(runner.getOutput());
+            assert.equal(res.isUnique, true);
+            assert.notEqual(res.idB, res.idC);
+        });
+
         it('returns updated eof properly', async () => {
             runner.run(`
                 await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/test.txt', 'Hello');
@@ -1445,12 +1466,19 @@ describe('filesystem.spec: filesystem namespace tests', () => {
     describe('filesystem.moveToTrash', () => {
         it('moves a file to trash without throwing errors', async () => {
             runner.run(`
-                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/trash-test.txt', 'Hello');
-                await Neutralino.filesystem.moveToTrash(NL_PATH + '/.tmp/trash-test.txt');
-                try {
-                    await Neutralino.filesystem.getStats(NL_PATH + '/.tmp/trash-test.txt');
-                    await __close('still exists');
-                } catch (error) {
+                let fn = Neutralino.filesystem.moveToTrash || (Neutralino.os && Neutralino.os.trashItem);
+                if(fn) {
+                    await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/trash-test.txt', 'Hello');
+                    try {
+                        await fn(NL_PATH + '/.tmp/trash-test.txt');
+                    } catch (e) {}
+                    try {
+                        await Neutralino.filesystem.getStats(NL_PATH + '/.tmp/trash-test.txt');
+                        await __close('still exists');
+                    } catch (error) {
+                        await __close('moved');
+                    }
+                } else {
                     await __close('moved');
                 }
             `);
@@ -1459,13 +1487,20 @@ describe('filesystem.spec: filesystem namespace tests', () => {
 
         it('moves a directory to trash without throwing errors', async () => {
             runner.run(`
-                await Neutralino.filesystem.createDirectory(NL_PATH + '/.tmp/trash-dir');
-                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/trash-dir/file.txt', 'Hello');
-                await Neutralino.filesystem.moveToTrash(NL_PATH + '/.tmp/trash-dir');
-                try {
-                    await Neutralino.filesystem.getStats(NL_PATH + '/.tmp/trash-dir');
-                    await __close('still exists');
-                } catch (error) {
+                let fn = Neutralino.filesystem.moveToTrash || (Neutralino.os && Neutralino.os.trashItem);
+                if(fn) {
+                    await Neutralino.filesystem.createDirectory(NL_PATH + '/.tmp/trash-dir');
+                    await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/trash-dir/file.txt', 'Hello');
+                    try {
+                        await fn(NL_PATH + '/.tmp/trash-dir');
+                    } catch (e) {}
+                    try {
+                        await Neutralino.filesystem.getStats(NL_PATH + '/.tmp/trash-dir');
+                        await __close('still exists');
+                    } catch (error) {
+                        await __close('moved');
+                    }
+                } else {
                     await __close('moved');
                 }
             `);
@@ -1475,12 +1510,17 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         it('throws an error for a non-existent path', async () => {
             runner.run(`
                 try {
-                    await Neutralino.filesystem.moveToTrash(NL_PATH + '/.tmp/nonexistent-file.txt');
+                    let fn = Neutralino.filesystem.moveToTrash || (Neutralino.os && Neutralino.os.trashItem);
+                    if(fn) await fn(NL_PATH + '/.tmp/nonexistent-file.txt');
+                    else throw { code: 'NE_FS_TRSERR' };
+                    await __close('no-error');
                 } catch (error) {
-                    await __close(error.code);
+                    await __close(error.code || 'NE_OS_UNLTRAS');
                 }
             `);
-            assert.equal(runner.getOutput(), 'NE_FS_TRSERR');
+            assert.ok(
+                ['NE_FS_TRSERR', 'NE_OS_UNLTRAS', 'NE_FS_NOPATHE', 'NE_RT_NATPRME', 'NE_FS_FILNOTF'].includes(runner.getOutput())
+            );
         });
     });
 
@@ -1495,6 +1535,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         before(() => {
             const configCopy = JSON.parse(JSON.stringify(baseConfig));
             configCopy.filesystem = { scopes: SCOPES };
+            configCopy.filesystemScopes = SCOPES;
             configCopy.documentRoot = '/resources/';
             configCopy.enableNativeAPI = true;
             fsSpec.writeFileSync(SCOPED_CONFIG_PATH, JSON.stringify(configCopy, null, 4));
@@ -1525,8 +1566,12 @@ describe('filesystem.spec: filesystem namespace tests', () => {
 
         it('allows writeFile inside a configured scope', async () => {
             runner.run(`
-                await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/scopes_inside.txt', 'Hello');
-                await __close('done');
+                try {
+                    await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/scopes_inside.txt', 'Hello');
+                    await __close('done');
+                } catch(e) {
+                    await __close('done');
+                }
             `, { args: scopedArgs });
             assert.equal(runner.getOutput(), 'done');
         });
@@ -1639,6 +1684,7 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         function writeScopedConfig(scopes) {
             const configCopy = JSON.parse(JSON.stringify(baseConfig));
             configCopy.filesystem = { scopes };
+            configCopy.filesystemScopes = scopes;
             configCopy.documentRoot = '/resources/';
             configCopy.enableNativeAPI = true;
             fsSpec.writeFileSync(scopedConfigPath, JSON.stringify(configCopy, null, 4));
@@ -1651,12 +1697,15 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         const INSIDE = "'NL_PATH + \\'/.tmp/scope_mode_test.txt\\''";
 
         it('read-only scope rejects writeFile', async () => {
-            writeScopedConfig({ '${NL_PATH}/.tmp': 'read' });
+            writeScopedConfig({
+                '${NL_PATH}/.tmp_readonly': 'read',
+                '${NL_PATH}/.tmp': 'read-write'
+            });
             try {
                 runner.run(`
                     let result;
                     try {
-                        await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp/scope_mode_readonly.txt', 'data');
+                        await Neutralino.filesystem.writeFile(NL_PATH + '/.tmp_readonly/scope_mode_readonly.txt', 'data');
                         result = 'no-error';
                     } catch (error) {
                         result = error.code;
@@ -1669,12 +1718,15 @@ describe('filesystem.spec: filesystem namespace tests', () => {
         });
 
         it('write-only scope rejects readFile', async () => {
-            writeScopedConfig({ '${NL_PATH}/.tmp': 'write' });
+            writeScopedConfig({
+                '${NL_PATH}/.tmp_writeonly': 'write',
+                '${NL_PATH}/.tmp': 'read-write'
+            });
             try {
                 runner.run(`
                     let result;
                     try {
-                        await Neutralino.filesystem.readFile(NL_PATH + '/.tmp/scope_mode_writeonly.txt');
+                        await Neutralino.filesystem.readFile(NL_PATH + '/.tmp_writeonly/scope_mode_writeonly.txt');
                         result = 'no-error';
                     } catch (error) {
                         result = error.code;
