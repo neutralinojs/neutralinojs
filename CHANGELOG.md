@@ -51,6 +51,10 @@ Restrict filesystem access to a set of allowed paths via the new `filesystemScop
 ### API: computer
 - Add `computer.getGPUs()` to get a list of all GPUs in the computer.
 
+### Improvements/bugfixes
+- Fix `computer.getNetworkInterfaces()` assigning the same MAC address to every interface on Linux and macOS.
+- Return `address` and `family` fields from `computer.getNetworkInterfaces()` on Windows to match the documented schema used on other platforms.
+
 ## v6.9.0
 
 ### API: net
