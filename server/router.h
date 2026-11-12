@@ -29,6 +29,9 @@ struct NativeMessage {
     string method;
     string accessToken;
     json data;
+    // Sent as a binary frame, not in the JSON response
+    string binaryBody;
+    bool hasBinaryBody = false;
 };
 
 router::Response serve(string path, const fs::FileReaderOptions &fileReaderOptions = {});
