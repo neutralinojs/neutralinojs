@@ -7,14 +7,7 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 ## Unreleased
 
 ### API: net
-- Add the `responseType` option to `net.request`. With `responseType: "binary"`, the body is delivered in a binary WebSocket frame and exposed as `bodyBytes`, so responses that aren't valid UTF-8 (e.g. `windows-1250`) are no longer corrupted:
-
-  ```js
-  const res = await Neutralino.net.request('http://127.0.0.1:8080/', 'GET', { responseType: 'binary' });
-  const text = new TextDecoder('windows-1250').decode(res.bodyBytes);
-  ```
-
-  Frame layout: `[uint32 LE header length][JSON header][raw body]`. The default (`"text"`) is unchanged.
+- Add `responseType: 'binary'` to `net.request`. The raw body is sent in a binary WebSocket frame and exposed as `bodyBytes`; the default is unchanged.
 
 ## v6.10.0
 
