@@ -189,6 +189,21 @@ map<string, router::NativeMethod> getMethodMap() {
     return methodMap;
 }
 
+static bool __takeBinaryBody(json &output, string &body) {
+    if(!output.is_object() || !helpers::hasField(output, "returnValue")
+        || !output["returnValue"].is_object()
+        || !helpers::hasField(output["returnValue"], helpers::BINARY_BODY_KEY)) {
+        return false;
+    }
+    json &binaryBody = output["returnValue"][helpers::BINARY_BODY_KEY];
+    if(!binaryBody.is_string()) {
+        return false;
+    }
+    body = std::move(binaryBody.get_ref<string &>());
+    output["returnValue"].erase(helpers::BINARY_BODY_KEY);
+    return true;
+}
+
 router::NativeMessage executeNativeMethod(const router::NativeMessage &request) {
     string nativeMethodId = request.method;
     router::NativeMessage response;
@@ -238,6 +253,7 @@ router::NativeMessage executeNativeMethod(const router::NativeMessage &request) 
                 apiOutput = (*nativeMethod)(request.data);
             #endif
             response.data = apiOutput;
+            response.hasBinaryBody = __takeBinaryBody(response.data, response.binaryBody);
             return response;
         }
         catch(const exception& e){

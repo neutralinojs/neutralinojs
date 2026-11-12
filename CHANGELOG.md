@@ -6,6 +6,9 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### API: net
+- Add `responseType: 'binary'` to `net.request`. The raw body is sent in a binary WebSocket frame and exposed as `bodyBytes`; the default is unchanged.
+
 ## v6.10.0
 
 ### Security: Shell command allow list

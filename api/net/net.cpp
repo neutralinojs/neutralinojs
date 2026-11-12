@@ -88,6 +88,9 @@ json request(const json &input) {
         contentType = input["contentType"].get<string>();
         contentType = contentType.empty() ? "application/json" : contentType;
     }
+    // JSON can't carry raw bytes, so the transport sends them in a binary frame
+    const bool binaryResponse = helpers::hasField(input, "responseType") &&
+                                input["responseType"] == "binary";
 
     if(helpers::hasField(input, "method")) {
         method = input["method"].get<string>();
@@ -160,13 +163,18 @@ json request(const json &input) {
         output["returnValue"] = {
             { "status", res->status },
             { "statusText", res->reason },
-            { "body", res->body },
             { "headers", res->headers },
             { "cookies", res->get_header_value("Set-Cookie") },
             { "contentType", res->get_header_value("Content-Type") },
             { "location", res->location },
             { "version", res->version }
         };
+        if(binaryResponse) {
+            output["returnValue"][helpers::BINARY_BODY_KEY] = std::move(res->body);
+        }
+        else {
+            output["returnValue"]["body"] = std::move(res->body);
+        }
         output["success"] = true;
     }
     return output;
