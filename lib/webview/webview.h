@@ -72,10 +72,13 @@ using dispatch_fn_t = std::function<void()>;
 using eventHandler_t = std::function<void(int)>;
 using newWindowHandler_t = std::function<bool(const std::string&)>;
 using fileDropHandler_t = std::function<void(const std::vector<std::string>&)>;
+using trayClickHandler_t = std::function<void(const std::string&, bool)>;
 
 static eventHandler_t windowStateChange;
 static newWindowHandler_t handleNewWindow;
 static fileDropHandler_t filesDropped;
+static trayClickHandler_t trayClicked;
+static bool trayMenuOnLeftClick = true;
 static int processExitCode = 0;
 
 struct WindowMenuItem {
@@ -1301,8 +1304,35 @@ public:
             case WM_WINDOW_DELETE_MENU_REFS:
               menuRefs.clear();
               break;
-            case WM_TRAY_CALLBACK_MESSAGE:
-              if (lp == WM_LBUTTONUP || lp == WM_RBUTTONUP) {
+            case WM_TRAY_CALLBACK_MESSAGE: {
+              std::string button = "";
+              bool doubleClick = false;
+              bool showMenu = false;
+
+              if (lp == WM_LBUTTONUP) {
+                button = "left";
+                showMenu = trayMenuOnLeftClick;
+              } else if (lp == WM_LBUTTONDBLCLK) {
+                button = "left";
+                doubleClick = true;
+              } else if (lp == WM_RBUTTONUP) {
+                button = "right";
+                showMenu = true;
+              } else if (lp == WM_RBUTTONDBLCLK) {
+                button = "right";
+                doubleClick = true;
+              } else if (lp == WM_MBUTTONUP) {
+                button = "middle";
+              } else if (lp == WM_MBUTTONDBLCLK) {
+                button = "middle";
+                doubleClick = true;
+              }
+
+              if (!button.empty() && trayClicked) {
+                trayClicked(button, doubleClick);
+              }
+
+              if (showMenu && menuRef != nullptr) {
                 POINT p;
                 GetCursorPos(&p);
                 SetForegroundWindow(hwnd);
@@ -1312,6 +1342,7 @@ public:
                 SendMessage(hwnd, WM_COMMAND, cmd, 0);
               }
               break;
+            }
             case WM_COMMAND:
               if (wp >= ID_MENU_FIRST) {
                 for(const HMENU itMenuRef: menuRefs) {
@@ -1560,6 +1591,14 @@ public:
 
   void setFileDropHandler(fileDropHandler_t handler) {
     filesDropped = handler;
+  }
+
+  void setTrayClickHandler(trayClickHandler_t handler) {
+    trayClicked = handler;
+  }
+
+  void setTrayMenuOnLeftClick(bool enabled) {
+    trayMenuOnLeftClick = enabled;
   }
 
   int get_init_code() {

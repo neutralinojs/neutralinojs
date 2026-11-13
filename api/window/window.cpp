@@ -90,6 +90,7 @@ WNDPROC originalWndProc = nullptr;
 window::WindowOptions windowProps;
 bool savedState = false;
 NEU_W_HANDLE windowHandle;
+bool trayMenuOnLeftClick = true;
 
 namespace handlers {
 
@@ -670,6 +671,13 @@ bool __createWindow() {
     nativeWindow->setFileDropHandler([](const vector<string>& droppedPaths) {
         events::dispatch("filesDropped", droppedPaths);
     });
+    nativeWindow->setTrayClickHandler([](const string& button, bool doubleClick) {
+        json eventData;
+        eventData["button"] = button;
+        eventData["doubleClick"] = doubleClick;
+        events::dispatch("trayIconClicked", eventData);
+    });
+    nativeWindow->setTrayMenuOnLeftClick(trayMenuOnLeftClick);
 
     if(windowProps.injectGlobals) 
         nativeWindow->init(settings::getGlobalVars() + "var NL_GINJECTED = true;");
@@ -1378,6 +1386,13 @@ void setMainMenu(const json &menu) {
     gtk_widget_show_all(menuContainer);
 
     #endif
+}
+
+void setTrayMenuOnLeftClick(bool enabled) {
+    trayMenuOnLeftClick = enabled;
+    if(nativeWindow) {
+        nativeWindow->setTrayMenuOnLeftClick(enabled);
+    }
 }
 
 bool init(const json &windowOptions) {
