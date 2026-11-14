@@ -258,7 +258,6 @@ static int tray_init(struct tray *tray) {
   Class trayDelegateClass = (Class)objc_getClass("Tray");
   if (!trayDelegateClass) {
     trayDelegateClass = objc_allocateClassPair(objc_getClass("NSObject"), "Tray", 0);
-    class_addProtocol(trayDelegateClass, objc_getProtocol("NSApplicationDelegate"));
     class_addMethod(trayDelegateClass, sel_registerName("menuCallback:"), (IMP)menu_callback, "v@:@");
     objc_registerClassPair(trayDelegateClass);
   }
