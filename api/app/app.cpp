@@ -19,6 +19,7 @@
 #include "api/window/window.h"
 #include "api/os/os.h"
 #include "api/events/events.h"
+#include "chrome.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -32,6 +33,10 @@ void exit(int code) {
     if(settings::getMode() == settings::AppModeWindow) {
         os::cleanupTray();
         window::_close(code);
+    }
+    else if(settings::getMode() == settings::AppModeChrome) {
+        chrome::close();
+        std::exit(code);
     }
     else {
         std::exit(code);

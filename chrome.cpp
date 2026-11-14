@@ -2,6 +2,13 @@
 #include <vector>
 #include <regex>
 
+#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+#include <signal.h>
+#elif defined(_WIN32)
+#define _WINSOCKAPI_
+#include <windows.h>
+#endif
+
 #include "lib/json/json.hpp"
 #include "lib/filedialogs/portable-file-dialogs.h"
 #include "settings.h"
@@ -17,6 +24,8 @@ using json = nlohmann::json;
 */
 
 namespace chrome {
+
+int chromePid = -1;
 
 string __getDefaultChromeArgs() {
     return "--disable-background-networking "
@@ -131,7 +140,24 @@ void init(const json &input) {
     os::ChildProcessOptions processOptions;
     processOptions.background = true;
     
-    os::execCommand(chromeCmd, processOptions);
+    os::CommandResult result = os::execCommand(chromeCmd, processOptions);
+    chromePid = result.pid;
+}
+
+void close() {
+    if(chromePid == -1) {
+        return;
+    }
+    #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
+    kill(chromePid, SIGTERM);
+    #elif defined(_WIN32)
+    HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, (DWORD)chromePid);
+    if(hProcess != NULL) {
+        TerminateProcess(hProcess, 0);
+        CloseHandle(hProcess);
+    }
+    #endif
+    chromePid = -1;
 }
 
 } // namespace chrome
