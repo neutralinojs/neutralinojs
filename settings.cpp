@@ -252,6 +252,10 @@ settings::AppMode getMode() {
     return settings::AppModeWindow;
 }
 
+void setMode(string mode) {
+    options["defaultMode"] = mode;
+}
+
 void setPort(int port) {
     options["port"] = port;
 
@@ -265,6 +269,7 @@ void applyConfigOverride(const settings::CliArg &arg) {
     map<string, vector<string>> cliMappings = {
         // Top level
         {"--mode", {"/defaultMode", "string"}},
+        {"--try-fallback-modes", {"/tryFallbackModes", "bool"}},
         {"--url", {"/url", "string"}},
         {"--document-root", {"/documentRoot", "string"}},
         {"--port", {"/port", "int"}},

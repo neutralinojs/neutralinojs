@@ -58,6 +58,7 @@ string joinAppDataPath(const string &filename);
 string getAppPath();
 string getConfigFile();
 settings::AppMode getMode();
+void setMode(string mode);
 void setPort(int port);
 void applyConfigOverride(const settings::CliArg &arg);
 json getOptionForCurrentMode(const string &key);
