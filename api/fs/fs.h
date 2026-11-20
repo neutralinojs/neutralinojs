@@ -81,6 +81,7 @@ json readFile(const json &input);
 json readBinaryFile(const json &input);
 json openFile(const json &input);
 json updateOpenedFile(const json &input);
+json getOpenedFiles(const json &input); 
 json getOpenedFileInfo(const json &input);
 json readDirectory(const json &input);
 json copy(const json &input);
