@@ -630,6 +630,16 @@ json getOpenedFileInfo(const json &input) {
     return output;
 }
 
+json getOpenedFiles(const json &input) {
+    json output;
+    output["returnValue"] = json::array();
+    for(const auto& [id, _]: openedFiles) {
+        output["returnValue"].push_back(id);
+    }
+    output["success"] = true; 
+    return output;
+}
+
 json readDirectory(const json &input) {
     json output;
     output["returnValue"] = json::array();
