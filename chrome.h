@@ -11,7 +11,7 @@ using json = nlohmann::json;
 
 namespace chrome {
 
-void init(const json &input);
+bool init(const json &input);
 
 } // namesapce chrome
 

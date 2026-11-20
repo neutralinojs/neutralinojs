@@ -98,16 +98,10 @@ string __findChrome(const json &input) {
     return chromePath;
 }
 
-void init(const json &input) {
-
+bool init(const json &input) {
     string chromeCmd = __findChrome(input);
-
     if(chromeCmd.empty()) {
-        pfd::message("Unable to start Chrome mode",
-                        "You need to install Google Chrome to run this Neutralinojs application",
-                        pfd::choice::ok,
-                        pfd::icon::error);
-        std::exit(1);
+        return false;
     }
 
     if(regex_search(chromeCmd, regex(" "))) {
@@ -132,6 +126,7 @@ void init(const json &input) {
     processOptions.background = true;
     
     os::execCommand(chromeCmd, processOptions);
+    return true;
 }
 
 } // namespace chrome

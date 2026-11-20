@@ -71,15 +71,17 @@ void __registerCleanupHandlers() {
 
 void __startApp() {
     json options = settings::getConfig();
+    bool tryFallbackModes = false;
+    bool prevModeFailed = false;
+    if(!options["tryFallbackModes"].is_null()) {
+        tryFallbackModes = options["tryFallbackModes"].get<bool>();
+    }
     switch(settings::getMode()) {
-        case settings::AppModeBrowser:
-            os::open(navigationUrl);
-            __wait();
-            break;
         case settings::AppModeWindow: {
             json windowOptions = options["modes"]["window"];
             windowOptions["url"] = navigationUrl;
-            if(!window::init(windowOptions)) {
+            bool status = window::init(windowOptions);
+            if(!status && !tryFallbackModes) {
                 pfd::message("Unable to create a webview instance",
                     #if defined(_WIN32)
                     "Please install Microsoft Edge WebView2 runtime to run this application.",
@@ -90,7 +92,35 @@ void __startApp() {
                     pfd::icon::error);
                 std::exit(1);
             }
+            if(status || !tryFallbackModes) break;
+            prevModeFailed = true;
             }
+        case settings::AppModeChrome: {
+            if(prevModeFailed) {
+                settings::setMode("chrome");
+                debug::log(debug::LogTypeWarning, "The window mode failed; trying the chrome mode.");
+            }
+            json chromeOptions = options["modes"]["chrome"];
+            chromeOptions["url"] = navigationUrl;
+            bool status = chrome::init(chromeOptions);
+            if(!status && !tryFallbackModes) {
+                pfd::message("Unable to start Chrome mode",
+                                "You need to install Google Chrome to run this Neutralinojs application",
+                                pfd::choice::ok,
+                                pfd::icon::error);
+                std::exit(1);
+            }
+            if(status) __wait();
+            if(status || !tryFallbackModes) break;
+            prevModeFailed = true;
+            }
+        case settings::AppModeBrowser:
+            if(prevModeFailed) {
+                settings::setMode("browser");
+                debug::log(debug::LogTypeWarning, "The chrome mode failed; trying the browser mode.");
+            }
+            os::open(navigationUrl);
+            __wait();
             break;
         case settings::AppModeCloud:
             if(neuserver::isInitialized()) {
@@ -98,13 +128,6 @@ void __startApp() {
                         " is available at " + navigationUrl);
             }
             __wait();
-            break;
-        case settings::AppModeChrome: {
-            json chromeOptions = options["modes"]["chrome"];
-            chromeOptions["url"] = navigationUrl;
-            chrome::init(chromeOptions);
-            __wait();
-            }
             break;
     }
 }
