@@ -133,7 +133,7 @@ string getAppId() {
 
 string getNavigationUrl() {
     return !settings::getOptionForCurrentMode("url").is_null() ?
-        settings::getOptionForCurrentMode("url").get<string>() : "https://neutralino.js.org";
+        settings::getOptionForCurrentMode("url").get<string>() : "data:text/html,<!DOCTYPE html><html><head><title>Neutralinojs</title><style>body{font-family:sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:%231a1a2e;color:%23eee;}.box{text-align:center;padding:2rem;border:1px solid %23444;border-radius:8px;}code{background:%23333;padding:2px 6px;border-radius:4px;}</style></head><body><div class='box'><h2>No configuration found</h2><p>Run using:</p><p><code>neu run</code></p></div></body></html>";
 }
 
 string getGlobalVars(){
