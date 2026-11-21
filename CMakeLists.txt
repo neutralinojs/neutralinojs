@@ -224,6 +224,8 @@ if(WIN32)
       dwmapi
       iphlpapi
       ws2_32
+      shell32
+      shlwapi
     )
 elseif(APPLE)
     # macOS
