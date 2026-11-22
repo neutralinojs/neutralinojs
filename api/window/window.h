@@ -121,6 +121,7 @@ void undoFakeHidden();
 void show();
 void hide();
 void focus();
+void activate();
 void setFullScreen();
 void exitFullScreen();
 bool isFullScreen();

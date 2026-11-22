@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <functional>
 
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
@@ -16,6 +17,7 @@ namespace neuserver {
 
 string init();
 bool isInitialized();
+bool runOnServerThread(const function<void()> &callback);
 void startAsync();
 void stop();
 void handleMessage(websocketpp::connection_hdl handler, websocketpp::server<websocketpp::config::asio>::message_ptr msg);

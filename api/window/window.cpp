@@ -2,6 +2,8 @@
 #include <iostream>
 #include <filesystem>
 #include <regex>
+#include <atomic>
+#include <mutex>
 
 #if defined(__linux__) || defined(__FreeBSD__)
 #include <type_traits>
@@ -49,6 +51,7 @@
 #include "lib/json/json.hpp"
 #include "lib/webview/webview.h"
 #include "settings.h"
+#include "single_instance.h"
 #include "resources.h"
 #include "helpers.h"
 #include "errors.h"
@@ -71,6 +74,8 @@ using namespace Gdiplus;
 namespace window {
 
 webview::webview *nativeWindow;
+atomic<bool> activationAvailable(false);
+mutex activationMutex;
 #if defined(__linux__) || defined(__FreeBSD__)
 bool isGtkWindowFullScreen = false;
 bool isGtkWindowMinimized = false;
@@ -692,6 +697,11 @@ bool __createWindow() {
     windowHandle = (HWND) nativeWindow->window();
     #endif
 
+    {
+        lock_guard<mutex> guard(activationMutex);
+        activationAvailable.store(true);
+    }
+
     #if !defined(_WIN32)
     if(!window::isSavedStateLoaded() && windowProps.center)
         window::center(true);
@@ -726,11 +736,16 @@ bool __createWindow() {
         window::setSkipTaskbar(true);
 
     nativeWindow->navigate(windowProps.url);
+    single_instance::onWindowReady();
 
     return true;
 }
 
 void _close(int exitCode) {
+    {
+        lock_guard<mutex> guard(activationMutex);
+        activationAvailable.store(false);
+    }
     if(nativeWindow) {
         #if defined(__APPLE__)
         dispatch_sync(dispatch_get_main_queue(), ^{
@@ -898,6 +913,25 @@ void focus() {
     #elif defined(_WIN32)
     SetForegroundWindow(windowHandle);
     #endif
+}
+
+void activate() {
+    lock_guard<mutex> guard(activationMutex);
+    if(!activationAvailable.load() || !nativeWindow || !windowHandle) {
+        return;
+    }
+    nativeWindow->dispatch([]() {
+        if(!activationAvailable.load()) {
+            return;
+        }
+        if(window::isMinimized()) {
+            window::unminimize();
+        }
+        if(!window::isVisible()) {
+            window::show();
+        }
+        window::focus();
+    });
 }
 
 bool isFullScreen() {
