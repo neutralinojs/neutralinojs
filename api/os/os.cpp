@@ -840,6 +840,13 @@ json setTray(const json &input) {
     #endif
     json output;
 
+    if(helpers::hasField(input, "menuOnLeftClick")) {
+        window::setTrayMenuOnLeftClick(input["menuOnLeftClick"].get<bool>());
+    }
+    else {
+        window::setTrayMenuOnLeftClick(true);
+    }
+
     if(helpers::hasField(input, "menuItems")) {
         int menuCount = static_cast<int>(input["menuItems"].size());
         if(menuCount > NEU_MAX_TRAY_MENU_ITEMS){

@@ -587,6 +587,20 @@ describe('os.spec: os namespace tests', () => {
             `);
             assert.equal(runner.getOutput(), 'done');
         });
+
+        it('accepts menuOnLeftClick option', async () => {
+            runner.run(`
+                await Neutralino.os.setTray({
+                    icon: '/resources/icons/appIcon.png',
+                    menuOnLeftClick: false,
+                    menuItems: [
+                        {id: 'id1', text: 'ID1'}
+                    ]
+                });
+                await __close('done');
+            `);
+            assert.equal(runner.getOutput(), 'done');
+        });
     });
 
     describe('os.open', () => {

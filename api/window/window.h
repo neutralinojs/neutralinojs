@@ -135,6 +135,7 @@ void setBorderless(bool borderless);
 void setSkipTaskbar(bool skip);
 bool snapshot(const string &filename);
 void setMainMenu(const json &menu);
+void setTrayMenuOnLeftClick(bool enabled);
 NEU_W_HANDLE getHandle();
 bool init(const json &windowOptions);
 NEU_W_HANDLE getHandle();
