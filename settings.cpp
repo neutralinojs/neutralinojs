@@ -75,6 +75,7 @@ bool init() {
     }
     else {
         debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_CF_UNBLDCF, string(configFile)));
+        return false;
     }
 
     // Apply config overrides
