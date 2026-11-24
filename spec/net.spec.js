@@ -209,4 +209,28 @@ describe('net.spec: network namespace tests', () => {
             assert.strictEqual(JSON.parse(runner.getOutput()), true);
         });
     });
+
+    describe('net URL parsing', () => {
+        it('keeps a query on a URL without an explicit path', async () => {
+            runner.run(`
+                const response = await Neutralino.net.get('${BASE_URL}?name=Zhou');
+                await __close(JSON.stringify(response.statusCode));
+            `);
+            assert.strictEqual(JSON.parse(runner.getOutput()), 200);
+        });
+
+        it('does not send the URL fragment to the server', async () => {
+            runner.run(`
+                const response = await Neutralino.net.get('${BASE_URL}/anything?name=Zhou#section');
+                const data = JSON.parse(response.text);
+                await __close(JSON.stringify({
+                    name: data.args.name,
+                    url: data.url
+                }));
+            `);
+            const result = JSON.parse(runner.getOutput());
+            assert.strictEqual(result.name, 'Zhou');
+            assert.ok(!result.url.includes('#section'));
+        });
+    });
 });

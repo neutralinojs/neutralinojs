@@ -28,17 +28,42 @@ json request(const json &input) {
 
     string url = input["url"].get<string>();
     string method = "GET";
-    regex url_regex(R"(^(https?)://([^/]+)(/.*)?$)");
-    smatch match;
 
-    if(!regex_match(url, match, url_regex)) {
+    // Fragments are client-side only and must not be sent to the server (RFC 9112).
+    const auto fragmentPos = url.find('#');
+    if(fragmentPos != string::npos) {
+        url = url.substr(0, fragmentPos);
+    }
+
+    const auto schemeEnd = url.find("://");
+    if(schemeEnd == string::npos) {
         output["error"] = errors::makeMissingArgErrorPayload("url");
         return output;
     }
 
-    string protocol = match[1];
-    string host = match[2];
-    string path = match[3].matched ? match[3].str() : "/";
+    string protocol = url.substr(0, schemeEnd);
+    if(protocol != "http" && protocol != "https") {
+        output["error"] = errors::makeMissingArgErrorPayload("url");
+        return output;
+    }
+
+    const string remainder = url.substr(schemeEnd + 3);
+    // The host ends at the first path separator or query delimiter, so that a URL
+    // such as https://example.com?foo=bar keeps the query out of the host name.
+    const auto authorityEnd = remainder.find_first_of("/?");
+    const string host = remainder.substr(0, authorityEnd);
+
+    if(host.empty()) {
+        output["error"] = errors::makeMissingArgErrorPayload("url");
+        return output;
+    }
+
+    string path = "/";
+    if(authorityEnd != string::npos) {
+        path = remainder[authorityEnd] == '?'
+            ? "/" + remainder.substr(authorityEnd)
+            : remainder.substr(authorityEnd);
+    }
 
     httplib::Client cli(protocol + "://" + host);
     httplib::Params params;
