@@ -9,6 +9,10 @@
       "type": "integer",
       "description": "The port of your application. If the value is 0, Neutralinojs will use a random available port."
     },
+    "host": {
+      "type": "string",
+      "description": "The listening host IP address for the background application server. Defaults to '127.0.0.1' for window, browser, and chrome modes, and '0.0.0.0' for cloud mode. Set to '127.0.0.1' in cloud mode to restrict access strictly to the local machine."
+    },
     "enableServer": {
       "type": "boolean",
       "description": "Enables or disables the background server (Disables static file serving feature and native API messaging). If you load a remote URL to the webview, you can set this option to 'false'. Make sure to set this option to 'true' if you load resources from local sources.",
