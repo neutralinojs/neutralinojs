@@ -35,9 +35,6 @@ using namespace std;
 
 namespace window {
 
-// TODO: remove extern and fix multiple include errors
-extern NEU_W_HANDLE windowHandle;
-
 enum NewWindowPolicy { NewWindowPolicySystem, NewWindowPolicyBrowser, NewWindowPolicyCustom };
 
 struct SizeOptions {
