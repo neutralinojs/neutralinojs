@@ -18,9 +18,6 @@
 #include <CoreGraphics/CGWindow.h>
 #include <dlfcn.h>
 
-#if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 120300
-#import <ScreenCaptureKit/ScreenCaptureKit.h>
-#endif
 
 #define NSBaseWindowLevel 0
 #define NSFloatingWindowLevel 5
@@ -1268,48 +1265,29 @@ bool snapshot(const string &filename) {
 
     long winId = ((long(*)(id, SEL))objc_msgSend)(windowHandle, "windowNumber"_sel);
     
-    CGImageRef imgRef = nil;
+    typedef CGImageRef (*CGWindowListCreateImageFunc)(CGRect, CGWindowListOption, CGWindowID, CGWindowImageOption);
+    CGWindowListCreateImageFunc dynamicCGWindowListCreateImage =
+        (CGWindowListCreateImageFunc)dlsym(RTLD_DEFAULT, "CGWindowListCreateImage");
 
-    #if defined(__APPLE__) && MAC_OS_X_VERSION_MIN_REQUIRED >= 120300
+    CGImageRef imgRef = dynamicCGWindowListCreateImage
+        ? dynamicCGWindowListCreateImage(clientRect, kCGWindowListOptionIncludingWindow, (CGWindowID)winId, kCGWindowImageBoundsIgnoreFraming)
+        : nullptr;
+    if (!imgRef) {
+        return false;
+    }
 
-    // Modern ScreenCaptureKit API (macOS 12.3+)
-    __block CGImageRef screenshotImage = nil;
-    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-    
-    SCContentFilter *filter = [[SCContentFilter alloc] initWithDesktopIndependentWindow:
-        [SCWindow windowWithWindowID:winId]];
-    
-    SCStreamConfiguration *config = [[SCStreamConfiguration alloc] init];
-    config.scalesToFit = NO;
-    
-    [SCScreenshotManager captureImageWithFilter:filter
-                                  configuration:config
-                              completionHandler:^(CGImageRef capturedImage, NSError *error) {
-        if (error == nil && capturedImage != NULL) {
-            
-            screenshotImage = CGImageCreateWithImageInRect(capturedImage, clientRect);
-        }
-        dispatch_semaphore_signal(semaphore);  
-    }];
-    
-    dispatch_semaphore_wait(semaphore, dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC));
-    imgRef = screenshotImage;
-
-    #else
-        // Fallback for macOS < 12.3
-        imgRef = CGWindowListCreateImage(clientRect, kCGWindowListOptionIncludingWindow, winId, kCGWindowImageBoundsIgnoreFraming);
-    #endif
-
-      
     id screenshot =
         ((id (*)(id, SEL))objc_msgSend)("NSBitmapImageRep"_cls, "alloc"_sel);
     ((void (*)(id, SEL, CGImageRef))objc_msgSend)(screenshot, "initWithCGImage:"_sel, imgRef);
     id screenshotData =
         ((id (*)(id, SEL, int, id))objc_msgSend)(screenshot, "representationUsingType:properties:"_sel, NSPNGFileType, nullptr);
-    bool status = ((bool (*)(id, SEL, id, bool))objc_msgSend)(screenshotData, "writeToFile:atomically:"_sel, 
-            ((id(*)(id, SEL, const char *))objc_msgSend)("NSString"_cls, "stringWithUTF8String:"_sel, filename.c_str())
-    , true);
-    
+    bool status = false;
+    if (screenshotData) {
+        status = ((bool (*)(id, SEL, id, bool))objc_msgSend)(screenshotData, "writeToFile:atomically:"_sel, 
+                ((id(*)(id, SEL, const char *))objc_msgSend)("NSString"_cls, "stringWithUTF8String:"_sel, filename.c_str())
+        , true);
+    }
+    CGImageRelease(imgRef);
     return status;
 
     #elif defined(_WIN32)
