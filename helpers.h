@@ -24,6 +24,9 @@ using json = nlohmann::json;
 
 namespace helpers {
 
+// Removed by the router and sent to the client as a binary WebSocket frame
+constexpr const char *BINARY_BODY_KEY = "__binaryBody";
+
 vector<string> split(const string &s, char delim, unsigned int stopAfter = -1);
 vector<string> splitTwo(const string &s, char delim);
 string generateToken();

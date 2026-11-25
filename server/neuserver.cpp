@@ -5,6 +5,7 @@
 #include <chrono>
 #include <set>
 #include <fstream>
+#include <cstdint>
 
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
@@ -191,6 +192,19 @@ void stop() {
     server->stop_listening();
 }
 
+// [uint32 LE header length][JSON header][raw body]
+string __makeBinaryFrame(const string &header, const string &body) {
+    string frame;
+    frame.reserve(sizeof(uint32_t) + header.size() + body.size());
+    const auto headerSize = static_cast<uint32_t>(header.size());
+    for(size_t i = 0; i < sizeof(uint32_t); i++) {
+        frame.push_back(static_cast<char>((headerSize >> (8 * i)) & 0xff));
+    }
+    frame.append(header);
+    frame.append(body);
+    return frame;
+}
+
 void handleMessage(websocketpp::connection_hdl handler, websocketserver::message_ptr msg) {
     websocketserver::connection_ptr con = server->get_con_from_hdl(handler);
     string url = con->get_resource();
@@ -218,13 +232,17 @@ void handleMessage(websocketpp::connection_hdl handler, websocketserver::message
             responseMessage["method"] = nativeResponse.method;
             responseMessage["data"] = nativeResponse.data;
 
+            string payload = helpers::jsonToString(responseMessage);
             auto op = websocketpp::frame::opcode::text;
-
-            if(__isExtensionEndpoint(url) && wsMode.count(handler)) {
+            if(nativeResponse.hasBinaryBody) {
+                op = websocketpp::frame::opcode::binary;
+                payload = __makeBinaryFrame(payload, nativeResponse.binaryBody);
+            }
+            else if(__isExtensionEndpoint(url) && wsMode.count(handler)) {
                 op = wsMode[handler];
             }
 
-            server->send(handler, helpers::jsonToString(responseMessage), op);
+            server->send(handler, payload, op);
         } catch (websocketpp::exception const & e) {
             debug::log(debug::LogTypeError, errors::makeErrorMsg(errors::NE_SR_UNBSEND));
         }
