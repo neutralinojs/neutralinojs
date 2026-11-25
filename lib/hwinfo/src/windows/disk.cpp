@@ -35,7 +35,10 @@ hwinfo::Disk::Interface mapBusType(STORAGE_BUS_TYPE busType) {
 std::map<uint32_t, std::vector<std::string>> getDiskToVolumeMap() {
   std::map<uint32_t, std::vector<std::string>> mapping;
   char logicalDrives[MAX_PATH] = {};
-  GetLogicalDriveStringsA(sizeof(logicalDrives), logicalDrives);
+  DWORD drivesLen = GetLogicalDriveStringsA(sizeof(logicalDrives), logicalDrives);
+  if (drivesLen == 0 || drivesLen > sizeof(logicalDrives)) {
+    return mapping;
+  }
 
   char* currentDrive = logicalDrives;
   while (*currentDrive) {
@@ -48,10 +51,11 @@ std::map<uint32_t, std::vector<std::string>> getDiskToVolumeMap() {
           CreateFileA(volumePath.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
 
       if (hVolume != INVALID_HANDLE_VALUE) {
-        STORAGE_DEVICE_NUMBER sdn;
-        DWORD bytesReturned;
+        STORAGE_DEVICE_NUMBER sdn{};
+        DWORD bytesReturned = 0;
         if (DeviceIoControl(hVolume, IOCTL_STORAGE_GET_DEVICE_NUMBER, nullptr, 0, &sdn, sizeof(sdn), &bytesReturned,
-                            nullptr)) {
+                            nullptr) &&
+            bytesReturned >= sizeof(sdn)) {
           mapping[sdn.DeviceNumber].push_back(rootPath);
         }
         CloseHandle(hVolume);
@@ -84,40 +88,69 @@ std::vector<Disk> getAllDisks() {
     disk._id = i;
 
     STORAGE_PROPERTY_QUERY query = {StorageDeviceProperty, PropertyStandardQuery};
-    char buffer[1024];
-    DWORD bytesReturned;
-    if (DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY, &query, sizeof(query), &buffer, sizeof(buffer),
+    char buffer[1024] = {};
+    DWORD bytesReturned = 0;
+    if (DeviceIoControl(hDevice, IOCTL_STORAGE_QUERY_PROPERTY, &query, sizeof(query), buffer, sizeof(buffer),
                         &bytesReturned, nullptr)) {
-      auto* desc = reinterpret_cast<STORAGE_DEVICE_DESCRIPTOR*>(buffer);
+      if (bytesReturned >= sizeof(STORAGE_DEVICE_DESCRIPTOR)) {
+        auto* desc = reinterpret_cast<STORAGE_DEVICE_DESCRIPTOR*>(buffer);
 
-      disk._interface = mapBusType(desc->BusType);
-      if (desc->ProductIdOffset) {
-        disk._model = buffer + desc->ProductIdOffset;
-      }
-      if (desc->VendorIdOffset) {
-        disk._vendor = buffer + desc->VendorIdOffset;
-      } else {
-        static const std::vector<std::string> known_vendors = {"KIOXIA",  "SAMSUNG", "WESTERN DIGITAL", "WD",
-                                                               "SEAGATE", "INTEL",   "CRUCIAL",         "KINGSTON"};
-        std::string upper_model(disk._model);
-        std::transform(disk._model.begin(), disk._model.end(), upper_model.begin(),
-                       [](const char c) { return static_cast<char>(std::toupper(static_cast<int>(c))); });
-        for (const auto& vendor : known_vendors) {
-          if (upper_model.find(vendor) != std::string::npos) {
-            disk._vendor = vendor;
-            break;
+        disk._interface = mapBusType(desc->BusType);
+
+        auto getString = [&](DWORD offset) -> std::string {
+          if (offset == 0 || offset >= bytesReturned) {
+            return "";
+          }
+          size_t maxLen = bytesReturned - offset;
+          const char* strStart = buffer + offset;
+          size_t len = 0;
+          while (len < maxLen && strStart[len] != '\0') {
+            len++;
+          }
+          while (len > 0 && (strStart[len - 1] == ' ' || strStart[len - 1] == '\0')) {
+            len--;
+          }
+          size_t start = 0;
+          while (start < len && strStart[start] == ' ') {
+            start++;
+          }
+          return std::string(strStart + start, len - start);
+        };
+
+        disk._model = getString(desc->ProductIdOffset);
+        disk._vendor = getString(desc->VendorIdOffset);
+        if (disk._vendor.empty()) {
+          static const std::vector<std::string> known_vendors = {
+              "KIOXIA", "SAMSUNG", "WESTERN DIGITAL", "WD", "SEAGATE", "INTEL", "CRUCIAL", "KINGSTON"};
+          std::string upper_model(disk._model);
+          std::transform(disk._model.begin(), disk._model.end(), upper_model.begin(),
+                         [](const char c) { return static_cast<char>(std::toupper(static_cast<unsigned char>(c))); });
+          for (const auto& vendor : known_vendors) {
+            if (upper_model.find(vendor) != std::string::npos) {
+              disk._vendor = vendor;
+              break;
+            }
           }
         }
-      }
-      if (desc->SerialNumberOffset) {
-        disk._serial_number = buffer + desc->SerialNumberOffset;
+        disk._serial_number = getString(desc->SerialNumberOffset);
       }
     }
 
-    DISK_GEOMETRY_EX geometry;
+    DISK_GEOMETRY_EX geometry{};
+    bytesReturned = 0;
     if (DeviceIoControl(hDevice, IOCTL_DISK_GET_DRIVE_GEOMETRY_EX, nullptr, 0, &geometry, sizeof(geometry),
-                        &bytesReturned, nullptr)) {
+                        &bytesReturned, nullptr) &&
+        bytesReturned >= sizeof(DISK_GEOMETRY)) {
       disk._size_bytes = geometry.DiskSize.QuadPart;
+    } else {
+      DISK_GEOMETRY geom{};
+      bytesReturned = 0;
+      if (DeviceIoControl(hDevice, IOCTL_DISK_GET_DRIVE_GEOMETRY, nullptr, 0, &geom, sizeof(geom),
+                          &bytesReturned, nullptr) &&
+          bytesReturned >= sizeof(geom)) {
+        disk._size_bytes = static_cast<int64_t>(geom.Cylinders.QuadPart) *
+                           geom.TracksPerCylinder * geom.SectorsPerTrack * geom.BytesPerSector;
+      }
     }
 
     if (diskToVolumes.count(i)) {
