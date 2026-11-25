@@ -62,7 +62,7 @@ bool init() {
     localeName = localeInfo.locale;
     options = json::object();
     json config;
-    fs::FileReaderResult fileReaderResult = resources::getFile(configFile);
+    fs::FileReaderResult fileReaderResult = fs::readFile(configFile);
     if(fileReaderResult.status == errors::NE_ST_OK) {
         try {
             config = json::parse(fileReaderResult.data);
