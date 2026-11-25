@@ -1039,7 +1039,29 @@ describe('filesystem.spec: filesystem namespace tests', () => {
                 }
             `);
             assert.equal(runner.getOutput(), 'NE_FS_UNLCWAT');
-        });    
+        });
+
+        it('does not register a watcher when the path does not exist', async () => {
+            runner.run(`
+                let preWatchers = await Neutralino.filesystem.getWatchers();
+                let errorCode = '';
+                try {
+                    await Neutralino.filesystem.createWatcher(NL_PATH + '/non-existent-dir-regtest');
+                }
+                catch(err) {
+                    errorCode = err.code;
+                }
+                let postWatchers = await Neutralino.filesystem.getWatchers();
+                await __close(JSON.stringify({
+                    errorCode,
+                    preWatchers,
+                    postWatchers
+                }));
+            `);
+            let result = JSON.parse(runner.getOutput());
+            assert.equal(result.errorCode, 'NE_FS_UNLCWAT');
+            assert.deepEqual(result.postWatchers, result.preWatchers);
+        });
     });
 
     describe('filesystem.removeWatcher', () => {
