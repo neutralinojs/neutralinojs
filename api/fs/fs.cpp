@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
+#include <atomic>
 
 #if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 #include <unistd.h>
@@ -42,6 +43,7 @@ using json = nlohmann::json;
 
 map<int, ifstream*> openedFiles;
 mutex openedFilesLock;
+atomic<int> nextVirtualFileId(0);
 efsw::FileWatcher* fileWatcher;
 map<efsw::WatchID, pair<efsw::FileWatchListener*, string>> watchListeners;
 mutex watcherLock;
@@ -197,13 +199,19 @@ bool writeFile(const fs::FileWriterOptions &fileWriterOptions) {
 }
 
 int openFile(const string &filename) {
-    int virtualFileId = openedFiles.size();
     ifstream *reader = new ifstream(CONVSTR(filename), ios::binary);
     if(!reader->is_open()) {
         delete reader;
         return -1;
     }
     lock_guard<mutex> guard(openedFilesLock);
+    int virtualFileId = nextVirtualFileId++;
+    while(virtualFileId < 0 || openedFiles.find(virtualFileId) != openedFiles.end()) {
+        if(nextVirtualFileId < 0) {
+            nextVirtualFileId = 0;
+        }
+        virtualFileId = nextVirtualFileId++;
+    }
     openedFiles[virtualFileId] = reader;
     return virtualFileId;
 }
