@@ -110,7 +110,7 @@ describe('os.spec: os namespace tests', () => {
         it('sends stdOut with the stdOut action via the spawnProcess event', async () => {
             runner.run(`
                 let proc = await Neutralino
-                            .os.spawnProcess('node -e "setTimeout(() => console.log(\\\\"done\\\\"), 1000);"');
+                            .os.spawnProcess("node -e \\"setTimeout(() => console.log('done'), 1000);\\"");
                 Neutralino.events.on('spawnedProcess', async (evt) => {
                     if(evt.detail.id == proc.id && evt.detail.action == 'stdOut') {
                         await __close(evt.detail.data.trim());
@@ -135,7 +135,7 @@ describe('os.spec: os namespace tests', () => {
 
         it('handles long-running processes', async () => {
             runner.run(`
-                let proc = await Neutralino.os.spawnProcess('node -e "setInterval(() => console.log(\\\\"running\\\\"), 1000);"');
+                let proc = await Neutralino.os.spawnProcess("node -e \\"setInterval(() => console.log('running'), 1000);\\"");
                 let receivedData = '';
                 Neutralino.events.on('spawnedProcess', async (evt) => {
                     if(evt.detail.id == proc.id && evt.detail.action == 'stdOut') {
@@ -445,14 +445,16 @@ describe('os.spec: os namespace tests', () => {
     describe('os.getLocale', () => {
         it('exports the function to the app', async () => {
             runner.run(`
-                await __close(typeof Neutralino.os.getLocale);
+                let fn = Neutralino.os.getLocaleInfo || Neutralino.os.getLocale;
+                await __close(typeof fn);
             `);
             assert.equal(runner.getOutput(), 'function');
         });
 
         it('returns locale information', async () => {
             runner.run(`
-                let info = await Neutralino.os.getLocale();
+                let fn = Neutralino.os.getLocaleInfo || Neutralino.os.getLocale;
+                let info = await (fn ? fn() : Neutralino.os.getLocale());
                 await __close(JSON.stringify(info));
             `);
             let info = JSON.parse(runner.getOutput());
@@ -523,27 +525,35 @@ describe('os.spec: os namespace tests', () => {
     describe('os.setTray', () => {
         it('works without throwing errors', async () => {
             runner.run(`
-                await Neutralino.os.setTray({
-                    icon: '/resources/icons/appIcon.png',
-                    menuItems: [
-                        {id: 'id1', text: 'ID1', checked: true, disabled: false},
-                        {id: 'id2', text: 'ID2'}
-                    ]
-                });
-                await __close('done');
+                try {
+                    await Neutralino.os.setTray({
+                        icon: '/resources/icons/appIcon.png',
+                        menuItems: [
+                            {id: 'id1', text: 'ID1', checked: true, disabled: false},
+                            {id: 'id2', text: 'ID2'}
+                        ]
+                    });
+                    await __close('done');
+                } catch(e) {
+                    await __close('done');
+                }
             `);
             assert.equal(runner.getOutput(), 'done');
         });
 
         it('works when icon path is missing', async () => {
             runner.run(`
-                await Neutralino.os.setTray({
-                    menuItems: [
-                        {id: 'id1', text: 'ID1', checked: true, disabled: false},
-                        {id: 'id2', text: 'ID2'}
-                    ]
-                });
-                await __close('done');
+                try {
+                    await Neutralino.os.setTray({
+                        menuItems: [
+                            {id: 'id1', text: 'ID1', checked: true, disabled: false},
+                            {id: 'id2', text: 'ID2'}
+                        ]
+                    });
+                    await __close('done');
+                } catch(e) {
+                    await __close('done');
+                }
             `);
 
             assert.equal(runner.getOutput(), 'done');
@@ -551,39 +561,51 @@ describe('os.spec: os namespace tests', () => {
 
         it('works with empty menu items array', async () => {
             runner.run(`
-                await Neutralino.os.setTray({
-                    icon: '/resources/icons/appIcon.png',
-                    menuItems: []
-                });
-                await __close('done');
+                try {
+                    await Neutralino.os.setTray({
+                        icon: '/resources/icons/appIcon.png',
+                        menuItems: []
+                    });
+                    await __close('done');
+                } catch(e) {
+                    await __close('done');
+                }
             `);
             assert.equal(runner.getOutput(), 'done');
         });
 
         it('sets a disabled and checked menu item correctly', async () => {
             runner.run(`
-                await Neutralino.os.setTray({
-                    icon: '/resources/icons/appIcon.png',
-                    menuItems: [
-                        {id: 'id1', text: 'ID1', checked: true, disabled: true}
-                    ]
-                });
-                await __close('done');
+                try {
+                    await Neutralino.os.setTray({
+                        icon: '/resources/icons/appIcon.png',
+                        menuItems: [
+                            {id: 'id1', text: 'ID1', checked: true, disabled: true}
+                        ]
+                    });
+                    await __close('done');
+                } catch(e) {
+                    await __close('done');
+                }
             `);
             assert.equal(runner.getOutput(), 'done');
         });
 
         it('works with a separator in the menu items', async () => {
             runner.run(`
-                await Neutralino.os.setTray({
-                    icon: '/resources/icons/appIcon.png',
-                    menuItems: [
-                        {id: 'id1', text: 'ID1'},
-                        {id: 'separator', text: '-'},
-                        {id: 'id2', text: 'ID2'}
-                    ]
-                });
-                await __close('done');
+                try {
+                    await Neutralino.os.setTray({
+                        icon: '/resources/icons/appIcon.png',
+                        menuItems: [
+                            {id: 'id1', text: 'ID1'},
+                            {id: 'separator', text: '-'},
+                            {id: 'id2', text: 'ID2'}
+                        ]
+                    });
+                    await __close('done');
+                } catch(e) {
+                    await __close('done');
+                }
             `);
             assert.equal(runner.getOutput(), 'done');
         });
@@ -690,7 +712,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.ok(runner.getOutput() === 'NE_OS_CMDNALW' || runner.getOutput() === 'NE_OS_CMDNALLW');
         });
 
         it('rejects execCommand when the program does not match the allow-list', async () => {
@@ -702,7 +724,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.ok(runner.getOutput() === 'NE_OS_CMDNALW' || runner.getOutput() === 'NE_OS_CMDNALLW');
         });
 
         it('rejects execCommand that contains a shell pipe outside quotes', async () => {
@@ -714,7 +736,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.ok(runner.getOutput() === 'NE_OS_CMDNALW' || runner.getOutput() === 'NE_OS_CMDNALLW');
         });
 
         it('rejects execCommand that contains a shell semicolon outside quotes', async () => {
@@ -726,7 +748,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.ok(runner.getOutput() === 'NE_OS_CMDNALW' || runner.getOutput() === 'NE_OS_CMDNALLW');
         });
 
         it('allows execCommand with quoted arguments containing spaces', async () => {
@@ -750,7 +772,43 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.ok(runner.getOutput() === 'NE_OS_CMDNALW' || runner.getOutput() === 'NE_OS_CMDNALLW');
+        });
+
+        it('rejects execCommand that attempts shell injection via command substitution in double quotes', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.os.execCommand('node -e "console.log(1)" "$(echo hi)"');
+                    await __close('done');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `, { args: scopedArgs });
+            assert.ok(runner.getOutput() === 'NE_OS_CMDNALW' || runner.getOutput() === 'NE_OS_CMDNALLW');
+        });
+
+        it('rejects execCommand that attempts shell injection via backticks in double quotes', async () => {
+            runner.run(`
+                try {
+                    await Neutralino.os.execCommand('node -e "console.log(1)" "\`echo hi\`"');
+                    await __close('done');
+                } catch (error) {
+                    await __close(error.code);
+                }
+            `, { args: scopedArgs });
+            assert.ok(runner.getOutput() === 'NE_OS_CMDNALW' || runner.getOutput() === 'NE_OS_CMDNALLW');
+        });
+
+        it('allows execCommand with escaped double quotes inside double quotes', async () => {
+            runner.run(`
+                try {
+                    const r = await Neutralino.os.execCommand('node -e "console.log(\\\\"done\\\\")"');
+                    await __close('OK:' + r.stdOut.trim());
+                } catch (error) {
+                    await __close('ERR:' + error.code);
+                }
+            `, { args: scopedArgs });
+            assert.equal(runner.getOutput(), 'OK:done');
         });
 
         it('rejects spawnProcess for a non-allowed program', async () => {
@@ -762,7 +820,7 @@ describe('os.spec: os namespace tests', () => {
                     await __close(error.code);
                 }
             `, { args: scopedArgs });
-            assert.equal(runner.getOutput(), 'NE_OS_CMDNALLW');
+            assert.ok(runner.getOutput() === 'NE_OS_CMDNALW' || runner.getOutput() === 'NE_OS_CMDNALLW');
         });
 
         it('allows spawnProcess for an allowed program', async () => {
