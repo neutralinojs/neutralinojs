@@ -6,6 +6,15 @@ rename `Unreleased` topic with the new version tag. Finally, create a new `Unrel
 
 ## Unreleased
 
+### Config: fallback modes
+By default, Neutralinojs apps show an error message and stop the process on mode failures (e.g., if Chrome isn't installed but the app has launched with the chrome mode or if WebView2 (on Windows) isn't installed but the app has launched with the window mode). Now the framework offers the `tryFallbackModes` boolean config option to activate fallback modes. If this setting is set to `true` and the app has launched in window mode, it will try launching the app in window, chrome, and browser modes respectively on failures.
+
+### Config: logging formats
+- Add log format customization support with the `logging.format` config option. Supports all [Easylogging++ format specifiers](https://github.com/abumq/easyloggingpp#logging-format-specifiers), e.g., `"%level %datetime %msg %loc %user@%host"` (default)
+
+### API: filesystem
+- Add the `filesystem.getOpenedFiles()` function to retrieve an array of currently opened files with `filesystem.openFile()`.
+
 ## v6.10.0
 
 ### Security: Shell command allow list
