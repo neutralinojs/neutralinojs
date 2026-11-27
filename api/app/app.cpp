@@ -15,6 +15,7 @@
 #include "helpers.h"
 #include "errors.h"
 #include "server/neuserver.h"
+#include "extensions_loader.h"
 #include "api/app/app.h"
 #include "api/window/window.h"
 #include "api/os/os.h"
@@ -28,6 +29,9 @@ namespace app {
 void exit(int code) {
     if(neuserver::isInitialized()) {
         neuserver::stop();
+    }
+    if(extensions::isInitialized()) {
+        extensions::exitProcesses();
     }
     if(settings::getMode() == settings::AppModeWindow) {
         os::cleanupTray();
