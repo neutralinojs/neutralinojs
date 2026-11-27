@@ -16,6 +16,7 @@ using json = nlohmann::json;
 namespace extensions {
 
 vector<string> loadedExtensions;
+vector<int> extensionProcessIds;
 bool initialized = false;
 
 json __buildExtensionProcessInput(const string &extensionId) {
@@ -59,7 +60,7 @@ void init() {
             auto process = os::spawnProcess(command, processOptions);
             os::updateSpawnedProcess({process.first, "stdIn", helpers::jsonToString(__buildExtensionProcessInput(extensionId))});
             os::updateSpawnedProcess({process.first, "stdInEnd"});
-            
+            extensionProcessIds.push_back(process.first);
         }
 
         extensions::loadOne(extensionId);
@@ -82,6 +83,12 @@ bool isLoaded(const string &extensionId) {
 
 bool isInitialized() {
     return initialized;
+}
+
+void exitProcesses() {
+    for(int id: extensionProcessIds) {
+        os::updateSpawnedProcess({id, "exit"});
+    }
 }
 
 } // namespace extensions
