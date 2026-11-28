@@ -224,7 +224,7 @@ void setGlobalArgs(const json &args) {
 
         // Set app config file name
         if(cliArg.key == "--config-file") {
-            configFile = cliArg.value;
+            configFile = (cliArg.value[0] == '/') ? cliArg.value : "/" + cliArg.value;
             continue;
         }
 

@@ -18,7 +18,7 @@ bool isLoaded(const string &extensionId);
 bool isInitialized();
 void exitProcesses();
 
-} // namesapce extensions
+} // namespace extensions
 
 #endif // #define NEU_EXTENSIONS_H
 
