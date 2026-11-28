@@ -42,6 +42,7 @@ extern char **environ;
 #include <gdiplus.h>
 #include <shlwapi.h>
 #include <shlobj.h>
+#include <shellapi.h>
 
 #pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "Gdiplus.lib")
@@ -989,7 +990,33 @@ json trashItem(const json &input) {
     }
     string path = input["path"].get<string>();
 
-    if(trashcan_soft_delete(path.c_str()) == 0) {
+    std::error_code ec;
+    if(!std::filesystem::exists(path, ec)) {
+        output["error"] = errors::makeErrorPayload(errors::NE_OS_UNLTRAS, path);
+        return output;
+    }
+
+    bool trashed = false;
+    #if defined(_WIN32)
+    wstring widePath = helpers::str2wstr(path);
+    widePath.push_back(L'\0');
+
+    SHFILEOPSTRUCTW fileOp = {};
+    fileOp.wFunc = FO_DELETE;
+    fileOp.pFrom = widePath.c_str();
+    fileOp.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT;
+
+    if (SHFileOperationW(&fileOp) == 0 && !fileOp.fAnyOperationsAborted) {
+        trashed = true;
+    }
+    else {
+        trashed = (trashcan_soft_delete(path.c_str()) == 0);
+    }
+    #else
+    trashed = (trashcan_soft_delete(path.c_str()) == 0);
+    #endif
+
+    if(trashed) {
         output["success"] = true;
         output["message"] = path + " was moved to trash";
     }
