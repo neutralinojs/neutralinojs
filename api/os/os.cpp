@@ -33,6 +33,8 @@ extern char **environ;
 
 #if defined(__APPLE__)
 #include <objc/objc-runtime.h>
+#include <dispatch/dispatch.h>
+#include <pthread.h>
 #endif
 
 #if defined(_WIN32)
@@ -118,10 +120,9 @@ bool isTrayInitialized() {
     return trayInitialized;
 }
 
-void cleanupTray() {
-    if(!os::isTrayInitialized()) return;
-        tray_exit();
-        trayInitialized = false;
+void __cleanupTray() {
+    tray_exit();
+    trayInitialized = false;
     #if defined(_WIN32)
     if (tray.icon) {
         DestroyIcon(tray.icon);
@@ -136,6 +137,20 @@ void cleanupTray() {
     delete[] tray.icon;
     tray.icon = nullptr;
     #endif
+}
+
+void cleanupTray() {
+    if(!os::isTrayInitialized()) return;
+    #if defined(__APPLE__)
+    // AppKit only allows removing the status item from the main thread
+    if(!pthread_main_np()) {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            __cleanupTray();
+        });
+        return;
+    }
+    #endif
+    __cleanupTray();
 }
 
 void open(const string &url) {
