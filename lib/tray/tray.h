@@ -349,11 +349,6 @@ static void tray_exit() {
     ((id (*)(id, SEL))objc_msgSend)(trayDelegate, sel_registerName("release"));
     trayDelegate = nil;
   }
-
-  if (pool) {
-    ((id (*)(id, SEL))objc_msgSend)(pool, sel_registerName("drain"));
-    pool = nil;
-  }
 }
 
 #elif defined(TRAY_WINAPI)
